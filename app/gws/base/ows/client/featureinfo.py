@@ -6,43 +6,40 @@ import gws.lib.gml
 import gws.lib.xmlx as xmlx
 
 
+class Error(gws.Error):
+    pass
+
+
 def parse(text: str, default_crs: gws.Crs = None, always_xy=False) -> list[gws.FeatureRecord]:
     gws.debug.time_start('featureinfo:parse')
-    res = _parse(text.strip(), default_crs, always_xy)
+    recs = _parse(text.strip(), default_crs, always_xy)
     gws.debug.time_end()
-    return res
+    return recs
 
 
 def _parse(text, default_crs, always_xy):
-    xml_el = None
+    if not text.strip():
+        return []
 
     if text.startswith('<'):
         try:
-            xml_el = xmlx.from_string(text, gws.XmlOptions(caseInsensitive=True))
+            xml_el = xmlx.from_string(text, gws.XmlOptions(removeNamespaces=True))
         except xmlx.Error as exc:
-            gws.log.error(f'XML parse error: {exc}')
+            raise Error(f'XML error') from exc
 
-    if xml_el:
-        fn = _XML_FORMATS.get(xml_el.name)
-        if fn:
-            fds = fn(xml_el, default_crs, always_xy)
-            if fds is not None:
-                gws.log.debug(f'parsed with {fn.__name__} count={len(fds)}')
-                return fds
-        gws.log.error(f'XML parse error for {xml_el.name!r}')
-        return
+        parser = _XML_FORMATS.get(xml_el.lcName)
+        if not parser:
+            raise Error(f'XML format error for {xml_el.name!r}')
 
-    # fallback for non-xml formats
-    # @TODO: json etc
+        recs = parser(xml_el, default_crs, always_xy)
+        gws.log.debug(f'parsed with {parser.__name__} count={len(recs)}')
+        return recs
 
-    for fn in _TEXT_FORMATS:
-        fds = fn(text, default_crs, always_xy)
-        if fds is not None:
-            gws.log.debug(f'parsed with {fn.__name__} count={len(fds)}')
-            return fds
+    raise Error(f'unknown format in {text[:100]!r}')
 
 
 ##
+
 
 def _parse_msgmloutput(xml_el: gws.XmlElement, default_crs, always_xy):
     # msGMLOutput (MapServer)
@@ -61,19 +58,19 @@ def _parse_msgmloutput(xml_el: gws.XmlElement, default_crs, always_xy):
     #             <attr>....</attr>
     #
 
-    fds = []
+    recs = []
 
     for layer_el in xml_el:
-        layer_name = layer_el.name
-        for feature_el in layer_el:
-            if _is_gml(feature_el) and feature_el.name == 'name':
-                layer_name = feature_el.text
+        layer_name = layer_el.lcName
+        for el in layer_el:
+            if el.lcName == 'name':
+                layer_name = el.text
             else:
-                fd = _fdata_from_gml(feature_el, default_crs, always_xy)
-                fd.meta = {'layerName': layer_name}
-                fds.append(fd)
+                rec = _record_from_gml(el, default_crs, always_xy)
+                rec.meta = {'layerName': layer_name}
+                recs.append(rec)
 
-    return fds
+    return recs
 
 
 def _parse_featurecollection(xml_el: gws.XmlElement, default_crs, always_xy):
@@ -88,18 +85,18 @@ def _parse_featurecollection(xml_el: gws.XmlElement, default_crs, always_xy):
     #                 <gml:Point...
     #
 
-    fds = []
+    recs = []
 
     for member_el in xml_el:
-        if member_el.name in {'member', 'featuremember'}:
+        if member_el.lcName in {'member', 'featuremember'}:
             if len(member_el) == 1 and len(member_el[0]) > 0:
                 # <wfs:member><my:feature><attr...
-                fds.append(_fdata_from_gml(member_el[0], default_crs, always_xy))
+                recs.append(_record_from_gml(member_el[0], default_crs, always_xy))
             elif len(member_el) > 1:
                 # <wfs:member><attr...
-                fds.append(_fdata_from_gml(member_el, default_crs, always_xy))
+                recs.append(_record_from_gml(member_el, default_crs, always_xy))
 
-    return fds
+    return recs
 
 
 def _parse_getfeatureinforesponse(xml_el: gws.XmlElement, default_crs, always_xy):
@@ -111,31 +108,31 @@ def _parse_getfeatureinforesponse(xml_el: gws.XmlElement, default_crs, always_xy
     #              <Attribute name="..." value="..."/>
     #              <Attribute name="geometry" value="<wkt>"/>
 
-    fds = []
+    recs = []
 
     for layer_el in xml_el:
         layer_name = layer_el.get('name')
-        for feature_el in layer_el:
 
-            fd = gws.FeatureRecord(
+        for feature_el in layer_el:
+            rec = gws.FeatureRecord(
                 attributes={},
-                uid=feature_el.get('id'),
+                uid=_get_uid(feature_el),
                 meta={'layerName': layer_name},
             )
 
             for el in feature_el:
-                if el.name != 'attribute':
+                if el.lcName != 'attribute':
                     continue
-                key = el.get('name')
+                key = el.get('name').lower()
                 val = el.get('value')
                 if key == 'geometry':
-                    fd.shape = gws.base.shape.from_wkt(val, default_crs)
+                    rec.shape = gws.base.shape.from_wkt(val, default_crs)
                 elif val.strip():
-                    fd.attributes[key] = val.strip()
+                    rec.attributes[key] = val.strip()
 
-            fds.append(fd)
+            recs.append(rec)
 
-    return fds
+    return recs
 
 
 def _parse_featureinforesponse(xml_el: gws.XmlElement, default_crs, always_xy):
@@ -147,19 +144,21 @@ def _parse_featureinforesponse(xml_el: gws.XmlElement, default_crs, always_xy):
     #     <fields objectid="15111" shape="polygon"...
     #     <fields objectid="15111" shape="polygon"...
 
-    fds = []
+    recs = []
 
     for fields_el in xml_el:
-        if fields_el.name == 'fields':
-            fd = gws.FeatureRecord(attributes={})
+        if fields_el.lcName == 'fields':
+            rec = gws.FeatureRecord(
+                attributes={},
+                uid=_get_uid(fields_el),
+            )
             for key, val in fields_el.attrib.items():
-                if key.lower() in {'id', 'fid'}:
-                    fd.uid = val
-                elif key.lower() != 'shape':
-                    fd.attributes[key] = val
-            fds.append(fd)
+                key = key.lower()
+                if key != 'shape':
+                    rec.attributes[key] = val
+            recs.append(rec)
 
-    return fds
+    return recs
 
 
 def _parse_geobak(xml_el: gws.XmlElement, default_crs, always_xy):
@@ -176,25 +175,25 @@ def _parse_geobak(xml_el: gws.XmlElement, default_crs, always_xy):
     #         <geobak_20:Datensatz>
     #           ...
 
-    fds = []
+    recs = []
 
     for el in xml_el:
-        fd = gws.FeatureRecord(attributes={})
+        rec = gws.FeatureRecord(attributes={})
 
-        if el.name == 'kartenebene':
-            fd.meta = {'layerName': el.text}
+        if el.lcName == 'kartenebene':
+            rec.meta = {'layerName': el.text}
             continue
 
-        if el.name == 'inhalt':
+        if el.lcName == 'inhalt':
             for attr_el in el[0]:
-                key = attr_el[0].text.strip()
+                key = attr_el[0].text.strip().lower()
                 val = attr_el[1].text.strip()
                 if key != 'shape' and val.lower() != 'null':
-                    fd.attributes[key] = val
+                    rec.attributes[key] = val
 
-        fds.append(fd)
+        recs.append(rec)
 
-    return fds
+    return recs
 
 
 ##
@@ -202,49 +201,54 @@ def _parse_geobak(xml_el: gws.XmlElement, default_crs, always_xy):
 _DEEP_ATTRIBUTE_DELIMITER = '.'
 
 
-def _fdata_from_gml(feature_el, default_crs, always_xy) -> gws.FeatureRecord:
+def _record_from_gml(feature_el, default_crs, always_xy) -> gws.FeatureRecord:
     # like GDAL does:
     # "When reading a feature, the driver will by default only take into account
     # the last recognized GML geometry found..." (https://gdal.org/drivers/vector/gml.html)
 
-    fd = gws.FeatureRecord(
+    rec = gws.FeatureRecord(
         attributes={},
-        uid=feature_el.get('id') or feature_el.get('fid'),
-        meta={'layerName': feature_el.name},
+        uid=_get_uid(feature_el),
+        meta={'layerName': feature_el.lcName},
     )
 
     bbox = None
 
     for el in feature_el:
-        if el.name == 'boundedby':
+        if el.lcName == 'boundedby':
             # <gml:boundedBy directly under feature
             bbox = gws.lib.gml.parse_envelope(el[0], default_crs, always_xy)
         elif gws.lib.gml.is_geometry_element(el):
             # <gml:Polygon etc directly under feature
-            fd.shape = gws.lib.gml.parse_shape(el, default_crs, always_xy)
+            rec.shape = gws.lib.gml.parse_shape(el, default_crs, always_xy)
         elif len(el) == 1 and gws.lib.gml.is_geometry_element(el[0]):
             # <gml:Polygon etc in a wrapper tag
-            fd.shape = gws.lib.gml.parse_shape(el[0], default_crs, always_xy)
+            rec.shape = gws.lib.gml.parse_shape(el[0], default_crs, always_xy)
         elif len(el) > 0:
             # sub-feature
-            sub = _fdata_from_gml(el, default_crs, always_xy)
+            sub = _record_from_gml(el, default_crs, always_xy)
             for k, v in sub.attributes.items():
-                fd.attributes[el.name + _DEEP_ATTRIBUTE_DELIMITER + k] = v
+                rec.attributes[el.lcName + _DEEP_ATTRIBUTE_DELIMITER + k] = v
         else:
             # attribute <attr>text</attr>
             s = el.text.strip()
             if s:
-                fd.attributes[el.name] = s
+                rec.attributes[el.lcName] = s
 
-    if not fd.shape and bbox:
-        fd.shape = gws.base.shape.from_bounds(bbox)
+    if not rec.shape and bbox:
+        rec.shape = gws.base.shape.from_bounds(bbox)
 
-    return fd
+    return rec
 
 
-def _is_gml(el):
-    _, uri, _ = xmlx.namespace.split_name(el.tag)
-    return uri and '/gml' in uri
+_UIDS = ['id', 'fid', 'objectid', 'ID', 'FID', 'OBJECTID']
+
+
+def _get_uid(el):
+    for u in _UIDS:
+        if u in el.attrib:
+            return el.get(u)
+    return ''
 
 
 ##
@@ -257,6 +261,3 @@ _XML_FORMATS = {
     'featureinforesponse': _parse_featureinforesponse,
     'sachdatenabfrage': _parse_geobak,
 }
-
-_TEXT_FORMATS = [
-]

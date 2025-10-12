@@ -111,10 +111,10 @@ class Object(gws.base.ows.client.provider.Object):
         args = self.prepare_operation(op, params=params)
         text = gws.base.ows.client.request.get_text(args)
 
-        records = gws.base.ows.client.featureinfo.parse(text, default_crs=request_crs, always_xy=self.alwaysXY)
-
-        if records is None:
-            gws.log.debug(f'get_features: NOT_PARSED params={params!r}')
+        try:
+            records = gws.base.ows.client.featureinfo.parse(text, default_crs=request_crs, always_xy=self.alwaysXY)
+        except gws.Error as exc:
+            gws.log.error(f'get_features: parse error: {exc!r}')
             return []
 
         gws.log.debug(f'get_features: FOUND={len(records)} params={params!r}')

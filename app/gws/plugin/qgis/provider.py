@@ -245,19 +245,19 @@ class Object(gws.OwsProvider):
 
         res = self.call_server(params)
 
-        fdata = gws.base.ows.client.featureinfo.parse(res.text, default_crs=request_crs, always_xy=self.alwaysXY)
-
-        if fdata is None:
-            gws.log.debug(f'get_features: NOT_PARSED params={params!r}')
+        try:
+            records = gws.base.ows.client.featureinfo.parse(res.text, default_crs=request_crs, always_xy=self.alwaysXY)
+        except gws.Error as exc:
+            gws.log.error(f'get_features: parse error: {exc!r}')
             return []
 
-        gws.log.debug(f'get_features: FOUND={len(fdata)} params={params!r}')
+        gws.log.debug(f'get_features: FOUND={len(records)} params={params!r}')
 
-        for fd in fdata:
-            if fd.shape:
-                fd.shape = fd.shape.transformed_to(shape.crs)
+        for rec in records:
+            if rec.shape:
+                rec.shape = rec.shape.transformed_to(shape.crs)
 
-        return fdata
+        return records
 
     ##
 
