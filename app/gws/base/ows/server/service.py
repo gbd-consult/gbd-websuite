@@ -175,15 +175,15 @@ class Object(gws.OwsService):
 
         if req.method == 'POST' and gws.lib.mime.get(req.contentType) == gws.lib.mime.XML:
             try:
-                xml = gws.lib.xmlx.from_string(req.text(), gws.XmlOptions(removeNamespaces=True, caseInsensitive=True))
+                xml = gws.lib.xmlx.from_string(req.text(), gws.XmlOptions(removeNamespaces=True))
             except gws.lib.xmlx.Error:
                 raise gws.base.web.error.BadRequest()
 
             is_soap = False
-            if xml.lcName == 'envelope':
+            if xml.name == 'Envelope':
                 is_soap = True
                 try:
-                    xml = xml.findfirst('body').findfirst()
+                    xml = xml.findfirst('Body').findfirst()
                 except gws.lib.xmlx.Error:
                     raise gws.base.web.error.BadRequest()
 

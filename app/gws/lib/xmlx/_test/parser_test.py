@@ -20,12 +20,6 @@ def test_from_string():
     assert _noempty(doc.to_dict()) == {'children': [{'tag': 'bar'}], 'tag': 'foo'}
 
 
-def test_from_string_case():
-    s = '<foo><BAR a1="x" A2="y"/></foo>'
-    doc = xmlx.parser.from_string(s, gws.XmlOptions(caseInsensitive=True))
-    assert _noempty(doc.to_dict()) == {'children': [{'attrib': {'a1': 'x', 'a2': 'y'}, 'tag': 'bar'}], 'tag': 'foo'}
-
-
 def test_from_string_compact():
     s = '<foo> x <bar>   abc   </bar> y </foo>'
     doc = xmlx.parser.from_string(s, gws.XmlOptions(compactWhitespace=True))

@@ -1526,25 +1526,19 @@ class XmlOptions(Data):
     """Mapping of prefixes to namespaces."""
 
     customXmlns: Optional[dict[str, str]] = None
-    """A mapping of namespace prefixes to custom prefixes."""
+    """A mapping of namespace ids to custom prefixes."""
 
     defaultNamespace: Optional['XmlNamespace'] = None
     """Default namespace to use for serialization."""
 
     doctype: Optional[str] = None
-    """Document type definition (DTD) to use."""
+    """Document type definition (DTD) to use for serialization."""
 
     compactWhitespace: bool = False
     """Remove all whitespace outside of tags and elements."""
 
     removeNamespaces: bool = False
     """Remove all namespace references."""
-
-    caseInsensitive: bool = False
-    """Case insensitive tag and attribute names."""
-        
-    stripNamespaceVersions: bool = False
-    """Remove version suffixes from namespace URIs."""
 
     foldTags: bool = False
     """If true, folds nested tag names into ``parent/child`` names."""
