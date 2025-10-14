@@ -14,9 +14,6 @@ map {
     zoom.maxScale  1000000
 }
 
-## search is not supported for geojson
-client.removeElements+ { tag "Toolbar.Identify.Click" }
-
 map.layers+ {
     title "Bank"
     type "geojson"

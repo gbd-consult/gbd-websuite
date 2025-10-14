@@ -1,4 +1,4 @@
-"""GeoJson model."""
+"""GeoJSON model."""
 
 from typing import Optional
 
@@ -15,14 +15,14 @@ gws.ext.new.model('geojson')
 
 
 class Config(gws.base.model.Config):
-    """Configuration for GeoJson model."""
+    """Configuration for GeoJSON model."""
 
     provider: Optional[provider.Config]
-    """GeoJson provider."""
+    """GeoJSON provider."""
 
 
 class Object(gws.base.model.default_model.Object):
-    """GeoJson Model."""
+    """GeoJSON Model."""
 
     serviceProvider: provider.Object
 
@@ -38,6 +38,6 @@ class Object(gws.base.model.default_model.Object):
         # fmt: off
         return [
             self.feature_from_record(rec, user) 
-            for rec in self.serviceProvider.get_records()
+            for rec in self.serviceProvider.get_records(search)
         ]
         # fmt: on
