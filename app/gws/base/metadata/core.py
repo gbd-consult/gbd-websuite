@@ -1,6 +1,7 @@
 from typing import Optional
 import gws
 import gws.lib.intl
+import gws.lib.datetimex as dtx
 
 from . import inspire, iso
 
@@ -139,7 +140,7 @@ class Config(gws.Config):
     isoScopeName: Optional[str]
     isoSpatialRepresentationType: Optional[iso.MD_SpatialRepresentationTypeCode]
     isoTopicCategories: Optional[list[iso.MD_TopicCategoryCode]]
-    isoSpatialResolution: Optional[str]
+    isoSpatialResolution: Optional[int]
 
 
 ##
@@ -258,8 +259,8 @@ def props(md: gws.Metadata) -> gws.Props:
     return gws.Props(
         abstract=md.abstract or '',
         attribution=md.attribution or '',
-        dateCreated=md.dateCreated,
-        dateUpdated=md.dateUpdated,
+        dateCreated=dtx.to_iso_date_string(md.dateCreated) if md.dateCreated else '',
+        dateUpdated=dtx.to_iso_date_string(md.dateUpdated) if md.dateUpdated else '',
         keywords=sorted(md.keywords or []),
         language=md.language or '',
         title=md.title or '',

@@ -156,10 +156,10 @@ def layer_content(ta, lc: server.LayerCaps):
         yield (
             'LatLonBoundingBox',
             {
-                'minx': wext[0],
-                'miny': wext[1],
-                'maxx': wext[2],
-                'maxy': wext[3],
+                'minx': tpl.coord_dms(wext[0]),
+                'miny': tpl.coord_dms(wext[1]),
+                'maxx': tpl.coord_dms(wext[2]),
+                'maxy': tpl.coord_dms(wext[3]),
             },
         )
 

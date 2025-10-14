@@ -145,10 +145,14 @@ def _cache_path(cache_dir: str, url: str) -> str:
             fname = m.group(0)
             parts.pop()
 
-    dirname = '/'.join(gws.u.to_uid(p) for p in parts)
-    if not dirname:
+    d = '/'.join(_to_dirname(p) for p in parts)
+    if not d:
         return cache_dir + '/' + fname
-    dirname = cache_dir + '/' + dirname
-    os.makedirs(dirname, exist_ok=True)
+    d = gws.u.ensure_dir(cache_dir + '/' + d)
+    return d + '/' + fname
 
-    return dirname + '/' + fname
+
+def _to_dirname(s: str) -> str:
+    s = s.lower().strip().lstrip('.')
+    s = re.sub(r'[^a-zA-Z0-9.]+', '_', s).strip('_')
+    return s

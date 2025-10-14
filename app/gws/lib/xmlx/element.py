@@ -180,6 +180,16 @@ class XmlElement(gws.XmlElement):
         ls = self._collect_tags_and_text(paths, deep)
         return dict(ls)
 
+    def remove_namespaces(self):
+        self.tag = namespace.unqualify_name(self.tag)
+        attrib = {}
+        for k, v in self.attrib.items():
+            nk = namespace.unqualify_name(k)
+            attrib[nk] = v
+        self.attrib = attrib
+        for c in self._children:
+            c.remove_namespaces()
+        return self
 
     def _collect_tags_and_text(self, paths, deep):
         def walk(el):

@@ -93,9 +93,9 @@ _DEFAULT_TEMPLATES = [
 
 _DEFAULT_METADATA = gws.Metadata(
     name='WFS',
-    inspireMandatoryKeyword='infoMapAccessService',
+    inspireMandatoryKeyword='infoFeatureAccessService',
     inspireResourceType='service',
-    inspireSpatialDataServiceType='view',
+    inspireSpatialDataServiceType='download',
     isoScope='dataset',
     isoServiceFunction='download',
     isoSpatialRepresentationType='vector',

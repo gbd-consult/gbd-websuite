@@ -1553,7 +1553,6 @@ class XmlOptions(Data):
     """Include the xml declaration."""
 
 
-
 class XmlElement(Iterable):
     """XML Element.
 
@@ -1678,6 +1677,9 @@ class XmlElement(Iterable):
         Returns:
             A dict tag name -> text.
         """
+
+    def remove_namespaces(self) -> 'XmlElement':
+        """Removes all namespace references from the element and its children."""
 
     def to_string(self, opts: Optional[XmlOptions] = None) -> str:
         """Converts the Element object to a string.
@@ -2212,7 +2214,7 @@ class Metadata(Data):
     isoScopeName: str
     isoSpatialRepresentationType: str
     isoTopicCategories: list[str]
-    isoSpatialResolution: str
+    isoSpatialResolution: int
 ################################################################################
 
 

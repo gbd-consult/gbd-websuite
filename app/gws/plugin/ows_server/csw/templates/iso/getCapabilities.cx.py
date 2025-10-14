@@ -11,7 +11,7 @@ def main(ta: server.TemplateArgs):
         ('csw:Capabilities', {'version': ta.version}, caps(ta)),
         namespaces={
             'ows': gws.lib.xmlx.namespace.require('ows0'),
-            'gml': gws.lib.xmlx.namespace.require('gml2'),
+            'gml': gws.lib.xmlx.namespace.require('gml0'),
         },
     )
 

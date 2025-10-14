@@ -2,7 +2,7 @@
 
 import gws
 import gws.base.ows.server as server
-import gws.lib.datetimex as dtx
+import gws.base.ows.server.templatelib as tpl
 
 ML_GMX_CODELISTS = 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xml'
 
@@ -18,7 +18,7 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
     def w_date(d, typ):
         return (
             'gmd:date/gmd:CI_Date',
-            ('gmd:date/gco:Date', dtx.to_iso_date_string(dtx.parse(d))),
+            ('gmd:date/gco:Date', tpl.iso_date(d)),
             w_code(
                 'dateType',
                 'CI_DateTypeCode',
@@ -36,10 +36,10 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
     def w_bbox(ext):
         return (
             'gmd:EX_GeographicBoundingBox',
-            ('gmd:westBoundLongitude/gco:Decimal', ext[0]),
-            ('gmd:eastBoundLongitude/gco:Decimal', ext[2]),
-            ('gmd:southBoundLatitude/gco:Decimal', ext[1]),
-            ('gmd:northBoundLatitude/gco:Decimal', ext[3]),
+            ('gmd:westBoundLongitude/gco:Decimal', tpl.coord_dms(ext[0])),
+            ('gmd:eastBoundLongitude/gco:Decimal', tpl.coord_dms(ext[2])),
+            ('gmd:southBoundLatitude/gco:Decimal', tpl.coord_dms(ext[1])),
+            ('gmd:northBoundLatitude/gco:Decimal', tpl.coord_dms(ext[3])),
         )
 
     def contact():
@@ -96,7 +96,7 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
         if md.inspireTheme:
             yield (
                 'gmd:descriptiveKeywords/gmd:MD_Keywords',
-                ('gmd:keyword/gco:CharacterString', md.inspireThemeName),
+                ('gmd:keyword/gco:CharacterString', md.inspireThemeNameEn),
                 w_code('type', 'MD_KeywordTypeCode', 'theme'),
                 (
                     'gmd:thesaurusName/gmd:CI_Citation',
@@ -133,8 +133,9 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
         yield w_lang()
         yield w_code('characterSet', 'MD_CharacterSetCode', 'utf8')
 
-        if md.isoTopicCategory:
-            yield 'gmd:topicCategory/gmd:MD_TopicCategoryCode', md.isoTopicCategory
+        if md.isoTopicCategories:
+            for cat in md.isoTopicCategories:
+                yield 'gmd:topicCategory/gmd:MD_TopicCategoryCode', cat
 
         if md.wgsExtent:
             yield 'gmd:extent/gmd:EX_Extent/gmd:geographicElement', w_bbox(md.wgsExtent)
@@ -209,7 +210,7 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
 
         yield 'gmd:contact', contact()
 
-        yield 'gmd:dateStamp/gco:Date', dtx.to_iso_date_string(md.dateUpdated)
+        yield 'gmd:dateStamp/gco:Date', tpl.iso_date(md.dateUpdated)
 
         yield 'gmd:metadataStandardName/gco:CharacterString', 'ISO19115'
         yield 'gmd:metadataStandardVersion/gco:CharacterString', '2003/Cor.1:2006'

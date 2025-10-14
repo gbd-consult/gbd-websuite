@@ -72,7 +72,17 @@ def operations(ta: server.TemplateArgs):
     )
 
     if ta.service.withInspireMeta:
-        yield 'ows:ExtendedCapabilities/inspire_dls:ExtendedCapabilities', tpl.inspire_extended_capabilities(ta)
+        md = ta.service.metadata
+        yield (
+            'ows:ExtendedCapabilities/inspire_dls:ExtendedCapabilities',
+            tpl.inspire_extended_capabilities(ta),
+            (
+                'inspire_dls:SpatialDataSetIdentifier',
+                {'metadataURL': md.metaLinks[0].url if md.metaLinks else ''},
+                ('inspire_common:Code', md.catalogUid),
+                
+            ),
+        )
 
 
 def operation_params(ta, op):

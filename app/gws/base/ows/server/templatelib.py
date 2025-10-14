@@ -6,6 +6,7 @@ import gws
 import gws.base.metadata
 import gws.lib.gml
 import gws.lib.uom
+import gws.lib.datetimex as dtx
 import gws.lib.xmlx as xmlx
 import gws.base.ows.server as server
 
@@ -319,11 +320,23 @@ def inspire_extended_capabilities(ta: server.TemplateArgs):
 
 
 def coord_dms(n):
-    return round(n, gws.lib.uom.DEFAULT_PRECISION[gws.Uom.deg])
+    prec = gws.lib.uom.DEFAULT_PRECISION[gws.Uom.deg]
+    return f'{round(n, prec):.{prec}f}'
 
 
 def coord_m(n):
-    return round(n, gws.lib.uom.DEFAULT_PRECISION[gws.Uom.m])
+    prec = gws.lib.uom.DEFAULT_PRECISION[gws.Uom.m]
+    return f'{round(n, prec):.{prec}f}'
+
+
+def iso_date(d):
+    dd = dtx.parse(d)
+    return dtx.to_iso_date_string(dd) if dd else ''
+
+
+def iso_datetime(d):
+    dd = dtx.parse(d)
+    return dtx.to_iso_string(dd, with_tz=':') if dd else ''
 
 
 def namespaces_from_caps(ta: server.TemplateArgs) -> dict[str, gws.XmlNamespace]:

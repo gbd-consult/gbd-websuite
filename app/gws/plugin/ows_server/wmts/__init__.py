@@ -10,10 +10,7 @@ References:
 import gws
 import gws.config.util
 import gws.base.ows.server as server
-import gws.base.web
-import gws.lib.crs
 import gws.lib.extent
-import gws.lib.image
 import gws.lib.mime
 import gws.gis.render
 import gws.lib.uom

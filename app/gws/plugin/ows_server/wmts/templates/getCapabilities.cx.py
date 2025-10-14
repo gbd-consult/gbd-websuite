@@ -54,12 +54,11 @@ def layer(ta: server.TemplateArgs, lc: server.LayerCaps):
 
     yield 'ows:Identifier', lc.layerName
 
-    if lc.hasLegend:
-        yield (
-            'Style',
-            ('ows:Identifier', 'default'),
-            tpl.legend_url(ta, lc),
-        )
+    yield (
+        'Style',
+        ('ows:Identifier', 'default'),
+        tpl.legend_url(ta, lc) if lc.hasLegend else '',
+    )
 
     yield 'Format', 'image/png'
 
