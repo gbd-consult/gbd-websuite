@@ -18,6 +18,7 @@ shapely==2.*
 SQLAlchemy==2.*
 watchdog==6.*
 Werkzeug==3.*
+lxml==6.*
 
 uWSGI==2.*
 
