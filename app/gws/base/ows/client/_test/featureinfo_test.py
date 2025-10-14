@@ -465,5 +465,5 @@ def test_real_life_examples():
         xml = gws.u.read_file(de.path)
         rs = featureinfo.parse(xml, default_crs=gws.lib.crs.WGS84)
         assert isinstance(rs, list)
-        for r in rs:
-            print(f'\n{de.name} {r.uid=} {r.attributes=}')
+        # for r in rs:
+        #     print(f'\n{de.name} {r.uid=} {r.attributes=}')
