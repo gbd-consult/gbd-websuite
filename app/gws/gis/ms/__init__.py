@@ -141,7 +141,8 @@ class Map:
             self.mapObj = mapscript.mapObj()
 
         self.mapObj.setConfigOption('MS_ERRORFILE', 'stderr')
-        self.mapObj.debug = mapscript.MS_DEBUGLEVEL_DEVDEBUG
+        # self.mapObj.debug = mapscript.MS_DEBUGLEVEL_DEVDEBUG
+        self.mapObj.debug = mapscript.MS_DEBUGLEVEL_ERRORSONLY
 
     def copy(self) -> 'Map':
         """Creates a copy of the current map object."""

@@ -67,6 +67,61 @@ def load_options(base_dir):
 ##
 
 
+DEFAULT_METADATA = {
+    'language': 'de',
+    #
+    'contactAddress': 'contactAddress 123',
+    'contactAddressType': 'postal',
+    'contactArea': 'contactArea1',
+    'contactCity': 'contactCity1',
+    'contactCountry': 'contactCountry1',
+    'contactEmail': 'contact@example.de',
+    'contactFax': '+49 (0)123-45',
+    'contactOrganization': 'contactOrganization1',
+    'contactPerson': 'contactPerson1',
+    'contactPhone': '+49 (0)123-45',
+    'contactPosition': 'contactPosition1',
+    'contactProviderName': 'contactProviderName1',
+    'contactProviderSite': 'contactProviderSite1',
+    'contactRole': 'pointOfContact',
+    'contactUrl': 'https://contact.@example.de',
+    'contactZip': '12345',
+    #
+    'catalogUid': 'catalogUid1',
+    'temporalBegin': '2021-01-02',
+    'temporalEnd': '2022-01-02',
+    'dateCreated': '2023-01-02',
+    'dateUpdated': '2024-01-02',
+    #
+    # 'inspireMandatoryKeyword': 'infoMapAccessService',
+    'inspireDegreeOfConformity': 'conformant',
+    'inspireResourceType': 'service',
+    # 'inspireSpatialDataServiceType': 'view',
+    'inspireSpatialScope': 'national',
+    'inspireSpatialScopeName': 'national',
+    'inspireTheme': 'administrativeUnits',
+    #
+    'isoMaintenanceFrequencyCode': 'annual',
+    'isoQualityConformanceExplanation': 'isoQualityConformanceExplanation1',
+    'isoQualityConformanceQualityPass': True,
+    'isoQualityConformanceSpecificationDate': '2020-01-02',
+    'isoQualityConformanceSpecificationTitle': 'isoQualityConformanceSpecificationTitle1',
+    'isoQualityLineageSource': 'isoQualityLineageSource1',
+    'isoQualityLineageSourceScale': 1000,
+    'isoQualityLineageStatement': 'isoQualityLineageStatement1',
+    'isoRestrictionCode': 'copyright',
+    'isoServiceFunction': 'information',
+    'isoScope': 'dataset',
+    'isoScopeName': 'isoScopeName1',
+    'isoSpatialRepresentationType': 'vector',
+    'isoTopicCategories': ['boundaries', 'farming'],
+    'isoSpatialResolution': 123,
+}
+
+
+##
+
+
 def _config_defaults():
     return f"""
         database.providers+ {{ 
@@ -112,20 +167,28 @@ def gws_specs() -> gws.SpecRuntime:
     return _GWS_SPEC_RUNTIME
 
 
-def gws_root(config: str = '', specs: gws.SpecRuntime = None, activate=True, defaults=True):
-    config = config or ''
+def gws_root(cfg: str = '', specs: gws.SpecRuntime = None, activate=True, defaults=True, **vars):
+    cfg = cfg or ''
     if defaults:
-        config = _config_defaults() + '\n' + config
-    config = f'server.log.level {gws.log.get_level()}\n' + config
-    parsed_config = _to_data(gws.lib.vendor.slon.parse(config, as_object=True))
+        cfg = _config_defaults() + '\n' + cfg
+    
+    cfg = f'server.log.level {gws.log.get_level()}\n' + cfg
+    
+    for k, v in vars.items():
+        cfg = cfg.replace('{' + k + '}', str(v))
+
+    parsed_config = _to_data(gws.lib.vendor.slon.parse(cfg, as_object=True))
     specs = mock.register(specs or gws_specs())
     root = gws.config.initialize(specs, gws.Config(parsed_config))
+    
     if root.configErrors:
         for err in root.configErrors:
             gws.log.error(f'CONFIGURATION ERROR: {err}')
         raise gws.ConfigurationError('config failed')
+    
     if not activate:
         return root
+    
     root = gws.config.activate(root)
     return root
 
@@ -432,6 +495,12 @@ def temp_dir_in_base_dir(keep=False):
 
     if not keep:
         unlink(d)
+
+
+def dump(s):
+    print('----')
+    print(s)
+    print('-----')
 
 
 _comma = ','.join

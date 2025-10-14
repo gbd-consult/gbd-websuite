@@ -157,7 +157,7 @@ def run():
     cmd += f' /gws-app/gws/test/container_runner.py --base {base}'
 
     if OPTIONS['arg_only']:
-        cmd += f' --only ' + OPTIONS['arg_only']
+        cmd += f' --only "' + OPTIONS['arg_only'] + '"'
     if OPTIONS['arg_verbose']:
         cmd += ' --verbose '
     if OPTIONS['arg_pytest']:

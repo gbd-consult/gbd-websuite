@@ -71,7 +71,6 @@ def test_with_default_namespace():
             defaultNamespace=xmlx.namespace.require('wms'),
         )
     )
-    print(xml)
 
     assert u.fxml(xml) == u.fxml("""
         <root 

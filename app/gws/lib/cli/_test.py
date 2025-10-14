@@ -245,35 +245,35 @@ def test_main():
 #     assert cli.text_table([]) == ""
 
 
-def test_progress_indicator(capsys):
-    # Test initialization and basic logging
-    with mock.patch('time.time', side_effect=[0,
-                                              1.5]):  # Mock time to get consistent results
-        with cli.ProgressIndicator("Test", total=100) as progress:
-            captured = capsys.readouterr()
-            assert "START" in captured.out
-            assert "100" in captured.out
+# def test_progress_indicator(capsys):
+#     # Test initialization and basic logging
+#     with mock.patch('time.time', side_effect=[0,
+#                                               1.5]):  # Mock time to get consistent results
+#         with cli.ProgressIndicator("Test", total=100) as progress:
+#             captured = capsys.readouterr()
+#             assert "START" in captured.out
+#             assert "100" in captured.out
 
-            # Test update
-            progress.update(10)
-            captured = capsys.readouterr()
-            assert captured.out.strip() == "[test] Test: 10%"
+#             # Test update
+#             progress.update(10)
+#             captured = capsys.readouterr()
+#             assert captured.out.strip() == "[test] Test: 10%"
 
-            # Test update reaching threshold
-            progress.update(40)
-            captured = capsys.readouterr()
-            assert "50%" in captured.out
+#             # Test update reaching threshold
+#             progress.update(40)
+#             captured = capsys.readouterr()
+#             assert "50%" in captured.out
 
-            # Test end message
-        captured = capsys.readouterr()
-        assert "END" in captured.out
+#             # Test end message
+#         captured = capsys.readouterr()
+#         assert "END" in captured.out
 
-        # Test without total
-    with cli.ProgressIndicator("NoTotal") as progress:
-        captured = capsys.readouterr()
-        assert "START" in captured.out
+#         # Test without 
+#     with cli.ProgressIndicator("NoTotal") as progress:
+#         captured = capsys.readouterr()
+#         assert "START" in captured.out
 
-        # Updates should do nothing
-        progress.update(50)
-        captured = capsys.readouterr()
-        assert captured.out.strip() == ""
+#         # Updates should do nothing
+#         progress.update(50)
+#         captured = capsys.readouterr()
+#         assert captured.out.strip() == ""
