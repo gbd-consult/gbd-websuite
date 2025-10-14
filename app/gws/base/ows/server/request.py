@@ -131,6 +131,12 @@ class Object:
     def _enum_layer_caps(self, layer: gws.Layer, lcs: list[core.LayerCaps], stack: list[core.LayerCaps]):
         if not self.req.user.can_read(layer) or not layer.isEnabledForOws:
             return
+        
+        ows = layer.ows
+        if ows and ows.allowedServiceUids and self.service.uid not in ows.allowedServiceUids:
+            return
+        if ows and ows.deniedServiceUids and self.service.uid in ows.deniedServiceUids:
+            return
 
         is_compat = self.service.layer_is_compatible(layer)
         if not is_compat and not layer.isGroup:
