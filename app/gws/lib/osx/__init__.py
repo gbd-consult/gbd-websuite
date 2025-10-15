@@ -133,7 +133,7 @@ def rename(src: _Path, dst: _Path):
         dst: Destination.
     """
 
-    os.replace(src, dst)
+    shutil.move(_to_str(src), _to_str(dst))
 
 
 def chown(path: _Path, user: int = None, group: int = None):
@@ -525,8 +525,6 @@ def rel_path(path: _Path, base: _Path) -> str:
 
     if os.path.isfile(base):
         base = os.path.dirname(base)
-
-    str_path = path if isinstance(path, str) else path.decode('utf8')
 
     return os.path.relpath(_to_str(path), _to_str(base))
 
