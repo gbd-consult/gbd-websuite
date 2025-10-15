@@ -111,7 +111,6 @@ class Object(gws.Node):
         with open(args.path, 'wb') as fp:
             writer = csv_helper.writer(gws.lib.intl.locale('de_DE'), stream_to=fp)
             for row in self._iter_rows(args):
-                gws.log.debug(f'export row: {row}')
                 writer.write_dict(row)
 
     def _export_geojson(self, args: Args):
