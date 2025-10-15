@@ -30,6 +30,8 @@ class Config(gws.ConfigWithAccess):
     """If True, the field is unique."""
     isAuto: Optional[bool]
     """If True, the field is auto-updated."""
+    isHidden: Optional[bool]
+    """If True, the field is not automatically displayed in UIs. (added in 8.2)"""
 
     values: Optional[list[gws.ext.config.modelValue]]
     """List of possible values for the field."""
@@ -87,6 +89,8 @@ class Object(gws.ModelField):
             self.isUnique = p
         else:
             self.isUnique = False
+
+        self.isHidden = self.cfg('isHidden', default=False)
 
     def configure_values(self):
         p = self.cfg('values')

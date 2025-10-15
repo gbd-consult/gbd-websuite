@@ -3240,6 +3240,7 @@ class ModelField(Node):
     isRequired: bool
     isUnique: bool
     isAuto: bool
+    isHidden: bool
 
     supportsFilterSearch: bool = False
     supportsGeometrySearch: bool = False
