@@ -198,7 +198,7 @@ class Object(gws.Layer):
         self.models = []
         self.finders = []
 
-        self.metadata = gws.Metadata()
+        self.metadata = gws.base.metadata.new()
         self.legend = None
         self.legendUrl = ''
 

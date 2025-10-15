@@ -18,6 +18,7 @@ from .core import (
     from_dict,
     from_props,
     update,
+    normalize,
     new,
     keyword_groups,
     KeywordGroup,

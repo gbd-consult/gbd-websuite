@@ -112,7 +112,7 @@ def service_metadata(caps_el: gws.XmlElement) -> gws.Metadata:
     if service_link:
         md.serviceMetadataURL = service_link.url
 
-    return gws.u.strip(md)
+    return gws.base.metadata.normalize(md)
 
 
 def element_metadata(el: gws.XmlElement) -> gws.Metadata:
@@ -120,12 +120,12 @@ def element_metadata(el: gws.XmlElement) -> gws.Metadata:
     #       <Name...
     #       <Title...
 
-    md = gws.Metadata()
+    md = gws.base.metadata.new()
     _element_metadata(el, md)
-    return gws.u.strip(md)
+    return gws.base.metadata.normalize(md)
 
 
-def _element_metadata(el: gws.XmlElement, md: gws.Metadata):
+def _element_metadata(el: Optional[gws.XmlElement], md: gws.Metadata):
     if not el:
         return
 
@@ -177,7 +177,7 @@ _contact_mapping = [
 ]
 
 
-def _contact_metadata(el: gws.XmlElement, md: gws.Metadata):
+def _contact_metadata(el: Optional[gws.XmlElement], md: gws.Metadata):
     if not el:
         return
 

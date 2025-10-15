@@ -253,14 +253,25 @@ def update(md: gws.Metadata, *args, **kwargs) -> gws.Metadata:
     return md
 
 
+def normalize(md: gws.Metadata) -> gws.Metadata:
+    """Normalize a Metadata object (e.g. fix dates and language codes)."""
+
+    nor = _new()
+    _update(nor, md)
+    return nor
+
+
 def props(md: gws.Metadata) -> gws.Props:
     """Properties of a Metadata object."""
+
+    dc = dtx.parse(md.dateCreated)
+    du = dtx.parse(md.dateUpdated)
 
     return gws.Props(
         abstract=md.abstract or '',
         attribution=md.attribution or '',
-        dateCreated=dtx.to_iso_date_string(md.dateCreated) if md.dateCreated else '',
-        dateUpdated=dtx.to_iso_date_string(md.dateUpdated) if md.dateUpdated else '',
+        dateCreated=dtx.to_iso_date_string(dc) if dc else '',
+        dateUpdated=dtx.to_iso_date_string(du) if du else '',
         keywords=sorted(md.keywords or []),
         language=md.language or '',
         title=md.title or '',
@@ -285,17 +296,17 @@ def _update(md: gws.Metadata, *args, **kwargs):
                 fn(md, key, val)
             elif val is not None:
                 setattr(md, key, val)
-    
+
     for a in args:
         if not a:
             continue
         if isinstance(a, gws.Data):
             a = gws.u.to_dict(a)
         add(a)
-    
+
     add(kwargs)
     _fix_language(md)
-    
+
     return md
 
 
@@ -309,19 +320,30 @@ def _update_list(md: gws.Metadata, key, val):
     setattr(md, key, val or [])
 
 
+def _update_datetime(md: gws.Metadata, key, val):
+    if val:
+        dt = dtx.parse(val)
+        if dt:
+            setattr(md, key, dt)
+
+
 def _fix_language(md: gws.Metadata):
     lang = md.language or 'en'
-    
+
     md.language3 = gws.lib.intl.locale(lang).language3
     md.languageBib = gws.lib.intl.locale(lang).languageBib
-    
+
     if md.inspireTheme:
         md.inspireThemeNameLocal = inspire.theme_name(md.inspireTheme, md.language) or ''
         md.inspireThemeNameEn = inspire.theme_name(md.inspireTheme, 'en') or ''
 
 
 _UPDATE_FNS = dict(
-    keywords = _update_set,
-    isoTopicCategories = _update_set,
-    metaLinks = _update_list,
+    keywords=_update_set,
+    isoTopicCategories=_update_set,
+    metaLinks=_update_list,
+    dateCreated=_update_datetime,
+    dateUpdated=_update_datetime,
+    temporalBegin=_update_datetime,
+    temporalEnd=_update_datetime,
 )

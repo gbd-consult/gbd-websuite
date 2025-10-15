@@ -81,14 +81,14 @@ def parse_element(root_el: gws.XmlElement) -> Caps:
 
 
 def _project_metadata(root_el) -> gws.Metadata:
-    md = gws.Metadata()
+    md = gws.base.metadata.new()
 
     el = root_el.find('projectMetadata')
     if el:
-        _metadata(el, md)
+        _collect_metadata(el, md)
 
     # @TODO supplementary metadata
-    return md
+    return gws.base.metadata.normalize(md)
 
 
 _meta_mapping = [
@@ -125,7 +125,7 @@ def _add_dict(dst, src, mapping):
             setattr(dst, dkey, src[skey])
 
 
-def _metadata(el: gws.XmlElement, md: gws.Metadata):
+def _collect_metadata(el: gws.XmlElement, md: gws.Metadata):
     # extract metadata from projectMetadata/resourceMetadata
 
     _add_dict(md, el.textdict(), _meta_mapping)
@@ -315,11 +315,11 @@ def _map_layer_metadata(layer_el) -> gws.Metadata:
     # Layer metadata is either Layer->Properties->Metadata (stored in maplayer/resourceMetadata),
     # or Layer->Properties->QGIS Server (stored directly under maplayer/abstract, maplayer/keywordList and so on.
 
-    md = gws.Metadata()
+    md = gws.base.metadata.new()
 
     el = layer_el.find('resourceMetadata')
     if el:
-        _metadata(el, md)
+        _collect_metadata(el, md)
 
     # fill in missing props from direct metadata
 
@@ -345,7 +345,7 @@ def _map_layer_metadata(layer_el) -> gws.Metadata:
                 )
             )
 
-    return md
+    return gws.base.metadata.normalize(md)
 
 
 def _map_layer_datasource(layer_el: gws.XmlElement) -> dict:
@@ -808,7 +808,7 @@ def _parse_msize(s):
     # e.g. 'position': '228.477,27.8455,mm'
     try:
         x, y, u = s.split(',')
-        return float(x), float(y), u
+        return _parse_float(x), _parse_float(y), u
     except Exception:
         return None
 
