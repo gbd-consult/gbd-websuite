@@ -78,7 +78,7 @@ interface ViewProps extends gc.types.ViewProps {
     alkisFsLoading: boolean;
     alkisFsError: string;
 
-    alkisFsExportGroupIndexes: Array<number>;
+    alkisFsExporterUid: string;
     alkisFsExportFeatures: Array<gc.types.IFeature>;
 
     alkisFsFormValues: FormValues;
@@ -112,7 +112,7 @@ const StoreKeys = [
     'alkisFsSetup',
     'alkisFsLoading',
     'alkisFsError',
-    'alkisFsExportGroupIndexes',
+    'alkisFsExporterUid',
     'alkisFsExportFeatures',
     'alkisFsFormValues',
     'alkisFsStrasseListItems',
@@ -133,7 +133,7 @@ class ExportAuxButton extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
 
-        if (cc.setup.exportGroups.length === 0 || this.props.features.length === 0)
+        if (cc.setup.exporters.length === 0 || this.props.features.length === 0)
             return null;
         return <sidebar.AuxButton
             className="alkisExportAuxButton"
@@ -753,13 +753,6 @@ class ExportTab extends gc.View<ViewProps> {
     render() {
         let cc = _master(this);
 
-        let allGroups = cc.setup.exportGroups,
-            selectedGroupIndexes = this.props.alkisFsExportGroupIndexes;
-
-        let changed = (gid, value) => cc.update({
-            alkisFsExportGroupIndexes: selectedGroupIndexes.filter(g => g !== gid).concat(value ? [gid] : [])
-        });
-
         return <sidebar.Tab>
             <sidebar.TabHeader>
                 <gc.ui.Title content={cc.__('alkisExportTitle')}/>
@@ -767,19 +760,13 @@ class ExportTab extends gc.View<ViewProps> {
             <sidebar.TabBody>
                 <div className="alkisFsDetailsTabContent">
                     <Form>
-                        {allGroups.length > 1 && <Row>
+                        {cc.setup.exporters.length > 1 && <Row>
                             <Cell flex>
-                                <gc.ui.Group vertical>
-                                    {allGroups.map(g => <gc.ui.Toggle
-                                            key={g.index}
-                                            type="checkbox"
-                                            inline
-                                            label={g.title}
-                                            value={selectedGroupIndexes.includes(g.index)}
-                                            whenChanged={value => changed(g.index, value)}
-                                        />
-                                    )}
-                                </gc.ui.Group>
+                                <gc.ui.Select
+                                    items={cc.setup.exporters.map(e => ({value: e[0], text: e[1]}))}
+                                    value={this.props.alkisFsExporterUid}
+                                    whenChanged={v => cc.update({alkisFsExporterUid: v})}
+                                />
                             </Cell>
                         </Row>}
                         <Row>
@@ -787,7 +774,7 @@ class ExportTab extends gc.View<ViewProps> {
                             <Cell width={120}>
                                 <gc.ui.Button
                                     primary
-                                    disabled={this.props.alkisFsExportGroupIndexes.length === 0}
+                                    disabled={gc.lib.isEmpty(this.props.alkisFsExporterUid)}
                                     whenTouched={() => cc.submitExport()}
                                     label={cc.__('alkisExportButton')}
                                 />
@@ -915,7 +902,7 @@ class Controller extends gc.Controller {
             alkisFsLoading: false,
 
             alkisFsFormValues: {},
-            alkisFsExportGroupIndexes: (this.setup.exportGroups || []).map(g => g.index),
+            alkisFsExporterUid: this.setup.exporters.length > 0 ? this.setup.exporters[0][0] : '',
 
             alkisFsGemarkungListItems: this.gemarkungListItems(),
             alkisFsStrasseListItems: this.strasseListItems(this.toponyms.strassen),
@@ -1436,7 +1423,7 @@ class Controller extends gc.Controller {
 
         let q = {
             findRequest: this.fsDetailsRequest(fs),
-            groupIndexes: this.getValue('alkisFsExportGroupIndexes'),
+            exporterUid: this.getValue('alkisFsExporterUid'),
         };
 
         let res = await this.app.server.call('alkisExportFlurstueck', q, {binaryResponse: true});

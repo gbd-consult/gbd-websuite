@@ -495,8 +495,8 @@ class FlurstueckQueryOptions(gws.Data):
     buchungsblattSearchOptions: gws.TextSearchOptions
 
     limit: int
+    pageSize: int
     offset: int
-    hardLimit: int
     sort: Optional[list[gws.SortOptions]]
 
     displayThemes: list[DisplayTheme]
@@ -547,8 +547,8 @@ class AdresseQueryOptions(gws.Data):
     strasseSearchOptions: gws.TextSearchOptions
 
     limit: int
+    pageSize: int
     offset: int
-    hardLimit: int
     sort: Optional[list[gws.SortOptions]]
 
     withHistorySearch: bool

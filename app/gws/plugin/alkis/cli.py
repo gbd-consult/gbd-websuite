@@ -45,8 +45,8 @@ class DumpParams(gws.CliParams):
 class ExportParams(gws.CliParams):
     projectUid: Optional[str]
     """Project uid."""
-    format: str = 'csv'
-    """Export format (csv, geojson)."""
+    exporterUid: Optional[str]
+    """Export uid."""
     path: str
     """Path to save the export."""
 
@@ -99,17 +99,14 @@ class Object(gws.Node):
 
         self._prepare(p.projectUid)
 
-        if not self.act.exp:
-            gws.log.error(f'ALKIS export is not configured')
+        if self.ixStatus.missing:
+            gws.log.error(f'ALKIS index missing')
+            exit(1)
+
+        exp = self.act.get_exporter(p.exporterUid)
+        if not exp:
+            gws.log.error(f'ALKIS exporter not found')
             exit(3)
-
-        if not self.ixStatus.complete:
-            gws.log.error(f'ALKIS index incomplete')
-            exit(4)
-
-        if p.format not in {'csv', 'geojson'}:
-            gws.log.error(f'invalid format {p.format!r}')
-            exit(5)
 
         qo = dt.FlurstueckQueryOptions(
             withEigentuemer=True,
@@ -125,7 +122,7 @@ class Object(gws.Node):
                 'buchung',
                 'eigentuemer',
             ],
-            limit=1000,
+            pageSize=1000,
         )
 
         sys_user = self.act.root.app.authMgr.systemUser
@@ -133,16 +130,14 @@ class Object(gws.Node):
         fs = self.act.ix.iter_all(qo)
 
         with ProgressIndicator('export', total) as progress:
-            path, _ = self.act.exp.run(
+            exp.run(
                 exporter.Args(
-                    fs=fs,
-                    format=p.format,
-                    groups=self.act.exp.groups,
+                    fsList=fs,
                     user=sys_user,
                     progress=progress,
+                    path=p.path
                 )
             )
-        gws.lib.osx.rename(path, p.path)
 
     @gws.ext.command.cli('alkisKeys')
     def do_keys(self, p: gws.CliParams):

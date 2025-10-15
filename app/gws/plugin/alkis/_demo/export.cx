@@ -12,13 +12,14 @@ wobei die Schlüssel den Pfad zu den ursprünglichen Werten repräsentieren.
 
 Eine Liste von möglichen Schlüsseln kann mit dem Befehl `gws alkis keys` im Terminal angezeigt werden.
 
-In der Export-Konfiguration können mehrere Gruppen definiert werden, die jeweils eine Liste von Feldern enthalten.
-In der Web-Oberfläche kann der Nutzer die Gruppen auswählen, die exportiert werden sollen.
+In der Export-Konfiguration können mehrere `exporter` Konfigurationen definiert werden, die jeweils eine Liste von Feldern enthalten.
+In der Web-Oberfläche kann der Nutzer die Konfiguration auswählen, die angwendet werden soll.
 
 Die Felder sind herkömmliche Modellfelder, die auf die "flachen" Schlüssel verweisen.
 Mit "value" Objekten vom Typ "format" bzw. "expression" können mehrere Schlüssel-Werte einem Feld zusammengefasst werden.
+Die Felder können auch als "isHidden" markiert werden, so dass sie im Export nicht auftauchen, aber für die Definition von "value" Objekten verwendet werden können.
 
-Als Export-Format sind aktuell "geojson" und "csv" verfügbar.
+Als Export-Typ sind aktuell "geojson" und "csv" verfügbar.
 """
 
 actions+ {
@@ -32,31 +33,66 @@ actions+ {
         useExport true
     }
 
-    export {
-        format "geojson"
-        groups+ {
-            title "Basisinformationen"
+    exporters+ {
+        type "geojson"
+        title "Basisinformationen (JSON)"
+        model {
             fields [
                 { type "text"  name "fs_flurstueckskennzeichen" title "Flurstückskennzeichen" }
                 { type "text"  name "fs_recs_gemeinde_text" title "Gemeinde" }
                 { type "text"  name "fs_recs_gemarkung_text" title "Gemarkung" }
+                { type 'text' name 'fs_recs_flurnummer' title 'Flur' }
+                { type 'text' name 'fs_recs_zaehler' title 'Zähler' } 
+                { type 'text' name 'fs_recs_nenner' title 'Nenner' } 
+                { type 'float' name 'fs_recs_amtlicheFlaeche' title 'Fläche' }
             ]
         }
-        groups+ {
-            title "Adresse"
+    }
+    
+    exporters+ {
+        type "csv"
+        title "Basisinformationen (CSV)"
+        model {
             fields [
+                { type "text"  name "fs_flurstueckskennzeichen" title "Flurstückskennzeichen" }
+                { type "text"  name "fs_recs_gemeinde_text" title "Gemeinde" }
+                { type "text"  name "fs_recs_gemarkung_text" title "Gemarkung" }
+                { type 'text' name 'fs_recs_flurnummer' title 'Flur' }
+                { type 'text' name 'fs_recs_zaehler' title 'Zähler' } 
+                { type 'text' name 'fs_recs_nenner' title 'Nenner' } 
+                { type 'float' name 'fs_recs_amtlicheFlaeche' title 'Fläche' }
+            ]
+        }
+    }
+    
+    exporters+ {
+        type "geojson"
+        title "Adressen (JSON)"
+        model {
+            fields [
+                { type "text"  name "fs_flurstueckskennzeichen" title "Flurstückskennzeichen" }
+                { type "text"  name "fs_recs_gemeinde_text" title "Gemeinde" }
+                { type "text"  name "fs_recs_gemarkung_text" title "Gemarkung" }
+                
+                @# Die Adresse wird aus Straße und Hausnummer zusammengesetzt.
                 { type "text" name "adresse" title "Adresse" 
                     values+ {
                         type "format"
                         format "{{fs_lageList_recs_strasse}} {{fs_lageList_recs_hausnummer}}"
                     }
                 }
+                { type "text" name "fs_lageList_recs_strasse" isHidden true }
+                { type "text" name "fs_lageList_recs_hausnummer" isHidden true }
+                
+                @# Ein boolsches Feld, das angibt, ob das Flurstück Wohnzwecken dient.
                 { type "bool" name "wohnen" title "Wohnen" 
                     values+ {
                         type "expression"
                         expression "feature.get('fs_nutzungList_name_text').startswith('Wohn')"
                     }
                 }
+                { type "text" name "fs_nutzungList_name_text" isHidden true }
+
             ]
         }
     }

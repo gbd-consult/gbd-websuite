@@ -1,6 +1,6 @@
 """Backend for the Flurstückssuche (cadaster parlcels search) form."""
 
-from typing import Optional
+from typing import Optional, cast
 
 import os
 import re
@@ -146,20 +146,15 @@ class Config(gws.ConfigWithAccess):
     storage: Optional[gws.base.storage.Config]
     """Storage configuration."""
 
-    export: Optional[exporter.Config]
-    """Export configuration."""
+    exporters: Optional[list[exporter.Config]]
+    """Export configurations."""
 
 
 ##
 
 
-class ExportGroupProps(gws.Props):
-    index: int
-    title: str
-
-
 class Props(gws.base.action.Props):
-    exportGroups: list[ExportGroupProps]
+    exporters: list[list[str]]
     limit: int
     printer: Optional[gws.base.printer.Props]
     ui: Ui
@@ -280,7 +275,8 @@ class PrintFlurstueckRequest(gws.Request):
 
 class ExportFlurstueckRequest(gws.Request):
     findRequest: FindFlurstueckRequest
-    groupIndexes: list[int]
+    exporterUid: str
+    eigentuemerControlInput: Optional[str]
 
 
 class ExportFlurstueckResponse(gws.Response):
@@ -370,7 +366,7 @@ class Object(gws.base.action.Object):
     templates: list[gws.Template]
     printers: list[gws.Printer]
 
-    exp: Optional[exporter.Object]
+    exporters: list[exporter.Object]
 
     strasseSearchOptions: gws.TextSearchOptions
     nameSearchOptions: gws.TextSearchOptions
@@ -425,13 +421,12 @@ class Object(gws.base.action.Object):
 
         self.storage = self.create_child_if_configured(gws.base.storage.Object, self.cfg('storage'), categoryName='Alkis')
 
-        p = self.cfg('export')
+        self.exporters = []
+        p = self.cfg('exporters')
         if p:
-            self.exp = self.create_child(exporter.Object, p)
+            self.exporters = self.create_children(exporter.Object, p)
         elif self.ui.useExport:
-            self.exp = self.create_child(exporter.Object)
-        else:
-            self.exp = None
+            self.exporters.append(self.create_child(exporter.Object))
 
     def activate(self):
         def _load():
@@ -443,21 +438,27 @@ class Object(gws.base.action.Object):
         if not self.ixStatus.basic:
             return None
 
-        export_groups = []
-        if self.ui.useExport:
-            export_groups = [ExportGroupProps(title=g.title, index=g.index) for g in self._export_groups(user)]
-
-        ps = gws.u.merge(
-            super().props(user),
-            exportGroups=export_groups,
-            limit=self.limit,
-            printer=gws.u.first(p for p in self.printers if user.can_use(p)),
-            ui=self.ui,
-            storage=self.storage,
-            withBuchung=(self.ixStatus.buchung and user.can_read(self.buchung)),
-            withEigentuemer=(self.ixStatus.eigentuemer and user.can_read(self.eigentuemer)),
-            withEigentuemerControl=(self.ixStatus.eigentuemer and user.can_read(self.eigentuemer) and self.eigentuemer.controlMode),
+        ps: Props = cast(
+            Props,
+            gws.u.merge(
+                super().props(user),
+                limit=self.limit,
+                printer=gws.u.first(p for p in self.printers if user.can_use(p)),
+                ui=self.ui,
+                storage=self.storage,
+                withBuchung=(self.ixStatus.buchung and user.can_read(self.buchung)),
+                withEigentuemer=(self.ixStatus.eigentuemer and user.can_read(self.eigentuemer)),
+                withEigentuemerControl=(self.ixStatus.eigentuemer and user.can_read(self.eigentuemer) and self.eigentuemer.controlMode),
+            ),
         )
+
+        ps.exporters = []
+        for exp in self.exporters:
+            if exp.withEigentuemer and not ps.withEigentuemer:
+                continue
+            if exp.withBuchung and not ps.withBuchung:
+                continue
+            ps.exporters.append([exp.uid, exp.title])
 
         ps.strasseSearchOptions = self.strasseSearchOptions
         if ps.withBuchung:
@@ -569,14 +570,23 @@ class Object(gws.base.action.Object):
             total=len(fs_list),
         )
 
+    def get_exporter(self, uid: Optional[str]) -> Optional[exporter.Object]:
+        if not uid:
+            return self.exporters[0] if self.exporters else None
+        for e in self.exporters:
+            if e.uid == uid:
+                return e
+
     @gws.ext.command.api('alkisExportFlurstueck')
     def export_flurstueck(self, req: gws.WebRequester, p: ExportFlurstueckRequest) -> ExportFlurstueckResponse:
-        if not self.exp:
+        exp = self.get_exporter(p.exporterUid)
+        if not exp:
             raise gws.NotFoundError()
 
-        groups = [g for g in self._export_groups(req.user) if g.index in p.groupIndexes]
-        if not groups:
-            raise gws.NotFoundError()
+        if exp.withEigentuemer:
+            self._check_eigentuemer_access(req, p.eigentuemerControlInput or '')
+        if exp.withBuchung:
+            self._check_buchung_access(req, p.eigentuemerControlInput or '')
 
         find_request = p.findRequest
         find_request.projectUid = p.projectUid
@@ -586,16 +596,15 @@ class Object(gws.base.action.Object):
             raise gws.NotFoundError()
 
         args = exporter.Args(
-            format=self.exp.format,
             fsList=fs_list,
-            groups=groups,
             user=req.user,
+            path = gws.u.ephemeral_path('alkis_export'),
         )
-        path, mime = self.exp.run(args)
+        exp.run(args)
 
         return ExportFlurstueckResponse(
-            content=gws.u.read_file_b(path),
-            mime=mime,
+            content=gws.u.read_file_b(args.path),
+            mime=exp.mimeType,
         )
 
     @gws.ext.command.api('alkisPrintFlurstueck')
@@ -666,7 +675,7 @@ class Object(gws.base.action.Object):
         if query.options.withEigentuemer:
             self._log_eigentuemer_access(
                 req,
-                p.eigentuemerControlInput,
+                p.eigentuemerControlInput or '',
                 is_ok=True,
                 total=len(fs_list),
                 fs_uids=[fs.uid for fs in fs_list],
@@ -745,7 +754,7 @@ class Object(gws.base.action.Object):
             strasseSearchOptions=self.strasseSearchOptions,
             nameSearchOptions=self.nameSearchOptions,
             buchungsblattSearchOptions=self.buchungsblattSearchOptions,
-            hardLimit=self.limit,
+            limit=self.limit,
             withEigentuemer=False,
             withBuchung=False,
             withHistorySearch=bool(p.wantHistorySearch),
@@ -759,12 +768,12 @@ class Object(gws.base.action.Object):
             or any(getattr(query, f) is not None for f in dt.EigentuemerAccessRequired)
         )
         if want_eigentuemer:
-            self._check_eigentuemer_access(req, p.eigentuemerControlInput)
+            self._check_eigentuemer_access(req, p.eigentuemerControlInput or '')
             options.withEigentuemer = True
 
         want_buchung = dt.DisplayTheme.buchung in options.displayThemes or any(getattr(query, f) is not None for f in dt.BuchungAccessRequired)
         if want_buchung:
-            self._check_buchung_access(req, p.eigentuemerControlInput)
+            self._check_buchung_access(req, p.eigentuemerControlInput or '')
             options.withBuchung = True
 
         # "eigentuemer" implies "buchung"
@@ -818,21 +827,6 @@ class Object(gws.base.action.Object):
                 setattr(query, field, val)
 
     ##
-
-    def _export_groups(self, user):
-        if not self.exp:
-            return []
-
-        groups = []
-
-        for g in self.exp.groups:
-            if g.withBuchung and not user.can_read(self.buchung):
-                continue
-            if g.withEigentuemer and not user.can_read(self.eigentuemer):
-                continue
-            groups.append(g)
-
-        return groups
 
     def _check_eigentuemer_access(self, req: gws.WebRequester, control_input: str):
         if not req.user.can_read(self.eigentuemer):

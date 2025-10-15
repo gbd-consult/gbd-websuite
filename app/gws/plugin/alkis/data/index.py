@@ -344,13 +344,13 @@ class Object(gws.Node):
             for r in conn.execute(sel):
                 lage_uids.append(r[0])
 
-            if qo.hardLimit and len(lage_uids) > qo.hardLimit:
+            if qo.limit and len(lage_uids) > qo.limit:
                 raise gws.ResponseTooLargeError(len(lage_uids))
 
             if qo.offset:
                 lage_uids = lage_uids[qo.offset :]
-            if qo.limit:
-                lage_uids = lage_uids[: qo.limit]
+            if qo.pageSize:
+                lage_uids = lage_uids[: qo.pageSize]
 
             sel = indexlage.select().where(indexlage.c.lageuid.in_(lage_uids))
 
@@ -374,7 +374,7 @@ class Object(gws.Node):
         return gws.u.compact(adresse_map.get(uid) for uid in lage_uids)
 
     def find_flurstueck(self, q: dt.FlurstueckQuery) -> list[dt.Flurstueck]:
-        qo = q.options or gws.Data()
+        qo = q.options or dt.FlurstueckQueryOptions()
         sel = self._make_flurstueck_select(q, qo)
 
         fs_uids = []
@@ -385,13 +385,13 @@ class Object(gws.Node):
                 if uid not in fs_uids:
                     fs_uids.append(uid)
 
-            if qo.hardLimit and len(fs_uids) > qo.hardLimit:
+            if qo.limit and len(fs_uids) > qo.limit:
                 raise gws.ResponseTooLargeError(len(fs_uids))
 
             if qo.offset:
                 fs_uids = fs_uids[qo.offset :]
-            if qo.limit:
-                fs_uids = fs_uids[: qo.limit]
+            if qo.pageSize:
+                fs_uids = fs_uids[: qo.pageSize]
 
             fs_list = self._load_flurstueck(conn, fs_uids, qo)
 
@@ -419,7 +419,7 @@ class Object(gws.Node):
 
         while True:
             with self.db.connect() as conn:
-                sel2 = sel.offset(offset).limit(qo.limit)
+                sel2 = sel.offset(offset).limit(qo.pageSize)
                 fs_uids = [r[0] for r in conn.execute(sel2)]
                 if not fs_uids:
                     break
@@ -427,7 +427,7 @@ class Object(gws.Node):
 
             yield from fs_list
 
-            offset += qo.limit
+            offset += qo.pageSize
 
     HAUSNUMMER_NOT_NULL_VALUE = '*'
 
