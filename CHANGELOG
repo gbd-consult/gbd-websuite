@@ -1,3 +1,7 @@
+## Version 8.1.37
+
+- Support for QGIS raster feature responses
+
 ## Version 8.1.36
 
 - WFS bug fixes
