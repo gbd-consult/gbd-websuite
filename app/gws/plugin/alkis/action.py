@@ -454,6 +454,8 @@ class Object(gws.base.action.Object):
 
         ps.exporters = []
         for exp in self.exporters:
+            if not user.can_use(exp):
+                continue
             if exp.withEigentuemer and not ps.withEigentuemer:
                 continue
             if exp.withBuchung and not ps.withBuchung:
@@ -570,16 +572,14 @@ class Object(gws.base.action.Object):
             total=len(fs_list),
         )
 
-    def get_exporter(self, uid: Optional[str]) -> Optional[exporter.Object]:
-        if not uid:
-            return self.exporters[0] if self.exporters else None
-        for e in self.exporters:
-            if e.uid == uid:
-                return e
+    def get_exporter(self, uid: Optional[str], user: gws.User) -> Optional[exporter.Object]:
+        for exp in self.exporters:
+            if user.can_use(exp) and (not uid or exp.uid == uid):
+                return exp
 
     @gws.ext.command.api('alkisExportFlurstueck')
     def export_flurstueck(self, req: gws.WebRequester, p: ExportFlurstueckRequest) -> ExportFlurstueckResponse:
-        exp = self.get_exporter(p.exporterUid)
+        exp = self.get_exporter(p.exporterUid, req.user)
         if not exp:
             raise gws.NotFoundError()
 

@@ -103,7 +103,8 @@ class Object(gws.Node):
             gws.log.error(f'ALKIS index missing')
             exit(1)
 
-        exp = self.act.get_exporter(p.exporterUid)
+        sys_user = self.act.root.app.authMgr.systemUser
+        exp = self.act.get_exporter(p.exporterUid, sys_user)
         if not exp:
             gws.log.error(f'ALKIS exporter not found')
             exit(3)
@@ -125,7 +126,6 @@ class Object(gws.Node):
             pageSize=1000,
         )
 
-        sys_user = self.act.root.app.authMgr.systemUser
         total = self.act.ix.count_all(qo)
         fs = self.act.ix.iter_all(qo)
 
