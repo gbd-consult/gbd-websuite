@@ -23,8 +23,7 @@ def root():
             type "xml"
             namespaces+ {
                 xmlns "demo"
-                uri "https://gws-dev.gbd-consult.de/_/owsXml/namespace/demo"
-                schemaLocation "https://gws-dev.gbd-consult.de/_/owsXml/namespace/demo"
+                uri "http://localhost/_/owsXml/namespace/demo"
             }
         }
 
@@ -57,7 +56,7 @@ def test_valid_GetCapabilities(root: gws.Root):
             'serviceUid': 'CSW_1',
         },
     )
-    gws.u.write_file_b('/tmp/csw_GetCapabilities.xml', s.get_data())
+    gws.u.write_file_b(f'{gws.c.VAR_DIR}/csw_GetCapabilities.xml', s.get_data())
     assert gws.lib.xmlx.validator.validate(s.get_data())
 
 
@@ -70,5 +69,5 @@ def test_valid_GetRecords(root: gws.Root):
             'serviceUid': 'CSW_1',
         },
     )
-    gws.u.write_file_b('/tmp/csw_GetRecords.xml', s.get_data())
+    gws.u.write_file_b(f'{gws.c.VAR_DIR}/csw_GetRecords.xml', s.get_data())
     assert gws.lib.xmlx.validator.validate(s.get_data())

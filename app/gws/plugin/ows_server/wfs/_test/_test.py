@@ -26,8 +26,7 @@ def root():
             type "xml"
             namespaces+ {
                 xmlns "demo"
-                uri "https://gws-dev.gbd-consult.de/_/owsXml/namespace/demo"
-                schemaLocation "https://gws-dev.gbd-consult.de/_/owsXml/namespace/demo"
+                uri "http://localhost/_/owsXml/namespace/demo"
             }
         }
 
@@ -61,7 +60,7 @@ def test_valid_GetCapabilities(root: gws.Root):
             'version': '2.0.2',
         },
     )
-    gws.u.write_file_b('/tmp/wfs_GetCapabilities.xml', s.get_data())
+    gws.u.write_file_b(f'{gws.c.VAR_DIR}/wfs_GetCapabilities.xml', s.get_data())
     assert gws.lib.xmlx.validator.validate(s.get_data())
 
 
@@ -76,7 +75,7 @@ def test_valid_GetCapabilities_inspire(root: gws.Root):
             'version': '2.0.2',
         },
     )
-    gws.u.write_file_b('/tmp/wfs_GetCapabilities_inspire.xml', s.get_data())
+    gws.u.write_file_b(f'{gws.c.VAR_DIR}/wfs_GetCapabilities_inspire.xml', s.get_data())
     assert gws.lib.xmlx.validator.validate(s.get_data())
 
 
@@ -91,7 +90,7 @@ def test_valid_GetFeature(root: gws.Root):
             'version': '2.0.2',
         },
     )
-    gws.u.write_file_b('/tmp/wfs_GetFeature.xml', s.get_data())
+    gws.u.write_file_b(f'{gws.c.VAR_DIR}/wfs_GetFeature.xml', s.get_data())
     assert gws.lib.xmlx.validator.validate(s.get_data())
 
 def test_valid_DescribeFeatureType(root: gws.Root):
@@ -105,5 +104,5 @@ def test_valid_DescribeFeatureType(root: gws.Root):
             'version': '2.0.2',
         },
     )
-    gws.u.write_file_b('/tmp/wfs_DescribeFeatureType.xml', s.get_data())
+    gws.u.write_file_b(f'{gws.c.VAR_DIR}/wfs_DescribeFeatureType.xml', s.get_data())
     assert gws.lib.xmlx.validator.validate(s.get_data())

@@ -127,7 +127,6 @@ def configure():
     ensure_dir(f'{base}/data')
     ensure_dir(f'{base}/gws-var')
     ensure_dir(f'{base}/pytest_cache')
-    ensure_dir(f'{base}/tmp', clear=True)
 
     manifest_text = '{}'
     if OPTIONS['arg_manifest']:
@@ -196,14 +195,13 @@ def make_docker_compose_yml():
             f'{base}:{base}',
             f'{base}/data:/data',
             f'{base}/gws-var:/gws-var',
-            f'{base}/tmp:/tmp',
         ]
         if OPTIONS['arg_local']:
             std_vols.append(f'{LOCAL_APP_DIR}:/gws-app')
 
         srv.setdefault('volumes', []).extend(std_vols)
 
-        # srv.setdefault('tmpfs', []).append('/tmp')
+        srv.setdefault('tmpfs', []).append('/tmp')
         srv.setdefault('stop_grace_period', '1s')
 
         srv['environment'] = make_env()
