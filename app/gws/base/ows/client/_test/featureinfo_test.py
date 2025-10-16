@@ -187,6 +187,51 @@ def test_parse_getfeatureinforesponse():
     assert avenue.attributes['type'] == 'arterial'
 
 
+def test_parse_getfeatureinforesponse_raster():
+    """Test GeoServer GetFeatureInfoResponse (raster) format parsing."""
+    xml = """
+    <GetFeatureInfoResponse>
+        <Layer name="ne:populated_places">
+            <Attribute name="name" value="Boston"/>
+            <Attribute name="pop_max" value="4628910"/>
+            <Attribute name="adm0name" value="United States of America"/>
+            <Attribute name="geometry" value="POINT(-71.0275 42.3584)"/>
+        </Layer>
+        <Layer name="ne:roads">
+            <Attribute name="name" value="Interstate 95"/>
+            <Attribute name="type" value="highway"/>
+            <Attribute name="lanes" value="6"/>
+            <Attribute name="geometry" value="LINESTRING(-71.0 42.3, -71.1 42.4)"/>
+            <Feature id="roads.501">
+                <Attribute name="name" value="Commonwealth Ave"/>
+                <Attribute name="type" value="arterial"/>
+                <Attribute name="lanes" value="4"/>
+            </Feature>
+        </Layer>
+    </GetFeatureInfoResponse>
+    """
+
+    rs = featureinfo.parse(xml, default_crs=gws.lib.crs.WGS84)
+
+    assert len(rs) == 3
+
+    boston = rs[0]
+    assert boston.meta['layerName'] == 'ne:populated_places'
+    assert boston.attributes['name'] == 'Boston'
+    assert boston.attributes['pop_max'] == '4628910'
+    assert boston.shape is not None
+
+    avenue = rs[1]
+    assert avenue.attributes['name'] == 'Commonwealth Ave'
+    assert avenue.attributes['type'] == 'arterial'
+
+    highway = rs[2]
+    assert highway.meta['layerName'] == 'ne:roads'
+    assert highway.attributes['name'] == 'Interstate 95'
+    assert highway.attributes['lanes'] == '6'
+    assert highway.shape is not None
+
+
 def test_parse_featureinforesponse():
     """Test ArcGIS FeatureInfoResponse format parsing."""
     xml = """

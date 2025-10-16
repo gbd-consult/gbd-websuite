@@ -107,30 +107,49 @@ def _parse_getfeatureinforesponse(xml_el: gws.XmlElement, default_crs, always_xy
     #          <Feature id="...">
     #              <Attribute name="..." value="..."/>
     #              <Attribute name="geometry" value="<wkt>"/>
+    #
+    # For qgis raster layers, "Attribute" is directly under "Layer":
+    #
+    # <GetFeatureInfoResponse>
+    #      <Layer name="....">
+    #              <Attribute name="..." value="..."/>
+
+    def attr(rec, el):
+        key = el.get('name').lower()
+        val = el.get('value', '').strip()        
+        if key == 'geometry':
+            rec.shape = gws.base.shape.from_wkt(val, default_crs)
+        elif len(val) > 0:
+            rec.attributes[key] = val
 
     recs = []
 
     for layer_el in xml_el:
         layer_name = layer_el.get('name')
 
-        for feature_el in layer_el:
-            rec = gws.FeatureRecord(
-                attributes={},
-                uid=_get_uid(feature_el),
-                meta={'layerName': layer_name},
-            )
+        raster_rec = gws.FeatureRecord(
+            attributes={},
+            uid='',
+            meta={'layerName': layer_name},
+        )
 
-            for el in feature_el:
-                if el.lcName != 'attribute':
-                    continue
-                key = el.get('name').lower()
-                val = el.get('value')
-                if key == 'geometry':
-                    rec.shape = gws.base.shape.from_wkt(val, default_crs)
-                elif val.strip():
-                    rec.attributes[key] = val.strip()
+        for sub_el in layer_el:
+            if sub_el.lcName == 'feature':
+                rec = gws.FeatureRecord(
+                    attributes={},
+                    uid=_get_uid(sub_el),
+                    meta={'layerName': layer_name},
+                )
+                for el in sub_el:
+                    if el.lcName == 'attribute':
+                        attr(rec, el)
+                recs.append(rec)
+            
+            if sub_el.lcName == 'attribute':
+                attr(raster_rec, sub_el)
 
-            recs.append(rec)
+        if raster_rec.attributes:
+            recs.append(raster_rec)
 
     return recs
 
