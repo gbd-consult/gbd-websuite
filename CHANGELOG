@@ -1,3 +1,11 @@
+## Version 8.2.13
+
+- better configuration for ALKIS exports, multiple exports possible
+- implemented search for GeoJSON layers
+- support for QGIS raster GetFeature responses
+- added `isHidden` flag for model fields
+- option `allowedServiceUids` for OWS services
+
 ## Version 8.2.12
 
 - bugfixes and documentation
