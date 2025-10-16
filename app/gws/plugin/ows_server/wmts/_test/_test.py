@@ -44,7 +44,7 @@ def test_valid_GetCapabilities(root: gws.Root):
         'serviceUid': "WMTS_1",
         'projectUid': "PROJECT_1",
     })
-    gws.u.write_file_b('/tmp/wmts_GetCapabilities.xml', s.get_data())
+    gws.u.write_file_b(f'{gws.c.VAR_DIR}/wmts_GetCapabilities.xml', s.get_data())
     assert gws.lib.xmlx.validator.validate(s.get_data())
 
 def xxxxtest_valid_GetCapabilities_inspire(root: gws.Root):
@@ -53,5 +53,5 @@ def xxxxtest_valid_GetCapabilities_inspire(root: gws.Root):
         'serviceUid': "WMTS_1_INSPIRE",
         'projectUid': "PROJECT_1",
     })
-    gws.u.write_file_b('/tmp/wmts_GetCapabilities_inspire.xml', s.get_data())
+    gws.u.write_file_b(f'{gws.c.VAR_DIR}/wmts_GetCapabilities_inspire.xml', s.get_data())
     assert gws.lib.xmlx.validator.validate(s.get_data())
