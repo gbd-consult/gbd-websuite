@@ -530,8 +530,8 @@ def rel_path(path: _Path, base: _Path) -> str:
 
 
 def _to_str(p: _Path) -> str:
-    return p if isinstance(p, str) else p.decode('utf8')
+    return p if isinstance(p, str) else bytes(p).decode('utf8')
 
 
 def _to_bytes(p: _Path) -> bytes:
-    return p if isinstance(p, bytes) else p.encode('utf8')
+    return p if isinstance(p, bytes) else str(p).encode('utf8')

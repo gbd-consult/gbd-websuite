@@ -273,7 +273,7 @@ def inspire_extended_capabilities(ta: server.TemplateArgs):
             ('inspire_common:MediaType', 'application/xml'),
         ),
         ('inspire_common:ResourceType', md.inspireResourceType),
-        ('inspire_common:TemporalReference/inspire_common:DateOfPublication', md.dateCreated),
+        ('inspire_common:TemporalReference/inspire_common:DateOfPublication', iso_date(md.dateCreated)),
         (
             'inspire_common:Conformity',
             (
@@ -298,7 +298,7 @@ def inspire_extended_capabilities(ta: server.TemplateArgs):
             ('inspire_common:OrganisationName', md.contactOrganization),
             ('inspire_common:EmailAddress', md.contactEmail),
         ),
-        ('inspire_common:MetadataDate', md.dateCreated),
+        ('inspire_common:MetadataDate', iso_date(md.dateCreated)),
         ('inspire_common:SpatialDataServiceType', md.inspireSpatialDataServiceType),
         ('inspire_common:MandatoryKeyword/inspire_common:KeywordValue', md.inspireMandatoryKeyword),
         (
