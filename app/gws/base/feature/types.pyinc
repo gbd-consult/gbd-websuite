@@ -41,20 +41,32 @@ class Feature:
     createWithFeatures: list['Feature']
     insertedPrimaryKey: Optional[int | str]
 
-    def get(self, name: str, default=None) -> Any: ...
+    def get(self, name: str, default=None) -> Any:
+        """Get attribute value."""
 
-    def has(self, name: str) -> bool: ...
+    def has(self, name: str) -> bool:
+        """Check if attribute exists."""
 
-    def set(self, name: str, value: Any) -> 'Feature': ...
+    def set(self, name: str, value: Any) -> 'Feature':
+        """Set attribute value."""
 
-    def raw(self, name: str) -> Any: ...
+    def raw(self, name: str) -> Any:
+        """Get raw attribute value from the record."""
 
-    def render_views(self, templates: list['Template'], **kwargs) -> 'Feature': ...
+    def render_views(self, templates: list['Template'], **kwargs) -> 'Feature':
+        """Render feature views using provided templates, populate views`."""
 
-    def shape(self) -> Optional['Shape']: ...
+    def shape(self) -> Optional['Shape']:
+        """Get feature shape."""
 
-    def to_svg(self, view: 'MapView', label: Optional[str] = None, style: Optional['Style'] = None) -> list[XmlElement]: ...
+    def to_svg(self, view: 'MapView', label: Optional[str] = None, style: Optional['Style'] = None) -> list[XmlElement]:
+        """Render feature shape to SVG fragments for the given map view."""
 
-    def transform_to(self, crs: 'Crs') -> 'Feature': ...
+    def to_geojson(self, keep_crs=False) -> dict:
+        """Convert feature to GeoJSON dict."""
 
-    def uid(self) -> FeatureUid: ...
+    def transform_to(self, crs: 'Crs') -> 'Feature':
+        """Transform feature shape to the given CRS."""
+
+    def uid(self) -> FeatureUid:
+        """Get feature unique id."""
