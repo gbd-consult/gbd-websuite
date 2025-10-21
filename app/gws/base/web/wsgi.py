@@ -87,6 +87,7 @@ class Requester(gws.WebRequester):
         self._parsed_params_lc = {}
         self._parsed_struct = {}
         self._parsed_command = ''
+        self._parsed_path = ''
         self._parsed = False
         self._uid = gws.u.mstime()
 
@@ -107,6 +108,10 @@ class Requester(gws.WebRequester):
     def params(self):
         self._parse()
         return self._parsed_params
+
+    def path(self):
+        self._parse()
+        return self._parsed_path
 
     def struct(self):
         self._parse()
@@ -251,6 +256,7 @@ class Requester(gws.WebRequester):
             path_parts = path.split('/')
             cmd = path_parts[2]
             path_parts = path_parts[3:]
+            self._parsed_path = '/'.join(path_parts)
         else:
             raise error.NotFound(f'invalid request path: {path!r}')
 

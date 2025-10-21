@@ -43,6 +43,9 @@ class WebRequester:
     def params(self) -> dict:
         """GET parameters."""
 
+    def path(self) -> str:
+        """Request path, after the command is removed."""
+
     def struct(self) -> dict:
         """Structured JSON payload."""
 
