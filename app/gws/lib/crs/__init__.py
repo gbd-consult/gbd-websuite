@@ -296,7 +296,7 @@ def _get_new_crs(srid):
     if not au:
         gws.log.error(f'CRS: unsupported srid {srid!r}')
         return None
-    
+
     axis, uom = au
     if uom not in (gws.Uom.m, gws.Uom.deg):
         gws.log.error(f'CRS: unsupported unit {uom!r} for {srid!r}')
@@ -331,21 +331,64 @@ def _pyproj_transformer(srid_from, srid_to) -> pyproj.transformer.Transformer:
     return _transformer_cache[key]
 
 
-def _transform_extent(ext, srid_from, srid_to):
+def _transform_extent(ext, srid_from, srid_to, constrain=True):
     tr = _pyproj_transformer(srid_from, srid_to)
 
-    e = tr.transform_bounds(
-        left=min(ext[0], ext[2]),
-        bottom=min(ext[1], ext[3]),
-        right=max(ext[0], ext[2]),
-        top=max(ext[1], ext[3]),
+    nor_ext = _normalize_extent(ext)
+
+    if not constrain:
+        res = tr.transform_bounds(
+            left=nor_ext[0],
+            bottom=nor_ext[1],
+            right=nor_ext[2],
+            top=nor_ext[3],
+            errcheck=True,
+        )
+        return _normalize_extent(res)
+
+    if srid_from == WGS84.srid:
+        ext_wgs = nor_ext
+    else:
+        tr_to_wgs = _pyproj_transformer(srid_from, WGS84.srid)
+        ext_wgs = tr_to_wgs.transform_bounds(
+            left=nor_ext[0],
+            bottom=nor_ext[1],
+            right=nor_ext[2],
+            top=nor_ext[3],
+            errcheck=True,
+        )
+
+    ext_use = tr.area_of_use.bounds
+
+    ext_constrained = _normalize_extent(
+        [
+            max(ext_wgs[0], ext_use[0]),
+            max(ext_wgs[1], ext_use[1]),
+            min(ext_wgs[2], ext_use[2]),
+            min(ext_wgs[3], ext_use[3]),
+        ]
     )
 
+    if srid_to == WGS84.srid:
+        return _normalize_extent(ext_constrained)
+
+    tr_from_wgs = _pyproj_transformer(WGS84.srid, srid_to)
+    ext_to = tr_from_wgs.transform_bounds(
+        left=ext_constrained[0],
+        bottom=ext_constrained[1],
+        right=ext_constrained[2],
+        top=ext_constrained[3],
+        errcheck=True,
+    )
+    return _normalize_extent(ext_to)
+
+
+def _normalize_extent(ext):
     return (
-        min(e[0], e[2]),
-        min(e[1], e[3]),
-        max(e[0], e[2]),
-        max(e[1], e[3]),
+        min(ext[0], ext[2]),
+        min(ext[1], ext[3]),
+        max(ext[0], ext[2]),
+        max(ext[1], ext[3]),
     )
 
 
