@@ -33,8 +33,8 @@ client.options.sidebarWidth 400
 map {
     center {demo_point_kamen_25832}
     crs 25832
-    zoom.initScale 70000
-    zoom.maxScale  100000
+    zoom.initScale 4000
+    zoom.maxScale  50000
 }
 
 map.layers+ {
