@@ -554,6 +554,8 @@ class ExtCommandDescriptor(Data):
     """Full extension name like ``gws.ext.object.layer.wms``."""
     extType: str
     """Extension type like ``wms``."""
+    extCommandCategory: 'CommandCategory'
+    """Command category."""
     methodName: str
     """Command method name."""
     methodPtr: Callable
@@ -596,6 +598,8 @@ class CommandCategory(Enum):
     """Web GET command."""
     post = 'post'
     """Web POST command."""
+    raw = 'raw'
+    """Raw Web command without preprocessing."""
 
 
 class SpecRuntime:
@@ -4272,17 +4276,22 @@ class WebRequester:
     user: 'User'
     """Current use."""
 
-    isApi: bool
-    """The request is an 'api' request."""
     isGet: bool
-    """The request is a 'get' request."""
+    """The request is a GET request."""
     isPost: bool
-    """The request is a 'post' request."""
+    """The request is a POST request."""
+    isApi: bool
+    """The request provides json data in the POST body."""
+    isForm: bool
+    """The request provides form data in the POST body."""
     isSecure: bool
     """The request is secure."""
 
     def params(self) -> dict:
-        """GET parameters."""
+        """GET parameters, including parsed path params."""
+
+    def query_params(self) -> dict:
+        """GET parameters from the query string."""
 
     def path(self) -> str:
         """Request path, after the command is removed."""
@@ -4291,7 +4300,16 @@ class WebRequester:
         """Structured JSON payload."""
 
     def command(self) -> str:
-        """Command name to execute."""
+        """Command name from the request."""
+
+    def data(self) -> bytes:
+        """Raw POST data."""
+
+    def form(self) -> list[tuple[str, Any]]:
+        """POST form data as a list of (key, value) tuples."""
+
+    def text(self) -> str:
+        """POST data decoded to text."""
 
     def cookie(self, key: str, default: str = '') -> str:
         """Get a cookie.
@@ -4342,20 +4360,6 @@ class WebRequester:
 
         Returns:
             A variable value.
-        """
-
-    def data(self) -> Optional[bytes]:
-        """Get POST data.
-
-        Returns:
-            Data bytes or ``None`` if request is not a POST.
-        """
-
-    def text(self) -> Optional[str]:
-        """Get POST data as a text.
-
-        Returns:
-            Data string or ``None`` if request is not a POST.
         """
 
     def content_responder(self, response: ContentResponse) -> 'WebResponder':
@@ -4549,7 +4553,7 @@ class WebSite(Node):
             environ: WSGI environment.
         Returns:
             True if the site matches the request host.
-    """
+        """
 ################################################################################
 
 

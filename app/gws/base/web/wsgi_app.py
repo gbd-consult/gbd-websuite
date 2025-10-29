@@ -99,6 +99,7 @@ def _debug_repr(prefix, s):
 
 
 def handle_error(req: gws.WebRequester, exc: Exception) -> gws.WebResponder:
+    gws.log.if_debug(_debug_repr, f'REQUEST_ERROR', exc)
     web_exc = gws.base.web.error.from_exception(exc)
     return handle_http_error(req, web_exc)
 

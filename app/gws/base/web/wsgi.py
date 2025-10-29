@@ -3,6 +3,9 @@
 import gzip
 import io
 import os
+from typing import cast
+
+import werkzeug.formparser
 import werkzeug.utils
 import werkzeug.wrappers
 import werkzeug.wsgi
@@ -44,9 +47,12 @@ class Responder(gws.WebResponder):
 
 
 class Requester(gws.WebRequester):
+    _STRUCT_JSON = 'json'
+    _STRUCT_MSGPACK = 'msgpack'
+
     _struct_mime = {
-        'json': 'application/json',
-        'msgpack': 'application/msgpack',
+        _STRUCT_JSON: 'application/json',
+        _STRUCT_MSGPACK: 'application/msgpack',
     }
 
     def __init__(self, root: gws.Root, environ: dict, site: gws.WebSite, **kwargs):
@@ -56,39 +62,47 @@ class Requester(gws.WebRequester):
             self._wz = werkzeug.wrappers.Request(environ)
 
         # this is also set in nginx (see server/ini), but we need this for unzipping (see data() below)
-        self._wz.max_content_length = int(root.app.cfg('server.web.maxRequestLength', default=1)) * 1024 * 1024
+        self.maxContentLength = int(root.app.cfg('server.web.maxRequestLength') or 1) * 1024 * 1024
+        self._wz.max_content_length = self.maxContentLength
 
         self.root = root
         self.site = site
 
         self.environ = self._wz.environ
-        self.method = self._wz.method.upper()
+        self.method = cast(gws.RequestMethod, self._wz.method.upper())
         self.isSecure = self._wz.is_secure
 
         self.session = root.app.authMgr.guestSession
         self.user = root.app.authMgr.guestUser
 
-        self.isPost = self.method == 'POST'
-        self.isGet = self.method == 'GET'
+        self.isGet = self.method == gws.RequestMethod.GET
+        self.isPost = self.method == gws.RequestMethod.POST
+        self.isForm = False
+        self.isApi = False
 
-        self.contentType = gws.lib.mime.get(self.header('content-type')) or gws.lib.mime.BIN
+        self.structInput = None
+        self.structOutput = None
 
-        self.inputType = None
+        self.contentTypeHeader = self.header('content-type', '').lower().split(';')[0].strip()
+        self.contentType = gws.lib.mime.get(self.contentTypeHeader) or gws.lib.mime.BIN
+
         if self.isPost:
-            self.inputType = self._struct_type(self.header('content-type'))
-
-        self.outputType = None
-        if self.inputType:
-            self.outputType = self._struct_type(self.header('accept')) or self.inputType
-
-        self.isApi = self.inputType is not None
+            if self.contentTypeHeader == 'application/x-www-form-urlencoded' or self.contentTypeHeader == 'multipart/form-data':
+                self.isForm = True
+            else:
+                self.structInput = self._struct_type(self.contentTypeHeader)
+                if self.structInput:
+                    self.isApi = True
+                    self.structOutput = self._struct_type(self.header('accept')) or self.structInput
 
         self._parsed_params = {}
         self._parsed_params_lc = {}
+        self._parsed_query_params = {}
         self._parsed_struct = {}
         self._parsed_command = ''
         self._parsed_path = ''
         self._parsed = False
+        self._raw_post_data = None
         self._uid = gws.u.mstime()
 
         if self.root.app.developer_option('request.log_all'):
@@ -96,7 +110,6 @@ class Requester(gws.WebRequester):
                 'method': self.method,
                 'path': self._wz.path,
                 'query': self._wz.query_string,
-                'cookies': self._wz.cookies,
                 'headers': self._wz.headers,
                 'environ': self._wz.environ,
             }
@@ -108,6 +121,10 @@ class Requester(gws.WebRequester):
     def params(self):
         self._parse()
         return self._parsed_params
+
+    def query_params(self):
+        self._parse()
+        return self._parsed_query_params
 
     def path(self):
         self._parse()
@@ -123,30 +140,80 @@ class Requester(gws.WebRequester):
 
     def data(self):
         if not self.isPost:
-            return None
+            return b''
 
-        data = self._wz.get_data(as_text=False, parse_form_data=False)
+        if self._raw_post_data is not None:
+            return self._raw_post_data
+
+        cl = self.header('content-length')
+        if not cl:
+            self._raw_post_data = b''
+            return self._raw_post_data
+        try:
+            cl = int(cl)
+        except ValueError as exc:
+            raise error.BadRequest('invalid content-length header') from exc
+        if cl == 0:
+            self._raw_post_data = b''
+            return self._raw_post_data
+        if cl > self.maxContentLength:
+            raise error.RequestEntityTooLarge(f'content-length header too large: {cl}')
+
+        data = self._wz.get_data(as_text=False, cache=False, parse_form_data=False)
 
         if self.root.app.developer_option('request.log_all'):
             gws.u.write_debug_file(f'request_{self._uid}.data', data)
 
         if self.header('content-encoding') == 'gzip':
-            with gzip.GzipFile(fileobj=io.BytesIO(data)) as fp:
-                return fp.read(self._wz.max_content_length)
+            try:
+                with gzip.GzipFile(fileobj=io.BytesIO(data)) as fp:
+                    data = fp.read(self.maxContentLength)
+            except OSError as exc:
+                raise error.BadRequest('gzip data error') from exc
 
+        self._raw_post_data = data
         return data
 
     def text(self):
         data = self.data()
-        if data is None:
-            return None
+        if not data:
+            return ''
 
-        charset = self.header('charset', 'utf-8')
+        charset = self._wz.mimetype_params.get('charset', 'utf-8')
         try:
             return data.decode(encoding=charset, errors='strict')
         except UnicodeDecodeError as exc:
-            gws.log.error('post data decoding error')
-            raise error.BadRequest() from exc
+            raise error.BadRequest('text data decoding error') from exc
+
+    def form(self):
+        if not self.isForm:
+            return []
+        data = self.data()
+        if not data:
+            return []
+
+        try:
+            stream = io.BytesIO(data)
+            opts = self._wz.mimetype_params
+
+            # Fix for Qt multipart/form-data boundaries
+            # Qt boundaries start with "boundary_.oOo._" and are base64-encoded
+            # https://github.com/qt/qtbase/blob/04b7fc2de3c97174a725bbd4fdc0f6e496c85861/src/network/access/qhttpmultipart.cpp#L400
+            # Werkzeug header parser does not understand base64 chars "/+="
+            if data.startswith(b'--boundary_.oOo._'):
+                boundary = data[2 : data.find(b'\r\n')].decode('ascii')
+                opts['boundary'] = boundary
+
+            parser = werkzeug.formparser.FormDataParser(silent=False)
+            _, form, files = parser.parse(
+                stream,
+                mimetype=self.contentTypeHeader,
+                content_length=len(data),
+                options=opts,
+            )
+            return list(form.items()) + list(files.items())
+        except Exception as exc:
+            raise error.BadRequest(f'form decode error: {exc}') from exc
 
     def env(self, key, default=''):
         return self._wz.environ.get(key, default)
@@ -156,6 +223,7 @@ class Requester(gws.WebRequester):
         return key.lower() in self._parsed_params_lc
 
     def param(self, key, default=''):
+        self._parse()
         return self._parsed_params_lc.get(key.lower(), default)
 
     def header(self, key, default=''):
@@ -209,7 +277,7 @@ class Requester(gws.WebRequester):
         return Responder(wz=wz)
 
     def api_responder(self, response):
-        typ = self.outputType or 'json'
+        typ = self.structOutput or self._STRUCT_JSON
         return Responder(
             response=self._encode_struct(response, typ),
             mimetype=self._struct_mime[typ],
@@ -233,12 +301,14 @@ class Requester(gws.WebRequester):
 
     ##
 
-    _cmd_param_name = 'cmd'
+    _CMD_PARAM_NAME = 'cmd'
 
     def _parse(self):
-        if self._parsed:
-            return
+        if not self._parsed:
+            self._parse2()
+            self._parsed = True
 
+    def _parse2(self):
         # the server only understands requests to /_ or /_/commandName
         # GET params can be given as query string or encoded in the path
         # like _/commandName/param1/value1/param2/value2 etc
@@ -260,52 +330,48 @@ class Requester(gws.WebRequester):
         else:
             raise error.NotFound(f'invalid request path: {path!r}')
 
-        if self.inputType:
-            self._parsed_struct = self._decode_struct(self.inputType)
-            self._parsed_command = cmd or self._parsed_struct.pop(self._cmd_param_name, '')
+        if self.structInput:
+            self._parsed_struct = self._decode_struct(self.structInput)
+            self._parsed_command = cmd or self._parsed_struct.pop(self._CMD_PARAM_NAME, '')
         else:
             d = dict(self._wz.args)
             if path_parts:
                 for n in range(1, len(path_parts), 2):
                     d[path_parts[n - 1]] = path_parts[n]
-            self._parsed_command = cmd or d.pop(self._cmd_param_name, '')
+            self._parsed_command = cmd or d.pop(self._CMD_PARAM_NAME, '')
             self._parsed_params = d
             self._parsed_params_lc = {k.lower(): v for k, v in d.items()}
-
-        self._parsed = True
+            self._parsed_query_params = dict(self._wz.args)
 
     def _struct_type(self, header):
         if header:
             header = header.lower()
-            if header.startswith(self._struct_mime['json']):
-                return 'json'
-            if header.startswith(self._struct_mime['msgpack']):
-                return 'msgpack'
+            if header.startswith(self._struct_mime[self._STRUCT_JSON]):
+                return self._STRUCT_JSON
+            if header.startswith(self._struct_mime[self._STRUCT_MSGPACK]):
+                return self._STRUCT_MSGPACK
 
     def _encode_struct(self, data, typ):
-        if typ == 'json':
+        if typ == self._STRUCT_JSON:
             return gws.lib.jsonx.to_string(data)
-        if typ == 'msgpack':
+        if typ == self._STRUCT_MSGPACK:
             return umsgpack.dumps(data, default=gws.u.to_dict)
-        raise ValueError('invalid struct type')
+        raise ValueError(f'invalid struct type {typ!r}')
 
     def _decode_struct(self, typ):
-        if typ == 'json':
+        if typ == self._STRUCT_JSON:
             try:
                 data = gws.u.require(self.data())
                 s = data.decode(encoding='utf-8', errors='strict')
                 return gws.lib.jsonx.from_string(s)
-            except (UnicodeDecodeError, gws.lib.jsonx.Error):
-                gws.log.error('malformed json request')
-                raise error.BadRequest()
+            except Exception as exc:
+                raise error.BadRequest('malformed json request') from exc
 
-        if typ == 'msgpack':
+        if typ == self._STRUCT_MSGPACK:
             try:
                 data = gws.u.require(self.data())
                 return umsgpack.loads(data)
-            except (TypeError, umsgpack.UnpackException):
-                gws.log.error('malformed msgpack request')
-                raise error.BadRequest()
+            except Exception as exc:
+                raise error.BadRequest('malformed msgpack request') from exc
 
-        gws.log.error('invalid struct type')
-        raise error.BadRequest()
+        raise ValueError(f'invalid struct type {typ!r}')
