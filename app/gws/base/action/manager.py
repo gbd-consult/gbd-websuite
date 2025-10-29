@@ -76,10 +76,16 @@ class Object(gws.ActionManager):
         if not desc:
             raise gws.NotFoundError(f'{command_category}.{command_name} not found')
 
-        try:
-            request = gws.u.require(self.root.specs.read(params, desc.tArg, options=read_options))
-        except gws.spec.runtime.ReadError as exc:
-            raise gws.BadRequestError(f'read error: {exc!r}') from exc
+        if desc.extCommandCategory == gws.CommandCategory.raw:
+            request = gws.Request(
+                projectUid=params.get('projectUid'),
+                localeUid=params.get('localeUid'),
+            )
+        else:
+            try:
+                request = gws.u.require(self.root.specs.read(params, desc.tArg, options=read_options))
+            except gws.spec.runtime.ReadError as exc:
+                raise gws.BadRequestError(f'read error: {exc!r}') from exc
 
         action = None
 

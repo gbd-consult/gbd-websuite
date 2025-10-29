@@ -62,10 +62,14 @@ class Object(gws.SpecRuntime):
 
         self.serverTypes = sd.serverTypes
         self.serverTypesDict = {}
+        self.rawCommands = set()
+
         for typ in self.serverTypes:
             self.serverTypesDict[typ.uid] = typ
             if typ.extName:
                 self.serverTypesDict[typ.extName] = typ
+                if typ.extName.startswith(core.v.EXT_COMMAND_PREFIX + str(gws.CommandCategory.raw) + '.'):
+                    self.rawCommands.add(typ.extName.split('.')[-1])
 
         self.strings = sd.strings
         self.chunks = sd.chunks
@@ -103,7 +107,7 @@ class Object(gws.SpecRuntime):
             ident=typ.ident,
             modName=typ.modName,
             modPath=typ.modPath,
-            classPtr=None
+            classPtr=None,
         )
 
         return self._descCache[name]
@@ -121,7 +125,7 @@ class Object(gws.SpecRuntime):
             ident=cls.__name__,
             modName='',
             modPath='',
-            classPtr=cls
+            classPtr=cls,
         )
 
     def get_class(self, classref, ext_type=None):
@@ -149,6 +153,9 @@ class Object(gws.SpecRuntime):
         return desc.classPtr
 
     def command_descriptor(self, command_category, command_name):
+        if command_name in self.rawCommands and command_category != gws.CommandCategory.raw:
+            command_category = gws.CommandCategory.raw
+
         name = core.v.EXT_COMMAND_PREFIX + str(command_category) + '.' + command_name
 
         if name in self._descCache:
@@ -162,6 +169,7 @@ class Object(gws.SpecRuntime):
         return gws.ExtCommandDescriptor(
             extName=typ.extName,
             extType=typ.extName.split('.').pop(),
+            extCommandCategory=command_category,
             tArg=typ.tArg,
             tOwner=typ.tOwner,
             owner=self.object_descriptor(typ.tOwner),
@@ -190,13 +198,15 @@ class Object(gws.SpecRuntime):
                     prop_typ = self.get_type(prop_type_uid)
                     if not prop_typ:
                         continue
-                    args.append(gws.Data(
-                        name=name,
-                        type=prop_typ.tValue,
-                        doc=strings.get(prop_type_uid) or self.strings['en'].get(prop_type_uid) or '',
-                        defaultValue=prop_typ.defaultValue,
-                        hasDefault=prop_typ.hasDefault,
-                    ))
+                    args.append(
+                        gws.Data(
+                            name=name,
+                            type=prop_typ.tValue,
+                            doc=strings.get(prop_type_uid) or self.strings['en'].get(prop_type_uid) or '',
+                            defaultValue=prop_typ.defaultValue,
+                            hasDefault=prop_typ.hasDefault,
+                        )
+                    )
 
             entry = gws.Data(
                 cmd1=cmd1,

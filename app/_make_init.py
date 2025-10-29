@@ -10,6 +10,7 @@ def make_ext():
         'get',
         'post',
         'cli',
+        'raw',
     ]
 
     types_file = f'{GWS_DIR}/ext/types.txt'

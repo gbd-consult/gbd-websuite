@@ -52,6 +52,8 @@ class ExtCommandDescriptor(Data):
     """Full extension name like ``gws.ext.object.layer.wms``."""
     extType: str
     """Extension type like ``wms``."""
+    extCommandCategory: 'CommandCategory'
+    """Command category."""
     methodName: str
     """Command method name."""
     methodPtr: Callable
@@ -94,6 +96,8 @@ class CommandCategory(Enum):
     """Web GET command."""
     post = 'post'
     """Web POST command."""
+    raw = 'raw'
+    """Raw Web command without preprocessing."""
 
 
 class SpecRuntime:

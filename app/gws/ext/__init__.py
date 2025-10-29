@@ -64,6 +64,7 @@ class command:
     class cli(_methodTag): pass
     class get(_methodTag): pass
     class post(_methodTag): pass
+    class raw(_methodTag): pass
 
 
 class _new:
