@@ -19,18 +19,19 @@ GWS Maker
 
 Commands:
 
-    clean               - remove all build artifacts
-    client              - build the production Client
-    client-dev          - build the development Client
-    client-dev-server   - start the Client dev server
-    demo-config         - generate the config for Demos
-    doc                 - build the Docs
-    doc-api             - build the API Docs
-    doc-dev-server      - start the Doc dev server
-    image               - build docker images
-    package             - create an Application tarball
-    spec                - build the Specs
-    test                - run tests
+    clean               		- remove all build artifacts
+    client              		- build the production Client
+    client-dev          		- build the development Client
+    client-dev-server   		- start the Client dev server
+    demo-config         		- generate the config for Demos
+    doc                 		- build the Docs
+    doc-api             		- build the API Docs
+    doc-dev-server      		- start the Doc dev server
+    doc-markdown -out path/directory	- build the Docs as MarkDown
+    image               		- build docker images
+    package             		- create an Application tarball
+    spec                		- build the Specs
+    test                		- run tests
 
 Run 'make.sh <command> -h' for more info.
 
