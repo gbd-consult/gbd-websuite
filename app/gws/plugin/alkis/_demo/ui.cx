@@ -5,7 +5,7 @@ title "ALKIS erweitert"
 metadata.keywords [ "alkis" ]
 
 metadata.abstract """
-ALKIS Plugin mit erweiterten UI Optionen und default Export-Konfiguration.
+ALKIS Plugin mit erweiterten UI Optionen und einer Standard Export-Konfiguration.
 """
 
 actions+ {
@@ -33,8 +33,8 @@ client.options.sidebarWidth 400
 map {
     center {demo_point_kamen_25832}
     crs 25832
-    zoom.initScale 70000
-    zoom.maxScale  100000
+    zoom.initScale 4000
+    zoom.maxScale  50000
 }
 
 map.layers+ {
