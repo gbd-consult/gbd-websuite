@@ -304,7 +304,7 @@ def _map_layer(layer_el: gws.XmlElement, caps: Caps, use_layer_ids: bool) -> gws
     sl.name = layer_name
     sl.sourceId = uid
 
-    ext = _map_layer_wgs_extent(layer_el, caps.projectCrs)
+    ext = qgis_extent(layer_el, caps.projectCrs)
     if ext:
         sl.wgsExtent = ext
 
@@ -359,9 +359,9 @@ def _map_layer_datasource(layer_el: gws.XmlElement) -> dict:
     return {}
 
 
-def _map_layer_wgs_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
+def qgis_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
     uid = layer_el.textof('id')
-    min_size = 0.000001 
+    min_size = 0.000001
 
     # extent explicitly defined in metadata (Layer Props -> Metadata -> Extent)
     el = layer_el.find('resourceMetadata/extent/spatial')
@@ -371,7 +371,7 @@ def _map_layer_wgs_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
         if ext and crs:
             ext = gws.lib.extent.transform(ext, crs, gws.lib.crs.WGS84)
             if gws.lib.extent.is_valid_wgs(ext, min_size):
-                gws.log.debug(f'_map_layer_wgs_extent: {uid}: spatial: {ext}')
+                gws.log.debug(f'qgis_extent: {uid}: spatial: {ext}')
                 return ext
 
     # extent in <maplayer>/<wgs84extent>
@@ -379,7 +379,7 @@ def _map_layer_wgs_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
     if el:
         ext = _extent_from_tag(el)
         if ext and gws.lib.extent.is_valid_wgs(ext, min_size):
-            gws.log.debug(f'_map_layer_wgs_extent: {uid}: wgs84extent: {ext}')
+            gws.log.debug(f'qgis_extent: {uid}: wgs84extent: {ext}')
             return ext
 
     # extent in <maplayer>/<extent>, assume the project CRS
@@ -389,10 +389,10 @@ def _map_layer_wgs_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
         if ext:
             ext = gws.lib.extent.transform(ext, project_crs, gws.lib.crs.WGS84)
             if ext and gws.lib.extent.is_valid_wgs(ext, min_size):
-                gws.log.debug(f'_map_layer_wgs_extent: {uid}: extent: {ext}')
+                gws.log.debug(f'qgis_extent: {uid}: extent: {ext}')
                 return ext
 
-    gws.log.warning(f'_map_layer_wgs_extent: {uid}: NOT FOUND')
+    gws.log.warning(f'qgis_extent: {uid}: NOT FOUND')
 
 
 # layer trees:
@@ -735,10 +735,31 @@ def _parse_property_tag(el: gws.XmlElement) -> tuple[str, Any]:
 ##
 
 
-def _extent_from_tag(el: Optional[gws.XmlElement]):
+def _extent_from_tag(el: Optional[gws.XmlElement]) -> Optional[gws.Extent]:
     if not el:
         return
 
+    ext = _extent_from_tag2(el)
+    if not ext:
+        return
+
+    # work around qgis bug with absurdly high values in extent tags
+    max_coord = 30_000_000
+    if any(abs(c) > max_coord for c in ext):
+        gws.log.warning(f'qgis_extent: ignoring invalid extent {ext}')
+        return
+
+    # avoid single-point extents
+    min_size = 0.0001 # in metric projections, this is about 1cm
+    if ext[2] - ext[0] < min_size:
+        ext = gws.Extent([ext[0] - min_size, ext[1], ext[2] + min_size, ext[3]])
+    if ext[3] - ext[1] < min_size:
+        ext = gws.Extent([ext[0], ext[1] - min_size, ext[2], ext[3] + min_size])
+
+    return ext
+
+
+def _extent_from_tag2(el: gws.XmlElement):
     # <spatial dimensions="2" miny="0" maxz="0" maxx="0" crs="EPSG:25832" minx="0" minz="0" maxy="0"/>
     if el.get('minx'):
         return _extent_from_list(
@@ -782,26 +803,17 @@ def _extent_from_list(ls):
     if len(ls) != 4:
         return
     try:
-        e = [float(p) for p in ls]
+        ext = [float(p) for p in ls]
     except ValueError:
         return
-    if not all(math.isfinite(p) for p in e):
+    if not all(math.isfinite(p) for p in ext):
         return
-    e = [
-        min(e[0], e[2]),
-        min(e[1], e[3]),
-        max(e[0], e[2]),
-        max(e[1], e[3]),
-    ]
-    # for single-point extents, add 0.0001 (~10 m)
-    c = 0.0001
-    if e[0] == e[2]:
-        e[0] -= c
-        e[2] += c
-    if e[1] == e[3]:
-        e[1] -= c
-        e[3] += c
-    return gws.Extent(e)
+    return gws.Extent([
+        min(ext[0], ext[2]),
+        min(ext[1], ext[3]),
+        max(ext[0], ext[2]),
+        max(ext[1], ext[3]),
+    ])
 
 
 def _parse_msize(s):
