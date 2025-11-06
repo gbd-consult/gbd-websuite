@@ -337,14 +337,18 @@ def to_iso_date_string(d: Optional[dt.date] = None) -> str:
     return _datetime(d).strftime('%Y-%m-%d')
 
 
-def to_basic_string(d: Optional[dt.date] = None) -> str:
+def to_basic_string(d: Optional[dt.date] = None, with_ms=False) -> str:
     """Convert a date to a basic string format (YYYYMMDDHHMMSS).
 
     Args:
         d: Date to convert (default current date/time)
     """
 
-    return _datetime(d).strftime('%Y%m%d%H%M%S')
+    d = _datetime(d)
+    s = d.strftime('%Y%m%d%H%M%S')
+    if with_ms:
+        s += f'{d.microsecond // 1000:03d}'
+    return s
 
 
 def to_iso_time_string(d: Optional[dt.date] = None, with_tz='+') -> str:
