@@ -31,13 +31,6 @@ class Object(gws.WebManager):
 
     ##
 
-    def enter_middleware(self, req: gws.WebRequester):
-        cors = req.site.corsOptions
-        if not cors:
-            return
-        if req.method == 'OPTIONS':
-            return gws.ContentResponse(mime='text/plain', content='')
-
     def exit_middleware(self, req: gws.WebRequester, res: gws.WebResponder):
         cors = req.site.corsOptions
 

@@ -47,7 +47,7 @@ def handle_request(root: gws.Root, environ) -> gws.WebResponder:
     req = gws.base.web.wsgi.Requester(root, environ, site)
 
     try:
-        _ = req.params()  # enforce parsing
+        req.parse()
     except Exception as exc:
         return handle_error(req, exc)
 
@@ -75,10 +75,16 @@ def apply_middleware(root: gws.Root, req: gws.WebRequester) -> gws.WebResponder:
             break
 
     if not res:
-        try:
-            res = handle_action(root, req)
-        except Exception as exc:
-            res = handle_error(req, exc)
+        m = req.method
+        if m == gws.RequestMethod.GET or m == gws.RequestMethod.POST:
+            try:
+                res = handle_action(root, req)
+            except Exception as exc:
+                res = handle_error(req, exc)
+        elif m == gws.RequestMethod.HEAD or m == gws.RequestMethod.OPTIONS:
+            res = req.content_responder(gws.ContentResponse(mime='text/plain', content=''))
+        else:
+            raise gws.base.web.error.MethodNotAllowed(f'method not allowed: {m!r}')
 
     for obj in reversed(done):
         try:
@@ -109,20 +115,12 @@ def handle_http_error(req: gws.WebRequester, exc: gws.base.web.error.HTTPExcepti
     # @TODO: image errors
 
     if req.isApi:
-        return req.api_responder(gws.Response(
-            status=exc.code,
-            error=gws.ResponseError(
-                code=exc.code,
-                info=gws.u.get(exc, 'description', ''))))
+        return req.api_responder(gws.Response(status=exc.code, error=gws.ResponseError(code=exc.code, info=gws.u.get(exc, 'description', ''))))
 
     if not req.site.errorPage:
         return req.error_responder(exc)
 
-    args = gws.TemplateArgs(
-        req=req,
-        user=req.user,
-        error=exc.code
-    )
+    args = gws.TemplateArgs(req=req, user=req.user, error=exc.code)
     res = req.site.errorPage.render(gws.TemplateRenderInput(args=args))
     res.status = exc.code
     return req.content_responder(res)
@@ -155,13 +153,7 @@ def handle_action(root: gws.Root, req: gws.WebRequester) -> gws.WebResponder:
         # @TODO: add HEAD
         raise gws.base.web.error.MethodNotAllowed()
 
-    fn, request = root.app.actionMgr.prepare_action(
-        category,
-        req.command(),
-        params,
-        req.user,
-        read_options
-    )
+    fn, request = root.app.actionMgr.prepare_action(category, req.command(), params, req.user, read_options)
 
     response = fn(req, request)
 

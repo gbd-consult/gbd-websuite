@@ -118,6 +118,9 @@ class Requester(gws.WebRequester):
     def __repr__(self):
         return f'<Requester {self._wz}>'
 
+    def parse(self):
+        self._parse()
+
     def params(self):
         self._parse()
         return self._parsed_params
