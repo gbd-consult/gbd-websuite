@@ -52,7 +52,7 @@ class Object(gws.AuthManager):
 
     ##
 
-    def enter_middleware(self, req):
+    def enter_middleware(self, req: gws.WebRequester):
         sess = self._try_open_session(req) or self.guestSession
         req.set_session(sess)
         gws.log.debug(f'session opened: user={req.session.user.uid!r} roles={req.session.user.roles}')
@@ -80,7 +80,7 @@ class Object(gws.AuthManager):
             gws.log.debug(f'open_session: {meth=}: ok')
             return sess
 
-    def exit_middleware(self, req, res):
+    def exit_middleware(self, req: gws.WebRequester, res: gws.WebResponder):
         sess = req.session
         if sess.method:
             sess.method.close_session(req, res)

@@ -26,9 +26,9 @@ from collections.abc import (
 )
 
 import enum
+import datetime
 
 if TYPE_CHECKING:
-    import datetime
     import sqlalchemy
     import numpy.typing
 
@@ -1601,6 +1601,9 @@ class XmlElement(Iterable):
 
     def find(self, path: str) -> Optional['XmlElement']:
         """Finds first matching element by tag name or path."""
+
+    def require(self, path: str) -> 'XmlElement':
+        """Finds first matching element and raises an error if not found."""
 
     def findall(self, path: str) -> list['XmlElement']:
         """Finds all matching subelements by name or path."""
@@ -3641,6 +3644,8 @@ class Job(Data):
     step: int
     stepName: str
     payload: dict
+    timeCreated: datetime.datetime
+    timeUpdated: datetime.datetime
 
 
 class JobRequest(Request):
@@ -3658,7 +3663,7 @@ class JobStatusResponse(Response):
 class JobManager(Node):
     """Job Manager."""
 
-    def create_job(self, user: User, worker: type, payload: dict = None) -> Job: ...
+    def create_job(self, worker: type, user: User, payload: dict = None) -> Job: ...
 
     def get_job(self, job_uid: str, user: User = None, state: JobState = None) -> Optional[Job]: ...
 
@@ -4553,7 +4558,7 @@ class WebSite(Node):
             environ: WSGI environment.
         Returns:
             True if the site matches the request host.
-        """
+    """
 ################################################################################
 
 
