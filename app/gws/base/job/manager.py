@@ -7,13 +7,13 @@ import gws
 import gws.lib.importer
 import gws.lib.jsonx
 import gws.lib.sqlitex
-import gws.lib.mime
+import gws.lib.datetimex as dtx
 import gws.server.spool
 
 
 class Object(gws.JobManager):
     TABLE = 'jobs'
-    DDL = f'''
+    DDL = f"""
         CREATE TABLE IF NOT EXISTS {TABLE} (
             uid           TEXT NOT NULL PRIMARY KEY,
             userUid       TEXT DEFAULT '',
@@ -28,7 +28,7 @@ class Object(gws.JobManager):
             created       INTEGER DEFAULT 0,
             updated       INTEGER DEFAULT 0
         )
-    '''
+    """
 
     dbPath: str
 
@@ -39,23 +39,27 @@ class Object(gws.JobManager):
     def periodic_task(self):
         pass
 
-    def create_job(self, user, worker, payload=None):
+    def create_job(self, worker, user, payload=None):
         job_uid = gws.u.random_string(64)
         gws.log.debug(f'JOB {job_uid}: creating: {worker=}  {user.uid=}')
 
         self._db().insert(self.TABLE, dict(uid=job_uid))
 
-        self._write(job_uid, dict(
-            uid=job_uid,
-            userUid=user.uid,
-            userStr=self.root.app.authMgr.serialize_user(user),
-            worker=sys.modules.get(worker.__module__).__file__ + '.' + worker.__name__,
-            state=gws.JobState.open,
-            payload=payload,
-            created=gws.u.stime(),
-        ))
+        self._write(
+            job_uid,
+            dict(
+                uid=job_uid,
+                userUid=user.uid,
+                userStr=self.root.app.authMgr.serialize_user(user),
+                worker=sys.modules.get(worker.__module__).__file__ + '.' + worker.__name__,
+                state=gws.JobState.open,
+                payload=payload,
+                created=gws.u.stime(),
+                updated=gws.u.stime(),
+            ),
+        )
 
-        return self.get_job_or_fail(job_uid)
+        return self._get_job_or_fail(job_uid)
 
     def get_job(self, job_uid: str, user=None, state=None):
         job, msg = self._get_job(job_uid, user, state)
@@ -63,7 +67,7 @@ class Object(gws.JobManager):
             gws.log.error(msg)
         return job
 
-    def get_job_or_fail(self, job_uid: str, user=None, state=None):
+    def _get_job_or_fail(self, job_uid: str, user=None, state=None):
         job, msg = self._get_job(job_uid, user, state)
         if not job:
             raise gws.Error(msg)
@@ -77,8 +81,9 @@ class Object(gws.JobManager):
         rec = rs[0]
 
         job_user = None
-        if rec.get('userStr'):
-            job_user = self.root.app.authMgr.unserialize_user(rec.get('userStr'))
+        us = rec.get('userStr')
+        if us:
+            job_user = self.root.app.authMgr.unserialize_user(us)
         if not job_user:
             job_user = self.root.app.authMgr.guestUser
 
@@ -98,6 +103,8 @@ class Object(gws.JobManager):
             step=rec['step'] or 0,
             stepName=rec['stepName'] or '',
             payload=gws.lib.jsonx.from_string(rec['payload'] or '{}'),
+            timeCreated=dtx.from_timestamp(rec['created'] or 0),
+            timeUpdated=dtx.from_timestamp(rec['updated'] or 0),
         )
         return job, ''
 
@@ -106,16 +113,18 @@ class Object(gws.JobManager):
         if not job:
             return
         self._write(job.uid, kwargs)
-        return self.get_job_or_fail(job.uid)
+        return self._get_job_or_fail(job.uid)
 
     def _write(self, job_uid, rec):
         rec['updated'] = gws.u.stime()
-        rec['payload'] = gws.lib.jsonx.to_string(rec.get('payload') or {})
+        p = rec.get('payload')
+        if p is not None and not isinstance(p, str):
+            rec['payload'] = gws.lib.jsonx.to_string(p)
         gws.log.debug(f'JOB {job_uid}: save {rec=}')
         self._db().update(self.TABLE, rec, job_uid)
 
     def schedule_job(self, job: gws.Job):
-        job = self.get_job_or_fail(job.uid, state=gws.JobState.open)
+        job = self._get_job_or_fail(job.uid, state=gws.JobState.open)
         if gws.server.spool.is_active():
             gws.server.spool.add(job)
             return job
@@ -129,14 +138,17 @@ class Object(gws.JobManager):
         tmp = gws.u.random_string(64)
         self._db().execute(
             f'UPDATE {self.TABLE} SET state=:tmp WHERE uid=:uid AND state=:state',
-            uid=job_uid, tmp=tmp, state=gws.JobState.open
+            uid=job_uid,
+            tmp=tmp,
+            state=gws.JobState.open,
         )
-        job = self.get_job_or_fail(job_uid, state=tmp)
+        job = self._get_job_or_fail(job_uid, state=tmp)
         self._db().execute(
             f'UPDATE {self.TABLE} SET state=:s WHERE uid=:uid',
-            uid=job.uid, s=gws.JobState.running
+            uid=job.uid,
+            s=gws.JobState.running,
         )
-        job = self.get_job_or_fail(job_uid, state=gws.JobState.running)
+        job = self._get_job_or_fail(job_uid, state=gws.JobState.running)
 
         # now it's ours, let's run it
 
@@ -174,6 +186,8 @@ class Object(gws.JobManager):
     def handle_cancel_request(self, req, p):
         job = self.require_job(req, p)
         job = self.cancel_job(job)
+        if not job:
+            raise gws.NotFoundError(f'JOB {p.jobUid}: not found')
         return self.job_status_response(job)
 
     def job_status_response(self, job, **kwargs):
@@ -182,7 +196,7 @@ class Object(gws.JobManager):
             state=job.state,
             stepName=job.stepName or '',
             progress=self._get_progress(job),
-            output={}
+            output={},
         )
         d.update(kwargs)
         return gws.JobStatusResponse(d)

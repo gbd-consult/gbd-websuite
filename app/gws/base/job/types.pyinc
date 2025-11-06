@@ -31,6 +31,8 @@ class Job(Data):
     step: int
     stepName: str
     payload: dict
+    timeCreated: datetime.datetime
+    timeUpdated: datetime.datetime
 
 
 class JobRequest(Request):
@@ -48,7 +50,7 @@ class JobStatusResponse(Response):
 class JobManager(Node):
     """Job Manager."""
 
-    def create_job(self, user: User, worker: type, payload: dict = None) -> Job: ...
+    def create_job(self, worker: type, user: User, payload: dict = None) -> Job: ...
 
     def get_job(self, job_uid: str, user: User = None, state: JobState = None) -> Optional[Job]: ...
 

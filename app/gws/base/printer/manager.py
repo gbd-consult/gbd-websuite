@@ -12,8 +12,8 @@ class Object(gws.PrinterManager):
     def start_print_job(self, request, user):
         mgr = self.root.app.jobMgr
         job = mgr.create_job(
-            user,
             worker.Object,
+            user,
             payload=dict(
                 requestPath=gws.u.serialize_to_path(
                     request,
