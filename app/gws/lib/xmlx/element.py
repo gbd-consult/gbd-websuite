@@ -121,6 +121,12 @@ class XmlElement(gws.XmlElement):
         for c in self._children:
             yield c
 
+    def require(self, path, namespaces=None):
+        el = self.find(path, namespaces)
+        if el is None:
+            raise gws.Error(f'XmlElement: required element not found: {path!r}')
+        return el
+
     def children(self):
         return self._children
 

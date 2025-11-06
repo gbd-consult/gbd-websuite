@@ -96,6 +96,9 @@ class XmlElement(Iterable):
     def find(self, path: str) -> Optional['XmlElement']:
         """Finds first matching element by tag name or path."""
 
+    def require(self, path: str) -> 'XmlElement':
+        """Finds first matching element and raises an error if not found."""
+
     def findall(self, path: str) -> list['XmlElement']:
         """Finds all matching subelements by name or path."""
 
