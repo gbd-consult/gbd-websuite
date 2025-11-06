@@ -50,6 +50,22 @@ def drivers() -> list[DriverInfo]:
     return di.infos
 
 
+@contextlib.contextmanager
+def gdal_config(**options):
+    """Temporarily set GDAL config options."""
+
+    prev = {}
+    for key, value in options.items():
+        prev[key] = gdal.GetConfigOption(key)
+        gdal.SetConfigOption(key, value)
+
+    try:
+        yield
+    finally:
+        for key, value in prev.items():
+            gdal.SetConfigOption(key, value)
+
+
 def open_raster(
     path: str,
     mode: str = 'r',
@@ -224,6 +240,10 @@ class _DataSet:
         srid = _srid_from_srs(self.gdDataset.GetSpatialRef())
         return gws.lib.crs.get(srid) if srid else None
 
+    def set_crs(self, crs: gws.Crs):
+        srs = _srs_from_srid(crs.srid)
+        self.gdDataset.SetSpatialRef(srs)
+
 
 class RasterDataSet(_DataSet):
     def create_copy(self, path: str, driver: str = '', strict=False, **opts):
@@ -232,7 +252,12 @@ class RasterDataSet(_DataSet):
         gdal.UseExceptions()
 
         drv = _driver_from_args(path, driver, need_raster=True)
-        gd = drv.CreateCopy(path, self.gdDataset, 1 if strict else 0, **opts)
+        gd = drv.CreateCopy(
+            path,
+            self.gdDataset,
+            1 if strict else 0,
+            [f'{k}={v}' for k, v in opts.items()],
+        )
         gd.SetMetadata(self.gdDataset.GetMetadata())
         gd.FlushCache()
         gd = None
