@@ -12,6 +12,8 @@ class ElementConfig(gws.ConfigWithAccess):
     """Insert before this tag."""
     after: str = ''
     """Insert after this tag."""
+    options: Optional[dict]
+    """Element options."""
 
 
 class Config(gws.ConfigWithAccess):
@@ -40,14 +42,16 @@ class Element(gws.Node):
     tag: str
     after: str
     before: str
+    options: dict
 
     def configure(self):
         self.tag = self.cfg('tag')
         self.after = self.cfg('after')
         self.before = self.cfg('before')
+        self.options = self.cfg('options') or {}
 
     def props(self, user):
-        return gws.Data(tag=self.tag)
+        return gws.Data(tag=self.tag, options=self.options)
 
 
 class Object(gws.Client):
