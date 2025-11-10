@@ -219,7 +219,7 @@ class LinkWidget extends gc.Controller {
 
         if (this.options.target === 'frame')
             this.update({dialogContent: {frame: url}});
-        else if (this.options.target === 'blank')
+        else if (this.options.target === 'blank' || this.options.target === '_blank')
             window.open(url);
         else
             location.href = url;
@@ -227,6 +227,14 @@ class LinkWidget extends gc.Controller {
 
     get defaultView() {
         return this.createElement(LinkView, this.options);
+    }
+
+}
+
+class LinkButtonWidget extends LinkWidget {
+
+    get defaultView() {
+        return this.createElement(LinkButtonView, this.options);
     }
 
 }
@@ -343,6 +351,7 @@ class InfobarController extends gc.Controller {
 gc.registerTags({
     'Infobar': InfobarController,
     'Infobar.Link': LinkWidget,
+    'Infobar.LinkButton': LinkButtonWidget,
     'Infobar.Help': HelpWidget,
     'Infobar.About': AboutWidget,
     'Infobar.Position': PositionWidget,
