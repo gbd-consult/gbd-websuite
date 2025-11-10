@@ -1,3 +1,7 @@
+## Version 8.2.14
+
+- added `Infobar.Link` and `Infobar.LinkButton` widgets
+
 ## Version 8.2.13
 
 - better configuration for ALKIS exports, multiple exports possible
