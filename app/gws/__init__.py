@@ -4292,6 +4292,9 @@ class WebRequester:
     isSecure: bool
     """The request is secure."""
 
+    def parse(self):
+        """Parse the request data, raise an error if the request is invalid."""
+
     def params(self) -> dict:
         """GET parameters, including parsed path params."""
 
@@ -4558,7 +4561,7 @@ class WebSite(Node):
             environ: WSGI environment.
         Returns:
             True if the site matches the request host.
-    """
+        """
 ################################################################################
 
 

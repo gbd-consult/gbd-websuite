@@ -12,7 +12,7 @@ class Error(gws.Error):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.message = args[0]
-        self.linenoe = args[1]
+        self.lineno = args[1]
 
 
 def validate(xml: str | bytes):
