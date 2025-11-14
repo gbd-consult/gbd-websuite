@@ -272,6 +272,8 @@ client.elements [
     { tag "Infobar.Scale" }
     { tag "Infobar.Loader" }
     { tag "Infobar.Spacer" }
+    { tag "Infobar.Link" }
+    { tag "Infobar.LinkButton" }
     { tag "Infobar.HomeLink" }
     { tag "Infobar.Help" }
     { tag "Infobar.About" }
