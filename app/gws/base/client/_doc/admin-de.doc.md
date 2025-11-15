@@ -107,7 +107,7 @@ Jede Element Konfiguration enthält einen Tag-Namen sowie optional eine Zugriffs
 
 Es werden folgende Element-Tags unterstützt:
 
-*untere Leiste*
+*Infoleiste*
 
 |Tag | Bedeutung|
 |---|---|
@@ -116,6 +116,8 @@ Es werden folgende Element-Tags unterstützt:
 |``Infobar.ZoomReset`` | Zoomstufe zurücksetzen |
 |``Infobar.About`` | Link "Über uns" |
 |``Infobar.Help`` | Link "Hilfe" |
+|``Infobar.Link`` | Freier Link als Text |
+|``Infobar.ButtonLink`` | Freier Link als Icon |
 |``Infobar.HomeLink`` | Link "Startseite" |
 |``Infobar.Loader`` | Ladeanzeige |
 |``Infobar.Position`` | Positionsanzeige |
@@ -123,7 +125,7 @@ Es werden folgende Element-Tags unterstützt:
 |``Infobar.Scale`` | Maßstabsanzeige |
 |``Infobar.Spacer`` | flexibler Abstandhalter |
 
-*linke Leiste*
+*Seitenleiste*
 
 |Tag | Bedeutung|
 |---|---|
@@ -138,7 +140,7 @@ Es werden folgende Element-Tags unterstützt:
 |``Sidebar.Select`` | Auswahl von Objekten |
 |``Sidebar.User`` | Login und Logout |
 
-*Werkzeuge*
+*Werkzeugleiste*
 
 |Tag | Bedeutung|
 |---|---|
