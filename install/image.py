@@ -223,6 +223,9 @@ class Builder(Base):
 
         __(f'RUN pip3 install {pip_opts} {pips}')
 
+        # GDAL requires some magic
+        __(f'RUN pip3 install {pip_opts} --force-reinstall --no-build-isolation gdal==$(gdal-config --version)')
+
         # this lib causes problems, it should be optional in pendulum
         # see https://github.com/sdispater/pendulum/issues?q=time-machine
         __(f'RUN pip3 uninstall -y time_machine')

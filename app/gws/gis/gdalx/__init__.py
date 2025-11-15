@@ -3,6 +3,7 @@
 from typing import Optional, Iterable, cast
 
 import contextlib
+import numpy as np
 
 from osgeo import gdal
 from osgeo import ogr
@@ -12,6 +13,7 @@ import gws
 import gws.base.shape
 import gws.lib.crs
 import gws.lib.bounds
+import gws.lib.image
 import gws.lib.datetimex as datetimex
 
 
@@ -51,7 +53,7 @@ def drivers() -> list[DriverInfo]:
 
 
 @contextlib.contextmanager
-def gdal_config(**options):
+def gdal_config(options: dict):
     """Temporarily set GDAL config options."""
 
     prev = {}
@@ -71,7 +73,7 @@ def open_raster(
     mode: str = 'r',
     driver: str = '',
     default_crs: Optional[gws.Crs] = None,
-    **opts,
+    options: dict = None,
 ) -> 'RasterDataSet':
     """Create a raster DataSet from a path.
 
@@ -80,7 +82,7 @@ def open_raster(
         mode: 'r' (=read), 'a' (=update), 'w' (=create/write)
         driver: Driver name, if omitted, will be suggested from the path extension.
         default_crs: Default CRS for geometries (fallback to Webmercator).
-        opts: Options for gdal.OpenEx/CreateDataSource.
+        options: Options for gdal.OpenEx/CreateDataSource.
     """
 
     dso = _DataSetOptions(
@@ -88,7 +90,7 @@ def open_raster(
         mode=mode,
         driver=driver,
         defaultCrs=default_crs,
-        gdalOpts=opts,
+        gdalOpts=options or {},
     )
 
     return cast(RasterDataSet, _open(dso, need_raster=True))
@@ -101,7 +103,7 @@ def open_vector(
     encoding: Optional[str] = 'utf8',
     default_crs: Optional[gws.Crs] = None,
     geometry_as_text: bool = False,
-    **opts,
+    options: dict = None,
 ) -> 'VectorDataSet':
     """Create a vector DataSet from a path.
 
@@ -112,7 +114,7 @@ def open_vector(
         encoding: If not None, strings will be automatically decoded.
         default_crs: Default CRS for geometries (fallback to Webmercator).
         geometry_as_text: Don't interpret geometry, extract raw WKT.
-        opts: Options for gdal.OpenEx/CreateDataSource.
+        options: Options for gdal.OpenEx/CreateDataSource.
 
 
     Returns:
@@ -127,7 +129,7 @@ def open_vector(
         defaultCrs=default_crs,
         encoding=encoding,
         geometryAsText=geometry_as_text,
-        gdalOpts=opts,
+        gdalOpts=options or {},
     )
 
     return cast(VectorDataSet, _open(dso, need_raster=False))
@@ -145,7 +147,7 @@ def _open(dso: _DataSetOptions, need_raster):
     dso.defaultCrs = dso.defaultCrs or gws.lib.crs.WEBMERCATOR
 
     if dso.mode == 'w':
-        gd = drv.CreateDataSource(dso.path, **dso.gdalOpts)
+        gd = drv.CreateDataSource(dso.path, _option_list(dso.gdalOpts))
         if gd is None:
             raise Error(f'cannot create {dso.path!r}')
         if need_raster:
@@ -162,7 +164,7 @@ def _open(dso: _DataSetOptions, need_raster):
     else:
         flags += gdal.OF_VECTOR
 
-    gd = gdal.OpenEx(dso.path, flags, **dso.gdalOpts)
+    gd = gdal.OpenEx(dso.path, flags, open_options=_option_list(dso.gdalOpts))
     if gd is None:
         raise Error(f'cannot open {dso.path!r}')
 
@@ -171,12 +173,20 @@ def _open(dso: _DataSetOptions, need_raster):
     return VectorDataSet(dso, gd)
 
 
-def open_from_image(image: gws.Image, bounds: gws.Bounds) -> 'RasterDataSet':
+def open_from_image(
+    image: gws.Image,
+    bounds: gws.Bounds,
+    rotation: gws.Size = None,
+    options: dict = None,
+) -> 'RasterDataSet':
     """Create an in-memory Dataset from an Image.
 
     Args:
-        image: Image object
-        bounds: geographic bounds
+        image: Image object.
+        bounds: Geographic bounds.
+        x_rotation: GeoTransform x rotation.
+        y_rotation: GeoTransform y rotation.
+        options: Driver-specific creation options.
     """
 
     gdal.UseExceptions()
@@ -185,25 +195,20 @@ def open_from_image(image: gws.Image, bounds: gws.Bounds) -> 'RasterDataSet':
     img_array = image.to_array()
     band_count = img_array.shape[2]
 
-    gd = drv.Create('', img_array.shape[1], img_array.shape[0], band_count, gdal.GDT_Byte)
+    gd = drv.Create(
+        '',
+        xsize=img_array.shape[1],
+        ysize=img_array.shape[0],
+        bands=band_count,
+        eType=gdal.GDT_Byte,
+        options=_option_list(options),
+    )
     for band in range(band_count):
         gd.GetRasterBand(band + 1).WriteArray(img_array[:, :, band])
 
-    ext = bounds.extent
+    gt = _bounds_to_geotransform(bounds, (gd.RasterXSize, gd.RasterYSize), rotation)
 
-    src_res_x = (ext[2] - ext[0]) / gd.RasterXSize
-    src_res_y = (ext[1] - ext[3]) / gd.RasterYSize
-
-    src_transform = (
-        ext[0],
-        src_res_x,
-        0,
-        ext[3],
-        0,
-        src_res_y,
-    )
-
-    gd.SetGeoTransform(src_transform)
+    gd.SetGeoTransform(gt)
     gd.SetSpatialRef(_srs_from_srid(bounds.crs.srid))
 
     dso = _DataSetOptions(path='')
@@ -246,8 +251,31 @@ class _DataSet:
 
 
 class RasterDataSet(_DataSet):
-    def create_copy(self, path: str, driver: str = '', strict=False, **opts):
-        """Create a copy of a DataSet."""
+    def to_image(self) -> gws.Image:
+        """Convert the raster dataset to an Image object."""
+
+        band_count = self.gdDataset.RasterCount
+        x_size = self.gdDataset.RasterXSize
+        y_size = self.gdDataset.RasterYSize
+
+        arr_shape = (y_size, x_size, band_count)
+        arr = np.zeros(arr_shape, dtype=np.uint8)
+
+        for band in range(band_count):
+            gd_band = self.gdDataset.GetRasterBand(band + 1)
+            arr[:, :, band] = gd_band.ReadAsArray(0, 0, x_size, y_size)
+
+        return gws.lib.image.from_array(arr)
+
+    def create_copy(self, path: str, driver: str = '', strict=False, options: dict = None):
+        """Create a copy of a DataSet.
+
+        Args:
+            path: Destination path.
+            driver: Driver name, if omitted, will be suggested from the path extension.
+            strict: If True, fail if some options are not supported.
+            options: Driver-specific creation options.
+        """
 
         gdal.UseExceptions()
 
@@ -255,25 +283,19 @@ class RasterDataSet(_DataSet):
         gd = drv.CreateCopy(
             path,
             self.gdDataset,
-            1 if strict else 0,
-            [f'{k}={v}' for k, v in opts.items()],
+            strict=1 if strict else 0,
+            options=_option_list(options),
         )
         gd.SetMetadata(self.gdDataset.GetMetadata())
         gd.FlushCache()
         gd = None
 
     def bounds(self) -> gws.Bounds:
-        gt = self.gdDataset.GetGeoTransform()
-        x0 = gt[0]
-        x1 = x0 + gt[1] * self.gdDataset.RasterXSize
-        y1 = gt[3]
-        y0 = y1 + gt[5] * self.gdDataset.RasterYSize
-
-        crs = self.crs() or self.dso.defaultCrs
-
-        # gws.log.debug(f'{crs.srid=} {crs.isYX=} {(x0, y0, x1, y1)}')
-
-        return gws.lib.bounds.from_extent((x0, y0, x1, y1), crs, always_xy=True)
+        return _geotransform_to_bounds(
+            self.gdDataset.GetGeoTransform(),
+            (self.gdDataset.RasterXSize, self.gdDataset.RasterYSize),
+            self.crs() or self.dso.defaultCrs,
+        )
 
 
 class VectorDataSet(_DataSet):
@@ -294,11 +316,27 @@ class VectorDataSet(_DataSet):
         geometry_type: gws.GeometryType = None,
         crs: gws.Crs = None,
         overwrite=False,
-        *options,
+        options: dict = None,
     ) -> 'VectorLayer':
-        opts = list(options)
+        """Create a new layer.
+
+        Args:
+            name: Layer name.
+            columns: Column definitions.
+            geometry_type: Geometry type.
+            crs: CRS for geometries.
+            overwrite: If True, overwrite existing layer.
+            options: Driver-specific creation options.
+        """
+
+        opts = dict(options or {})
         if overwrite:
-            opts.append('OVERWRITE=YES')
+            opts['OVERWRITE'] = 'YES'
+        enc = (self.dso.encoding or '').upper()
+        if enc:
+            driver = self.gdDriver.GetName()
+            if 'Shapefile' in driver:
+                opts['ENCODING'] = enc
 
         geom_type = ogr.wkbUnknown
         srs = None
@@ -315,7 +353,7 @@ class VectorDataSet(_DataSet):
             name,
             geom_type=geom_type,
             srs=srs,
-            options=opts,
+            options=_option_list(opts),
         )
         for col_name, col_type in columns.items():
             gd_layer.CreateField(ogr.FieldDefn(col_name, _ATTR_TO_OGR[col_type]))
@@ -323,10 +361,14 @@ class VectorDataSet(_DataSet):
         return VectorLayer(self, gd_layer)
 
     def layers(self) -> list['VectorLayer']:
+        """Get all layers."""
+
         cnt = self.gdDataset.GetLayerCount()
         return [VectorLayer(self, self.gdDataset.GetLayerByIndex(n)) for n in range(cnt)]
 
     def layer(self, name_or_index: str | int) -> Optional['VectorLayer']:
+        """Get a layer by name or index."""
+
         gd_layer = None
         if isinstance(name_or_index, int):
             gd_layer = self.gdDataset.GetLayerByIndex(name_or_index)
@@ -336,6 +378,7 @@ class VectorDataSet(_DataSet):
 
     def require_layer(self, name_or_index: str | int) -> 'VectorLayer':
         """Get a layer by name or index, raise an error if not found."""
+
         la = self.layer(name_or_index)
         if la:
             return la
@@ -548,7 +591,12 @@ def _fetch_driver_infos() -> _DriverInfoCache:
 
     for n in range(gdal.GetDriverCount()):
         drv = gdal.GetDriver(n)
-        inf = DriverInfo(index=n, name=str(drv.ShortName), longName=str(drv.LongName), metaData=dict(drv.GetMetadata() or {}))
+        inf = DriverInfo(
+            index=n,
+            name=str(drv.ShortName),
+            longName=str(drv.LongName),
+            metaData=dict(drv.GetMetadata() or {}),
+        )
         _di_cache.infos.append(inf)
 
         for e in inf.metaData.get(gdal.DMD_EXTENSIONS, '').split():
@@ -665,6 +713,29 @@ def _attr_to_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, value, encoding)
 
 def is_attribute_supported(typ):
     return typ in _ATTR_TO_OGR
+
+
+def _bounds_to_geotransform(bounds: gws.Bounds, px_size: gws.Size, rotation: gws.Size | None) -> tuple[float, float, float, float, float, float]:
+    ext = bounds.extent
+    res_x = (ext[2] - ext[0]) / px_size[0]
+    res_y = (ext[1] - ext[3]) / px_size[1]
+    xr = rotation[0] if rotation else 0.0
+    yr = rotation[1] if rotation else 0.0
+    return (ext[0], res_x, xr, ext[3], yr, res_y)
+
+
+def _geotransform_to_bounds(gt: tuple[float, float, float, float, float, float], px_size: gws.Size, crs: gws.Crs) -> gws.Bounds:
+    x0 = gt[0]
+    x1 = x0 + gt[1] * px_size[0]
+    y1 = gt[3]
+    y0 = y1 + gt[5] * px_size[1]
+    return gws.lib.bounds.from_extent((x0, y0, x1, y1), crs, always_xy=True)
+
+
+def _option_list(opts: dict | None) -> list[str]:
+    if not opts:
+        return []
+    return [f'{k}={v}' for k, v in opts.items()]
 
 
 _ATTR_TO_OGR = {

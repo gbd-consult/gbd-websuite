@@ -106,6 +106,18 @@ def from_data_url(url: str) -> Optional['Image']:
     return from_bytes(r)
 
 
+def from_array(arr: np.ndarray, mode: str = None) -> 'Image':
+    """Creates an image object from a numpy array.
+
+    Args:
+        arr: Numpy array encoding an image.
+    Returns:
+        An image object.
+    """
+    img = PIL.Image.fromarray(arr)
+    return _new(img)
+
+
 def from_svg(xmlstr: str, size: gws.Size, mime=None) -> 'Image':
     """Not implemented yet. Should create an image object from a URL.
 

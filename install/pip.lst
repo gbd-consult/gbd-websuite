@@ -1,5 +1,6 @@
 # gws core
 
+numpy==2.*
 Babel==2.14.*
 GeoAlchemy2==0.*
 jq==1.*
@@ -26,9 +27,6 @@ uWSGI==2.*
 MapProxy==1.*
 setuptools
 
-
-# use the OS version
-GDAL==3.8.4
 
 # testing
 
