@@ -89,7 +89,7 @@ Für mehr Info siehe [Web Server](/admin-de/config/web).
 
 Jedes GBD WebSuite Projekt, wie auch die Hauptanwendung, kann ein ``client`` Objekt enthalten, das verschiedene Optionen für den Client und dessen UI-Layout beschreibt, so dass Sie bestimmte UI-Elemente pro Projekt ein- und ausschalten können. Dieses Objekt besteht aus zwei Teilen: ``options`` (generelle Optionen) und ``elements`` (Auflistung der UI Elemente).
 
-### options
+### Optionen
 
 Die Optionen sind wie folgt:
 
@@ -101,13 +101,65 @@ Die Optionen sind wie folgt:
 |``sidebarSize`` | *int* | Anzahl von sichtbaren Icons in der Sidebar |  ``4`` |
 |``toolbarSize`` | *int* | Anzahl von sichtbaren Icons in der Toolbar |  ``5`` |
 
-### elements
+### Elemente
 
 Jede Element Konfiguration enthält einen Tag-Namen sowie optional eine Zugriffsberechtigung, sodass die UI Elemente nur für bestimmte Nutzer erscheinen.
 
+#### Grundlegende Konfiguration
+
+```javascript
+client.elements [
+   # Werkzeugleiste
+   { tag "Toolbar.Screenshot" }
+   { tag "Toolbar.IdentifyClick" }
+   ...   
+   # Seitenleiste
+   { tag "Sidebar.Layers" }
+   { tag "Sidebar.Overview" }
+   ...
+   # Infoleiste
+   { tag "Infobar.ZoomOut" }
+   { tag "Infobar.ZoomIn" }
+   ...
+]
+```
+
+*Positionierung*
+
+Mit ```after``` und ```before``` kann die Position in der Infobar gesteuert werden:
+
+```
+client.elements [
+   { tag "Infobar.Scale" }
+   {
+       tag "Infobar.Link"
+       after "Infobar.Scale"
+   }
+   {
+       tag "Infobar.ButtonLink"
+       before "Infobar.About"
+   }
+]
+```
+
+*Zugriffsbeschränkung*
+
+```
+Mit ```permissions``` können Zugriffsbeschränkungen definiert werden:
+
+client.elements [
+   {
+       tag "Infobar.Link"
+       permissions {
+           # Berechtigungskonfiguration
+       }
+   }
+]
+```
+
 Es werden folgende Element-Tags unterstützt:
 
-*Infoleiste*
+**Übersicht Infoleiste**
 
 |Tag | Bedeutung|
 |---|---|
@@ -125,7 +177,52 @@ Es werden folgende Element-Tags unterstützt:
 |``Infobar.Scale`` | Maßstabsanzeige |
 |``Infobar.Spacer`` | flexibler Abstandhalter |
 
-*Seitenleiste*
+
+#### Beispiel Infobar.Link und Infobar.ButtonLink
+
+Die GBD WebSuite bietet zwei UI-Elemente für die Infobar (untere Leiste der Kartenanwendung), um benutzerdefinierte Links zu integrieren:
+  
+  - **Infobar.Link** - Freier Link als Text
+  - **Infobar.ButtonLink** - Freier Link als Icon
+
+Diese Elemente ergänzen die vordefinierten Links wie `Infobar.About`, `Infobar.Help` und `Infobar.HomeLink` und ermöglichen die Integration zusätzlicher externer Verweise.
+
+*Infobar.Link*
+
+```javascript
+client.elements+ {
+    tag "Infobar.Link"
+    options {
+        title "Link Text"
+        href "https://example.com"
+        target "blank"  # Optional, möglich sind "blank" od. "frame"
+    }
+}
+```
+
+*Infobar.ButtonLink*
+
+```javascript
+client.elements+ {
+    tag "Infobar.LinkButton"
+    options {
+        title "Tooltip für den Button"
+        url "https://example.com"
+        target "blank"  # Optional, möglich sind "blank" od. "frame"
+        className "meine-css-klasse"
+    }
+}
+```
+
+Die CSS Klasse muss dann in "styles.css" (oder einer anderen CSS Datei) definiert werden, z.B.:
+
+```css
+.meine-css-klasse {
+    background-image: url('/path/to/icon.svg');
+}
+```
+
+**Übersicht Seitenleiste**
 
 |Tag | Bedeutung|
 |---|---|
@@ -140,7 +237,7 @@ Es werden folgende Element-Tags unterstützt:
 |``Sidebar.Select`` | Auswahl von Objekten |
 |``Sidebar.User`` | Login und Logout |
 
-*Werkzeugleiste*
+**Übersicht Werkzeugleiste**
 
 |Tag | Bedeutung|
 |---|---|
@@ -157,7 +254,7 @@ Es werden folgende Element-Tags unterstützt:
 |``Toolbar.Screenshot`` | Screenshot |
 |``Toolbar.Tabedit`` | tabellarisches Editieren, siehe [Tabellarisches Editieren](/admin-de/plugin/tabedit) |
 
-*Popup-Menüs für Feature Objekte*
+**Übersicht Popup-Menüs für Feature Objekte**
 
 |Tag | Bedeutung|
 |---|---|
@@ -167,7 +264,7 @@ Es werden folgende Element-Tags unterstützt:
 |``Task.Select`` | Objekt auswählen |
 |``Task.Zoom`` | zum Objekt hinzoomen |
 
-*sonstiges*
+**Sonstiges**
 
 |Tag | Bedeutung|
 |---|---|
