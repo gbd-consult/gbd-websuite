@@ -1,3 +1,7 @@
+## Version 8.2.15
+
+- fix handling of empty feature uids in editor
+
 ## Version 8.2.14
 
 - added `Infobar.Link` and `Infobar.LinkButton` widgets
