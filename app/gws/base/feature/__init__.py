@@ -38,9 +38,11 @@ class Feature(gws.Feature):
             return f'<feature ?>'
 
     def uid(self):
-        if self.model.uidName:
-            return str(self.attributes.get(self.model.uidName))
-        return ''
+        if not self.model.uidName:
+            return ''
+        v = self.attributes.get(self.model.uidName)
+        if v is not None:
+            return str(v)
 
     def shape(self):
         if self.model.geometryName:
