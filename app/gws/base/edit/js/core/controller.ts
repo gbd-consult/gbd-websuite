@@ -512,8 +512,12 @@ export class Controller extends gc.Controller {
                 attsToWrite[field.name] = await this.serializeValue(field, v);
         }
 
-        if (!attsToWrite[feature.model.uidName])
-            attsToWrite[feature.model.uidName] = feature.uid
+        if (gc.lib.isEmpty(attsToWrite[feature.model.uidName])) {
+            let uid = feature.uid;
+            if (!gc.lib.isEmpty(uid)) {
+                attsToWrite[feature.model.uidName] = uid;
+            }
+        }
 
         let featureToWrite = feature.clone();
         featureToWrite.attributes = attsToWrite;
