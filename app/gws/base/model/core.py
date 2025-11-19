@@ -261,6 +261,11 @@ class Object(gws.Model):
         search = gws.SearchQuery(uids=set(uids))
         return self.find_features(search, mc)
 
+    def get_feature(self, uid, mc):
+        features = self.get_features([uid], mc)
+        if features:
+            return features[0]
+
     def find_features(self, search, mc):
         return []
 

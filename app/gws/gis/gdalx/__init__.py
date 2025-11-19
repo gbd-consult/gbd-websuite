@@ -470,7 +470,12 @@ class VectorLayer:
         for rec in records:
             gd_feature = ogr.Feature(self.gdDefn)
             if desc.geometryType and rec.shape:
-                gd_feature.SetGeometry(ogr.CreateGeometryFromWkt(rec.shape.to_wkt(), _srs_from_srid(rec.shape.crs.srid)))
+                gd_feature.SetGeometry(
+                    ogr.CreateGeometryFromWkt(
+                        rec.shape.to_wkt(),
+                        _srs_from_srid(rec.shape.crs.srid),
+                    )
+                )
 
             if rec.uid and isinstance(rec.uid, int):
                 gd_feature.SetFID(rec.uid)

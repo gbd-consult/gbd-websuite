@@ -115,14 +115,22 @@ def handle_http_error(req: gws.WebRequester, exc: gws.base.web.error.HTTPExcepti
     # @TODO: image errors
 
     if req.isApi:
-        return req.api_responder(gws.Response(status=exc.code, error=gws.ResponseError(code=exc.code, info=gws.u.get(exc, 'description', ''))))
+        return req.api_responder(
+            gws.Response(
+                status=exc.code,
+                error=gws.ResponseError(
+                    code=exc.code,
+                    info=gws.u.get(exc, 'description', ''),
+                ),
+            )
+        )
 
     if not req.site.errorPage:
         return req.error_responder(exc)
 
     args = gws.TemplateArgs(req=req, user=req.user, error=exc.code)
     res = req.site.errorPage.render(gws.TemplateRenderInput(args=args))
-    res.status = exc.code
+    res.status = exc.code or 500
     return req.content_responder(res)
 
 

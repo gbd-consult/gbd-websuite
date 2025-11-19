@@ -27,12 +27,6 @@ class Props(gws.base.model.field.Props):
     pass
 
 
-class Cols(gws.Data):
-    content: Optional[sa.Column]
-    path: Optional[sa.Column]
-    name: Optional[sa.Column]
-
-
 class FileInputProps(gws.Data):
     content: bytes
     name: str
@@ -62,7 +56,10 @@ class Object(gws.base.model.field.Object):
     model: gws.DatabaseModel
 
     attributeType = gws.AttributeType.file
-    cols: Cols
+    
+    contentColumn: Optional[sa.Column] = None
+    pathColumn: Optional[sa.Column] = None
+    nameColumn: Optional[sa.Column] = None
 
     def __getstate__(self):
         return gws.u.omit(vars(self), 'cols')
@@ -76,18 +73,17 @@ class Object(gws.base.model.field.Object):
     def configure_columns(self):
         model = cast(gws.base.database.model.Object, self.model)
 
-        self.cols = Cols()
 
         p = self.cfg('contentColumn')
-        self.cols.content = model.column(p) if p else None
+        self.contentColumn = model.column(p) if p else None
 
         p = self.cfg('pathColumn')
-        self.cols.path = model.column(p) if p else None
+        self.pathColumn = model.column(p) if p else None
 
         p = self.cfg('nameColumn')
-        self.cols.name = model.column(p) if p else None
+        self.nameColumn = model.column(p) if p else None
 
-        if self.cols.content is None and self.cols.path is None:
+        if self.contentColumn is None and self.pathColumn is None:
             raise gws.ConfigurationError('contentColumn or pathColumn must be set')
 
         if not self.model.uidName:
@@ -101,7 +97,7 @@ class Object(gws.base.model.field.Object):
     ##
 
     def before_select(self, mc):
-        mc.dbSelect.columns.extend(self.select_columns(False, mc))
+        mc.dbSelect.columns.extend(self.select_columns(mc))
 
     def after_select(self, features, mc):
         for feature in features:
@@ -123,11 +119,12 @@ class Object(gws.base.model.field.Object):
         # @TODO store in the filesystem
 
         fv = cast(FileValue, feature.get(self.name))
-        if fv:
-            if self.cols.content is not None:
-                feature.record.attributes[self.cols.content.name] = fv.content
-            if self.cols.name is not None:
-                feature.record.attributes[self.cols.name.name] = fv.name
+        if not fv:
+            return
+        if self.contentColumn is not None:
+            feature.record.attributes[self.contentColumn.name] = fv.content
+        if self.nameColumn is not None:
+            feature.record.attributes[self.nameColumn.name] = fv.name
 
     # @TODO merge with scalar_field?
 
@@ -202,7 +199,11 @@ class Object(gws.base.model.field.Object):
     def handle_web_file_request(self, feature_uid: str, preview: bool, mc: gws.ModelContext) -> Optional[gws.ContentResponse]:
         model = cast(gws.DatabaseModel, self.model)
 
-        sql = sa.select(*self.select_columns(True, mc)).where(model.uid_column().__eq__(feature_uid))
+        cols = self.select_columns(mc)
+        if self.contentColumn is not None:
+            cols.append(self.contentColumn)
+        
+        sql = sa.select(*cols).where(model.uid_column().__eq__(feature_uid))
 
         with self.model.db.connect() as conn:
             rs = list(conn.execute(sql))
@@ -211,6 +212,8 @@ class Object(gws.base.model.field.Object):
 
         for row in rs:
             fv = self.load_value(gws.u.to_dict(row), mc)
+            if not fv:
+                return
             return gws.ContentResponse(
                 asAttachment=not preview,
                 attachmentName=fv.name,
@@ -220,32 +223,28 @@ class Object(gws.base.model.field.Object):
 
     ##
 
-    def select_columns(self, with_content, mc):
+    def select_columns(self, mc):
         cs = []
 
-        if self.cols.content is not None:
-            cs.append(sa.func.length(self.cols.content).label(f'{self.name}_length'))
-            if with_content:
-                cs.append(self.cols.content)
-
-        if self.cols.path is not None:
-            cs.append(self.cols.path)
-
-        if self.cols.name is not None:
-            cs.append(self.cols.name)
+        if self.contentColumn is not None:
+            cs.append(sa.func.length(self.contentColumn).label(f'{self.name}_length'))
+        if self.pathColumn is not None:
+            cs.append(self.pathColumn)
+        if self.nameColumn is not None:
+            cs.append(self.nameColumn)
 
         return cs
 
-    def load_value(self, attributes: dict, mc) -> FileValue:
+    def load_value(self, attributes: dict, mc) -> Optional[FileValue]:
         d = {}
 
-        if self.cols.content is not None:
+        if self.contentColumn is not None:
             d['size'] = attributes.get(f'{self.name}_length')
-            d['content'] = attributes.get(self.cols.content.name)
-        if self.cols.path is not None:
-            d['path'] = attributes.get(self.cols.path.name)
-        if self.cols.name is not None:
-            d['name'] = attributes.get(self.cols.name.name)
+            d['content'] = attributes.get(self.contentColumn.name)
+        if self.pathColumn is not None:
+            d['path'] = attributes.get(self.pathColumn.name)
+        if self.nameColumn is not None:
+            d['name'] = attributes.get(self.nameColumn.name)
 
         if d:
             return FileValue(**d)
