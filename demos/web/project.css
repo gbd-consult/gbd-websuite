@@ -225,12 +225,14 @@ h6 {
 
 .search_district,
 .search_poi,
+.search_water,
 .search_green {
     line-height: 1.5;
 }
 
 .search_district::before,
 .search_poi::before,
+.search_water::before,
 .search_green::before {
     display: inline-block;
     margin-right: 0.5em;
@@ -252,11 +254,16 @@ h6 {
 }
 
 .search_poi::before {
-    content: 'P';
-    background-color: #048ba6;
+    content: '★';
+    background-color: #cf9bc2;
 }
 
 .search_green::before {
     content: 'G';
     background-color: #55a90c;
+}
+
+.search_water::before {
+    content: 'W';
+    background-color: #048ba6;
 }

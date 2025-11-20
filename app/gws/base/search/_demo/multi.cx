@@ -1,11 +1,17 @@
 uid "search_multi"
 
-title "Search with categories"
+title "Suche mit Kategorien"
 
 metadata.keywords [ "client" "postgres" "search" "vector-data" ]
 
 metadata.abstract """
-Text search with multiple finders and categories.
+Es können bei einem Projekt, bzw global, mehrere Finder Objekte definiert werden, die verschiedene Datenquellen durchsuchen. 
+Bei einer Suche werden dann die Ergebnisse aller Finder gesammelt und dem Benutzer in einer gemeinsamen Ergebnisliste präsentiert.
+
+Optional, können die Finder in Kategorien gruppiert werden, so dass der Benutzer die Ergebnisse nach Kategorien filtern kann.
+Die Liste der Kategorien wird unter Alktion "search" konfiguriert. Jeder Finder kann einer Kategorie zugewiesen werden.
+
+Zusätzlich können für jeden Finder eigene Templates definiert werden, sodass die Suchergebnisse unterschiedlich dargestellt werden können.
 """
 
 client.addElements+ { tag "Sidebar.Search" }
@@ -14,33 +20,23 @@ client.addElements+ { tag "Altbar.Search" }
 
 actions+ { 
     type "search" 
-    categories [ "POIs" "Stadtbezirke" "Grünflächen" ]    
+    categories [ 
+        "Interessante Orte" 
+        "Stadtbezirke" 
+        "Natur" 
+    ]    
 }
 
 finders+ {
     type "postgres"
     tableName "edit.poi"
-    category "POIs"
+    category "Interessante Orte"
     models+ {
         type "postgres"
         sort+ { fieldName "name" }
-
-        fields+ {
-            name "id"
-            type "integer"
-            isPrimaryKey true
-        }
-        fields+ {
-            name "name"
-            type "text"
-            textSearch { type "any" minLength 1 }
-        }
-        fields+ {
-            name "geom"
-            type "geometry"
-        }
+        withAutoFields true
+        fields+ { name "name" type "text" textSearch { type "any" minLength 1 } }
     }
-
     templates+ {
         type "html"
         subject "feature.teaser"
@@ -55,23 +51,9 @@ finders+ {
     models+ {
         type "postgres"
         sort+ { fieldName "name" }
-
-        fields+ {
-            name "sid"
-            type "text"
-            isPrimaryKey true
-        }
-        fields+ {
-            name "name"
-            type "text"
-            textSearch { type "any" minLength 1 }
-        }
-        fields+ {
-            name "geom"
-            type "geometry"
-        }
+        withAutoFields true
+        fields+ { name "name" type "text" textSearch { type "any" minLength 1 } }
     }
-
     templates+ {
         type "html"
         subject "feature.teaser"
@@ -82,31 +64,34 @@ finders+ {
 finders+ {
     type "postgres"
     tableName "edit.park"
-    category "Grünflächen"
+    category "Natur"
     models+ {
         type "postgres"
         sort+ { fieldName "name" }
-
-        fields+ {
-            name "id"
-            type "integer"
-            isPrimaryKey true
-        }
-        fields+ {
-            name "name"
-            type "text"
-            textSearch { type "any" minLength 1 }
-        }
-        fields+ {
-            name "geom"
-            type "geometry"
-        }
+        withAutoFields true
+        fields+ { name "name" type "text" textSearch { type "any" minLength 1 } }
     }
-
     templates+ {
         type "html"
         subject "feature.teaser"
         text "<span class='search_green'>{{name}}</span>"
+    }
+}
+
+finders+ {
+    type "postgres"
+    tableName "edit.water"
+    category "Natur"
+    models+ {
+        type "postgres"
+        sort+ { fieldName "name" }
+        withAutoFields true
+        fields+ { name "name" type "text" textSearch { type "any" minLength 1 } }
+    }
+    templates+ {
+        type "html"
+        subject "feature.teaser"
+        text "<span class='search_water'>{{name}}</span>"
     }
 }
 
@@ -117,6 +102,13 @@ map {
     zoom.minScale  1000
 }
 
-map.layers+ { type "postgres" title "POIs"  tableName "edit.poi_small" }
+map.layers+ {
+    uid "duesseldorf"
+    title "Düsseldorf"
+    type "qgis"
+    provider.path "/demos/search_multi.qgs"
+    autoLayers+ { config.display "box" }
+    clientOptions.unfolded true
+}
 
 {demo_osm_background}
