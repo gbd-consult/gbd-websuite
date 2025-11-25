@@ -60,6 +60,7 @@ Example usage::
 
 from typing import Optional
 import mapscript
+import re
 
 import gws
 import gws.lib.image
@@ -190,8 +191,9 @@ class Map:
             for p in opts.processing:
                 lo.addProcessing(p)
         if opts.transparentColor:
+            r, g, b, a = _css_color_to_rgb(opts.transparentColor)
             co = mapscript.colorObj()
-            co.setHex(opts.transparentColor)
+            co.setRGB(r, g, b, a)
             lo.offsite = co
         if opts.connectionType:
             if opts.connectionType == 'postgres':
@@ -225,11 +227,11 @@ class Map:
                     cls.insertStyle(so)
 
                 if opts.style.icon:
-                    symbol = mapscript.symbolObj("icon", opts.style.icon)
+                    symbol = mapscript.symbolObj('icon', opts.style.icon)
                     symbol.type = mapscript.MS_SYMBOL_PIXMAP
                     lo.map.symbolset.appendSymbol(symbol)
                     so = mapscript.styleObj()
-                    so.setSymbolByName(lo.map, "icon")
+                    so.setSymbolByName(lo.map, 'icon')
                     so.size = 100
                     cls.insertStyle(so)
         return lo
@@ -368,17 +370,28 @@ class Map:
             so.outlinewidth = style.marker_stroke_width
         return so
 
-def _css_color_to_rgb(color_name: str) -> tuple[int, int, int]:
-    try:
-        return _CSS_COLOR_NAMES[color_name.lower()]
-    except KeyError:
-        raise ValueError(f"Unbekannter CSS-Farbenname: '{color_name}'")
 
+def _css_color_to_rgb(s: str) -> tuple[int, int, int, int]:
+    s = re.sub(r'\s+', '', s).strip().lower()
+    if s in _CSS_COLOR_NAMES:
+        r, g, b = _CSS_COLOR_NAMES[s]
+        return r, g, b, 255
+    m = re.match(r'^#([0-9a-f]{6})$', s)
+    if m:
+        h = m.group(1)
+        return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16), 255
+    m = re.match(r'^#([0-9a-f]{8})$', s)
+    if m:
+        h = m.group(1)
+        return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16), int(h[6:8], 16)
+    m = re.match(r'^rgb\((\d+),(\d+),(\d+)\)$', s)
+    if m:
+        return int(m.group(1)), int(m.group(2)), int(m.group(3)), 255
+    m = re.match(r'^rgba\((\d+),(\d+),(\d+),(\d+)\)$', s)
+    if m:
+        return int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4))
+    raise ValueError(f'invalid color string: {s!r}')
 
-def _color_to_str(color: str) -> str:
-    if isinstance(color, str):
-        r, g, b = _css_color_to_rgb(color)
-    return f"{r} {g} {b}"
 
 _CSS_COLOR_NAMES = {
     'black': (0, 0, 0),
