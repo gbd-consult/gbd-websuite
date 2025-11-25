@@ -1,3 +1,7 @@
+## Version 8.2.16
+
+- minor fixes in GBD Geoservices plugin 
+
 ## Version 8.2.15
 
 - fix handling of empty feature uids in editor
