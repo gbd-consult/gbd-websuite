@@ -5,11 +5,11 @@ title "GBD Geoservices"
 metadata.keywords [ "search" ]
 
 metadata.abstract """
-Full-text search with [GBD Geoservices](https://geoservices.gbd-consult.de)
+Volltextsuche mit [GBD Geoservices](https://geoservices.gbd-consult.de). 
+Es wird im Großraum Düsseldorf nach Punkten von Interesse bzw Adressen gesucht.
 """
 
 client.addElements+ { tag "Sidebar.Search" }
-
 
 actions+ { type "search" }
 
@@ -21,7 +21,12 @@ finders+ {
 
 map {
     center {demo_point_duesseldorf_3857}
-    extent [ 447705, 6478918, 1023665, 6813238 ]
+    extent [
+        {demo_point_duesseldorf_3857[0] - 30000}
+        {demo_point_duesseldorf_3857[1] - 30000}
+        {demo_point_duesseldorf_3857[0] + 30000}
+        {demo_point_duesseldorf_3857[1] + 30000}
+    ]
     zoom.initScale 1000000
     zoom.maxScale  1000000
     zoom.minScale  2000
