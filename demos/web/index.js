@@ -219,4 +219,22 @@ window.addEventListener('load', () => {
 
 });
 
-
+window.addEventListener("load", function () {
+    setTimeout(function () {
+        if (window.innerWidth < 768) {
+          var body = document.body;
+          if (!body.classList.contains("with-sidebar-hidden")) {
+          var rside = document.querySelector("#button-sidebar-toggle");
+          if (rside) {
+            rside.click();
+          }
+        }
+          var closeBtn =
+            document.querySelector(".uiIconButton button[title*='Menü']") ||
+            document.querySelector(".uiIconButton button.uiRawButton");
+          if (closeBtn) {
+            closeBtn.click();
+          }
+        }
+    }, 300);
+  });
