@@ -33,28 +33,42 @@ class TemplateArgs(gws.TemplateArgs):
 
     root: gws.Root
     """Root object."""
+    serverDir: str
+    """Absolute path to app/server directory."""
+    gwsEnv: dict
+    """A dict of GWS environment variables."""
     inContainer: bool
     """True if we're running in a container."""
+    uwsgi: str
+    """uWSGI backend name."""
     userName: str
     """User name."""
     groupName: str
-    """Group name."""
-    gwsEnv: dict
-    """A dict of GWS environment variables."""
+    """User group name."""
+    homeDir: str
+    """User home directory."""
+    mapproxyConfig: str
+    """Mapproxy config path."""
     mapproxyPid: str
     """Mapproxy pid path."""
     mapproxySocket: str
     """Mapproxy socket path."""
+    nginxConfig: str
+    """nginx config path."""
     nginxPid: str
     """nginx pid path."""
-    serverDir: str
-    """Absolute path to app/server directory."""
+    spoolConfig: str
+    """Spooler config path."""
     spoolPid: str
     """Spooler pid path."""
     spoolSocket: str
     """Spooler socket path."""
-    uwsgi: str
-    """uWSGI backend name."""
+    syslogConfig: str
+    """Syslog config path."""
+    syslogPid: str
+    """Syslog pid path."""
+    webConfig: str
+    """Web server config path."""
     webPid: str
     """Web server pid path."""
     webSocket: str
@@ -70,6 +84,7 @@ _DEFAULT_TEMPLATES = [
     gws.Config(type='text', subject='server.rsyslog_config', path=f'{_SERVER_DIR}/templates/rsyslog_config.cx.txt'),
     gws.Config(type='text', subject='server.nginx_config', path=f'{_SERVER_DIR}/templates/nginx_config.cx.txt'),
     gws.Config(type='text', subject='server.uwsgi_config', path=f'{_SERVER_DIR}/templates/uwsgi_config.cx.txt'),
+    gws.Config(type='text', subject='server.start_script', path=f'{_SERVER_DIR}/templates/start_script.cx.txt'),
 ]
 
 
@@ -97,10 +112,7 @@ class Object(gws.ServerManager):
         self.configure_templates()
 
     def _add_defaults(self, value, type_name):
-        return gws.u.merge(
-            self.root.specs.read({}, type_name),
-            value
-        )
+        return gws.u.merge(self.root.specs.read({}, type_name), value)
 
     def configure_environment(self):
         """Overwrite config values from the environment."""
@@ -121,52 +133,52 @@ class Object(gws.ServerManager):
 
     def create_server_configs(self, target_dir, script_path, pid_paths):
         ui = gws.lib.osx.user_info(gws.c.UID, gws.c.GID)
+
         args = TemplateArgs(
-            root=self.root,
-            inContainer=gws.c.env.GWS_IN_CONTAINER,
-            userName=ui['pw_name'],
-            groupName=ui['gr_name'],
             gwsEnv={k: v for k, v in sorted(os.environ.items()) if k.startswith('GWS_')},
+            inContainer=gws.c.env.GWS_IN_CONTAINER,
+            mapproxyConfig='',
             mapproxyPid=pid_paths['mapproxy'],
             mapproxySocket=f'{gws.c.TMP_DIR}/mapproxy.uwsgi.sock',
+            nginxConfig='',
             nginxPid=pid_paths['nginx'],
+            root=self.root,
             serverDir=_SERVER_DIR,
+            spoolConfig='',
             spoolPid=pid_paths['spool'],
             spoolSocket=f'{gws.c.TMP_DIR}/spool.uwsgi.sock',
+            syslogConfig='',
+            syslogPid='',
+            userGroupName=ui['gr_name'],
+            userName=ui['pw_name'],
+            userHomeDir=ui['pw_dir'],
+            webConfig='',
             webPid=pid_paths['web'],
             webSocket=f'{gws.c.TMP_DIR}/web.uwsgi.sock',
         )
 
-        commands = []
-
-        commands.append(f"export HOME={ui['pw_dir']}")
-
         if args.inContainer:
-            path = self._create_config('server.rsyslog_config', f'{target_dir}/syslog.conf', args)
-            commands.append(f'rsyslogd -i {gws.c.PIDS_DIR}/rsyslogd.pid -f {path}')
+            args.syslogPid = f'{gws.c.PIDS_DIR}/rsyslogd.pid'
+            args.syslogConfig = self._create_config('server.rsyslog_config', f'{target_dir}/syslog.conf', args)
 
         if self.cfg('withWeb'):
             args.uwsgi = 'web'
-            path = self._create_config('server.uwsgi_config', f'{target_dir}/uwsgi_web.ini', args)
-            commands.append(f'uwsgi --ini {path}')
+            args.webConfig = self._create_config('server.uwsgi_config', f'{target_dir}/uwsgi_web.ini', args)
 
         if self.cfg('withMapproxy') and gws.u.is_file(gws.gis.mpx.config.CONFIG_PATH):
             args.uwsgi = 'mapproxy'
-            path = self._create_config('server.uwsgi_config', f'{target_dir}/uwsgi_mapproxy.ini', args)
-            commands.append(f'uwsgi --ini {path}')
+            args.mapproxyConfig = self._create_config('server.uwsgi_config', f'{target_dir}/uwsgi_mapproxy.ini', args)
 
         if self.cfg('withSpool'):
             args.uwsgi = 'spool'
-            path = self._create_config('server.uwsgi_config', f'{target_dir}/uwsgi_spool.ini', args)
-            commands.append(f'uwsgi --ini {path}')
+            args.spoolConfig = self._create_config('server.uwsgi_config', f'{target_dir}/uwsgi_spool.ini', args)
 
-        path = self._create_config('server.nginx_config', f'{target_dir}/nginx.conf', args, True)
-        commands.append(f'exec nginx -c {path}')
+        args.nginxConfig = self._create_config('server.nginx_config', f'{target_dir}/nginx.conf', args, True)
 
-        gws.u.write_file(script_path, '\n'.join(commands) + '\n')
+        self._create_config('server.start_script', script_path, args)
 
     def _create_config(self, subject: str, path: str, args: TemplateArgs, is_nginx=False) -> str:
-        tpl = self.root.app.templateMgr.find_template(subject, where=[self])
+        tpl = gws.u.require(self.root.app.templateMgr.find_template(subject, where=[self]))
         res = tpl.render(gws.TemplateRenderInput(args=args))
 
         text = str(res.content)

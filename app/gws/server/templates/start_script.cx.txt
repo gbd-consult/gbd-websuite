@@ -1,0 +1,17 @@
+export HOME={homeDir}
+
+@if syslogConfig
+    rsyslogd -i {syslogPid} -f {syslogConfig}
+@end
+@if webConfig
+    uwsgi --ini {webConfig}
+@end
+@if mapproxyConfig
+    uwsgi --ini {mapproxyConfig}
+@end
+@if spoolConfig
+    uwsgi --ini {spoolConfig}
+@end
+@if nginxConfig
+    exec nginx -c {nginxConfig}
+@end
