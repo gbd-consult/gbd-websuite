@@ -59,7 +59,7 @@ class Object(gws.AuthManager):
 
     def _try_open_session(self, req):
         for meth in self.methods:
-            if meth.secure and not req.isSecure:
+            if not self._can_use_in_context(req, meth):
                 gws.log.warning(f'open_session: {meth=}: insecure_context, ignore')
                 continue
 
@@ -79,6 +79,17 @@ class Object(gws.AuthManager):
 
             gws.log.debug(f'open_session: {meth=}: ok')
             return sess
+
+    def _can_use_in_context(self, req: gws.WebRequester, meth: gws.AuthMethod):
+        if not meth.secure or req.isSecure:
+            return True
+        if not meth.allowInsecureFrom:
+            return False
+        ip = req.env('REMOTE_ADDR', '')
+        if ip not in meth.allowInsecureFrom:
+            return False
+        gws.log.warning(f'open_session: {meth=}: insecure_context allowed from {ip=}')
+        return True
 
     def exit_middleware(self, req: gws.WebRequester, res: gws.WebResponder):
         sess = req.session

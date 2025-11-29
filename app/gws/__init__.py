@@ -2730,6 +2730,9 @@ class AuthMethod(Node):
     secure: bool
     """Method is only allowed in a secure context."""
 
+    allowInsecureFrom: list[str]
+    """List of IPs from which insecure access is allowed."""
+
     def open_session(self, req: 'WebRequester') -> Optional['AuthSession']:
         """Attempt to open a Session for a Requester.
 
