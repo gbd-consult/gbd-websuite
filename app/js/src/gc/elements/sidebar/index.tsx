@@ -232,9 +232,6 @@ class SidebarController extends gc.Controller {
         if (this.getValue('appMediaWidth') === 'xsmall') {
             this.setVisible(false)
         }
-        if (typeof window !== 'undefined' && window.innerWidth < 768) {
-            this.setVisible(false);
-        }
     }
 
     get resizable() : boolean {
