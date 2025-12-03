@@ -203,8 +203,8 @@ export class Application implements types.IApplication {
         });
 
         window.onresize = () => this.onWindowResize();
-
         console.log('RES INIT')
+        this.onWindowResize();
 
         window.onpopstate = () => this.onPopState();
         this.onPopState();
@@ -218,8 +218,6 @@ export class Application implements types.IApplication {
         if (b) {
             this.call('setToolbarActiveButton', b);
         }
-
-        this.onWindowResize();
 
         return this;
     }
