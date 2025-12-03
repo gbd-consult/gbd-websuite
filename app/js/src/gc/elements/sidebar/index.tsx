@@ -290,7 +290,7 @@ class SidebarController extends gc.Controller {
         let w = this.width
         let clientWidth = document.getElementsByClassName('gws')[0].clientWidth
         if (typeof w == 'string' && w.indexOf('%')) {
-            w = (Number(w.replace(/[0-9]/g, '')) / 100) * clientWidth
+            w = (Number(w.replace('%', '')) / 100) * clientWidth
         }
         let leftPad = 8,
             hideSidebarButtonWidth = 40,
