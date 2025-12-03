@@ -32,7 +32,7 @@ class Object(gws.base.model.scalar_field.Object):
 
     def prop_to_python(self, feature, value, mc):
         d = gws.lib.datetimex.parse(value)
-        return d or gws.ErrorValue
+        return gws.lib.datetimex.dt.date(d.year, d.month, d.day) if d else gws.ErrorValue
 
     def python_to_prop(self, feature, value, mc):
         return gws.lib.datetimex.to_iso_date_string(value)
