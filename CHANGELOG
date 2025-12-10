@@ -1,80 +1,9 @@
-## Version 8.2.13
+## Version 8.3.1
 
-- better configuration for ALKIS exports, multiple exports possible
-- implemented search for GeoJSON layers
-- support for QGIS raster GetFeature responses
-- added `isHidden` flag for model fields
-- option `allowedServiceUids` for OWS services
+- bugfixes from 8.2.18
 
-## Version 8.2.12
+## Version 8.3.0
 
-- bugfixes and documentation
-
-## Version 8.2.11
-
-- support for styling of the layers panel in the client
-- automatic redirect from http to https
-
-## Version 8.2.10
-
-- SLD support for raster layers
-- added ALKIS option "gemarkungFilter"
-- default spatial search tolerance set to 10px
-
-## Version 8.2.9
-
-- support for mbtiles layers
-- added global and project-based variable support
-- ability to import python modules in "expression" values
-
-## Version 8.2.8
-
-- optional composite rendering for QGIS layers
-- text search categories
-
-## Version 8.2.7
-
-- OWS services futher improved and optimized
-- [breaking] `metadata.attribution.title` renamed to `metadata.attribution`
-
-## Version 8.2.6
-
-- bugfixes in OWS services
-
-## Version 8.2.5
-
-- ALKIS indexing and export optimized
-- ALKIS GeoJSON export
-- standard-conforming CRS handling in GeoJSON
-
-## Version 8.2.4
-
-- support for SSL Postgres connections
-- better support for geographic CRS in raster OGC services
-- background jobs improved
-- watch mode for the configtest command
-- server configuration cleaned up
-- framework for periodic tasks
-
-## Version 8.2.3
-
-- CSW service
-- basic implementation of OGC filters
-- use a dedicated namespace for the Client
-
-## Version 8.2.2
-
-- printing optimized
-- new command `@pagebreak` in templates
-- temporary files cleaned up
-- docker image contains the exact git revision
-
-## Version 8.2.1
-
-- support for raster layers
-- raster formats can be configured for all layers
-
-## Version 8.2.0
-
-- upgrade app image to ubuntu 24 and python 3.12
-- built-in Mapserver added
+- support for http POST forms
+- server startup script now uses a template
+- added option "allowInsecureFrom" for secure requests
