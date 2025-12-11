@@ -213,11 +213,11 @@ class Object(gws.base.action.Object):
 
     @route('POST api/v1/jobs')
     def on_post_jobs(self, rx: Request) -> api.Job:
-        payload = api.validate(api.PostJobPayload, rx.post)
-
-        self.set_qfc_project(payload.project_id, rx)
-        if payload.type != api.TypeEnum.package:
-            raise gws.Error(f'Unsupported job type: {payload.type!r}')
+        project_id = rx.post.get('project_id', '')
+        type = rx.post.get('type', '')
+        self.set_qfc_project(project_id, rx)
+        if type != api.TypeEnum.package:
+            raise gws.Error(f'Unsupported job type: {type!r}')
 
         job = self.create_package_job(rx)
         return _format_job(job, rx)
@@ -271,15 +271,21 @@ class Object(gws.base.action.Object):
 
         # deltas come as a multipart file upload
         try:
-            content = gws.lib.jsonx.from_string(rx.post['file'].stream.read().decode('utf-8'))
+            js = gws.lib.jsonx.from_string(rx.post['file'].stream.read().decode('utf-8'))
+            payload = api.DeltasPayload(
+                deltas=js['deltas'],
+                files=js.get('files', []),
+                id=js['id'],
+                project=js['project'],
+                version=js['version'],
+            )
         except Exception as exc:
             raise gws.BadRequestError(f'invalid delta file content: {exc}')
 
-        payload = api.validate(api.DeltasPayload, content)
         self.store_delta_payload(payload, rx)
 
         changes = []
-        for d in payload.deltas:    
+        for d in payload.deltas:
             new = d.get('new', {})
             old = d.get('old', {})
             chg = patcher.Change(
@@ -446,6 +452,8 @@ class Object(gws.base.action.Object):
         project = worker.user.require_project(pa.projectUid)
         qfc_project = gws.u.require(self.get_qfc_project(pa.qfcProjectUid, project, worker.user))
 
+        self.fs_cleanup_old_packages(qfc_project)
+        
         uid = dtx.to_basic_string(with_ms=True)
         pkg_dir = self.fs_new_package_dir(qfc_project, uid)
         args = packager.Args(
@@ -489,6 +497,7 @@ class Object(gws.base.action.Object):
     ##
 
     def store_delta_payload(self, payload: api.DeltasPayload, rx: Request):
+        self.fs_cleanup_old_deltas(rx.qfcProject)
         sds = [
             api.StoredDelta(
                 id=delta['uuid'],
@@ -556,6 +565,18 @@ class Object(gws.base.action.Object):
         pkg_dir = gws.u.ensure_dir(f'{base_dir}/package_{uid}')
         return pkg_dir
 
+    def fs_cleanup_old_packages(self, qfc_project: core.QfcProject, keep_seconds: int = 3600):
+        base_dir = self.fs_project_base_dir(qfc_project)
+        now = dtx.now().timestamp()
+        for pkg in osx.find_directories(base_dir, deep=False):
+            m = re.search(r'package_(\d+)', pkg)
+            if not m:
+                continue
+            t = osx.file_mtime(pkg)
+            if now - t > keep_seconds:
+                gws.log.info(f'fs_cleanup_old_packages: removing old package: {pkg=}')
+                osx.rmdir(pkg)
+
     def fs_project_cache_dir(self, qfc_project: core.QfcProject) -> str:
         base_dir = self.fs_project_base_dir(qfc_project)
         return gws.u.ensure_dir(f'{base_dir}/cache')
@@ -568,6 +589,15 @@ class Object(gws.base.action.Object):
         d = self.fs_project_deltas_dir(qfc_project)
         u = gws.u.to_uid(payload_id)
         return f'{d}/{u}.json'
+
+    def fs_cleanup_old_deltas(self, qfc_project: core.QfcProject, keep_seconds: int = 3600):
+        d = self.fs_project_deltas_dir(qfc_project)
+        now = dtx.now().timestamp()
+        for f in osx.find_files(d, deep=False):
+            t = osx.file_mtime(f)
+            if now - t > keep_seconds:
+                gws.log.info(f'fs_cleanup_old_deltas: removing old delta: {f=}')
+                osx.unlink(f)
 
     def get_latest_package_path_map(self, rx: Request) -> dict[str, str]:
         d = self.fs_latest_package_dir(rx.qfcProject)

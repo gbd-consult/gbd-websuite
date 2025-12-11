@@ -302,22 +302,24 @@ class QgisXmlTransformer:
             el.require('datasource').text = le.dataSource
             el.require('provider').text = le.dataProvider
 
-            if le.action == caps_mod.LayerAction.edit:
-                cp = el.find('customproperties')
-                if cp:
-                    el.remove(cp)
-                opt = el.add('customproperties').add('Option', type='Map')
+            # @TODO do we need to change properties at all?
+            #
+            # if le.action == caps_mod.LayerAction.edit:
+            #     cp = el.find('customproperties')
+            #     if cp:
+            #         el.remove(cp)
+            #     opt = el.add('customproperties').add('Option', type='Map')
 
-                opt.add('Option', type='QString', name='QFieldSync/action', value='offline')
-                opt.add('Option', type='QString', name='QFieldSync/attachment_naming', value='{}')
-                opt.add('Option', type='QString', name='QFieldSync/photo_naming', value='{}')
-                opt.add('Option', type='QString', name='QFieldSync/sourceDataPrimaryKeys', value='fid')
+            #     opt.add('Option', type='QString', name='QFieldSync/action', value='offline')
+            #     opt.add('Option', type='QString', name='QFieldSync/attachment_naming', value='{}')
+            #     opt.add('Option', type='QString', name='QFieldSync/photo_naming', value='{}')
+            #     opt.add('Option', type='QString', name='QFieldSync/sourceDataPrimaryKeys', value='fid')
 
-                if le.action == caps_mod.LayerAction.edit:
-                    if le.readOnly:
-                        opt.add('Option', type='bool', name='QFieldSync/is_geometry_locked', value='true')
-                    else:
-                        opt.add('Option', type='bool', name='isOfflineEditable', value='true')
+            #     if le.action == caps_mod.LayerAction.edit:
+            #         if le.readOnly:
+            #             opt.add('Option', type='bool', name='QFieldSync/is_geometry_locked', value='true')
+            #         else:
+            #             opt.add('Option', type='bool', name='isOfflineEditable', value='true')
 
     def update_referenced_layers(self):
         for el in self.root.findall('.//referencedLayers/relation'):
