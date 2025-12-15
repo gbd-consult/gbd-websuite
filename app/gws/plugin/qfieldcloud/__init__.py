@@ -73,10 +73,12 @@ from . import (
     action,
     packager,
     patcher,
+    caps,
 )
 
 __all__ = [
     'action',
     'packager',
     'patcher',
+    'caps',
 ]

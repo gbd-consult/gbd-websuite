@@ -3,6 +3,7 @@ from typing import cast, Optional
 import gws
 import gws.base.shape
 import gws.plugin.model_field.file as file_field
+import gws.base.feature
 import gws.lib.osx
 
 from . import core, caps as caps_mod
@@ -106,12 +107,16 @@ class Object:
             fld = cast(file_field.Object, fld)
             if fld.nameColumn is None:
                 continue
-            feat = self.find_feature_by_path(me, fld, path, mc)
-            if not feat:
+            uid = self.find_uid_for_path(me, fld, path, mc)
+            if not uid:
                 continue
-            gws.log.debug(f'commit_upload: found feature: model={me.gpName}: uid={feat.uid()!r} {path=} ')
-            feat.set(fld.name, file_field.FileValue(content=content))
-            me.model.update_feature(feat, mc)
+            gws.log.debug(f'commit_upload: found feature: model={me.gpName}: {fld.name=} {uid=} {path=} ')
+
+            with me.model.db.connect() as conn:
+                sql = me.model.table().update().where(me.model.uid_column().__eq__(uid)).values({fld.contentColumn: content})
+                conn.execute(sql)
+                conn.commit()
+
             return True
 
         return False
@@ -128,6 +133,19 @@ class Object:
             rec = conn.fetch_first(sel)
             if rec:
                 return gws.u.require(me.model.get_feature(rec[me.model.uidName], mc))
+
+    def find_uid_for_path(
+        self,
+        me: caps_mod.ModelEntry,
+        ff: file_field.Object,
+        path: str,
+        mc: gws.ModelContext,
+    ) -> Optional[str]:
+        with me.model.db.connect() as conn:
+            sel = me.model.table().select().with_only_columns(me.model.uid_column()).where(ff.nameColumn == path)
+            rec = conn.fetch_first(sel)
+            if rec:
+                return rec[me.model.uidName]
 
     def prepare_change(self, cc: Change):
         le = self.caps.layerMap.get(cc.layerUid)
