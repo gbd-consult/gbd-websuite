@@ -1,8 +1,6 @@
 from typing import cast
-import shutil
 
 import gws
-import gws.plugin.qgis.project
 import gws.gis.gdalx
 import gws.lib.jsonx
 import gws.lib.image
@@ -127,10 +125,11 @@ class Object:
         for f in me.model.fields:
             if f.attributeType not in self._SUPPORTED_ATTRIBUTE_TYPES:
                 continue
+            # FID field needs to be renamed, because GDAL uses it internally
+            name = f.name
             if f.name.lower() == 'fid':
-                gws.log.warning(f'{self.uid}: {self.qfcProject.uid}::{me.gpName!r} skipping "fid" {f.name=}')
-                continue
-            columns[f.name] = f.attributeType
+                name = 'fid_gws'
+            columns[name] = f.attributeType
 
         gp_layer = ds.create_layer(
             me.gpName,
@@ -140,14 +139,17 @@ class Object:
             overwrite=True,
         )
         
-        records = [
-            gws.FeatureRecord(
-                attributes={name: feature.get(name) for name in columns},
-                shape=feature.shape(),
+        records = []
+        for feat in features:
+            rec = gws.FeatureRecord(
+                attributes={name: feat.get(name) for name in columns},
+                shape=feat.shape(),
                 meta={},
             )
-            for feature in features
-        ]
+            # see above
+            if 'fid' in rec.attributes:
+                rec.attributes['fid_gws'] = rec.attributes.pop('fid')
+            records.append(rec)
 
         with ds.transaction():
             gp_layer.insert(records)
@@ -224,12 +226,16 @@ class Object:
         self.pathMap[le.dataSourceFileName] = cache_path
 
     def write_qgis_project(self):
-        root_el = self.qfcProject.qgisProvider.qgis_project().xml_root()
+        fname = f'{self.qfcProject.uid}.qgs'
+        path = f'{self.args.packageDir}/{fname}'
+        
+        qp = self.qfcProject.qgisProvider.qgis_project()
+        gws.u.write_file(path + '.source.qgs', qp.text)
+        
+        root_el = qp.xml_root()
         QgisXmlTransformer().run(self, root_el)
         xml = root_el.to_string()
         xml = self.replace_vars(xml)
-        fname = f'{self.qfcProject.uid}.qgs'
-        path = f'{self.args.packageDir}/{fname}'
         gws.u.write_file(path, xml)
         self.pathMap[fname] = path
 

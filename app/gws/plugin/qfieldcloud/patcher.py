@@ -157,6 +157,11 @@ class Object:
         pk_name = me.model.uidName
 
         atts = dict(cc.newAtts)
+        
+        # see notes in packager.py about fid/fid_gws
+        if 'fid_gws' in atts:
+            atts['fid'] = atts.pop('fid_gws')
+        
         if cc.wkt:
             geom = me.model.geometryName
             if not geom:
