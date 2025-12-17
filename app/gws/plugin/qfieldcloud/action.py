@@ -20,6 +20,7 @@ gws.ext.new.action('qfieldcloud')
 
 class Config(gws.ConfigWithAccess):
     projects: list[core.ProjectConfig]
+    """QField Cloud projects."""
 
 
 class Props(gws.base.action.Props):
@@ -43,6 +44,8 @@ class Request(gws.Data):
     """QField Cloud Project context."""
     user: gws.User
     """Authenticated user."""
+    sess: gws.AuthSession
+    """Authentication session."""
     token: str
     """Authentication token."""
 
@@ -156,9 +159,11 @@ class Object(gws.base.action.Object):
 
     ##
 
-    @route('GET api/v1/auth/logout')
-    def on_get_auth_logout(self, rx: Request):
-        gws.log.debug(f'{self=}')
+    @route('POST api/v1/auth/logout')
+    def on_post_auth_logout(self, rx: Request):
+        am = self.root.app.authMgr
+        am.sessionMgr.delete(rx.sess)
+        gws.log.debug(f'{self=} {rx=}')
 
     @route('GET api/v1/auth/providers')
     def on_get_auth_providers(self, rx: Request) -> list[api.AuthProvider]:
@@ -175,9 +180,10 @@ class Object(gws.base.action.Object):
             ),
             rx,
         )
+        am = self.root.app.authMgr
         return api.AuthToken(
             token=rx.token,
-            expires_at=dtx.to_iso_string(dtx.add(months=1)),
+            expires_at=dtx.to_iso_string(dtx.add(seconds=am.sessionMgr.lifeTime)),
             username=rx.user.loginName,
             type=api.UserType.person,
             full_name=rx.user.displayName,
@@ -391,9 +397,9 @@ class Object(gws.base.action.Object):
         user = am.authenticate(cast(gws.AuthMethod, self), credentials)
         if not user:
             raise gws.ForbiddenError('invalid username or password')
-        sess = am.sessionMgr.create(cast(gws.AuthMethod, self), user)
+        rx.sess = am.sessionMgr.create(cast(gws.AuthMethod, self), user)
         rx.user = user
-        rx.token = sess.uid
+        rx.token = rx.sess.uid
 
     def authorize_from_token(self, rx: Request):
         h = rx.req.header('Authorization', '')
@@ -405,6 +411,7 @@ class Object(gws.base.action.Object):
         sess = am.sessionMgr.get_valid(token)
         if not sess:
             raise gws.ForbiddenError(f'token_auth: invalid or expired {token=}')
+        rx.sess = sess
         rx.user = sess.user
         rx.token = sess.uid
         gws.log.debug(f'token_auth: ok: {rx.token=} {rx.user.uid=} {rx.user.loginName=}')

@@ -70,9 +70,9 @@ class Object:
             return
 
         for gpName, ops in self.ops_by_model.items():
-            self.commit_operations(self.caps.modelMap[gpName], ops)
+            self.commit_operations_for_model(self.caps.modelMap[gpName], ops)
 
-    def commit_operations(self, me: caps_mod.ModelEntry, ops: list[Operation]):
+    def commit_operations_for_model(self, me: caps_mod.ModelEntry, ops: list[Operation]):
         with me.model.db.connect() as conn:
             for op in ops:
                 gws.log.debug(f'{op.type=} {op.feature.attributes=}')
@@ -120,19 +120,6 @@ class Object:
             return True
 
         return False
-
-    def find_feature_by_path(
-        self,
-        me: caps_mod.ModelEntry,
-        ff: file_field.Object,
-        path: str,
-        mc: gws.ModelContext,
-    ) -> Optional[gws.Feature]:
-        with me.model.db.connect() as conn:
-            sel = me.model.table().select().with_only_columns(me.model.uid_column()).where(ff.nameColumn == path)
-            rec = conn.fetch_first(sel)
-            if rec:
-                return gws.u.require(me.model.get_feature(rec[me.model.uidName], mc))
 
     def find_uid_for_path(
         self,
