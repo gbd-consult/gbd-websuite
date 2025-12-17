@@ -356,7 +356,10 @@ class VectorDataSet(_DataSet):
             options=_option_list(opts),
         )
         for col_name, col_type in columns.items():
-            gd_layer.CreateField(ogr.FieldDefn(col_name, _ATTR_TO_OGR[col_type]))
+            fd = ogr.FieldDefn(col_name, _ATTR_TO_OGR[col_type])
+            if col_type == gws.AttributeType.bool:
+                fd.SetSubType(ogr.OFSTBoolean)
+            gd_layer.CreateField(fd)
 
         return VectorLayer(self, gd_layer)
 
@@ -759,6 +762,7 @@ _ATTR_TO_OGR = {
 
 _OGR_TO_ATTR = {
     ogr.OFTBinary: gws.AttributeType.bytes,
+    ogr.OFSTBoolean: gws.AttributeType.bool,
     ogr.OFTDate: gws.AttributeType.date,
     ogr.OFTDateTime: gws.AttributeType.datetime,
     ogr.OFTReal: gws.AttributeType.float,
