@@ -4,18 +4,15 @@ from typing import cast
 import gws
 import gws.config
 import gws.base.action
-import gws.base.auth
-import gws.base.web
-import gws.lib.jsonx
-import gws.lib.vendor.slon
 
 
-from . import action, core, packager
+from . import action
 
 class PackageRequest(gws.Request):
     projectUid: str
     qfcProjectUid: str
     dir: str
+    actionName: str = ''
 
 class Object(gws.Node):
 
@@ -29,7 +26,8 @@ class Object(gws.Node):
             gws.log.error(f'project {p.projectUid!r} not found')
             return
         
-        act = cast(action.Object, gws.base.action.get_action_for_cli(root, 'qfieldcloud', p.projectUid))
+        act_name = p.actionName or 'qfieldcloud'
+        act = cast(action.Object, gws.base.action.get_action_for_cli(root, act_name, p.projectUid))
         if not act:
             return
         
