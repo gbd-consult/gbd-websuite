@@ -42,4 +42,7 @@ def escape_attribute(s: str) -> str:
     s = s.replace('"', '&quot;')
     s = s.replace('>', '&gt;')
     s = s.replace('<', '&lt;')
+    s = s.replace('\t', '&#x9;')
+    s = s.replace('\r', '&#xd;')
+    s = s.replace('\n', '&#xa;')
     return s

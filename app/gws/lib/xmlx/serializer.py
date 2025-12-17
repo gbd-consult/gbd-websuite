@@ -162,7 +162,7 @@ class Serializer:
         s, ok = util.atom_to_string(arg)
         if not ok:
             s = str(arg)
-        return util.escape_attribute(s.strip())
+        return util.escape_attribute(s)
 
     def _make_name(self, name):
         if self.opts.removeNamespaces:
