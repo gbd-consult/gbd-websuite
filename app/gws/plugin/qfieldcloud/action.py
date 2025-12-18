@@ -196,9 +196,9 @@ class Object(gws.base.action.Object):
     @route('GET api/v1/auth/user')
     def on_get_auth_user(self, rx: Request) -> api.CompleteUser:
         return api.CompleteUser(
-            username='gbd',
+            username=rx.user.loginName,
             type=api.UserType.person,
-            full_name='',
+            full_name=rx.user.displayName,
             avatar_url='',
             email='',
             first_name='',
