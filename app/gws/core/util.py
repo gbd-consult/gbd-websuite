@@ -695,9 +695,9 @@ _ephemeral_state = dict(
 def ephemeral_path(name: str) -> str:
     """Return a new ephemeral path name."""
 
-    # if stime() > _ephemeral_state['last_check_time'] + _ephemeral_state['check_interval']:
-    #     _ephemeral_cleanup()
-    #
+    if stime() > _ephemeral_state['last_check_time'] + _ephemeral_state['check_interval']:
+        ephemeral_cleanup()
+    
     name = str(os.getpid()) + '_' + random_string(64) + '_' + name
     return const.EPHEMERAL_DIR + '/' + name
 
@@ -706,6 +706,11 @@ def ephemeral_dir(name: str) -> str:
     """Create and return an ephemeral directory."""
 
     return ensure_dir(const.EPHEMERAL_DIR + '/' + name)
+
+def ephemeral_set_max_age(seconds: int):
+    """Set the maximum age for ephemeral paths."""
+
+    _ephemeral_state['max_age'] = seconds
 
 
 def ephemeral_cleanup():
@@ -729,7 +734,7 @@ def ephemeral_cleanup():
     _ephemeral_state['last_check_time'] = ts
 
     if cnt > 0:
-        log.debug(f'_ephemeral_cleanup: {cnt}')
+        log.debug(f'ephemeral_cleanup: {cnt}')
 
 
 def random_string(size: int) -> str:
