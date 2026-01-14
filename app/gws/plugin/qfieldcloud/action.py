@@ -564,7 +564,7 @@ class Object(gws.base.action.Object):
         base_dir = self.fs_project_base_dir(qfc_project)
         for pkg in sorted(osx.find_directories(base_dir, deep=False), reverse=True):
             m = re.search(r'package_(\d+)', pkg)
-            if m:
+            if m and gws.u.is_file(f'{pkg}/{packager.COMPLETE_FILE}'):
                 return pkg
 
     def fs_new_package_dir(self, qfc_project: core.QfcProject, uid: str) -> str:
@@ -609,7 +609,7 @@ class Object(gws.base.action.Object):
     def get_latest_package_path_map(self, rx: Request) -> dict[str, str]:
         d = self.fs_latest_package_dir(rx.qfcProject)
         try:
-            return gws.lib.jsonx.from_path(f'{d}/path_map.json')
+            return gws.lib.jsonx.from_path(f'{d}/{packager.PATH_MAP_FILE}')
         except Exception:
             return {}
 

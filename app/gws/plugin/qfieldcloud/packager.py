@@ -12,6 +12,9 @@ import gws.gis.zoom
 
 from . import core, caps as caps_mod
 
+PATH_MAP_FILE = 'path_map.json'
+COMPLETE_FILE = 'package_complete'
+
 
 class Args(gws.Data):
     uid: str
@@ -60,9 +63,13 @@ class Object:
             self.write_qgis_project()
 
         gws.lib.jsonx.to_path(
-            f'{self.args.packageDir}/path_map.json',
+            f'{self.args.packageDir}/{PATH_MAP_FILE}',
             self.pathMap,
             pretty=True,
+        )
+        gws.u.write_file(
+            f'{self.args.packageDir}/{COMPLETE_FILE}',
+            '1',
         )
 
     def write_data(self):
@@ -138,7 +145,7 @@ class Object:
             crs=me.model.geometryCrs,
             overwrite=True,
         )
-        
+
         records = []
         for feat in features:
             rec = gws.FeatureRecord(
@@ -169,7 +176,7 @@ class Object:
         if max_zoom > 20:
             gws.log.warning(f'{self.uid}: write_base_map_layer: invalid zoom level {max_zoom=}')
             max_zoom = 20
-        
+
         cache_path = f'{self.args.mapCacheDir}/{max_zoom}_{le.dataSourceFileName}'
         age = osx.file_age(cache_path)
         ttl = self.qfcProject.mapCacheLifeTime
@@ -228,10 +235,10 @@ class Object:
     def write_qgis_project(self):
         fname = f'{self.qfcProject.uid}.qgs'
         path = f'{self.args.packageDir}/{fname}'
-        
+
         qp = self.qfcProject.qgisProvider.qgis_project()
         gws.u.write_file(path + '.source.qgs', qp.text)
-        
+
         root_el = qp.xml_root()
         QgisXmlTransformer().run(self, root_el)
         xml = root_el.to_string()
