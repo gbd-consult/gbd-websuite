@@ -75,16 +75,16 @@ def apply_middleware(root: gws.Root, req: gws.WebRequester) -> gws.WebResponder:
             break
 
     if not res:
-        m = req.method
-        if m == gws.RequestMethod.GET or m == gws.RequestMethod.POST:
-            try:
+        try:
+            m = req.method
+            if m == gws.RequestMethod.GET or m == gws.RequestMethod.POST:
                 res = handle_action(root, req)
-            except Exception as exc:
-                res = handle_error(req, exc)
-        elif m == gws.RequestMethod.HEAD or m == gws.RequestMethod.OPTIONS:
-            res = req.content_responder(gws.ContentResponse(mime='text/plain', content=''))
-        else:
-            raise gws.base.web.error.MethodNotAllowed(f'method not allowed: {m!r}')
+            elif m == gws.RequestMethod.HEAD or m == gws.RequestMethod.OPTIONS:
+                res = req.content_responder(gws.ContentResponse(mime='text/plain', content=''))
+            else:
+                raise gws.base.web.error.MethodNotAllowed(f'method not allowed: {m!r}')
+        except Exception as exc:
+            res = handle_error(req, exc)
 
     for obj in reversed(done):
         try:
