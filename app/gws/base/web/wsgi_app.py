@@ -82,7 +82,7 @@ def apply_middleware(root: gws.Root, req: gws.WebRequester) -> gws.WebResponder:
             elif m == gws.RequestMethod.HEAD or m == gws.RequestMethod.OPTIONS:
                 res = req.content_responder(gws.ContentResponse(mime='text/plain', content=''))
             else:
-                raise gws.base.web.error.MethodNotAllowed(f'method not allowed: {m!r}')
+                raise gws.base.web.error.MethodNotAllowed(['GET', 'POST', 'HEAD', 'OPTIONS'])
         except Exception as exc:
             res = handle_error(req, exc)
 
