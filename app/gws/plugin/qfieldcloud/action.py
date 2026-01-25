@@ -460,7 +460,7 @@ class Object(gws.base.action.Object):
         qfc_project = gws.u.require(self.get_qfc_project(pa.qfcProjectUid, project, worker.user))
 
         self.fs_cleanup_old_packages(qfc_project)
-        
+
         uid = dtx.to_basic_string(with_ms=True)
         pkg_dir = self.fs_new_package_dir(qfc_project, uid)
         args = packager.Args(
@@ -702,11 +702,38 @@ def _get_sha256(path: str) -> str:
         return hashlib.file_digest(f, 'sha256').hexdigest()
 
 
-def _get_md5sum(path: str) -> str:
-    with open(path, 'rb') as f:
-        return hashlib.file_digest(f, 'md5').hexdigest()
-
-
 def _get_time_iso(path: str) -> str:
     t = osx.file_mtime(path)
     return dtx.to_iso_string(dtx.from_timestamp(t))
+
+
+def _get_md5sum(path: str) -> str:
+    with open(path, 'rb') as f:
+        return _get_md5sum_file(f)
+
+
+def _get_md5sum_file(fp, part_size: int = 8 * 1024 * 1024) -> str:
+    """Compute file hash matching QField's fileEtag implementation.
+    Returns simple MD5 for files <= part_size, or S3-style multipart ETag for larger files.
+    """
+    fp.seek(0, 2)
+    file_size = fp.tell()
+    fp.seek(0)
+
+    if file_size <= part_size:
+        hash = hashlib.md5()
+        hash.update(fp.read())
+        return hash.hexdigest()
+
+    md5_sums = b''
+    read_size = 0
+
+    while read_size < file_size:
+        hash = hashlib.md5()
+        hash.update(fp.read(part_size))
+        md5_sums += hash.digest()
+        read_size += part_size
+
+    hash = hashlib.md5()
+    hash.update(md5_sums)
+    return f'{hash.hexdigest()}-{read_size // part_size}'
