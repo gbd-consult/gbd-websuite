@@ -28,13 +28,12 @@ class Object(gws.base.auth.method.Object):
 
     ##
 
-    def enter_middleware(self, req):
-        pass
-
     def exit_middleware(self, req, res):
         if res.status == 403 and req.isGet:
             res.set_status(401)
             res.add_header('WWW-Authenticate', f'Basic realm={self.realm}, charset="UTF-8"')
+            gws.log.debug(f'auth basic: redirect {res.status=}')
+
 
     def open_session(self, req):
         am = self.root.app.authMgr

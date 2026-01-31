@@ -1,5 +1,6 @@
 """Web authorisation method."""
 
+import re
 from typing import Optional, cast
 
 import gws
@@ -9,6 +10,15 @@ import gws.base.web
 gws.ext.new.authMethod('web')
 
 
+class LoginRedirectRule(gws.Data):
+    """Login redirect rule."""
+
+    pattern: Optional[gws.Regex]
+    """URL matching pattern for pages that must be redirected."""
+    target: str
+    """Target url."""
+
+
 class Config(gws.base.auth.method.Config):
     """Web-based authorization options"""
 
@@ -16,9 +26,14 @@ class Config(gws.base.auth.method.Config):
     """Name for the cookie."""
     cookiePath: str = '/'
     """Cookie path."""
+    cookieSameSite: str = 'Lax'
+    """Cookie SameSite attribute."""
+    loginRedirect: Optional[LoginRedirectRule]
+    """Rule to redirect if a login is required."""
 
 
 ##
+
 
 class UserResponse(gws.Response):
     user: Optional[gws.base.auth.user.Props]
@@ -52,13 +67,39 @@ _DELETED_SESSION = 'web:deleted'
 class Object(gws.base.auth.method.Object):
     cookieName: str
     cookiePath: str
+    cookieSameSite: str
+    loginRedirect: Optional[LoginRedirectRule]
 
     deletedSession: gws.base.auth.session.Object
 
     def configure(self):
-        self.uid = 'gws.plugin.self.web'
+        self.uid = 'gws.plugin.auth.method.web'
         self.cookieName = self.cfg('cookieName', default=Config.cookieName)
         self.cookiePath = self.cfg('cookiePath', default=Config.cookiePath)
+        self.cookieSameSite = self.cfg('cookieSameSite', default=Config.cookieSameSite)
+        self.loginRedirect = self.cfg('loginRedirect')
+        self.root.app.middlewareMgr.register(self, self.uid, depends_on=['auth'])
+
+    ##
+
+    def exit_middleware(self, req, res):
+        if res.status in (403, 401) and req.isGet:
+            self._check_login_redirect(req, res)
+
+    def _check_login_redirect(self, req: gws.WebRequester, res: gws.WebResponder):
+        lr = self.loginRedirect
+        if not lr:
+            return
+        request_uri = req.env('REQUEST_URI', '')
+        if not request_uri:
+            return
+        if lr.pattern and not re.match(lr.pattern, request_uri):
+            return
+        redir = req.url_for(lr.target, to=request_uri)
+        res.set_status(302)
+        res.add_header('Location', redir)
+        res.set_body(f'Redirecting to {redir}...')
+        gws.log.debug(f'auth web: redirect {res.status=} {redir=}')
 
     def activate(self):
         am = self.root.app.authMgr
@@ -94,7 +135,8 @@ class Object(gws.base.auth.method.Object):
             gws.log.debug('session cookie=deleted')
             res.delete_cookie(
                 self.cookieName,
-                path=self.cookiePath)
+                path=self.cookiePath,
+            )
             return
 
         if res.status < 400:
@@ -104,7 +146,9 @@ class Object(gws.base.auth.method.Object):
                 sess.uid,
                 path=self.cookiePath,
                 secure=self.secure,
-                httponly=True)
+                samesite=self.cookieSameSite,
+                httponly=True,
+            )
             am.sessionMgr.save(sess)
 
     def handle_login(self, req: gws.WebRequester, p: LoginRequest) -> LoginResponse:

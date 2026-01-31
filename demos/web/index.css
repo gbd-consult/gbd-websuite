@@ -243,16 +243,12 @@ body {
 }
 
 #login-box {
-    display: none;
-    position: absolute;
-    left: 0;
-    bottom: 4em;
-    padding: 1em;
-    background-color: #222;
-    color: #ccc;
-    width: 20em;
-    z-index: 1;
-    transition: left 0.3s ease;
+    position: fixed;
+    top: 10em;
+    left: 50%;
+    transform: translate(-50%, 0);
+    padding: 2em;
+    width: 30em;
 }
 
 #login-box td {
@@ -273,26 +269,15 @@ body {
     background: #999;
     color: white;
     border: 0;
+    border-radius: 8px;
+
+}
+#login-box small {
+    font-size: 15px;
 }
 
-.with-login-box #login-box {
-    display: block;
-    left: 0em
-}
-
-#login-form {
-    display: block;
-}
-
-#logout-form {
-    display: none;
-}
-
-.with-user #login-form {
-    display: none;
-}
-.with-user #logout-form {
-    display: block;
+#login-box small b {
+    color: rgb(183, 183, 15);
 }
 
 #login-error {
@@ -300,7 +285,16 @@ body {
     display: none;
 }
 
+#login-wait {
+    background: url('/demos/ajax.gif') left center no-repeat;
+    height: 40px;
+    display: none;
+}
+
 .gwsLoginError #login-error {
+    display: block;
+}
+.gwsLoginProgress #login-wait {
     display: block;
 }
 

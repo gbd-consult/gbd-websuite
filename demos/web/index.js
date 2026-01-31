@@ -193,8 +193,9 @@ window.addEventListener('load', () => {
     });
 
     $('#button-login').addEventListener('click', evt => {
-        $('body').classList.toggle('with-login-box');
-        evt.preventDefault();
+        // $('body').classList.toggle('with-login-box');
+        // evt.preventDefault();
+        window.location.href = '/login?to=/demos';
     });
 
     $('#button-prev-demo').addEventListener('click', evt => {

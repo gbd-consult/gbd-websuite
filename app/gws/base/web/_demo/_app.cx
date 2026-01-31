@@ -2,7 +2,7 @@ actions+ { type "web" }
 
 web.sites+ {
     assets.dir "/demos/assets"
-    root.dir "/demos/web"
+    root.dir "/data/web"
     host "*"
     rewrite [
         {
@@ -22,8 +22,12 @@ web.sites+ {
             target "/_/webAsset/path/index.cx.html"
         }
         {
-            pattern "^/(demo|tag)"
+            pattern "^/(demos$|demo/|tag/)"
             target "/_/webAsset/path/index.cx.html"
+        }
+        {
+            pattern "^/login"
+            target "/_/webAsset/path/login.cx.html"
         }
         {
             pattern "^/config/([a-z0-9_.-]+)"

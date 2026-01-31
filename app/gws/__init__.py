@@ -4480,6 +4480,13 @@ class WebResponder:
             value: Header value.
         """
 
+    def set_body(self, body: str | bytes):
+        """Set the response body.
+
+        Args:
+            body: New response body.
+        """
+
 
 class WebDocumentRoot(Data):
     """Web document root."""

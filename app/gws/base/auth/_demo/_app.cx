@@ -1,4 +1,13 @@
-auth.methods+ { type "web" secure true }
+
+auth.methods+ { 
+    type "web" 
+    secure true
+    loginRedirect {
+        pattern "^/(demo|project)"
+        target "/login"
+    }
+}
+
 auth.methods+ { type "basic" secure true }
 
 auth.providers+ { type "file" path "/demos/users.json" }

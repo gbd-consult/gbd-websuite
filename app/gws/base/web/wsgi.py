@@ -24,7 +24,6 @@ class Responder(gws.WebResponder):
             self._wz = kwargs['wz']
         else:
             self._wz = werkzeug.wrappers.Response(**kwargs)
-        self.response = kwargs.get('response')
         self.status = self._wz.status_code
 
     def __repr__(self):
@@ -44,6 +43,12 @@ class Responder(gws.WebResponder):
 
     def set_status(self, status):
         self._wz.status_code = int(status)
+        self.status = self._wz.status_code
+
+    def set_body(self, body):
+        if isinstance(body, str):
+            body = body.encode('utf-8')
+        self._wz.set_data(body)
 
 
 class Requester(gws.WebRequester):

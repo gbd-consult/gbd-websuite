@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+
+@import re
+@import time
+
+
+<html>
+<head>
+    <title>GBD WebSuite Developer Demos</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/_/webSystemAsset/path/{app.version}.util.js"></script>
+    <link rel="stylesheet" href="/demos/index.css?r={time.time()}" />
+</head>
+<body>
+    <div id="login-box">
+        @if user.isGuest
+            <form id="gwsLoginForm">
+                <table>
+                    <tr>
+                        <td>Username</td>
+                        <td><input id="gwsUsername" name="username"></td>
+                    </tr>
+                    <tr>
+                        <td>Password</td>
+                        <td><input id="gwsPassword" name="password" type="password"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <small>
+                                There are two user groups: <b>groupA</b> and <b>groupB</b>,
+                                you can use logins <b>demo1</b> or <b>demo2</b> for the first group
+                                and <b>demo3</b> or <b>demo4</b> for the second.
+                                The password for all users is <b>demo</b>.
+                            </small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <button type="submit">Log in</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <p id="login-error">Invalid username or password</p>
+                            <p id="login-wait"></p>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        @else
+            <form id="gwsLogoutForm">
+                <table>
+                    <tr>
+                        <td>{user.displayName}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <button type="submit">Log out</button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+        @end
+    </div>

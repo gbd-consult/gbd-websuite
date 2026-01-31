@@ -4,7 +4,7 @@
 window.addEventListener("load", function (evt) {
     let frmLogin = document.getElementById('gwsLoginForm');
     if (frmLogin) {
-        frmLogin.addEventListener('submit', function(evt) {
+        frmLogin.addEventListener('submit', function (evt) {
             gwsLogin();
             evt.preventDefault();
             return false;
@@ -13,7 +13,7 @@ window.addEventListener("load", function (evt) {
 
     let frmLogout = document.getElementById('gwsLogoutForm');
     if (frmLogout) {
-        frmLogout.addEventListener('submit', function(evt) {
+        frmLogout.addEventListener('submit', function (evt) {
             gwsLogout();
             evt.preventDefault();
             return false;
@@ -32,7 +32,13 @@ function gwsLogin(onSuccess, onFailure) {
         password: document.getElementById('gwsPassword').value
     };
 
-    onSuccess = onSuccess || (() => window.location.reload());
+    let toParam = (new URLSearchParams(window.location.search).get('to') || '').trim();
+    let redirUrl = '';
+    if (toParam) {
+        redirUrl = '/' + toParam.replace(/^\/+/, '')
+    }
+
+    onSuccess = onSuccess || (() => redirUrl ? window.location.href = redirUrl : window.location.reload());
     onFailure = onFailure || (() => 0);
 
     _gwsPostRequest(
@@ -71,7 +77,7 @@ function _gwsPostRequest(cmd, params, onSuccess, onFailure) {
             try {
                 res = JSON.parse(xhr.responseText)
             } catch (exc) {
-                res = {'text': res}
+                res = { 'text': res }
             }
             if (xhr.status === 200) {
                 onSuccess(xhr.status, res);
