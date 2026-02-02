@@ -1,0 +1,11 @@
+actions+ {
+    type "qfieldcloud"
+    access "allow all"
+    projects+ {
+        uid "qfield_demo"
+        title "QField Demo"
+        provider.path "/demos/poi_districts_qfield.qgs"
+        mapCacheLifeTime "7d"
+        access "allow all"
+    }
+}

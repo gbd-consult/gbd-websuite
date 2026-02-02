@@ -33,6 +33,10 @@ web.sites+ {
             pattern "^/config/([a-z0-9_.-]+)"
             target "/_/webAsset/path/config.cx.html/prj/$1"
         }
+        {
+            pattern "^/qfc/(.*)"
+            target "/_/qfieldcloudApi/projectUid/qfield_demo/$1"
+        }
     ]
     errorPage {
         type "html"

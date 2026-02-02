@@ -1,0 +1,46 @@
+uid "qfield_demo"
+
+title "Editieren mit QField"
+
+metadata.keywords [ "qgis" "postgres" "qfield" ]
+
+metadata.abstract """
+Diese Daten können mit QField auf einem mobilen Gerät
+bearbeitet werden.
+
+Um die Daten zu bearbeiten, benutzen Sie bitte die QField App.
+Unter "QFieldCloud Projekte" melden Sie sich zunächst mit folgenden
+Zugangsdaten an:
+
+- **Server**: https://docs.gbd-websuite.de/qfc
+- **Benutzername**: demo1
+- **Passwort**: demo
+
+Laden Sie das Projekt "QField Demo" herunter und öffnen Sie es in QField.
+Editieren Sie die Daten, danach aus der QFieldCloud Menu "Synchronisieren" wählen.
+Anschließend laden Sie diese Seite neu, um die Änderungen in der Webkarte zu sehen.
+"""
+
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+    zoom.maxScale  1000000
+}
+
+map.layers+ {
+    title "Points of interest"
+    type "qgisflat"
+    provider.path "/demos/poi_districts_qfield.qgs"
+    sourceLayers.names [ "Points of interest" ]
+}
+
+map.layers+ {
+    title "Districts"
+    type "qgisflat"
+    provider.path "/demos/poi_districts_qfield.qgs"
+    sourceLayers.names [ "Districts" ]
+    opacity 0.5
+}
+
+{demo_osm_background}
