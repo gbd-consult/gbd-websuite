@@ -22,9 +22,10 @@ class Error(gws.Error):
 class Object:
     saEngine: sa.Engine
 
-    def __init__(self, db_path: str, init_ddl: Optional[str] = ''):
+    def __init__(self, db_path: str, init_ddl: Optional[str] = '', connect_args: Optional[dict] = None):
         self.dbPath = db_path
         self.initDDL = init_ddl
+        self.connectArgs = connect_args or {}
 
     def execute(self, stmt: str, **params):
         """Execute a text DML statement and commit."""
@@ -79,7 +80,7 @@ class Object:
             # @TODO using strings for error checking, is there a better way?
 
             if 'no such table' in str(sa_exc) and self.initDDL:
-                gws.log.warning(f'sqlitex: {self.dbPath}: error={sa_exc}, running init...')
+                gws.log.warning(f'sqlitex: {self.dbPath}: {sa_exc}, running init...')
                 try:
                     with self._engine().connect() as conn:
                         conn.execute(sa.text(self.initDDL))
@@ -95,13 +96,18 @@ class Object:
 
             err_cnt += 1
             if err_cnt < self._MAX_ERRORS:
-                gws.log.warning(f'sqlitex: {self.dbPath}: error={sa_exc}, waiting...')
+                gws.log.warning(f'sqlitex: {self.dbPath}: {sa_exc}, waiting...')
                 gws.u.sleep(self._SLEEP_TIME)
                 continue
 
-            raise gws.Error(f'sqlitex: {self.dbPath}: fatal error') from sa_exc
+            raise gws.Error(f'sqlitex: {self.dbPath}: {sa_exc}') from sa_exc
 
     def _engine(self):
         if getattr(self, 'saEngine', None) is None:
-            self.saEngine = sa.create_engine(f'sqlite:///{self.dbPath}', poolclass=sa.NullPool, echo=False)
+            self.saEngine = sa.create_engine(
+                f'sqlite:///{self.dbPath}',
+                poolclass=sa.NullPool,
+                echo=False,
+                connect_args=self.connectArgs,
+            )
         return self.saEngine
