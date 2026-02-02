@@ -6,24 +6,24 @@ web.sites+ {
     host "*"
     rewrite [
         {
+            pattern "^/$"
+            target "/_/webAsset/path/index.cx.html"
+        }
+        {
             pattern "^/project/([a-z0-9_.-]+)/([a-z][a-z])"
-            target "/_/webAsset/projectUid/$1/path/project.cx.html/localeUid/$2"
+            target "/_/webAsset/path/project.cx.html/projectUid/$1/localeUid/$2"
         }
         {
             pattern "^/project/([a-z0-9_.-]+)"
-            target "/_/webAsset/projectUid/$1/path/project.cx.html"
+            target "/_/webAsset/path/project.cx.html/projectUid/$1"
         }
         {
             pattern "^/asset/([a-z0-9_.-]+)"
             target "/_/webAsset/path/$1.cx.html"
         }
         {
-            pattern "^/$"
-            target "/_/webAsset/path/index.cx.html"
-        }
-        {
-            pattern "^/(demos$|demo/|tag/)"
-            target "/_/webAsset/path/index.cx.html"
+            pattern "^/(demos/?$|demo/|tag/)"
+            target "/_/webAsset/path/demos.cx.html"
         }
         {
             pattern "^/login"

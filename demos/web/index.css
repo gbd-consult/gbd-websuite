@@ -2,7 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Helvetica, sans-serif;
+    font-family: "Lato", "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 html, body {
@@ -273,11 +273,21 @@ body {
 
 }
 #login-box small {
+    display: block;
     font-size: 15px;
+    padding: 1em 0;
 }
 
 #login-box small b {
     color: rgb(183, 183, 15);
+}
+.login-credentials {
+    margin-top: 1em;
+    border-collapse: collapse;
+}
+.login-credentials td {
+    border: 1px solid #555;
+    padding: 0.3em 0.6em;
 }
 
 #login-error {
@@ -381,4 +391,109 @@ mark.selected {
         right: 0;
     }
 
+}
+
+
+:root {
+    --gbdLogoBlue: hsl(204, 100%, 36%)
+}
+
+body.frontpage {
+    padding: min(5em, 10vw);
+    font-size: clamp(1rem, calc(0.2vw + 1rem), 1.125rem);
+    font-weight: 400;
+    font-style: normal;
+    line-height: 1.38;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale
+}
+
+.frontpage h1 {
+    color: var(--gbdLogoBlue);
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1em
+}
+
+.frontpage a {
+    color: var(--gbdLogoBlue);
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+    transition: all 140ms ease-out
+}
+
+.frontpage a::before {
+    content: "";
+    background: rgba(0, 134, 201, .3);
+    display: block;
+    position: absolute;
+    z-index: -1;
+    top: -1px;
+    left: -5px;
+    right: -5px;
+    bottom: -3px;
+    opacity: 0;
+    transform: scale(0.8);
+    border-radius: .2em;
+    box-shadow: 0 4px 15px rgba(0, 93, 151, .2);
+    transition: all 300ms cubic-bezier(0.57, 1.77, 0.55, 1)
+}
+
+.frontpage a:hover,
+a:focus-visible {
+    outline: 0
+}
+
+.frontpage a:hover::before,
+.frontpage a:focus-visible::before {
+    opacity: 1;
+    transform: scale(1)
+}
+
+.frontpage a:active,
+.frontpage a:hover {
+    outline: 0
+}
+
+.frontpage a:focus-visible {
+    outline: 2px solid var(--gbdLogoBlue);
+    outline-offset: .3em;
+    border-radius: .1em
+}
+
+.frontpage ul {
+    list-style-type: none;
+    margin-bottom: 1.38em
+}
+
+.frontpage ul:last-child {
+    margin-bottom: 0
+}
+
+.frontpage li {
+    position: relative;
+    letter-spacing: .01em;
+    padding: 0 0 .6em 2.3em;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    column-break-inside: avoid;
+}
+
+.frontpage li::before {
+    content: "";
+    background-color: transparent;
+    background-image: url("/bullet.svg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    display: block;
+    width: 1.4em;
+    height: 1.4em;
+    position: absolute;
+    top: 0;
+    left: .1em
 }
