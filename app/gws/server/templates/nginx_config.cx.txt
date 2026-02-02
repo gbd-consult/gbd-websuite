@@ -105,7 +105,7 @@
     @for site in root.app.webMgr.sites
         location / {
             root {site.staticRoot.dir};
-            try_files $uri $uri/index.html @cache;
+            try_files $uri $uri/ $uri/index.html @cache;
         }
         location = /favicon.ico {
             root /;
