@@ -4,7 +4,6 @@ import gws
 import gws.base.auth
 import gws.lib.datetimex
 import gws.lib.jsonx
-import gws.lib.osx
 import gws.lib.sqlitex
 
 gws.ext.new.authSessionManager('sqlite')
@@ -22,7 +21,8 @@ class Object(gws.base.auth.session_manager.Object):
     table = 'sessions'
 
     def configure(self):
-        self.dbPath = self.cfg('path', default=f'{gws.c.MISC_DIR}/sessions82.sqlite')
+        ver = self.root.specs.version.rpartition('.')[0]
+        self.dbPath = self.cfg('path', default=f'{gws.c.MISC_DIR}/sessions.{ver}.sqlite')
 
     ##
 
