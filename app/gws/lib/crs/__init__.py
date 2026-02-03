@@ -38,7 +38,7 @@ class Object(gws.Crs):
     def transform_extent(self, ext, crs_to):
         if crs_to == self:
             return ext
-        return _transform_extent(ext, self.srid, crs_to.srid)
+        return _transform_extent_constrained(ext, self.srid, crs_to.srid)
 
     def transformer(self, crs_to):
         tr = _pyproj_transformer(self.srid, crs_to.srid)
@@ -90,7 +90,10 @@ class Object(gws.Crs):
         return x, y
 
     def to_string(self, fmt=None):
-        return getattr(self, str(fmt or gws.CrsFormat.epsg).lower())
+        fmt = fmt or gws.CrsFormat.epsg
+        if fmt == gws.CrsFormat.srid:
+            return str(self.srid)
+        return getattr(self, str(fmt).lower())
 
     def to_geojson(self):
         # https://geojson.org/geojson-spec#named-crs
@@ -125,7 +128,7 @@ def qgis_extent_width(extent: gws.Extent) -> float:
 COORDINATE_PRECISION_DEG = 7
 COORDINATE_PRECISION_M = 2
 
-WGS84 = Object(
+WGS84: gws.Crs = Object(
     srid=4326,
     proj4text='+proj=longlat +datum=WGS84 +no_defs +type=crs',
     wkt='GEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Horizontal component of 3D system."],AREA["World."],BBOX[-90,-180,90,180]],ID["EPSG",4326]]',
@@ -149,7 +152,7 @@ WGS84 = Object(
 
 WGS84.bounds = gws.Bounds(crs=WGS84, extent=WGS84.extent)
 
-WEBMERCATOR = Object(
+WEBMERCATOR: gws.Crs = Object(
     srid=3857,
     proj4text='+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs +type=crs',
     wkt='PROJCRS["WGS 84 / Pseudo-Mercator",BASEGEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]],CONVERSION["Popular Visualisation Pseudo-Mercator",METHOD["Popular Visualisation Pseudo Mercator",ID["EPSG",1024]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Web mapping and visualisation."],AREA["World between 85.06°S and 85.06°N."],BBOX[-85.06,-180,85.06,180]],ID["EPSG",3857]]',
@@ -331,46 +334,40 @@ def _pyproj_transformer(srid_from, srid_to) -> pyproj.transformer.Transformer:
     return _transformer_cache[key]
 
 
-def _transform_extent(ext, srid_from, srid_to, constrain=True):
-    tr = _pyproj_transformer(srid_from, srid_to)
-
-    nor_ext = _normalize_extent(ext)
-
-    if not constrain:
-        res = tr.transform_bounds(
-            left=nor_ext[0],
-            bottom=nor_ext[1],
-            right=nor_ext[2],
-            top=nor_ext[3],
-            errcheck=True,
-        )
-        return _normalize_extent(res)
+def _transform_extent_constrained(ext, srid_from, srid_to):
+    ext_nor = _normalize_extent(ext)
 
     if srid_from == WGS84.srid:
-        ext_wgs = nor_ext
+        ext_wgs = ext_nor
     else:
         tr_to_wgs = _pyproj_transformer(srid_from, WGS84.srid)
         ext_wgs = tr_to_wgs.transform_bounds(
-            left=nor_ext[0],
-            bottom=nor_ext[1],
-            right=nor_ext[2],
-            top=nor_ext[3],
+            left=ext_nor[0],
+            bottom=ext_nor[1],
+            right=ext_nor[2],
+            top=ext_nor[3],
             errcheck=True,
         )
 
-    ext_use = tr.area_of_use.bounds
-
-    ext_constrained = _normalize_extent(
-        [
-            max(ext_wgs[0], ext_use[0]),
-            max(ext_wgs[1], ext_use[1]),
-            min(ext_wgs[2], ext_use[2]),
-            min(ext_wgs[3], ext_use[3]),
-        ]
-    )
-
     if srid_to == WGS84.srid:
-        return _normalize_extent(ext_constrained)
+        return _normalize_extent(ext_wgs)
+
+    pp = _pyproj_crs_object(srid_to)
+    if not pp:
+        raise Error(f'_transform_extent: unknown {srid_to=}')
+
+    au = pp.area_of_use
+    if not au:
+        ext_constrained = ext_wgs
+    else:
+        ext_use = au.bounds
+        x0 = max(ext_wgs[0], ext_use[0])
+        y0 = max(ext_wgs[1], ext_use[1])
+        x1 = min(ext_wgs[2], ext_use[2])
+        y1 = min(ext_wgs[3], ext_use[3])
+        if x0 >= x1 or y0 >= y1:
+            raise Error(f'transform_extent: no overlap {ext=} {srid_from!r}->{srid_to!r}')
+        ext_constrained = (x0, y0, x1, y1)
 
     tr_from_wgs = _pyproj_transformer(WGS84.srid, srid_to)
     ext_to = tr_from_wgs.transform_bounds(
@@ -381,6 +378,21 @@ def _transform_extent(ext, srid_from, srid_to, constrain=True):
         errcheck=True,
     )
     return _normalize_extent(ext_to)
+
+
+def _transform_extent_direct(ext, srid_from, srid_to):
+    tr = _pyproj_transformer(srid_from, srid_to)
+
+    ext_nor = _normalize_extent(ext)
+
+    res = tr.transform_bounds(
+        left=ext_nor[0],
+        bottom=ext_nor[1],
+        right=ext_nor[2],
+        top=ext_nor[3],
+        errcheck=True,
+    )
+    return _normalize_extent(res)
 
 
 def _normalize_extent(ext):
@@ -464,7 +476,7 @@ def _make_crs(srid, pp, axis, uom):
         b['east_longitude'],
         b['north_latitude'],
     )
-    crs.extent = _transform_extent(crs.wgsExtent, WGS84.srid, srid)
+    crs.extent = _transform_extent_constrained(crs.wgsExtent, WGS84.srid, srid)
     crs.bounds = gws.Bounds(extent=crs.extent, crs=crs)
 
     return crs

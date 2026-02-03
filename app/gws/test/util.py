@@ -1,6 +1,7 @@
 """Test utilities."""
 
 import contextlib
+import math
 import os
 import re
 import typing
@@ -171,24 +172,24 @@ def gws_root(cfg: str = '', specs: gws.SpecRuntime = None, activate=True, defaul
     cfg = cfg or ''
     if defaults:
         cfg = _config_defaults() + '\n' + cfg
-    
+
     cfg = f'server.log.level {gws.log.get_level()}\n' + cfg
-    
+
     for k, v in vars.items():
         cfg = cfg.replace('{' + k + '}', str(v))
 
     parsed_config = _to_data(gws.lib.vendor.slon.parse(cfg, as_object=True))
     specs = mock.register(specs or gws_specs())
     root = gws.config.initialize(specs, gws.Config(parsed_config))
-    
+
     if root.configErrors:
         for err in root.configErrors:
             gws.log.error(f'CONFIGURATION ERROR: {err}')
         raise gws.ConfigurationError('config failed')
-    
+
     if not activate:
         return root
-    
+
     root = gws.config.activate(root)
     return root
 
@@ -435,6 +436,12 @@ def fxml(s):
     s = re.sub(r'\s*(<|>)\s*', r'\1', s)
     s = s.replace('<', '\n<').replace('>', '>\n').replace('\n\n', '\n')
     return s.strip()
+
+
+def is_close(a, b, rel_tol=1e-9, abs_tol=0.0):
+    if isinstance(a, (int, float)):
+        return math.isclose(a, b, rel_tol=rel_tol, abs_tol=abs_tol)
+    return len(a) == len(b) and all(math.isclose(x, y, rel_tol=rel_tol, abs_tol=abs_tol) for x, y in zip(a, b))
 
 
 ##
