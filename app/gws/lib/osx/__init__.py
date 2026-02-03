@@ -38,7 +38,7 @@ def getenv(key: str, default: str = None) -> Optional[str]:
 
     Returns:
         ``default`` if no key has been found, if there is such key then the value for the environment-variable is returned.
-        """
+    """
     return os.getenv(key, default)
 
 
@@ -188,6 +188,17 @@ def rmdir(path: _Path) -> bool:
         return False
 
 
+def touch(path: _Path):
+    """Update the access and modification times of the file to the current time.
+    If the file does not exist, it is created.
+
+    Args:
+        path: Filepath.
+    """
+    with open(path, 'a'):
+        os.utime(path, None)
+
+
 def file_mtime(path: _Path) -> float:
     """Returns the time from epoch when the path was recently changed.
 
@@ -262,7 +273,7 @@ def kill_pid(pid: int, sig_name='TERM') -> bool:
 
     Returns:
         ``True`` if the process with the given PID is killed or does not exist.``False `` if the process could not be killed.
-        """
+    """
     sig = getattr(signal, sig_name, None) or getattr(signal, 'SIG' + sig_name)
     try:
         psutil.Process(pid).send_signal(sig)

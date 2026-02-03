@@ -73,7 +73,7 @@ class Object:
                         return [gws.u.to_dict(r) for r in conn.execute(sa.text(stmt), params)]
                     conn.execute(sa.text(stmt), params)
                     conn.commit()
-                    return
+                    return []
             except sa.Error as exc:
                 sa_exc = exc
 
