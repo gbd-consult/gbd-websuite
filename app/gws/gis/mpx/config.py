@@ -199,6 +199,7 @@ class _Config:
         d = {
             'services': self.services,
             'globals': self.globals,
+            'layers': [],
         }
 
         kinds = ['source', 'grid', 'cache', 'layer']
@@ -241,7 +242,7 @@ def create(root: gws.Root) -> Optional[Dict[str, Any]]:
     for p in root.find_all(gws.ext.object.map):
         crs.append(cast(gws.Map, p).bounds.crs)
     for p in root.find_all(gws.ext.object.owsService):
-        crs.extend(gws.u.get(p, 'supported_crs', default=[]))
+        crs.extend(b.crs for b in getattr(p, 'supportedBounds', []))
     cfg['services']['wms']['srs'] = sorted(set(c.epsg for c in crs))
 
     return cfg

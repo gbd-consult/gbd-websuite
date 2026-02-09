@@ -90,8 +90,11 @@ def wms_request(layer_uid: str, bounds: gws.Bounds, width: int, height: int,
         The image content as bytes if successful, None if the request fails.
     """
     mpx_no_transparency = os.getenv('GWS_MPX_NO_TRANSPARENCY', '0') == '1'
+    ext = bounds.extent
+    if bounds.crs.isYX:
+        ext = (ext[1], ext[0], ext[3], ext[2])
     params = {
-        'bbox': bounds.extent,
+        'bbox': ext,
         'width': width,
         'height': height,
         'crs': bounds.crs.epsg,
