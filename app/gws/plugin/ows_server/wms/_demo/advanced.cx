@@ -20,7 +20,7 @@ Beim Laden des WMS Dienstes in einer externen Applikation wie QGIS finden sich f
 - Im Maßstab <= 1:50.000 wird der Layer `Points of interest` bereitgestellt. 
 - Im Maßstab <= 1:5.000 werden einzelne Layer des WMS Dienste `wms_nw_alkis` und `wms_nw_dop` des Bundeslandes NRW kaskadiert bereitgestellt. 
 - Alle Dienste, außer den Orthophotos `wms_nw_dop` sind abfragbar, auch im HTML-Format
-- Alle Dienste können in den Koordinatenbezugsystemen EPSG:3857 oder EPSG:25832 abgefragt werden 
+- Alle Dienste können in den Koordinatenbezugsystemen EPSG:4326, EPSG:3857 oder EPSG:25832 abgefragt werden 
 
 Detailinformationen sowie die Service URL finden sich in den [WMS_Capabilities](/_/owsService/serviceUid/service_wms_advanced?request=GetCapabilities)
 
@@ -31,7 +31,7 @@ owsServices+ {
     type "wms"
     uid "service_wms_advanced"
 
-    supportedCrs [ 3857 25832 ]
+    supportedCrs [ 4326 3857 25832 ]
 
     metadata {
         abstract "Advanced WMS service"
@@ -115,4 +115,15 @@ map.layers+ {
     zoom { maxScale 5000 }
     metadata.attribution "© Geobasis NRW"
     metadata.attributionUrl "http://www.geobasis.nrw.de"
+}
+
+map.layers+ {
+    title "Open Street Map"
+    type "tile"
+    provider.url "https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png"
+    withCache true
+    legend {
+        type "static"
+        path "osm_legend.png"
+    }
 }
