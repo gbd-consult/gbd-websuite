@@ -1,3 +1,7 @@
+## Version 8.2.20
+
+- fixed MapProxy startup issue
+
 ## Version 8.2.19
 
 - fixed WMS not working with multiple CRS
