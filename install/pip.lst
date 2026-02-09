@@ -24,7 +24,7 @@ uWSGI==2.*
 
 # mapproxy
 MapProxy==1.*
-setuptools
+setuptools<70
 
 
 # use the OS version
