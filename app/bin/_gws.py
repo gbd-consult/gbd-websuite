@@ -69,7 +69,8 @@ def main2(args):
     except gws.ForbiddenError:
         cli.error('command forbidden')
         return 1
-    except gws.BadRequestError:
+    except gws.BadRequestError as exc:
+        cli.error(repr(exc))
         cli.error('invalid arguments, try "gws -h" for help')
         return 1
 
