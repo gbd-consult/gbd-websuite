@@ -1,3 +1,7 @@
+## Version 8.2.21
+
+- fixed MapProxy seeding issues, added `concurrency` option
+
 ## Version 8.2.20
 
 - fixed MapProxy startup issue
