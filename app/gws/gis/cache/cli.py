@@ -28,6 +28,8 @@ class SeedParams(gws.CliParams):
     """list of layer IDs"""
     levels: list[int]
     """zoom levels to build the cache for"""
+    concurrency: int = 0
+    """number of concurrent threads to use for seeding (0 for auto)"""
 
 
 class Object(gws.Node):
@@ -49,8 +51,8 @@ class Object(gws.Node):
             ls = []
             for la in e.layers:
                 title = gws.u.get(la, 'title', '?')
-                ls.append(f'{la.uid}: {title!r} type={la.extType}')
-            cli.info(f'LAYER  : {_comma(ls)}')
+                ls.append(f'{la.uid} ({la.extType} {title!r})')
+            cli.info(f"LAYER  {', '.join(ls)}")
 
             table = []
 
@@ -98,8 +100,4 @@ class Object(gws.Node):
         if p.levels:
             levels = [int(x) for x in gws.u.to_list(p.levels)]
 
-        core.seed(root, status.entries, levels)
-
-
-def _comma(items: list) -> str:
-    return ','.join(items)
+        core.seed(root, status.entries, levels, p.concurrency or 0)

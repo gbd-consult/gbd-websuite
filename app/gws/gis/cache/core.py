@@ -5,6 +5,7 @@ import os
 import re
 
 import yaml
+import mapproxy
 
 import gws
 import gws.config
@@ -13,8 +14,6 @@ import gws.lib.osx
 import gws.lib.lock
 import gws.lib.datetimex as datetimex
 
-DEFAULT_MAX_TIME = 600
-DEFAULT_CONCURRENCY = 1
 DEFAULT_MAX_AGE = 7 * 24 * 3600
 DEFAULT_MAX_LEVEL = 3
 
@@ -112,13 +111,14 @@ def drop(root: gws.Root, layer_uids=None):
 
 PIXEL_PNG8 = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x03\x00\x00\x00(\xcb4\xbb\x00\x00\x00\x06PLTE\xff\xff\xff\x00\x00\x00U\xc2\xd3~\x00\x00\x00\x01tRNS\x00@\xe6\xd8f\x00\x00\x00\x0cIDATx\xdab`\x00\x080\x00\x00\x02\x00\x01OmY\xe1\x00\x00\x00\x00IEND\xaeB`\x82'
 
-def seed(root: gws.Root, entries: list[Entry], levels: list[int]):
+def seed(root: gws.Root, entries: list[Entry], levels: list[int], concurrency: int = 0):
     """Generate and populate the cache for specified layers and zoom levels.
 
     Args:
         root: Application root object.
         entries: List of cache entries to seed.
         levels: List of zoom levels to generate cache for.
+        concurrency: Number of concurrent threads to use for seeding (0 for auto).
 
     Returns:
         None. Cache is populated with generated tiles.
@@ -160,13 +160,13 @@ def seed(root: gws.Root, entries: list[Entry], levels: list[int]):
         seed_config_path = gws.c.CONFIG_DIR + '/mapproxy.seed.yml'
         gws.u.write_file(seed_config_path, yaml.dump(dict(seeds=seeds)))
 
-        max_time = root.app.cfg('cache.seedingMaxTime', default=DEFAULT_MAX_TIME)
-        concurrency = root.app.cfg('cache.seedingConcurrency', default=DEFAULT_CONCURRENCY)
+        max_time = root.app.cfg('cache.seedingMaxTime') or 600
+        concurrency = concurrency or root.app.cfg('cache.seedingConcurrency') or 1
 
         # monkeypatch mapproxy to simply store an empty image in case of error
         empty_pixel_path = gws.c.CONFIG_DIR + '/mapproxy.seed.empty.png'
         gws.u.write_file_b(empty_pixel_path, PIXEL_PNG8)
-        py = '/usr/local/lib/python3.10/dist-packages/mapproxy/client/http.py'
+        py = mapproxy.__path__[0] + '/client/http.py'
         s = gws.u.read_file(py)
         s = re.sub(r"raise HTTPClientError\('response is not an image.+", f'return ImageSource({empty_pixel_path!r})', s)
         gws.u.write_file(py, s)
@@ -176,7 +176,7 @@ def seed(root: gws.Root, entries: list[Entry], levels: list[int]):
         gws.log.info(f'^C ANYTIME TO STOP...')
 
         cmd = f'''
-            /usr/local/bin/mapproxy-seed
+            mapproxy-seed
             -f {mpx_config_path}
             -c {concurrency}
             {seed_config_path}
@@ -194,7 +194,7 @@ def seed(root: gws.Root, entries: list[Entry], levels: list[int]):
             for p in gws.lib.osx.find_directories(gws.c.MAPPROXY_CACHE_DIR, deep=False):
                 gws.lib.osx.run(f'chown -R {gws.c.UID}:{gws.c.GID} {p}', echo=True)
         except Exception as exc:
-            gws.log.error('failed to chown cache dir: {exc!r}')
+            gws.log.error(f'failed to chown cache dir: {exc!r}')
 
         gws.log.info(f'TIME: {gws.u.stime() - ts} sec')
         gws.log.info(f'SEEDING COMPLETE' if res else 'SEEDING INCOMPLETE, PLEASE TRY AGAIN')
