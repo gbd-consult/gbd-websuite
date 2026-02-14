@@ -1,0 +1,97 @@
+# Users with logins a, b, c, d, e names AName, BName etc, passwords apass, bpass, cpass, email amail etc
+# Two groups with names groupone and grouptwo, 
+# groupone has users a and b, grouptwo has users b and c.
+# a and d have job title=manager
+# b and e have department=sales
+
+# Organizational Unit for Users
+dn: ou=users,dc=example,dc=com
+objectClass: top
+objectClass: organizationalUnit
+ou: users
+
+# Organizational Unit for Groups
+dn: ou=groups,dc=example,dc=com
+objectClass: top
+objectClass: organizationalUnit
+ou: groups
+
+# User a
+dn: uid=a,ou=users,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: a
+cn: AName
+sn: AName
+mail: amail
+userPassword: apass
+title: manager
+
+# User b
+dn: uid=b,ou=users,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: b
+cn: BName
+sn: BName
+mail: bmail
+userPassword: bpass
+departmentNumber: sales
+
+# User c
+dn: uid=c,ou=users,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: c
+cn: CName
+sn: CName
+mail: cmail
+userPassword: cpass
+
+# User d
+dn: uid=d,ou=users,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: d
+cn: DName
+sn: DName
+mail: dmail
+userPassword: dpass
+title: manager
+
+# User e
+dn: uid=e,ou=users,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: e
+cn: EName
+sn: EName
+mail: email
+userPassword: epass
+departmentNumber: sales
+
+# Group groupone (members: a, b)
+dn: cn=groupone,ou=groups,dc=example,dc=com
+objectClass: top
+objectClass: groupOfNames
+cn: groupone
+member: uid=a,ou=users,dc=example,dc=com
+member: uid=b,ou=users,dc=example,dc=com
+
+# Group grouptwo (members: b, c)
+dn: cn=grouptwo,ou=groups,dc=example,dc=com
+objectClass: top
+objectClass: groupOfNames
+cn: grouptwo
+member: uid=b,ou=users,dc=example,dc=com
+member: uid=c,ou=users,dc=example,dc=com

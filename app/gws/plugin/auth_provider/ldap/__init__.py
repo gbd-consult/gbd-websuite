@@ -6,13 +6,13 @@ Accepts an LDAP URL in the following form::
 
 which is a subset of the rfc2255 schema.
 
-Optionally, a bind dn and a password can be provided. This dn must have search permissions for the directory.
+Optionally, a bind DN and a password can be provided. This DN must have search permissions for the directory.
 
 The authorization workflow with the (login, password) credentials is as follows:
 
-- connect to the LDAP server, using the bind dn if provided
-- search for the dn matching ``searchAttribute = credentials.login``
-- attempt to login with that dn and ``credentials.password``
+- connect to the LDAP server, using the bind DN if provided
+- search for the DN matching ``searchAttribute = credentials.login``
+- attempt to login with that DN and ``credentials.password``
 - iterate the ``users`` configs to determine roles for the user
 
 
@@ -47,6 +47,17 @@ class UserSpec(gws.Data):
     """LDAP group the account has to be a member of"""
 
 
+class SSLConfig(gws.Config):
+    """SSL configuration."""
+
+    ca: Optional[gws.FilePath]
+    """CA certificate location."""
+    crt: Optional[gws.FilePath]
+    """Client certificate location."""
+    key: Optional[gws.FilePath]
+    """Key location."""
+
+
 class Config(gws.base.auth.provider.Config):
     """LDAP authorization provider"""
 
@@ -60,10 +71,12 @@ class Config(gws.base.auth.provider.Config):
     """Format for user's display name."""
     users: list[UserSpec]
     """Map LDAP filters to gws roles."""
-    timeout: gws.Duration = 30
+    timeout: gws.Duration = '30'
     """LDAP server timeout."""
     url: str
     """LDAP server url."""
+    ssl: Optional[SSLConfig]
+    """SSL configuration."""
 
 
 class Object(gws.base.auth.provider.Object):
@@ -71,52 +84,49 @@ class Object(gws.base.auth.provider.Object):
     baseDN: str
     loginAttribute: str
     timeout: int
+    ssl: Optional[SSLConfig]
+    activeDirectory: bool
+    bindDN: str
+    bindPassword: str
+    displayNameFormat: str
+    users: list[UserSpec]
 
     def configure(self):
+        self.timeout = self.cfg('timeout', default=30)
+
+        self.activeDirectory = self.cfg('activeDirectory', default=True)
+        self.bindDN = self.cfg('bindDN', default='')
+        self.bindPassword = self.cfg('bindPassword', default='')
+        self.displayNameFormat = self.cfg('displayNameFormat', default='')
+        self.ssl = self.cfg('ssl')
+        self.users = self.cfg('users', default=[])
+
+        proto = 'ldaps' if self.ssl else 'ldap'
         p = gws.lib.net.parse_url(self.cfg('url'))
 
-        self.serverUrl = 'ldap://' + p.netloc
+        self.serverUrl = proto + '://' + p.netloc
         self.baseDN = p.path.strip('/')
         self.loginAttribute = p.query
-
-        self.timeout = self.cfg('timeout', default=30)
 
         try:
             with self._connection():
                 gws.log.debug(f'LDAP connection {self.uid!r} ok')
-        except Exception as e:
-            raise gws.Error(f'LDAP connection error: {e.__class__.__name__}', *e.args)
+        except Exception as exc:
+            raise gws.Error(f'LDAP connection error: {exc.__class__.__name__}') from exc
 
     def authenticate(self, method, credentials):
-        username = credentials.get('username')
-        password = credentials.get('password')
+        username = credentials.get('username', '').strip()
+        password = credentials.get('password', '').strip()
         if not username or not password:
             return
 
         with self._connection() as conn:
-            users = self._find(conn, _make_filter({self.loginAttribute: username}))
+            rec = self._get_user_record(conn, username, password)
+        if not rec:
+            return
 
-            if len(users) == 0:
-                return
-            if len(users) > 1:
-                raise gws.ForbiddenError(f'multiple entries for {username!r}')
-
-            rec = users[0]
-
-            # check for AD disabled accounts
-            uac = str(rec.get('userAccountControl', ''))
-            if uac and uac.isdigit():
-                if int(uac) & _MS_ACCOUNTDISABLE:
-                    raise gws.ForbiddenError('ACCOUNTDISABLE flag set')
-
-            try:
-                conn.simple_bind_s(rec['dn'], password)
-            except ldap.INVALID_CREDENTIALS:
-                raise gws.ForbiddenError(f'wrong password for {username!r}')
-            except ldap.LDAPError as exc:
-                gws.log.exception()
-                raise gws.ForbiddenError(f'LDAP error {exc!r}')
-
+        # NB need to rebind as admin
+        with self._connection() as conn:
             return self._make_user(conn, rec)
 
     def get_user(self, local_uid):
@@ -127,12 +137,37 @@ class Object(gws.base.auth.provider.Object):
 
     ##
 
+    def _get_user_record(self, conn, username, password):
+        users = self._find(conn, _make_filter({self.loginAttribute: username}))
+
+        if len(users) == 0:
+            return
+        if len(users) > 1:
+            raise gws.ForbiddenError(f'multiple entries for {username!r}')
+
+        rec = users[0]
+
+        # check for AD disabled accounts
+        uac = str(rec.get('userAccountControl', ''))
+        if uac and uac.isdigit():
+            if int(uac) & _MS_ACCOUNTDISABLE:
+                raise gws.ForbiddenError('ACCOUNTDISABLE flag set')
+
+        try:
+            conn.simple_bind_s(rec['dn'], password)
+            return rec
+        except ldap.INVALID_CREDENTIALS:
+            raise gws.ForbiddenError(f'wrong password for {username!r}')
+        except ldap.LDAPError as exc:
+            gws.log.exception()
+            raise gws.ForbiddenError(f'LDAP error {exc.__class__.__name__}') from exc
+
     def _make_user(self, conn, rec):
         user_rec = dict(rec)
         user_rec['roles'] = self._roles_for_user(conn, rec)
 
-        if not user_rec.get('displayName') and self.cfg('displayNameFormat'):
-            user_rec['displayName'] = gws.u.format_map(self.cfg('displayNameFormat'), rec)
+        if not user_rec.get('displayName') and self.displayNameFormat:
+            user_rec['displayName'] = gws.u.format_map(self.displayNameFormat, rec)
 
         login = user_rec.pop(self.loginAttribute, '')
         user_rec['localUid'] = user_rec['loginName'] = login
@@ -143,14 +178,13 @@ class Object(gws.base.auth.provider.Object):
         user_dn = rec['dn']
         roles = set()
 
-        for u in self.cfg('users'):
-
+        for u in self.users:
             if u.get('matches'):
                 for dct in self._find(conn, u.matches):
                     if dct['dn'] == user_dn:
                         roles.update(u.roles)
 
-            elif u.get('memberOf'):
+            if u.get('memberOf'):
                 for dct in self._find(conn, u.memberOf):
                     if _is_member_of(dct, user_dn):
                         roles.update(u.roles)
@@ -158,7 +192,11 @@ class Object(gws.base.auth.provider.Object):
         return sorted(roles)
 
     def _find(self, conn, flt):
-        res = conn.search_s(self.baseDN, ldap.SCOPE_SUBTREE, flt)
+        try:
+            res = conn.search_s(self.baseDN, ldap.SCOPE_SUBTREE, flt)
+        except ldap.NO_SUCH_OBJECT:
+            return []
+
         dcts = []
 
         for dn, data in res:
@@ -174,12 +212,24 @@ class Object(gws.base.auth.provider.Object):
         conn = ldap.initialize(self.serverUrl)
         conn.set_option(ldap.OPT_NETWORK_TIMEOUT, self.timeout)
 
-        if self.cfg('activeDirectory'):
+        if self.ssl:
+            if self.root.app.developer_option('ldap.ssl_insecure'):
+                conn.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
+            else:
+                conn.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_DEMAND)
+                if self.ssl.ca:
+                    conn.set_option(ldap.OPT_X_TLS_CACERTFILE, self.ssl.ca)
+                if self.ssl.crt and self.ssl.key:
+                    conn.set_option(ldap.OPT_X_TLS_CERTFILE, self.ssl.crt)
+                    conn.set_option(ldap.OPT_X_TLS_KEYFILE, self.ssl.key)
+            conn.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
+
+        if self.activeDirectory:
             # see https://www.python-ldap.org/faq.html#usage
             conn.set_option(ldap.OPT_REFERRALS, 0)
 
-        if self.cfg('bindDN'):
-            conn.simple_bind_s(self.cfg('bindDN'), self.cfg('bindPassword'))
+        if self.bindDN:
+            conn.simple_bind_s(self.bindDN, self.bindPassword)
 
         try:
             yield conn
@@ -205,7 +255,7 @@ def _make_filter(filter_dict):
     conds = ''.join(
         '({}={})'.format(
             ldap.filter.escape_filter_chars(k, 1),
-            ldap.filter.escape_filter_chars(v, 1)
+            ldap.filter.escape_filter_chars(v, 1),
         )
         for k, v in filter_dict.items()
     )
