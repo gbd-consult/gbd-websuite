@@ -66,17 +66,18 @@ def main(args):
     cli.info(f'using configs: {ini_paths}')
     OPTIONS.update(inifile.from_paths(*ini_paths))
 
-    OPTIONS.update(dict(
-        arg_ini=custom_ini,
-        arg_pytest=args.get('_rest'),
-
-        arg_coverage=args.get('c') or args.get('coverage'),
-        arg_detach=args.get('d') or args.get('detach'),
-        arg_local=args.get('l') or args.get('local'),
-        arg_manifest=args.get('manifest'),
-        arg_only=args.get('o') or args.get('only'),
-        arg_verbose=args.get('v') or args.get('verbose'),
-    ))
+    OPTIONS.update(
+        dict(
+            arg_ini=custom_ini,
+            arg_pytest=args.get('_rest'),
+            arg_coverage=args.get('c') or args.get('coverage'),
+            arg_detach=args.get('d') or args.get('detach'),
+            arg_local=args.get('l') or args.get('local'),
+            arg_manifest=args.get('manifest'),
+            arg_only=args.get('o') or args.get('only'),
+            arg_verbose=args.get('v') or args.get('verbose'),
+        )
+    )
 
     OPTIONS['LOCAL_APP_DIR'] = LOCAL_APP_DIR
 
@@ -185,11 +186,13 @@ def make_docker_compose_yml():
 
     OPTIONS['runner.services'] = list(service_funcs)
 
+    std_env = make_std_env()
+
     for s, fn in service_funcs.items():
         srv = fn()
 
         srv.setdefault('image', OPTIONS.get(f'service.{s}.image'))
-        srv.setdefault('extra_hosts', []).append(f"{OPTIONS.get('runner.docker_host_name')}:host-gateway")
+        srv.setdefault('extra_hosts', []).append(f'{OPTIONS.get("runner.docker_host_name")}:host-gateway')
 
         std_vols = [
             f'{base}:{base}',
@@ -204,16 +207,14 @@ def make_docker_compose_yml():
         srv.setdefault('tmpfs', []).append('/tmp')
         srv.setdefault('stop_grace_period', '1s')
 
-        srv['environment'] = make_env()
-
+        std_env.update(srv.get('environment', {}))
         service_configs[s] = srv
 
+    for srv in service_configs.values():
+        srv['environment'] = std_env
+
     cfg = {
-        'networks': {
-            'default': {
-                'name': 'gws_test_network'
-            }
-        },
+        'networks': {'default': {'name': 'gws_test_network'}},
         'services': service_configs,
     }
 
@@ -251,12 +252,12 @@ def make_coverage_ini():
     ini = {
         'run.source': '/gws-app/gws',
         'run.data_file': f'{base}/coverage.data',
-        'html.directory': f'{base}/coverage'
+        'html.directory': f'{base}/coverage',
     }
     return inifile.to_string(ini)
 
 
-def make_env():
+def make_std_env():
     env = {
         'PYTHONPATH': '/gws-app',
         'PYTHONPYCACHEPREFIX': '/tmp',
@@ -264,9 +265,6 @@ def make_env():
         'GWS_UID': OPTIONS.get('runner.uid'),
         'GWS_GID': OPTIONS.get('runner.gid'),
         'GWS_TIMEZONE': OPTIONS.get('service.gws.time_zone', 'Etc/UTC'),
-        'POSTGRES_DB': OPTIONS.get('service.postgres.database'),
-        'POSTGRES_PASSWORD': OPTIONS.get('service.postgres.password'),
-        'POSTGRES_USER': OPTIONS.get('service.postgres.user'),
     }
 
     for k, v in OPTIONS.items():
@@ -300,8 +298,8 @@ def service_gws():
         container_name='c_gws',
         entrypoint=ep,
         ports=[
-            f"{OPTIONS.get('service.gws.http_expose_port')}:80",
-            f"{OPTIONS.get('service.gws.mpx_expose_port')}:5000",
+            f'{OPTIONS.get("service.gws.http_expose_port")}:80',
+            f'{OPTIONS.get("service.gws.mpx_expose_port")}:5000',
         ],
     )
 
@@ -311,7 +309,7 @@ def service_qgis():
         container_name='c_qgis',
         command=f'/bin/sh /qgis-start.sh',
         ports=[
-            f"{OPTIONS.get('service.qgis.expose_port')}:80",
+            f'{OPTIONS.get("service.qgis.expose_port")}:80',
         ],
     )
 
@@ -359,7 +357,6 @@ def service_postgres():
         log_hostname = 0
     """
 
-
     ep = write_exec(f'{base}/config/postgres_entrypoint', _POSTGRESQL_ENTRYPOINT)
     cf = write_file(f'{base}/config/postgresql.conf', dedent(conf))
 
@@ -369,12 +366,17 @@ def service_postgres():
         container_name='c_postgres',
         entrypoint=ep,
         ports=[
-            f"{OPTIONS.get('service.postgres.expose_port')}:5432",
+            f'{OPTIONS.get("service.postgres.expose_port")}:5432',
         ],
+        environment={
+            'POSTGRES_DB': OPTIONS.get('service.postgres.database'),
+            'POSTGRES_PASSWORD': OPTIONS.get('service.postgres.password'),
+            'POSTGRES_USER': OPTIONS.get('service.postgres.user'),
+        },
         volumes=[
-            f"{base}/postgres:/var/lib/postgresql/data",
-            f"{cf}:/etc/postgresql/postgresql.conf",
-        ]
+            f'{base}/postgres:/var/lib/postgresql/data',
+            f'{cf}:/etc/postgresql/postgresql.conf',
+        ],
     )
 
 
@@ -385,12 +387,38 @@ def service_mockserver():
         image=OPTIONS.get('service.gws.image'),
         command=f'python3 /gws-app/gws/test/mockserver.py',
         ports=[
-            f"{OPTIONS.get('service.mockserver.expose_port')}:80",
+            f'{OPTIONS.get("service.mockserver.expose_port")}:80',
+        ],
+    )
+
+
+def service_ldap():
+    base = OPTIONS['BASE_DIR']
+    src = f'{LOCAL_APP_DIR}/gws/plugin/auth_provider/ldap/_test/'
+    dst = f'{base}/config/ldap'
+    ensure_dir(dst)
+    copy_file(f'{src}/test.ldif', f'{dst}/test.ldif')
+
+    return dict(
+        # NB: no _ in the host name
+        container_name='cldap',
+        environment={
+            'LDAP_ORGANISATION': OPTIONS.get('service.ldap.organisation'),
+            'LDAP_DOMAIN': 'example.com',
+            'LDAP_ADMIN_PASSWORD': OPTIONS.get('service.ldap.password'),
+            'LDAP_CONFIG_PASSWORD': OPTIONS.get('service.ldap.password'),
+            'LDAP_TLS': 'true',
+        },
+        command='--copy-service --loglevel debug',
+        volumes=[
+            f'{dst}:/container/service/slapd/assets/config/bootstrap/ldif/custom',
+            f'{src}/certs:/container/service/slapd/assets/certs',
         ],
     )
 
 
 ##
+
 
 def docker_compose_start(with_exec=False):
     cmd = [
@@ -398,7 +426,7 @@ def docker_compose_start(with_exec=False):
         'compose',
         '--file',
         OPTIONS['BASE_DIR'] + '/config/docker-compose.yml',
-        'up'
+        'up',
     ]
     if OPTIONS['arg_detach']:
         cmd.append('--detach')
@@ -415,7 +443,7 @@ def docker_compose_stop():
         'compose',
         '--file',
         OPTIONS['BASE_DIR'] + '/config/docker-compose.yml',
-        'down'
+        'down',
     ]
 
     try:
@@ -429,7 +457,7 @@ def docker_exec(container, cmd):
     uid = OPTIONS.get('runner.uid')
     gid = OPTIONS.get('runner.gid')
 
-    cli.run(f'''
+    cli.run(f"""
         docker exec 
         --user {uid}:{gid}
         --env PYTHONPYCACHEPREFIX=/tmp
@@ -437,7 +465,7 @@ def docker_exec(container, cmd):
         {opts} 
         {container} 
         {cmd}
-    ''')
+    """)
 
 
 def read_file(path):
@@ -449,6 +477,13 @@ def write_file(path, s):
     with open(path, 'wt', encoding='utf8') as fp:
         fp.write(s)
     return path
+
+
+def copy_file(src, dst):
+    with open(src, 'rb') as fp:
+        buf = fp.read()
+    with open(dst, 'wb') as fp:
+        fp.write(buf)
 
 
 def write_exec(path, s):
@@ -470,6 +505,7 @@ def ensure_dir(path, clear=False):
     os.makedirs(path, exist_ok=True)
     if clear:
         _clear(path)
+
 
 def dedent(text):
     lines = text.split('\n')
