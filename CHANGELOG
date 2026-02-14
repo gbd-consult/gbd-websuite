@@ -1,3 +1,9 @@
+## Version 8.3.3
+
+- fixed MapProxy cache issues, added `concurrency` option for cache CLI
+- support for LDAP SSL mode
+- authorization redirect upon a successful login
+
 ## Version 8.3.2
 
 - added support for QField Cloud protocol
@@ -10,4 +16,4 @@
 
 - support for http POST forms
 - server startup script now uses a template
-- added option "allowInsecureFrom" for secure requests
+- added option `allowInsecureFrom` for secure requests
