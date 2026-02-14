@@ -79,7 +79,10 @@ class Object(gws.DatabaseProvider):
 
         return kwargs
 
-    def reflect_schema(self, schema: str):
+    def inspect_schema(self, schema, options=None):
+        if options and options.refresh:
+            self.saMetaMap.pop(schema, None)
+
         if schema in self.saMetaMap:
             return
 
@@ -97,6 +100,8 @@ class Object(gws.DatabaseProvider):
             return md
 
         life_time = self.cfg('schemaCacheLifeTime', 0)
+        if options and options.cacheLifeTime is not None:
+            life_time = options.cacheLifeTime
         if not life_time:
             self.saMetaMap[schema] = _load()
         else:
@@ -160,10 +165,10 @@ class Object(gws.DatabaseProvider):
         if isinstance(tab_or_name, sa.Table):
             return tab_or_name
         schema, name = self.split_table_name(tab_or_name)
-        self.reflect_schema(schema)
+        self.inspect_schema(schema)
         # see _get_table_key in sqlalchemy/sql/schema.py
         table_key = schema + '.' + name
-        sm = self.saMetaMap[schema]
+        sm = self.saMetaMap.get(schema)
         if sm is None:
             raise sa.Error(f'schema {schema!r} not found')
         return sm.tables.get(table_key)

@@ -3541,6 +3541,14 @@ class DatabaseConnection:
 
     def fetch_int(self, stmt: 'DatabaseStmt', **params) -> int | None: ...
 
+class DatabaseInspectOptions(Data):
+    """Options for database inspection."""
+
+    refresh: bool = False
+    """Whether to force inspection even if cached information is available."""
+    cacheLifeTime: int = 0
+    """Schema cache lifetime in seconds."""
+
 
 class DatabaseProvider(Node):
     """Database Provider.
@@ -3608,6 +3616,9 @@ class DatabaseProvider(Node):
 
     def execute_text(self, sql: str, **kwargs) -> 'sqlalchemy.CursorResult':
         """Execute a textual DML stmt and return a result."""
+
+    def inspect_schema(self, schema: str, options: Optional[DatabaseInspectOptions] = None):
+        """Inspect the database schema and cache the results based on the provided options."""
 ################################################################################
 
 
