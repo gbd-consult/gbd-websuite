@@ -27,6 +27,8 @@ uWSGI==2.*
 MapProxy==1.*
 setuptools<70
 
+# need wheel for GDAL
+wheel
 
 # testing
 
