@@ -396,8 +396,16 @@ def service_ldap():
     base = OPTIONS['BASE_DIR']
     src = f'{LOCAL_APP_DIR}/gws/plugin/auth_provider/ldap/_test/'
     dst = f'{base}/config/ldap'
-    ensure_dir(dst)
-    copy_file(f'{src}/test.ldif', f'{dst}/test.ldif')
+    ensure_dir(f'{dst}/custom')
+    ensure_dir(f'{dst}/certs')
+    
+    copy_file(f'{src}/test.ldif', f'{dst}/custom/test.ldif')
+
+    with open(f'{src}/certs.yaml') as fp:
+        certs = yaml.safe_load(fp)
+        for name, content in certs.items():
+            write_file(f'{dst}/certs/{name}', content)
+        os.chmod(f'{dst}/certs/ldap.key', 0o600)
 
     return dict(
         # NB: no _ in the host name
@@ -411,8 +419,8 @@ def service_ldap():
         },
         command='--copy-service --loglevel debug',
         volumes=[
-            f'{dst}:/container/service/slapd/assets/config/bootstrap/ldif/custom',
-            f'{src}/certs:/container/service/slapd/assets/certs',
+            f'{dst}/custom:/container/service/slapd/assets/config/bootstrap/ldif/custom',
+            f'{dst}/certs:/container/service/slapd/assets/certs',
         ],
     )
 

@@ -1,3 +1,6 @@
+import yaml
+import os
+
 import gws
 import gws.test.util as u
 
@@ -7,6 +10,14 @@ Tests for LDAP auth provider using test.ldif structure.
 
 @u.fixture(scope='module')
 def root():
+    src = os.path.dirname(__file__)
+    with open(f'{src}/certs.yaml') as fp:
+        certs = yaml.safe_load(fp)
+        for name, content in certs.items():
+            with open(f'/tmp/{name}', 'w') as fp:
+                fp.write(content)
+        os.chmod(f'/tmp/ldap.key', 0o600)
+
     cfg = """
         auth {
             methods+ { type 'basic' }
@@ -41,9 +52,9 @@ def root():
                 bindDN 'cn=admin,dc=example,dc=com'
                 bindPassword 'gispass'
                 ssl {
-                    ca  "/gws-app/gws/plugin/auth_provider/ldap/_test/certs/ca.crt"
-                    crt "/gws-app/gws/plugin/auth_provider/ldap/_test/certs/ldap.crt"
-                    key "/gws-app/gws/plugin/auth_provider/ldap/_test/certs/ldap.key"
+                    ca  "/tmp/ca.crt"
+                    crt "/tmp/ldap.crt"
+                    key "/tmp/ldap.key"
                 }
             }
         }
