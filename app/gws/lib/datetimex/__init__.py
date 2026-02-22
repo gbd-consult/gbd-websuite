@@ -695,6 +695,23 @@ def parse_duration(s: str) -> int:
     return r
 
 
+def format_duration(s: int) -> str:
+    """Format a duration in seconds to a string.
+
+    Args:
+        s: Duration in seconds
+    """
+
+    r = ''
+
+    for u, v in _DURATION_UNITS.items():
+        n = s // v
+        if n:
+            r += f'{n}{u} '
+            s -= n * v
+
+    return r.strip() or '0s'
+
 ##
 
 # conversions

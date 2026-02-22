@@ -99,10 +99,14 @@ class Object(gws.base.auth.session_manager.Object):
     def _session(self, rec):
         am = self.root.app.authMgr
         r = gws.u.to_dict(rec)
+        usr = am.unserialize_user(r['str_user'])
+        if not usr:
+            gws.log.error(f'invalid user in session {r["uid"]!r}')
+            usr = am.guestUser
         return gws.base.auth.session.Object(
             uid=r['uid'],
             method=am.get_method(r['method_uid']),
-            user=am.unserialize_user(r['str_user']),
+            user=usr,
             data=gws.lib.jsonx.from_string(r['str_data']),
             created=gws.lib.datetimex.from_timestamp(r['created']),
             updated=gws.lib.datetimex.from_timestamp(r['updated']),

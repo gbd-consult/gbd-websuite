@@ -35,12 +35,13 @@ class Object(gws.Node):
         for s in sm.get_all():
             dc = dtx.total_difference(s.created).seconds
             du = dtx.total_difference(s.updated).seconds
+            dd = dtx.total_difference(s.created, s.updated).seconds
             rows.append((du, dict(
                 uid=s.uid,
                 user=s.user.loginName,
-                auth=s.method.extType,
-                started=dtx.to_iso_string(s.created, sep=' ') + f' ({dc} sec)',
-                updated=dtx.to_iso_string(s.updated, sep=' ') + f' ({du} sec)',
+                started=dtx.to_iso_string(s.created, sep=' ') + f' ({dtx.format_duration(dc)})',
+                updated=dtx.to_iso_string(s.updated, sep=' ') + f' ({dtx.format_duration(du)})',
+                duration=dtx.format_duration(dd),
             )))
 
         # oldest first

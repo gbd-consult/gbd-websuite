@@ -33,11 +33,8 @@ class Object(gws.JobManager):
     dbPath: str
 
     def configure(self):
-        self.dbPath = self.cfg('path', default=f'{gws.c.MISC_DIR}/jobs82.sqlite')
-        # self.root.app.monitor.register_periodic_task(self)
-
-    def periodic_task(self):
-        pass
+        ver = self.root.specs.version.rpartition('.')[0]
+        self.dbPath = self.cfg('path', default=f'{gws.c.MISC_DIR}/jobs.{ver}.sqlite')
 
     def create_job(self, worker, user, payload=None):
         job_uid = gws.u.random_string(64)

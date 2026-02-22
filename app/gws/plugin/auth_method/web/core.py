@@ -272,8 +272,8 @@ class Object(gws.base.auth.method.Object):
             raise gws.ForbiddenError(f'MFA: transaction not found')
 
         mfa = gws.AuthMultiFactorTransaction(sess_mfa)
-        mfa.adapter = am.get_multi_factor_adapter(sess_mfa['adapter'])
-        mfa.user = am.unserialize_user(sess_mfa['user'])
+        mfa.adapter = gws.u.require(am.get_multi_factor_adapter(sess_mfa['adapter']))
+        mfa.user = gws.u.require(am.unserialize_user(sess_mfa['user']))
 
         if not mfa.adapter.check_state(mfa):
             raise gws.ForbiddenError(f'MFA: invalid transaction in session')
