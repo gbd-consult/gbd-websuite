@@ -21,6 +21,9 @@ from .geo_info_dok import gid6 as gid
 
 
 def run(ix: index.Object, data_schema: str, with_force=False, with_cache=False):
+    if not ix.has_schema():
+        raise gws.Error(f'ALKIS: schema {ix.schema!r} does not exist')
+
     if with_force:
         ix.drop()
     elif ix.status().complete:

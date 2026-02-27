@@ -30,7 +30,7 @@ TABLE_INDEXGEOM = 'indexgeom'
 
 
 class Object(gws.Node):
-    VERSION = '82'
+    VERSION = '83'
 
     TABLES_BASIC = [
         TABLE_PLACE,
@@ -233,6 +233,9 @@ class Object(gws.Node):
 
         return d
 
+    def has_schema(self) -> bool:
+        return self.db.has_schema(self.schema)
+
     def has_table(self, table_id: str) -> bool:
         return self.table_size(table_id) > 0
 
@@ -245,7 +248,7 @@ class Object(gws.Node):
         )
         s.complete = s.basic and s.buchung and s.eigentuemer
         s.missing = all(v == 0 for v in sizes.values())
-        gws.log.info(f'ALKIS: table sizes {sizes!r}')
+        gws.log.debug(f'ALKIS: table sizes {sizes!r}')
         return s
 
     def drop_table(self, table_id: str):
@@ -305,7 +308,7 @@ class Object(gws.Node):
             return self._strasseList
 
         self._strasseList = []
-        
+
         indexlage = self.table(TABLE_INDEXLAGE)
         cols = (
             indexlage.c.gemeinde,

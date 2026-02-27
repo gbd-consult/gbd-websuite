@@ -3596,6 +3596,9 @@ class DatabaseProvider(Node):
     def count(self, table: DatabaseTableAlike) -> int:
         """Return table record count or 0 if the table does not exist."""
 
+    def has_schema(self, schema_name: str) -> bool:
+        """Check if a specific schema exists."""
+
     def has_table(self, table_name: str) -> bool:
         """Check if a specific table exists."""
 
@@ -3616,6 +3619,9 @@ class DatabaseProvider(Node):
 
     def execute_text(self, sql: str, **kwargs) -> 'sqlalchemy.CursorResult':
         """Execute a textual DML stmt and return a result."""
+
+    def schema_names(self) -> list[str]:
+        """Return a list of schema names in the database."""
 
     def inspect_schema(self, schema: str, options: Optional[DatabaseInspectOptions] = None):
         """Inspect the database schema and cache the results based on the provided options."""

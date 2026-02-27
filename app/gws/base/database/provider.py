@@ -157,6 +157,13 @@ class Object(gws.DatabaseProvider):
         with self.connect() as conn:
             return conn.fetch_int(sql)
 
+    def has_schema(self, schema):
+        return schema in self.schema_names()
+
+    def schema_names(self):
+        inspector = sa.inspect(self.engine())
+        return inspector.get_schema_names()
+    
     def has_table(self, table_name: str):
         tab = self._sa_table(table_name)
         return tab is not None

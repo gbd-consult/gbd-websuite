@@ -53,7 +53,6 @@ class ExportParams(gws.CliParams):
 
 class Object(gws.Node):
     act: action.Object
-    ixStatus: dt.IndexStatus
 
     def _prepare(self, project_uid):
         root = gws.config.load()
@@ -61,14 +60,14 @@ class Object(gws.Node):
         if not self.act:
             exit(1)
 
-        self.ixStatus = self.act.ix.status()
-
     @gws.ext.command.cli('alkisIndex')
     def do_index(self, p: CreateIndexParams):
         """Create the ALKIS index."""
 
         self._prepare(p.projectUid)
-        if self.ixStatus.complete and not p.force:
+        
+        s = self.act.ix.status()
+        if s.complete and not p.force:
             gws.log.info(f'ALKIS index ok')
             return
 
@@ -81,17 +80,15 @@ class Object(gws.Node):
 
         self._prepare(p.projectUid)
 
-        if self.ixStatus.complete:
+        s = self.act.ix.status()
+        if s.complete:
             gws.log.info(f'ALKIS index ok')
             return
-
-        if self.ixStatus.missing:
+        if s.missing:
             gws.log.error(f'ALKIS index not found')
             return
 
-        gws.log.warning(
-            f'ALKIS index incomplete: basic={self.ixStatus.basic} eigentuemer={self.ixStatus.eigentuemer} buchung={self.ixStatus.buchung}'
-        )
+        gws.log.warning(f'ALKIS index incomplete: basic={s.basic} eigentuemer={s.eigentuemer} buchung={s.buchung}')
 
     @gws.ext.command.cli('alkisExport')
     def do_export(self, p: ExportParams):
@@ -99,7 +96,8 @@ class Object(gws.Node):
 
         self._prepare(p.projectUid)
 
-        if self.ixStatus.missing:
+        s = self.act.ix.status()
+        if s.missing:
             gws.log.error(f'ALKIS index missing')
             exit(1)
 
@@ -130,14 +128,7 @@ class Object(gws.Node):
         fs = self.act.ix.iter_all(qo)
 
         with ProgressIndicator('export', total) as progress:
-            exp.run(
-                exporter.Args(
-                    fsList=fs,
-                    user=sys_user,
-                    progress=progress,
-                    path=p.path
-                )
-            )
+            exp.run(exporter.Args(fsList=fs, user=sys_user, progress=progress, path=p.path))
 
     @gws.ext.command.cli('alkisKeys')
     def do_keys(self, p: gws.CliParams):
@@ -153,7 +144,8 @@ class Object(gws.Node):
 
         self._prepare(p.projectUid)
 
-        if self.ixStatus.missing:
+        s = self.act.ix.status()
+        if s.missing:
             gws.log.error(f'ALKIS index missing')
             exit(1)
 

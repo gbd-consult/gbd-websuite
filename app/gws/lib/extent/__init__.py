@@ -8,39 +8,19 @@ import gws.lib.crs
 
 
 def from_string(s: str) -> Optional[gws.Extent]:
-    """Create an extent from a comma-separated string "1000,2000,20000 40000".
-
-    Args:
-        s: ``"x-min,y-min,x-max,y-max"``
-
-    Returns:
-        An extent.
-    """
+    """Create an extent from a comma-separated string 'x-min,y-min,x-max,y-max' """
 
     return _from_string_list(s.split(','))
 
 
 def from_list(ls: list) -> Optional[gws.Extent]:
-    """Create an extent from a list of values.
-
-    Args:
-        ls: ``[x-min,y-min,x-max,y-max]``
-
-    Returns:
-        An extent."""
+    """Create an extent from a list ``[x-min,y-min,x-max,y-max]``."""
 
     return _from_string_list(ls)
 
 
 def from_points(a: gws.Point, b: gws.Point) -> gws.Extent:
-    """Create an extent from two points.
-
-    Args:
-        a:``(x-min,y-min)``
-        b:``(x-max,y-max)``
-
-    Returns:
-        An extent."""
+    """Create an extent from two points."""
 
     return (
         min(a[0], b[0]),
@@ -51,14 +31,7 @@ def from_points(a: gws.Point, b: gws.Point) -> gws.Extent:
 
 
 def from_center(xy: gws.Point, size: gws.Size) -> gws.Extent:
-    """Create an extent with certain size from a center-point.
-
-    Args:
-        xy: Center-point ``(x,y)``
-        size: Extent's size.
-
-    Returns:
-        An Extent."""
+    """Create an extent with certain size from a center-point."""
 
     return (
         xy[0] - size[0] / 2,
@@ -69,7 +42,7 @@ def from_center(xy: gws.Point, size: gws.Size) -> gws.Extent:
 
 
 def from_box(box: str) -> Optional[gws.Extent]:
-    """Create an extent from a Postgis BOX(1000 2000,20000 40000).
+    """Create an extent from a Postgis BOX(minx miny,maxx maxy).
 
     Args:
         box: Postgis BOX.
@@ -245,6 +218,8 @@ def swap_xy(e: gws.Extent) -> gws.Extent:
 
 
 def is_valid(e: gws.Extent) -> bool:
+    """Checks if the extent is valid."""
+
     if not e or len(e) != 4:
         return False
     if not all(math.isfinite(p) for p in e):
@@ -254,19 +229,13 @@ def is_valid(e: gws.Extent) -> bool:
     return True
 
 
-def is_valid_wgs(e: gws.Extent, min_size: float = None) -> bool:
+def is_valid_wgs(e: gws.Extent) -> bool:
+    """Checks if the extent is valid and within WGS84 bounds."""
+    
     if not is_valid(e):
         return False
     w = gws.lib.crs.WGS84.extent
-    if e[0] < w[0] or e[1] < w[1] or e[2] > w[2] or e[3] > w[3]:
-        return False
-    # work around QGIS putting absurdly high or low values into extents
-    if min_size is not None:
-        dx = abs(e[2] - e[0])
-        dy = abs(e[3] - e[1])
-        if dx < min_size or dy < min_size:
-            return False
-    return True
+    return e[0] >= w[0] and e[1] >= w[1] and e[2] <= w[2] and e[3] <= w[3]
 
 
 def _from_string_list(ls: list) -> Optional[gws.Extent]:
