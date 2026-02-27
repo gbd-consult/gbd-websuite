@@ -272,15 +272,9 @@ def _map_layers(root_el: gws.XmlElement, caps: Caps) -> dict[str, gws.SourceLaye
 
 
 def _map_layer(layer_el: gws.XmlElement, caps: Caps, use_layer_ids: bool) -> gws.SourceLayer:
-    sl = gws.SourceLayer(
-        supportedCrs=[],
-    )
+    sl = gws.SourceLayer()
 
     sl.metadata = _map_layer_metadata(layer_el)
-
-    crs = gws.lib.crs.get(layer_el.textof('srs/spatialrefsys/authid'))
-    if crs:
-        sl.supportedCrs.append(crs)
 
     if layer_el.get('hasScaleBasedVisibilityFlag') == '1':
         # in qgis, maxScale < minScale
@@ -304,7 +298,11 @@ def _map_layer(layer_el: gws.XmlElement, caps: Caps, use_layer_ids: bool) -> gws
     sl.name = layer_name
     sl.sourceId = uid
 
-    ext = qgis_extent(layer_el, caps.projectCrs)
+    crs = gws.lib.crs.get(layer_el.textof('srs/spatialrefsys/authid'))
+    if crs:
+        sl.supportedCrs = [crs]
+
+    ext = qgis_extent(layer_el, crs or caps.projectCrs)
     if ext:
         sl.wgsExtent = ext
 
@@ -359,9 +357,8 @@ def _map_layer_datasource(layer_el: gws.XmlElement) -> dict:
     return {}
 
 
-def qgis_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
+def qgis_extent(layer_el: gws.XmlElement, layer_crs: gws.Crs):
     uid = layer_el.textof('id')
-    min_size = 0.000001
 
     # extent explicitly defined in metadata (Layer Props -> Metadata -> Extent)
     el = layer_el.find('resourceMetadata/extent/spatial')
@@ -370,7 +367,7 @@ def qgis_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
         crs = gws.lib.crs.get(el.get('crs'))
         if ext and crs:
             ext = gws.lib.extent.transform(ext, crs, gws.lib.crs.WGS84)
-            if gws.lib.extent.is_valid_wgs(ext, min_size):
+            if gws.lib.extent.is_valid_wgs(ext):
                 gws.log.debug(f'qgis_extent: {uid}: spatial: {ext}')
                 return ext
 
@@ -378,17 +375,17 @@ def qgis_extent(layer_el: gws.XmlElement, project_crs: gws.Crs):
     el = layer_el.find('wgs84extent')
     if el:
         ext = _extent_from_tag(el)
-        if ext and gws.lib.extent.is_valid_wgs(ext, min_size):
+        if ext and gws.lib.extent.is_valid_wgs(ext):
             gws.log.debug(f'qgis_extent: {uid}: wgs84extent: {ext}')
             return ext
 
-    # extent in <maplayer>/<extent>, assume the project CRS
+    # extent in <maplayer>/<extent>, assume the layer CRS
     el = layer_el.find('extent')
     if el:
         ext = _extent_from_tag(el)
         if ext:
-            ext = gws.lib.extent.transform(ext, project_crs, gws.lib.crs.WGS84)
-            if ext and gws.lib.extent.is_valid_wgs(ext, min_size):
+            ext = gws.lib.extent.transform(ext, layer_crs, gws.lib.crs.WGS84)
+            if ext and gws.lib.extent.is_valid_wgs(ext):
                 gws.log.debug(f'qgis_extent: {uid}: extent: {ext}')
                 return ext
 
@@ -744,9 +741,12 @@ def _extent_from_tag(el: Optional[gws.XmlElement]) -> Optional[gws.Extent]:
         return
 
     # work around qgis bug with absurdly high values in extent tags
-    max_coord = 30_000_000
-    if any(abs(c) > max_coord for c in ext):
+    if any(abs(c) > 1e10 for c in ext):
         gws.log.warning(f'qgis_extent: ignoring invalid extent {ext}')
+        return
+
+    # ignore all-zero extents
+    if all(abs(c) < 1e-10 for c in ext):
         return
 
     # avoid single-point extents
