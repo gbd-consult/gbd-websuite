@@ -171,14 +171,14 @@ def test_find_directories(tmp_path):
 
 
 def test_parse_path(tmp_path):
-    dirname = osx.parse_path(str(tmp_path)).get('dirname')
-    ext = osx.parse_path(str(tmp_path)).get('extension')
-    fname = osx.parse_path(str(tmp_path)).get('filename')
-    name = osx.parse_path(str(tmp_path)).get('name')
+    dirname = osx.parse_path(str(tmp_path)).dirname
+    ext = osx.parse_path(str(tmp_path)).extension
+    fname = osx.parse_path(str(tmp_path)).filename
+    stem = osx.parse_path(str(tmp_path)).stem
     assert re.match(r'^/tmp/pytest-of-\w*/pytest-\d*$', dirname)
     assert re.match(r'', ext)
     assert re.match(r'^test_parse_path\d*$', fname)
-    assert re.match(r'test_parse_path\d*', name)
+    assert re.match(r'test_parse_path\d*', stem)
 
 
 def test_file_name(tmp_path):

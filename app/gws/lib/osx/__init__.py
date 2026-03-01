@@ -402,34 +402,36 @@ def find_directories(dirname: _Path, pattern=None, deep: bool = True):
             yield from find_directories(de.path, pattern)
 
 
-def parse_path(path: _Path) -> dict[str, str]:
-    """Parse a path into a dict(path,dirname,filename,name,extension).
+class ParsePathResult(gws.Data):
+    path: str
+    dirname: str
+    filename: str
+    stem: str
+    extension: str
 
-    Args:
-        path: Path.
 
-    Returns:
-        A dict(path,dirname,filename,name,extension).
-    """
+def parse_path(path: _Path) -> ParsePathResult:
+    """Parse a file path into a ParsePathResult object."""
 
     str_path = _to_str(path)
     sp = os.path.split(str_path)
 
-    d = {
-        'dirname': sp[0],
-        'filename': sp[1],
-        'name': '',
-        'extension': '',
-    }
+    pp = ParsePathResult(
+        path=str_path,
+        dirname='',
+        filename='',
+        stem='',
+        extension='',
+    )
+    pp.dirname = sp[0]
+    pp.filename = sp[1]
 
-    if d['filename'].startswith('.'):
-        d['name'] = d['filename']
+    if pp.filename.startswith('.'):
+        pp.stem = pp.filename
     else:
-        par = d['filename'].partition('.')
-        d['name'] = par[0]
-        d['extension'] = par[2]
+        pp.stem, _, pp.extension = pp.filename.partition('.')
 
-    return d
+    return pp
 
 
 def file_name(path: _Path) -> str:

@@ -299,12 +299,10 @@ class Response(Data):
 class ContentResponse(Response):
     """Web response with literal content."""
 
-    asAttachment: bool
-    """Serve the content as an attachment."""
-    attachmentName: str
-    """Name for the attachment."""
     content: bytes | str
     """Response content."""
+    contentFilename: str
+    """Name for the attachment, if provided, content will be served as an attachment."""
     contentPath: str
     """Local path with the content."""
     mime: str

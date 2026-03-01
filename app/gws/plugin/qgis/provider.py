@@ -120,7 +120,7 @@ class Object(gws.OwsProvider):
             pp = gws.lib.osx.parse_path(p)
             self.store = project.Store(
                 type=project.StoreType.file,
-                projectName=pp['name'],
+                projectName=pp.stem,
                 path=p,
             )
             return

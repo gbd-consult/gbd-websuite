@@ -215,9 +215,8 @@ class Object(gws.base.model.field.Object):
             if not fv:
                 return
             return gws.ContentResponse(
-                asAttachment=not preview,
-                attachmentName=fv.name,
                 content=fv.content,
+                contentFilename=None if preview else fv.name,
                 mime=self.get_mime_type(fv),
             )
 

@@ -76,25 +76,26 @@ class Object(gws.base.action.Object):
     @gws.ext.command.api('webAsset')
     def api_asset(self, req: gws.WebRequester, p: AssetRequest) -> AssetResponse:
         """Return an asset under the given path and project"""
-        r = self._serve_path(req, p)
-        if r.contentPath:
-            r.content = gws.u.read_file_b(r.contentPath)
-        return AssetResponse(content=r.content, mime=r.mime)
+        res = self._serve_path(req, p)
+        if res.contentPath:
+            res.content = gws.u.read_file_b(res.contentPath)
+        return AssetResponse(content=res.content, mime=res.mime)
 
     @gws.ext.command.get('webAsset')
     def http_asset(self, req: gws.WebRequester, p: AssetRequest) -> gws.ContentResponse:
-        r = self._serve_path(req, p)
-        return r
+        res = self._serve_path(req, p)
+        return res
 
     @gws.ext.command.get('webDownload')
     def download(self, req: gws.WebRequester, p) -> gws.ContentResponse:
-        r = self._serve_path(req, p)
-        r.asAttachment = True
-        return r
+        res = self._serve_path(req, p)
+        pp = gws.lib.osx.parse_path(res.contentPath)
+        res.contentFilename = pp.filename
+        return res
 
     @gws.ext.command.get('webFile')
     def file(self, req: gws.WebRequester, p: FileRequest) -> gws.ContentResponse:
-        model = cast(gws.Model, req.user.acquire(p.modelUid, gws.ext.object.model, gws.Access.read))
+        model = cast(gws.Model, req.user.require(p.modelUid, gws.ext.object.model, gws.Access.read))
         field = model.field(p.fieldName)
         if not field:
             raise gws.NotFoundError()

@@ -34,7 +34,7 @@ class Url(gws.Data):
     params: dict
     password: str
     path: str
-    pathparts: dict
+    pathparts: gws.lib.osx.ParsePathResult
     port: str
     qsl: list
     query: str
@@ -57,7 +57,7 @@ def parse_url(url: str, **kwargs) -> Url:
         params={},
         password=us.password or '',
         path=us.path or '',
-        pathparts={},
+        pathparts=gws.lib.osx.ParsePathResult(),
         port=str(us.port or ''),
         qsl=[],
         query=us.query or '',
@@ -76,7 +76,7 @@ def parse_url(url: str, **kwargs) -> Url:
 
     if u.username:
         u.username = unquote(u.username)
-        u.password = unquote(u.get('password', ''))
+        u.password = unquote(u.get('password') or '')
 
     u.update(**kwargs)
     return u

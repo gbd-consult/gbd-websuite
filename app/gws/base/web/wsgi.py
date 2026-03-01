@@ -5,6 +5,7 @@ import io
 import os
 from typing import cast
 
+import urllib.parse
 import werkzeug.formparser
 import werkzeug.utils
 import werkzeug.wrappers
@@ -248,22 +249,15 @@ class Requester(gws.WebRequester):
             'direct_passthrough': False,
         }
 
-        attach_name = None
-
-        if response.attachmentName:
-            attach_name = response.attachmentName
-        elif response.asAttachment:
-            if response.contentPath:
-                attach_name = os.path.basename(response.contentPath)
-            elif response.mime:
-                ext = gws.lib.mime.extension_for(response.mime)
-                attach_name = 'download.' + (ext or 'bin')
+        if response.contentFilename:
+            if response.contentFilename.isascii():
+                args['headers']['Content-Disposition'] = f'attachment; filename="{response.contentFilename}"'
             else:
-                attach_name = 'download'
-
-        if attach_name:
-            args['headers']['Content-Disposition'] = f'attachment; filename="{attach_name}"'
-            args['mimetype'] = args['mimetype'] or gws.lib.mime.for_path(attach_name)
+                args['headers']['Content-Disposition'] = 'attachment; filename="{}"; filename*=UTF-8\'\'{}'.format(
+                    response.contentFilename.encode('ascii', errors='replace').decode('ascii'),
+                    urllib.parse.quote(response.contentFilename, safe=''),
+                )
+            args['mimetype'] = args['mimetype'] or gws.lib.mime.for_path(response.contentFilename)
 
         if response.contentPath:
             args['response'] = werkzeug.wsgi.wrap_file(self.environ, open(response.contentPath, 'rb'))

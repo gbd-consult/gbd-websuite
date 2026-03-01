@@ -1,32 +1,32 @@
 import gws
 import gws.lib.net as net
+import gws.lib.osx as osx
 import gws.test.util as u
 
 
 def test_parse_url():
     url = 'http://foo.bar:1234/path/to/file.ext?lower=AA%2FBB%3ACC&UPPER=DDD#hash'
-    p = net.parse_url(url)
-    r = {
-        'fragment': 'hash',
-        'hostname': 'foo.bar',
-        'netloc': 'foo.bar:1234',
-        'params': {'lower': 'AA/BB:CC', 'upper': 'DDD'},
-        'path': '/path/to/file.ext',
-        'password': '',
-        'pathparts': {
-            'dirname': '/path/to',
-            'extension': 'ext',
-            'filename': 'file.ext',
-            'name': 'file'
-        },
-        'port': '1234',
-        'qsl': [('lower', 'AA/BB:CC'), ('UPPER', 'DDD')],
-        'query': 'lower=AA%2FBB%3ACC&UPPER=DDD',
-        'scheme': 'http',
-        'url': url,
-        'username': '',
-    }
-    assert vars(p) == r
+    pp = net.parse_url(url)
+    assert isinstance(pp, net.Url)
+    assert pp.url == url
+    assert vars(pp.pathparts) == vars(osx.ParsePathResult(
+        path='/path/to/file.ext',
+        dirname='/path/to',
+        filename='file.ext',
+        stem='file',
+        extension='ext',
+    ))
+    assert pp.params == {'lower': 'AA/BB:CC', 'upper': 'DDD'}
+    assert pp.qsl == [('lower', 'AA/BB:CC'), ('UPPER', 'DDD')]
+    assert pp.fragment == 'hash'
+    assert pp.hostname == 'foo.bar'
+    assert pp.netloc == 'foo.bar:1234'
+    assert pp.password == ''
+    assert pp.port == '1234'
+    assert pp.query == 'lower=AA%2FBB%3ACC&UPPER=DDD'
+    assert pp.scheme == 'http'
+    assert pp.username == ''
+    assert pp.password == ''
 
 
 def test_make_url():

@@ -43,8 +43,13 @@ class Object(gws.Node):
 
         p = self.cfg('pathPattern')
         if p:
-            v = gws.lib.osx.parse_path(p)
-            self.paths = sorted(gws.lib.osx.find_files(v['dirname'], fnmatch.translate(v['filename'])))
+            pp = gws.lib.osx.parse_path(p)
+            self.paths = sorted(
+                gws.lib.osx.find_files(
+                    pp.dirname,
+                    fnmatch.translate(pp.filename),
+                )
+            )
             return
 
         raise gws.ConfigurationError('no paths or pathPattern specified for raster provider.')
