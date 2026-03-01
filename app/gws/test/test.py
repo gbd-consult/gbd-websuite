@@ -46,10 +46,11 @@ Options:
     -d, --detach          - run docker compose in the background
     -l, --local           - mount the local copy of the application in the test container   
     -o, --only <regex>    - only run filenames matching the pattern 
+    -k, --keyword <expr>  - only run tests matching the pytest expression
     -v, --verbose         - enable debug logging
         
 Pytest options:
-    See https://docs.pytest.org/latest/reference.html#command-line-flags
+    See https://docs.pytest.org/en/latest/reference/reference.html#command-line-flags
 
 """
 
@@ -75,6 +76,7 @@ def main(args):
             arg_local=args.get('l') or args.get('local'),
             arg_manifest=args.get('manifest'),
             arg_only=args.get('o') or args.get('only'),
+            arg_keyword=args.get('k') or args.get('keyword'),
             arg_verbose=args.get('v') or args.get('verbose'),
         )
     )
@@ -157,7 +159,9 @@ def run():
     cmd += f' /gws-app/gws/test/container_runner.py --base {base}'
 
     if OPTIONS['arg_only']:
-        cmd += f' --only "' + OPTIONS['arg_only'] + '"'
+        cmd += f' --only "{OPTIONS["arg_only"]}"'
+    if OPTIONS['arg_keyword']:
+        cmd += f' --keyword "{OPTIONS["arg_keyword"]}"'
     if OPTIONS['arg_verbose']:
         cmd += ' --verbose '
     if OPTIONS['arg_pytest']:

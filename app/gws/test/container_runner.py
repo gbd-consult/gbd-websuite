@@ -28,6 +28,7 @@ Options:
 
     -b, --base <path>     - path to the base dir (see `runner.base_dir` in `test.ini`)
     -o, --only <regex>    - only run filenames matching the pattern 
+    -k, --keyword <expr>  - only run tests matching the pytest expression
     -v, --verbose         - enable debug logging
     
 Pytest options:
@@ -52,6 +53,10 @@ def main(args):
         f'--rootdir=/gws-app',
         f'--ignore-glob=__build',
     ]
+    kw = args.get('keyword') or args.get('k')
+    if kw:
+        pytest_args.append(f'-k {kw}')
+    
     pytest_args.extend(args.get('_rest', []))
 
     if args.get('verbose') or args.get('v'):
