@@ -486,7 +486,7 @@ a:focus-visible {
 .frontpage li::before {
     content: "";
     background-color: transparent;
-    background-image: url("/bullet.svg");
+    background-image: url("/demos/bullet.svg");
     background-position: center;
     background-repeat: no-repeat;
     background-size: contain;
