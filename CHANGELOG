@@ -1,3 +1,9 @@
+## Version 8.3.5
+
+- fixed preview URLs for "file" database fields
+- invalid CRS transforms are now logged as warnings instead of errors
+- fixed client toolbar visibility issue
+
 ## Version 8.3.4
 
 - minor bugfixes
