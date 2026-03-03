@@ -366,9 +366,11 @@ def _transform_extent_constrained(ext, srid_from, srid_to):
         y0 = max(ext_wgs[1], ext_use[1])
         x1 = min(ext_wgs[2], ext_use[2])
         y1 = min(ext_wgs[3], ext_use[3])
-        if x0 >= x1 or y0 >= y1:
-            raise Error(f'transform_extent: no overlap {ext=} {srid_from!r}->{srid_to!r}')
-        ext_constrained = (x0, y0, x1, y1)
+        if x0 <= x1 and y0 <= y1:
+            ext_constrained = (x0, y0, x1, y1)
+        else:
+            gws.log.warning(f'transform_extent: {ext=} outside of AoU {srid_from!r}->{srid_to!r}')
+            ext_constrained = ext_wgs
 
     tr_from_wgs = _pyproj_transformer(WGS84.srid, srid_to)
     ext_to = tr_from_wgs.transform_bounds(
