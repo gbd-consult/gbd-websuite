@@ -48,7 +48,7 @@ class UserSpec(gws.Data):
 
 
 class SSLConfig(gws.Config):
-    """SSL configuration."""
+    """LDAP SSL configuration. (added in 8.3)"""
 
     ca: Optional[gws.FilePath]
     """CA certificate location."""
@@ -76,7 +76,7 @@ class Config(gws.base.auth.provider.Config):
     url: str
     """LDAP server url."""
     ssl: Optional[SSLConfig]
-    """SSL configuration."""
+    """LDAP SSL configuration. (added in 8.3)"""
 
 
 class Object(gws.base.auth.provider.Object):

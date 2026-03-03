@@ -24,7 +24,7 @@ class Config(gws.base.action.Config):
     tolerance: Optional[gws.UomValueStr]
     """Default tolerance."""
     categories: Optional[list[str]]
-    """Search categories. (added in 8.2)"""
+    """Search categories."""
 
 
 class Props(gws.base.action.Props):

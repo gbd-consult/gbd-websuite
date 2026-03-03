@@ -20,9 +20,9 @@ class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
     provider: Optional[provider.Config]
     """Qgis provider."""
     compositeRender: bool = False
-    """If true, the layer will be rendered as a single image. (added in 8.2)"""
+    """If true, the layer will be rendered as a single image."""
     sqlFilters: Optional[dict]
-    """Per-layer sql filters. (added in 8.2)"""
+    """Per-layer sql filters."""
 
 
 class Object(gws.base.layer.group.Object):

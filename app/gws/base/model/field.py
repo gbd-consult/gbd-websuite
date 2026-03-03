@@ -31,7 +31,7 @@ class Config(gws.ConfigWithAccess):
     isAuto: Optional[bool]
     """If True, the field is auto-updated."""
     isHidden: Optional[bool]
-    """If True, the field is not automatically displayed in UIs. (added in 8.2)"""
+    """If True, the field is not automatically displayed in UIs."""
 
     values: Optional[list[gws.ext.config.modelValue]]
     """List of possible values for the field."""

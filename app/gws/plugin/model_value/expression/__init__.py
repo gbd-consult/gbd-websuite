@@ -35,7 +35,7 @@ class Config(gws.base.model.value.Config):
     """Python expression to evaluate."""
 
     imports: Optional[list[str]]
-    """List of additional modules to import. (added in 8.2)"""
+    """List of additional modules to import."""
 
 
 class Object(gws.base.model.value.Object):

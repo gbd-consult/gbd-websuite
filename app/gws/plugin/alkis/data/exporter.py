@@ -22,11 +22,11 @@ class Config(gws.ConfigWithAccess):
     """Export configuration"""
 
     type: str
-    """Export type. (added in 8.2)"""
+    """Export type."""
     title: Optional[str]
-    """Title to display in the ui. (added in 8.2)"""
+    """Title to display in the ui."""
     model: Optional[gws.ext.config.model]
-    """Export model. (added in 8.2)"""
+    """Export model."""
 
 
 class Args(gws.Data):
