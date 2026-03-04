@@ -1,11 +1,12 @@
 """Provides the printing API."""
 
-from typing import Optional
+from typing import Optional, cast
 
 import gws
 import gws.base.action
 import gws.config
 import gws.lib.jsonx
+import gws.lib.osx
 import gws.lib.mime
 
 gws.ext.new.action('printer')
@@ -40,7 +41,10 @@ class Object(gws.base.action.Object):
     def printer_status(self, req: gws.WebRequester, p: gws.JobRequest) -> gws.JobStatusResponse:
         res = self.root.app.jobMgr.handle_status_request(req, p)
         if res.state == gws.JobState.complete:
-            res.output = {'url': gws.u.action_url_path('printerOutput', jobUid=res.jobUid) + '/gws.pdf'}
+            out = self._output_path(req, p)
+            mt = gws.lib.mime.for_path(out)
+            ext = gws.lib.mime.extension_for(mt) or 'bin'
+            res.output = {'url': gws.u.action_url_path('printerOutput', jobUid=res.jobUid) + f'/gws.{ext}'}
         return res
 
     @gws.ext.command.api('printerCancel')
@@ -49,15 +53,9 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.get('printerOutput')
     def printer_output(self, req: gws.WebRequester, p: gws.JobRequest) -> gws.ContentResponse:
-        job = self.root.app.jobMgr.require_job(req, p)
-
-        if job.state != gws.JobState.complete:
-            raise gws.NotFoundError(f'JOB {p.jobUid}: wrong state {job.state!r}')
-
-        out = job.payload.get('outputPath')
-        if not out:
-            raise gws.NotFoundError(f'JOB {p.jobUid}: no output path')
-        return gws.ContentResponse(contentPath=out, mime=gws.lib.mime.PDF)
+        out = self._output_path(req, p)
+        mt = gws.lib.mime.for_path(out)
+        return gws.ContentResponse(contentPath=out, mime=mt)
 
     @gws.ext.command.cli('printerPrint')
     def print(self, p: CliParams):
@@ -70,4 +68,16 @@ class Object(gws.base.action.Object):
             path=p.request,
         )
 
-        root.app.printerMgr.exec_print(request, p.output)
+        root.app.printerMgr.exec_print(cast(gws.PrintRequest, request), p.output)
+
+    def _output_path(self, req: gws.WebRequester, p: gws.JobRequest):
+        job = self.root.app.jobMgr.require_job(req, p)
+
+        if job.state != gws.JobState.complete:
+            raise gws.NotFoundError(f'JOB {p.jobUid}: wrong state {job.state!r}')
+
+        out = job.payload.get('outputPath')
+        if not out:
+            raise gws.NotFoundError(f'JOB {p.jobUid}: no output path')
+
+        return out
