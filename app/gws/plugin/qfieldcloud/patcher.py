@@ -139,6 +139,9 @@ class Object:
         if not le:
             gws.log.warning(f'layer not found: {cc.layerUid!r}')
             return
+        if le.action != caps_mod.LayerAction.edit:
+            gws.log.warning(f'unsupported layer action: {cc.layerUid!r} {le.action!r}')
+            return
 
         me = le.modelEntry
         pk_name = me.model.uidName
