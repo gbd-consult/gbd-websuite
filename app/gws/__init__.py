@@ -2479,6 +2479,7 @@ class ActionManager(Node):
             command_category: CommandCategory,
             command_name: str,
             params: dict,
+            path: str,
             user: 'User',
             read_options: Optional[set[SpecReadOption]]=None,
     ) -> tuple[Callable, Request]:
@@ -2488,7 +2489,8 @@ class ActionManager(Node):
         Args:
             command_category: The category of the command to execute.
             command_name: The name of the command to execute.
-            params: Additional parameters required for the action.
+            params: Request parameters for the command.
+            path: Request path for which the action is being prepared.
             user: The user initiating the action.
             read_options: Read options for parsing parameters.
 

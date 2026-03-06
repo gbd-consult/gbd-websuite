@@ -161,7 +161,14 @@ def handle_action(root: gws.Root, req: gws.WebRequester) -> gws.WebResponder:
         # @TODO: add HEAD
         raise gws.base.web.error.MethodNotAllowed()
 
-    fn, request = root.app.actionMgr.prepare_action(category, req.command(), params, req.user, read_options)
+    fn, request = root.app.actionMgr.prepare_action(
+        category,
+        req.command(),
+        params,
+        req.path(),
+        req.user,
+        read_options,
+    )
 
     response = fn(req, request)
 
