@@ -1112,6 +1112,8 @@ UomExtentStr: TypeAlias = list[str]
 class ImageFormat(Data):
     """Image format"""
 
+    name: str
+    """Name of the format."""
     mimeTypes: list[str]
     """Mime types for this format."""
     options: dict

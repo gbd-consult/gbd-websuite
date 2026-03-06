@@ -153,7 +153,7 @@ class Props(gws.Props):
     url: str = ''
 
 
-_DEFAULT_IMAGE_FORMAT = gws.lib.image.FormatConfig(mimeTypes=['image/png'], options={'mode': 'P'})
+_DEFAULT_IMAGE_FORMAT = gws.lib.image.FormatConfig(name='png8', mimeTypes=['image/png'], options={'mode': 'P'})
 
 
 class Object(gws.Layer):
@@ -184,7 +184,7 @@ class Object(gws.Layer):
         self.title = self.cfg('title')
 
         p = self.cfg('imageFormat') or _DEFAULT_IMAGE_FORMAT
-        self.imageFormat = gws.ImageFormat(mimeTypes=p.mimeTypes, options=p.options or {})
+        self.imageFormat = gws.ImageFormat(name=p.name, mimeTypes=p.mimeTypes, options=p.options or {})
 
         self.parentBounds = self.cfg('_parentBounds')
         self.parentResolutions = self.cfg('_parentResolutions')
