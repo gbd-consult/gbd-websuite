@@ -21,6 +21,17 @@ Editieren Sie die Daten, danach aus der QFieldCloud Menu "Synchronisieren" wähl
 Anschließend laden Sie diese Seite neu, um die Änderungen in der Webkarte zu sehen.
 """
 
+actions+ {
+    type "qfieldcloud"
+    access "allow all"
+    projects+ {
+        uid "qfield_demo"
+        title "QField Demo"
+        provider.path "/demos/poi_districts_qfield.qgs"
+        mapCacheLifeTime "7d"
+        access "allow all"
+    }
+}
 
 map {
     center {demo_point_duesseldorf_3857}
