@@ -633,7 +633,7 @@ class Controller extends gc.Controller {
 
             case gc.gws.JobState.complete:
                 if (this.getValue('printerMode') === 'screenshot') {
-                    gc.lib.downloadUrl(job.url, 'image.png', null);
+                    gc.lib.downloadUrl(job.output.url, 'image.png', null);
                     this.stop()
                 } else {
                     this.update({printerState: job.state});

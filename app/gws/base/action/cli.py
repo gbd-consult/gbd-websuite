@@ -49,7 +49,8 @@ class Object(gws.Node):
             gws.CommandCategory.api,
             p.cmd,
             gws.lib.vendor.slon.parse(p.params),
-            req.user
+            '',
+            req.user,
         )
         try:
             return fn(req, request)

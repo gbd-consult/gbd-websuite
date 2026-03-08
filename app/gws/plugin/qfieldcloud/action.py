@@ -19,6 +19,8 @@ gws.ext.new.action('qfieldcloud')
 
 
 class Config(gws.ConfigWithAccess):
+    """QField Cloud action. (added in 8.3)"""
+    
     projects: list[core.ProjectConfig]
     """QField Cloud projects."""
 

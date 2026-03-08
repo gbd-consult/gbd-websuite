@@ -8,7 +8,7 @@ class Config(gws.Config):
     secure: bool = True
     """Use only with SSL."""
     allowInsecureFrom: Optional[list[str]]
-    """Allow insecure access from these IPs."""
+    """Allow insecure access from these IPs. (added in 8.3)"""
 
 
 class Object(gws.AuthMethod):

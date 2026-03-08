@@ -29,7 +29,7 @@ class Config(gws.ConfigWithAccess):
     title: Optional[str]
     """Finder title."""
     category: Optional[str]
-    """Category for the finder. (added in 8.2)"""
+    """Category for the finder."""
     withGeometry: bool = True
     """Enable geometry search."""
     withKeyword: bool = True

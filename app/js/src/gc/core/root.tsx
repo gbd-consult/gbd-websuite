@@ -86,6 +86,10 @@ export class RootController extends Controller {
         await super.init();
         this.appClasses = this.app.domNode.className.split(' ');
 
+        if (this.getValue('altbarVisible')) {
+            this.setClass(true, 'withAltbar');
+        }
+
         this.app.whenChanged('altbarVisible', v => this.setClass(v, 'withAltbar'));
         this.app.whenChanged('printerState', v => this.setClass(v, 'withPrintPreview'));
         this.app.whenChanged('appActiveTool', v => this.setClass(v !== 'Tool.Default', 'withToolbox'));

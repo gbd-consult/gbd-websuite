@@ -27,7 +27,7 @@ class Config(gws.ConfigWithAccess):
     extent: Optional[gws.Extent]
     """Service extent, in extentCrs or the first supported CRS."""
     extentCrs: Optional[gws.CrsName]
-    """Service extent CRS. (added in 8.2)"""
+    """Service extent CRS."""
     imageFormats: Optional[list[gws.lib.image.FormatConfig]]
     """Supported image formats."""
     maxFeatureCount: int = 10000

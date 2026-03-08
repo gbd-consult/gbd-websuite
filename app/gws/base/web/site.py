@@ -76,7 +76,7 @@ class Config(gws.Config):
     canonicalHost: str = ''
     """Hostname for reversed URL rewriting."""
     useForwardedHost: bool = False
-    """Use  X-Forwarded-Host for host matching. (added in 8.2)"""
+    """Use  X-Forwarded-Host for host matching."""
     root: WebDirConfig
     """Root directory for static documents."""
 

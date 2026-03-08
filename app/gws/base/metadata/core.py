@@ -22,7 +22,7 @@ class LinkConfig(gws.Config):
 
 
 class Config(gws.Config):
-    """Metadata configuration. (added in 8.2)"""
+    """Metadata configuration."""
 
     name: Optional[str]
     """Object name."""
@@ -38,7 +38,7 @@ class Config(gws.Config):
     attribution: Optional[str]
     """Attribution information for the object. (changed in 8.2)"""
     attributionUrl: Optional[str]
-    """Attribution URL for the object. (added in 8.2)"""
+    """Attribution URL for the object."""
     dateCreated: Optional[gws.DateStr]
     """Object creation date."""
     dateUpdated: Optional[gws.DateStr]

@@ -54,7 +54,7 @@ class MonitorConfig(gws.Config):
     frequency: gws.Duration = '30'
     """Periodic tasks frequency."""
     disableWatch: bool = False
-    """Disable file system watching. (added in 8.2)"""
+    """Disable file system watching."""
     ignore: Optional[list[gws.Regex]]
     """Ignore paths that match these regexes. (deprecated in 8.2)"""
 
@@ -94,13 +94,13 @@ class Config(gws.Config):
     """Web server module."""
 
     withWeb: bool = True
-    """Enable the web server. (added in 8.2)"""
+    """Enable the web server."""
     withSpool: bool = True
-    """Enable the spool server. (added in 8.2)"""
+    """Enable the spool server."""
     withMapproxy: bool = True
-    """Enable the mapproxy server. (added in 8.2)"""
+    """Enable the mapproxy server."""
     withMonitor: bool = True
-    """Enable the monitor. (added in 8.2)"""
+    """Enable the monitor."""
 
     templates: Optional[list[gws.ext.config.template]]
     """Configuration templates."""
@@ -108,8 +108,8 @@ class Config(gws.Config):
     autoRun: str = ''
     """Shell command to run before the server start. (deprecated in 8.2)"""
     preConfigure: str = ''
-    """Shell or python script to run before configuring the server. (added in 8.2)"""
+    """Shell or python script to run before configuring the server."""
     postConfigure: str = ''
-    """Shell or python script to run run after the service has been configured. (added in 8.2)"""
+    """Shell or python script to run run after the service has been configured."""
     timeZone: str = 'Europe/Berlin'
     """Timezone for this server."""

@@ -71,14 +71,23 @@ class Object(gws.ActionManager):
 
         return list(d.values())
 
-    def prepare_action(self, command_category, command_name, params, user, read_options=None):
+    def prepare_action(self, command_category, command_name, params, path, user, read_options=None):
         desc = self.root.specs.command_descriptor(command_category, command_name)
         if not desc:
             raise gws.NotFoundError(f'{command_category}.{command_name} not found')
 
         if desc.extCommandCategory == gws.CommandCategory.raw:
+            project_uid = params.get('projectUid')
+            
+            if not project_uid:
+                path_parts = path.strip('/').split('/')
+                try:
+                    project_uid = path_parts[path_parts.index('projectUid') + 1]
+                except (ValueError, IndexError):
+                    pass
+            
             request = gws.Request(
-                projectUid=params.get('projectUid'),
+                projectUid=project_uid,
                 localeUid=params.get('localeUid'),
             )
         else:
