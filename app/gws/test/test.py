@@ -421,7 +421,7 @@ def service_ldap():
             'LDAP_CONFIG_PASSWORD': OPTIONS.get('service.ldap.password'),
             'LDAP_TLS': 'true',
         },
-        command='--copy-service --loglevel debug',
+        command='--copy-service --loglevel info',
         volumes=[
             f'{dst}/custom:/container/service/slapd/assets/config/bootstrap/ldif/custom',
             f'{dst}/certs:/container/service/slapd/assets/certs',
