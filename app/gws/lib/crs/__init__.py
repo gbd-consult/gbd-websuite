@@ -38,7 +38,7 @@ class Object(gws.Crs):
     def transform_extent(self, ext, crs_to):
         if crs_to == self:
             return ext
-        return _transform_extent_constrained(ext, self.srid, crs_to.srid)
+        return _transform_extent_check(ext, self.srid, crs_to.srid)
 
     def transformer(self, crs_to):
         tr = _pyproj_transformer(self.srid, crs_to.srid)
@@ -335,20 +335,14 @@ def _pyproj_transformer(srid_from, srid_to) -> pyproj.transformer.Transformer:
     return _transformer_cache[key]
 
 
-def _transform_extent_constrained(ext, srid_from, srid_to):
+def _transform_extent_check(ext, srid_from, srid_to):
     ext_nor = _normalize_extent(ext)
 
     if srid_from == WGS84.srid:
         ext_wgs = ext_nor
     else:
         tr_to_wgs = _pyproj_transformer(srid_from, WGS84.srid)
-        ext_wgs = tr_to_wgs.transform_bounds(
-            left=ext_nor[0],
-            bottom=ext_nor[1],
-            right=ext_nor[2],
-            top=ext_nor[3],
-            errcheck=True,
-        )
+        ext_wgs = tr_to_wgs.transform_bounds(ext_nor[0], ext_nor[1], ext_nor[2], ext_nor[3])
 
     if srid_to == WGS84.srid:
         return _normalize_extent(ext_wgs)
@@ -357,30 +351,75 @@ def _transform_extent_constrained(ext, srid_from, srid_to):
     if not pp:
         raise Error(f'_transform_extent: unknown {srid_to=}')
 
-    au = pp.area_of_use
-    if not au:
-        ext_constrained = ext_wgs
-    else:
-        ext_use = au.bounds
-        x0 = max(ext_wgs[0], ext_use[0])
-        y0 = max(ext_wgs[1], ext_use[1])
-        x1 = min(ext_wgs[2], ext_use[2])
-        y1 = min(ext_wgs[3], ext_use[3])
-        if x0 <= x1 and y0 <= y1:
-            ext_constrained = (x0, y0, x1, y1)
-        else:
-            gws.log.warning(f'transform_extent: {ext=} outside of AoU {srid_from!r}->{srid_to!r}')
-            ext_constrained = ext_wgs
-
     tr_from_wgs = _pyproj_transformer(WGS84.srid, srid_to)
-    ext_to = tr_from_wgs.transform_bounds(
-        left=ext_constrained[0],
-        bottom=ext_constrained[1],
-        right=ext_constrained[2],
-        top=ext_constrained[3],
-        errcheck=True,
-    )
+    au = pp.area_of_use
+
+    if au:
+        ext_au = au.bounds
+        if _is_big_extent(ext_wgs) and not _is_big_extent(ext_au):
+            ext_to = _transform_extent_sampled(ext_wgs, tr_from_wgs, au)
+            if ext_to:
+                gws.log.debug(f'transform_extent: {ext=} {srid_from!r}->{srid_to!r}: big extent {ext_to=} ')
+                return _normalize_extent(ext_to)
+
+        if ext_wgs[2] < ext_au[0] or ext_wgs[0] > ext_au[2] or ext_wgs[3] < ext_au[1] or ext_wgs[1] > ext_au[3]:
+            gws.log.warning(f'transform_extent: {ext=} {srid_from!r}->{srid_to!r}: outside of AoU ')
+
+    ext_to = tr_from_wgs.transform_bounds(ext_wgs[0], ext_wgs[1], ext_wgs[2], ext_wgs[3])
+
     return _normalize_extent(ext_to)
+
+
+def _transform_extent_sampled(ext_wgs, tr, au, samples=50):
+    x0, y0, x1, y1 = ext_wgs
+    ax0, ay0, ax1, ay1 = au.bounds
+    mid_lon = (ax0 + ax1) / 2
+
+    xys = []
+
+    # 1) Dense grid sampling within the area of use (accurate core extent)
+    for i in range(samples + 1):
+        lon = ax0 + (ax1 - ax0) * i / samples
+        for j in range(samples + 1):
+            lat = ay0 + (ay1 - ay0) * j / samples
+            try:
+                xys.append(tr.transform(lon, lat, errcheck=True))
+            except Exception:
+                pass
+
+    # 2) Sample the full latitude range along the central meridian of the AoU
+    #    This captures the full Y extent for "the world" in the target projection
+    for i in range(samples + 1):
+        lat = y0 + (y1 - y0) * i / samples
+        try:
+            xys.append(tr.transform(mid_lon, lat, errcheck=True))
+        except Exception:
+            pass
+
+    # 3) Sample several meridians across the full longitude range
+    #    to capture the full X spread at various latitudes
+    for i in range(samples + 1):
+        lon = x0 + (x1 - x0) * i / samples
+        for j in range(samples + 1):
+            lat = y0 + (y1 - y0) * j / samples
+            try:
+                xys.append(tr.transform(lon, lat, errcheck=True))
+            except Exception:
+                pass
+
+    xs = [x for x, y in xys if math.isfinite(x) and math.isfinite(y)]
+    ys = [y for x, y in xys if math.isfinite(x) and math.isfinite(y)]
+
+    if not xs:
+        return
+
+    return (min(xs), min(ys), max(xs), max(ys))
+
+
+def _is_big_extent(ext_wgs):
+    dx = abs(ext_wgs[2] - ext_wgs[0])
+    dy = abs(ext_wgs[3] - ext_wgs[1])
+    return dx > 350 or dy > 160
 
 
 def _transform_extent_direct(ext, srid_from, srid_to):
@@ -479,7 +518,7 @@ def _make_crs(srid, pp, axis, uom):
         b['east_longitude'],
         b['north_latitude'],
     )
-    crs.extent = _transform_extent_constrained(crs.wgsExtent, WGS84.srid, srid)
+    crs.extent = _transform_extent_check(crs.wgsExtent, WGS84.srid, srid)
     crs.bounds = gws.Bounds(extent=crs.extent, crs=crs)
 
     return crs
