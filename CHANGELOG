@@ -1,3 +1,7 @@
+## Version 8.3.8
+
+- fixed CRS transformation issues for certain projections
+
 ## Version 8.3.7
 
 - action `qfieldcloud` can now be defined per project
