@@ -43,6 +43,8 @@ class Config(gws.Config):
     """Extent buffer for automatically computed bounds. (added in 8.1)"""
     useCanvasExtent: Optional[bool]
     """Use canvas extent as project extent. (added in 8.1)"""
+    withWatch: Optional[bool]
+    """Watch for changes in the project file. (added in 8.1)"""
 
 
 class Object(gws.OwsProvider):
@@ -58,8 +60,12 @@ class Object(gws.OwsProvider):
 
     def configure(self):
         self.configure_store()
-        # if self.store.path:
-        #     self.root.app.monitor.add_file(self.store.path)
+
+        if self.cfg('withWatch'):
+            if self.store.path:
+                self.root.app.monitor.add_file(self.store.path)
+            else:
+                gws.log.warning('watching qgis project is only supported for file-based projects')
 
         self.url = 'http://{}:{}'.format(
             self.root.app.cfg('server.qgis.host'),
