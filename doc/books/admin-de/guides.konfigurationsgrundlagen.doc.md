@@ -49,7 +49,7 @@ welches daraufhin zur Konfiguration der GBD WebSuite verwendet wird:
                     {
                         "type": "tile",
                         "title": "OSM",
-                        "provider": { "url": "https://osmtiles.gbd-consult.de/ows/{z}/{x}/{y}.png" }
+                        "provider": { "url": "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png" }
                     }
                 ]
             }
@@ -86,7 +86,7 @@ weggelassen werden können.
                     {
                         type tile
                         title OSM
-                        provider { url "https://osmtiles.gbd-consult.de/ows/{z}/{x}/{y}.png" }
+                        "provider": { "url": "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png" }
                     }
                 ]
             }
@@ -104,7 +104,7 @@ layers [
     {
         type tile
         title OSM
-        provider.url "https://osmtiles.gbd-consult.de/ows/{z}/{x}/{y}.png"
+        "provider": { "url": "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png" }
         provider.maxRequests 4
     }
 ]
@@ -123,7 +123,7 @@ layers [
         map.layers+ {
             type tile
             title OSM
-            provider.url "https://osmtiles.gbd-consult.de/ows/{z}/{x}/{y}.png"
+            "provider": { "url": "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png" }
         }
     }
     actions+ { type map }
@@ -168,7 +168,7 @@ dieser Datei.
     map.layers+ {
         type tile
         title OSM
-        provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+        "provider": { "url": "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png" }
     }
 }
 

@@ -30,7 +30,7 @@ Inhalt in einem beliebigen Verzeichnis:
 ```yaml title="docker-compose.yml"
 services:
     gws:
-        image: gbdconsult/gws-amd64:8.2
+        image: gbdconsult/gws-amd64:8.3
         container_name: gws
         ports:
             - 3333:80
@@ -81,7 +81,7 @@ WebSuite zu experimentieren, fahren Sie wie folgt fort:
 ```yaml title="MYGWSDIRECTORY/docker-compose.yml"
 services:
     gws:
-        image: gbdconsult/gws-amd64:8.2
+        image: gbdconsult/gws-amd64:8.3
         container_name: gws
         volumes:
             - ./data:/data
@@ -91,7 +91,7 @@ services:
         tmpfs:
             - /tmp
     qgis:
-        image: gbdconsult/gbd-qgis-server-amd64:3.34
+        image: gbdconsult/gbd-qgis-server-amd64:3.40
         container_name: qgis
         volumes:
             - ./data:/data
