@@ -91,7 +91,7 @@ services:
         tmpfs:
             - /tmp
     qgis:
-        image: gbdconsult/gbd-qgis-server-amd64:3.40
+        image: gbdconsult/gbd-qgis-server-amd64:3.44
         container_name: qgis
         volumes:
             - ./data:/data
