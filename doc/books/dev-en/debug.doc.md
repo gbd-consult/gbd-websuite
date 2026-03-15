@@ -85,12 +85,12 @@ I create a folder `~/gws/debug` that contains all required boilerplate:
 ```yaml
 services:
     qgis:
-        image: gbdconsult/gbd-qgis-server-amd64:3.34.12
+        image: gbdconsult/gbd-qgis-server-amd64:3.44
         container_name: qgis
         # ... see other composefiles for missing settings here
 
     gws:
-        image: gbdconsult/gws-amd64:8.1
+        image: gbdconsult/gws-amd64:8.3
         container_name: gws
         ports:
             - "0.0.0.0:3333:80" # default http on 3333
