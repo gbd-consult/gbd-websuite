@@ -44,9 +44,12 @@ class Object(gws.base.layer.image.Object):
         if super().configure_sources():
             return True
 
+        gws.u.require(self.serviceProvider, 'failed to configure service provider')
+
         self.configure_source_layers()
         if not self.sourceLayers:
             raise gws.Error('no source layers found')
+
         self.activeLayer = self.sourceLayers[0]
         self.configure_tms()
         self.configure_style()

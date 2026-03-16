@@ -62,6 +62,7 @@ class Object(gws.base.legend.Object):
         return gws.config.util.configure_service_provider_for(self, provider.Object)
 
     def configure_sources(self):
+        gws.u.require(self.serviceProvider, 'failed to configure service provider')
         self.configure_source_layers()
 
     def configure_source_layers(self):

@@ -22,6 +22,8 @@ class Object(gws.base.search.finder.Object):
         pass
 
     def configure_sources(self):
+        gws.u.require(self.serviceProvider, 'failed to configure service provider')
+
         self.configure_source_layers()
         if not self.sourceLayers:
             raise gws.Error(f'no queryable layers found in {self.serviceProvider}')

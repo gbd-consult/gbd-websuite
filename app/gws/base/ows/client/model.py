@@ -22,6 +22,8 @@ class Object(gws.base.model.default_model.Object):
         pass
 
     def configure_sources(self):
+        gws.u.require(self.serviceProvider, 'failed to configure service provider')
+
         self.configure_source_layers()
 
     def configure_source_layers(self):

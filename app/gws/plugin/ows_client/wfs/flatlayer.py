@@ -45,6 +45,9 @@ class Object(gws.base.layer.vector.Object):
     def configure_sources(self):
         if super().configure_sources():
             return True
+
+        gws.u.require(self.serviceProvider, 'failed to configure service provider')
+
         self.configure_source_layers()
         return True
 

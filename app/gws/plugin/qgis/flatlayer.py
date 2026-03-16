@@ -43,6 +43,9 @@ class Object(gws.base.layer.image.Object):
     def configure_sources(self):
         if super().configure_sources():
             return True
+
+        gws.u.require(self.serviceProvider, 'failed to configure service provider')
+
         self.configure_source_layers()
         self.imageLayers = gws.gis.source.filter_layers(self.sourceLayers, is_image=True)
         self.searchLayers = gws.gis.source.filter_layers(self.sourceLayers, is_queryable=True)

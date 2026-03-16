@@ -42,10 +42,10 @@ def exit(code: int = 255):
 T = TypeVar('T')
 
 
-def require(value: Optional[T]) -> T:
+def require(value: Optional[T], message: str = '') -> T:
     """Return the value if not None, otherwise raise an Exception."""
     if value is None:
-        raise ValueError('unexpected None value')
+        raise ValueError(message or 'unexpected None value')
     return value
 
 
