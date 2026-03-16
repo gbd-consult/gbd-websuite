@@ -74,7 +74,7 @@ h6 {
 }
 
 .custom_poi {
-    --icon: url('/pin.svg');
+    --icon: url('/demos/pin.svg');
     --with_label: all;
     --label-fill: #C74040;
     --label-font-size: 10px;
@@ -82,7 +82,7 @@ h6 {
 }
 
 .custom_poi_bank {
-    --icon: url('/bank2.svg');
+    --icon: url('/demos/bank2.svg');
     --with_label: all;
     --label-fill: #894a93;
     --label-font-size: 10px;
