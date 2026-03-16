@@ -1,3 +1,8 @@
+## Version 8.3.9
+
+- allow editable fields to be empty
+- fixed race condition in gdal module
+
 ## Version 8.3.8
 
 - fixed CRS transformation issues for certain projections
