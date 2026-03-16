@@ -508,8 +508,7 @@ export class Controller extends gws.Controller {
 
         for (let field of fields) {
             let v = atts[field.name]
-            if (!gws.lib.isEmpty(v))
-                attsToWrite[field.name] = await this.serializeValue(field, v);
+            attsToWrite[field.name] = await this.serializeValue(field, v);
         }
 
         if (!attsToWrite[feature.model.uidName])
