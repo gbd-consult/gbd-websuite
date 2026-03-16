@@ -1,3 +1,7 @@
+## 8.1.39
+
+- allow editable fields to be empty (backport from 8.3)
+
 ## Version 8.1.38
 
 - Added `withWatch` option for qgis projects to automatically reload on changes
