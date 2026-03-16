@@ -508,8 +508,7 @@ export class Controller extends gc.Controller {
 
         for (let field of fields) {
             let v = atts[field.name]
-            if (!gc.lib.isEmpty(v))
-                attsToWrite[field.name] = await this.serializeValue(field, v);
+            attsToWrite[field.name] = await this.serializeValue(field, v);
         }
 
         if (gc.lib.isEmpty(attsToWrite[feature.model.uidName])) {

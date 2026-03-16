@@ -48,7 +48,7 @@ class _DataSetOptions(gws.Data):
 def drivers() -> list[DriverInfo]:
     """Enumerate GDAL drivers."""
 
-    di = _fetch_driver_infos()
+    di = gws.u.get_app_global('gdal_drivers', _fetch_driver_infos)
     return di.infos
 
 
@@ -553,7 +553,7 @@ class VectorLayer:
 
 
 def _driver_from_args(path, driver_name, need_raster):
-    di = _fetch_driver_infos()
+    di = gws.u.get_app_global('gdal_driver_infos', _fetch_driver_infos)
 
     if not driver_name:
         ext = path.split('.')[-1]
@@ -581,16 +581,8 @@ def _driver_from_args(path, driver_name, need_raster):
     return ogr.GetDriverByName(driver_name)
 
 
-_di_cache: Optional[_DriverInfoCache] = None
-
-
 def _fetch_driver_infos() -> _DriverInfoCache:
-    global _di_cache
-
-    if _di_cache:
-        return _di_cache
-
-    _di_cache = _DriverInfoCache(
+    di = _DriverInfoCache(
         infos=[],
         extToName={},
         vectorNames=set(),
@@ -605,16 +597,16 @@ def _fetch_driver_infos() -> _DriverInfoCache:
             longName=str(drv.LongName),
             metaData=dict(drv.GetMetadata() or {}),
         )
-        _di_cache.infos.append(inf)
+        di.infos.append(inf)
 
         for e in inf.metaData.get(gdal.DMD_EXTENSIONS, '').split():
-            _di_cache.extToName.setdefault(e, []).append(inf.name)
+            di.extToName.setdefault(e, []).append(inf.name)
         if inf.metaData.get('DCAP_VECTOR') == 'YES':
-            _di_cache.vectorNames.add(inf.name)
+            di.vectorNames.add(inf.name)
         if inf.metaData.get('DCAP_RASTER') == 'YES':
-            _di_cache.rasterNames.add(inf.name)
+            di.rasterNames.add(inf.name)
 
-    return _di_cache
+    return di
 
 
 _name_to_srid = {}
