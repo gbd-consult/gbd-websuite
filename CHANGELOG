@@ -1,3 +1,7 @@
+## Version 8.3.10
+
+- options to watch QGIS projects for changes and reload them automatically
+
 ## Version 8.3.9
 
 - allow editable fields to be empty
