@@ -43,6 +43,10 @@ class Config(gws.Config):
     """Extent buffer for automatically computed bounds.."""
     useCanvasExtent: Optional[bool]
     """Use canvas extent as project extent.."""
+    withWatch: Optional[bool]
+    """Enable monitoring of the project for changes."""
+    watchFrequency: Optional[gws.Duration]
+    """Frequency for checking project changes."""
 
 
 class Object(gws.OwsProvider):
@@ -55,11 +59,10 @@ class Object(gws.OwsProvider):
     defaultLegendOptions: dict
 
     caps: caps_module.Caps
+    sourceHash: str
 
     def configure(self):
         self.configure_store()
-        # if self.store.path:
-        #     self.root.app.monitor.add_file(self.store.path)
 
         self.url = 'http://{}:{}'.format(
             self.root.app.cfg('server.qgis.host'),
@@ -82,6 +85,19 @@ class Object(gws.OwsProvider):
         self.directSearch = self._direct_formats('directSearch', {'wms', 'wfs', 'postgres'})
 
         self.defaultLegendOptions = self.cfg('defaultLegendOptions', default={})
+
+        self.sourceHash = ''
+        if self.cfg('withWatch'):
+            self.sourceHash = self.qgis_project().sourceHash
+            self.root.app.monitor.register_periodic_task(self, frequency=self.cfg('watchFrequency', default=0))
+            gws.log.info(f'QGIS: monitoring: enabled: {self.server_project_path()!r}')
+
+    def periodic_task(self):
+        h = self.qgis_project().sourceHash
+        if h != self.sourceHash:
+            gws.log.info(f'QGIS: monitoring: CHANGED: {self.server_project_path()!r}')
+            self.sourceHash = h
+            self.root.app.monitor.schedule_reload(with_reconfigure=True)
 
     def _project_bounds(self):
         # explicit WMS extent?
@@ -146,7 +162,11 @@ class Object(gws.OwsProvider):
             return self.store.path
         if self.store.type == project.StoreType.postgres:
             prov = self.root.app.databaseMgr.find_provider(ext_type='postgres', uid=self.store.dbUid)
-            return gws.lib.net.add_params(prov.url(), schema=self.store.schema, project=self.store.projectName)
+            p = {'schema': self.store.schema, 'project': self.store.projectName}
+            if self.sourceHash:
+                # NB the hash is to invalidate QGIS Server internal cache
+                p['h'] = self.sourceHash
+            return gws.lib.net.add_params(prov.url(), p)
 
     def server_params(self, params: dict) -> dict:
         defaults = dict(

@@ -1,11 +1,17 @@
 uid "qgis_postgres_storage"
 
-title "QGIS layer in Postgres"
+title "QGIS Projekt in Postgres"
 
 metadata.keywords [ "qgis" ]
 
 metadata.abstract """
-Qgis project, stored in a Postgres database
+Dieses QGIS-Projekt ist in einer Postgres-Datenbank gespeichert. 
+
+In der Provider-Konfiguration wird das Schema und der Projektname angegeben.
+
+Die Optionen `withWatch` und `watchFrequency` aktivieren die Überwachung des Projekts 
+auf Änderungen uns sorgen dafür, dass das Projekt automatisch neu geladen wird, 
+sowohl in GWS als auch in QGIS Server.
 """
 
 map {
@@ -17,7 +23,12 @@ map {
 map.layers+ {
     title "Düsseldorf"
     type "qgis"
-    provider { schema "public" projectName "districts" }
+    provider { 
+        schema "public" 
+        projectName "districts" 
+        withWatch true
+        watchFrequency "30s"
+    }
 }
 
 {demo_osm_background}
