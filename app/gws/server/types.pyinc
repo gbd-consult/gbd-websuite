@@ -26,11 +26,12 @@ class ServerMonitor(Node):
             path: File path.
         """
 
-    def register_periodic_task(self, obj: Node):
+    def register_periodic_task(self, obj: Node, frequency: int = 0):
         """Register an object as a periodic task handler.
 
         Args:
             obj: A node with a ``periodic_task`` method.
+            frequency: Task frequency in seconds.
         """
 
     def schedule_reload(self, with_reconfigure: bool = False):
