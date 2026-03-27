@@ -469,7 +469,7 @@ def abs_path(path: _Path, base: _Path) -> str:
     str_path = _to_str(path)
 
     if os.path.isabs(str_path):
-        return str_path
+        return os.path.normpath(str_path)
 
     if not base:
         raise ValueError('cannot compute abspath without a base')

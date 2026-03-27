@@ -228,7 +228,7 @@ class Object:
         img = gws.lib.image.from_bytes(lro.content)
 
         with gws.gis.gdalx.open_from_image(img, bounds) as src:
-            src.create_copy(cache_path)
+            src.save_as(cache_path)
 
         self.pathMap[le.dataSourceFileName] = cache_path
 

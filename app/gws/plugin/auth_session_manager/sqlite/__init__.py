@@ -102,6 +102,7 @@ class Object(gws.base.auth.session_manager.Object):
         usr = am.unserialize_user(r['str_user'])
         if not usr:
             gws.log.error(f'invalid user in session {r["uid"]!r}')
+            self._db().execute(f'DELETE FROM {self.table} WHERE uid=:uid', uid=r['uid'])
             usr = am.guestUser
         return gws.base.auth.session.Object(
             uid=r['uid'],

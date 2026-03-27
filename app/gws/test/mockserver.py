@@ -139,7 +139,7 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def end(self, content, status=200, **headers):
         hs = {k.lower(): v for k, v in headers.items()}
-        ct = hs.pop('content-type', '')
+        ct = hs.pop('content_type', '')
 
         if isinstance(content, (list, dict)):
             body = json.dumps(content).encode('utf8')
