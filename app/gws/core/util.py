@@ -720,16 +720,16 @@ def ephemeral_cleanup():
     ts = stime()
 
     for de in os.scandir(const.EPHEMERAL_DIR):
-        age = int(ts - de.stat().st_mtime)
-        if age > _ephemeral_state['max_age']:
-            try:
+        try:
+            age = int(ts - de.stat().st_mtime)
+            if age > _ephemeral_state['max_age']:
                 if de.is_dir():
                     shutil.rmtree(de.path)
                 else:
                     os.unlink(de.path)
                 cnt += 1
-            except OSError:
-                pass
+        except (OSError, FileNotFoundError):
+            pass
 
     _ephemeral_state['last_check_time'] = ts
 
