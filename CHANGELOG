@@ -1,0 +1,5 @@
+## Version 8.4.0
+
+- added functions to scale GDAL rasters
+- fixed CRS transformation issues for certain projections
+- fixed concurrency issues with temporary files
