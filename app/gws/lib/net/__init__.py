@@ -1,17 +1,13 @@
 from typing import Optional
 
-import cgi
 import re
 import requests
-import requests.structures
 import urllib.parse
 import certifi
 
 import gws
 import gws.lib.osx
 
-
-##
 
 class Error(gws.Error):
     pass
@@ -24,8 +20,6 @@ class HTTPError(Error):
 class Timeout(Error):
     pass
 
-
-##
 
 class Url(gws.Data):
     fragment: str
@@ -192,7 +186,14 @@ def is_abs_url(url):
 
 
 class HTTPResponse:
-    def __init__(self, ok: bool, url: str, res: requests.Response = None, text: str = None, status_code=0):
+    def __init__(
+        self,
+        ok: bool,
+        url: str,
+        res: requests.Response = None,
+        text: str = None,
+        status_code=0,
+    ):
         self.ok = ok
         self.url = url
         if res is not None:
@@ -245,22 +246,39 @@ def _get_text(content, encoding) -> str:
     return str(content, encoding='utf8', errors='replace')
 
 
+def _parse_content_type_header(header):
+    parts = header.split(';')
+    ctype = parts[0].strip().lower()
+    params: dict[str, str] = {}
+
+    for part in parts[1:]:
+        part = part.strip()
+        if '=' in part:
+            k, v = part.split('=', 1)
+            k = k.strip().lower()
+            v = v.strip()
+            # strip matched quotes (single or double)
+            if len(v) >= 2 and v[0] == v[-1] and v[0] in ('"', "'"):
+                v = v[1:-1]
+            params[k] = v
+
+    return ctype, params
+
+
 def _parse_content_type(headers):
     # copied from requests.utils.get_encoding_from_headers, but with no ISO-8859-1 default
 
-    content_type = headers.get('content-type')
-
-    if not content_type:
+    header = headers.get('content-type')
+    if not header:
         # https://www.w3.org/Protocols/rfc2616/rfc2616-sec7.html#sec7.2.1
         return 'application/octet-stream', None
 
-    ctype, params = cgi.parse_header(content_type)
+    ctype, params = _parse_content_type_header(header)
     if 'charset' not in params:
         return ctype, None
 
-    enc = params['charset'].strip("'\"")
-
     # make sure this is a valid python encoding
+    enc = params['charset']
     try:
         str(b'.', encoding=enc, errors='strict')
     except LookupError:
