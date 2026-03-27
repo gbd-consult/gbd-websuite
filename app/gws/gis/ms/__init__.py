@@ -256,7 +256,7 @@ class Map:
             self.mapObj.outputformat.transparent = mapscript.MS_TRUE
 
             self.mapObj.setExtent(*bounds.extent)
-            self.mapObj.setSize(*size)
+            self.mapObj.setSize(int(size[0]), int(size[1]))
             self.mapObj.setProjection(bounds.crs.epsg)
 
             res = self.mapObj.draw()
