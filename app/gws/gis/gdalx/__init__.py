@@ -267,7 +267,54 @@ class RasterDataSet(_DataSet):
 
         return gws.lib.image.from_array(arr)
 
-    def create_copy(self, path: str, driver: str = '', strict=False, options: dict = None):
+    _resampleAlg = {
+        'NearestNeighbour': gdal.GRA_NearestNeighbour,
+        'Bilinear': gdal.GRA_Bilinear,
+        'Cubic': gdal.GRA_Cubic,
+        'CubicSpline': gdal.GRA_CubicSpline,
+        'Lanczos': gdal.GRA_Lanczos,
+        'Average': gdal.GRA_Average,
+        'Mode': gdal.GRA_Mode,
+        'Max': gdal.GRA_Max,
+        'Min': gdal.GRA_Min,
+        'Med': gdal.GRA_Med,
+        'Q1': gdal.GRA_Q1,
+        'Q3': gdal.GRA_Q3,
+        'Sum': gdal.GRA_Sum,
+        'RMS': gdal.GRA_RMS,
+    }
+
+    def resize(self, size: gws.Size, alg: str = 'Cubic', options: dict = None) -> 'RasterDataSet':
+        """Resize the raster dataset, returning a new in-memory dataset.
+        
+        Args:
+            size: New size (width, height).
+            alg: Resampling algorithm, as string.
+            options: GDAL WarpOptions.
+        """
+
+        gdal.UseExceptions()
+
+        opts = {
+            'format': 'MEM',
+            'resampleAlg': alg,
+            'width': 0,
+            'height': 0,
+        }
+        if options:
+            opts.update(options)
+        opts['width'] = size[0]
+        opts['height'] = size[1]
+        opts['resampleAlg'] = self._resampleAlg.get(opts['resampleAlg'], opts['resampleAlg'])
+
+        gd = gdal.Warp('', self.gdDataset, **opts)
+        if gd is None:
+            raise Error(f'resize failed')
+
+        dso = _DataSetOptions(path='', defaultCrs=self.dso.defaultCrs)
+        return RasterDataSet(dso, gd)
+
+    def save_as(self, path: str, driver: str = '', strict=False, options: dict = None):
         """Create a copy of a DataSet.
 
         Args:
@@ -289,6 +336,9 @@ class RasterDataSet(_DataSet):
         gd.SetMetadata(self.gdDataset.GetMetadata())
         gd.FlushCache()
         gd = None
+
+    def size(self) -> gws.Size:
+        return (self.gdDataset.RasterXSize, self.gdDataset.RasterYSize)
 
     def bounds(self) -> gws.Bounds:
         return _geotransform_to_bounds(
