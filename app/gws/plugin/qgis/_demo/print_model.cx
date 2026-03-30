@@ -1,20 +1,20 @@
-uid "print_fields"
+uid "print_fields_qgis"
 
-title "Freie Felder für Druckvorlagen"
+title "Freie Felder für QGIS Druckvorlagen"
 
-metadata.keywords [ "print" ]
+metadata.keywords [ "print" "qgis" ]
 
 metadata.abstract """
-Es besteht die Möglichkeit, freie Felder für Druckvorlagen zu definieren. 
-Diese können in der Druckvorlage verwendet werden, um zusätzliche Informationen anzuzeigen. 
-Diese Felder werden in der Druckvorlage als Variablen in geschweiften Klammern referenziert.
+Es besteht die Möglichkeit, freie Felder für QGIS Druckvorlagen zu definieren. 
+Diese können in der QGIS Druckvorlage verwendet werden, um zusätzliche Informationen anzuzeigen. 
+Diese Felder werden innerhalb der Text- und HTML-Elemente in der QGIS Druckvorlage als Variablen in geschweiften Klammern referenziert.
 """
 
 printers+ {
     template {
-        type "html"
-        path "model.cx.html"
-        mapSize [ "150mm" "100mm" ]
+        type "qgis"
+        provider.path "print_model.qgs"
+        index 0
     }
     qualityLevels [
         { dpi  90 name "Bildschirm" }
