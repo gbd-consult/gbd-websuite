@@ -1,3 +1,7 @@
+## Version 8.1.40
+
+- WFS bug fixes
+
 ## 8.1.39
 
 - allow editable fields to be empty (backport from 8.3)
