@@ -118,20 +118,34 @@ def keywords(md: gws.Metadata):
 
 def _keywords(md: gws.Metadata, container_name, tag_name):
     kws = []
+    tys = []
 
     if md.keywords:
         for kw in md.keywords:
             kws.append((tag_name, kw))
-    if md.inspireTheme:
-        kws.append((tag_name, md.inspireThemeNameEn, {'vocabulary': 'GEMET - INSPIRE themes'}))
-    if md.isoTopicCategories:
-        for cat in md.isoTopicCategories:
-            kws.append((tag_name, cat, {'vocabulary': 'ISO 19115:2003'}))
-    if md.inspireMandatoryKeyword:
-        kws.append((tag_name, md.inspireMandatoryKeyword, {'vocabulary': 'ISO'}))
+    
+    if container_name.startswith('ows:'):
+        if md.inspireTheme:
+            kws.append((tag_name, md.inspireThemeNameEn))
+            tys.append(('ows:Type', 'theme', {'codeSpace': 'GEMET - INSPIRE themes'}))
+        if md.isoTopicCategories:
+            for cat in md.isoTopicCategories:
+                kws.append((tag_name, cat))
+            tys.append(('ows:Type', 'theme', {'codeSpace': 'ISO 19115:2003'}))
+        if md.inspireMandatoryKeyword:
+            kws.append((tag_name, md.inspireMandatoryKeyword))
+            # tys.append(('ows:Type', 'theme', {'codeSpace': 'ISO'}))
+    else:
+        if md.inspireTheme:
+            kws.append((tag_name, md.inspireThemeNameEn, {'vocabulary': 'GEMET - INSPIRE themes'}))
+        if md.isoTopicCategories:
+            for cat in md.isoTopicCategories:
+                kws.append((tag_name, cat, {'vocabulary': 'ISO 19115:2003'}))
+        if md.inspireMandatoryKeyword:
+            kws.append((tag_name, md.inspireMandatoryKeyword, {'vocabulary': 'ISO'}))
 
-    if kws:
-        return container_name, kws
+    if kws or tys:
+        return container_name, kws + tys
 
 
 def lon_lat_envelope(lc: core.LayerCaps):
@@ -195,7 +209,7 @@ def inspire_extended_capabilities(ta: request.TemplateArgs):
         (
             'inspire_common:Conformity',
             (
-                'inspire_common:Specification', {'xsi:type': 'inspire_common:citationInspireInteroperabilityRegulation_eng'},
+                'inspire_common:Specification',
                 ('inspire_common:Title', 'COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the European Parliament and of the Council as regards interoperability of spatial data sets and services'),
                 ('inspire_common:DateOfPublication', '2010-12-08'),
                 ('inspire_common:URI', 'OJ:L:2010:323:0011:0102:EN:PDF'),

@@ -14,6 +14,7 @@ def doc(ta: server.TemplateArgs):
     d = {
         'version': ta.version,
         'xmlns': 'wfs',
+        'xmlns:gml': 'http://www.opengis.net/gml',
     }
     for lc in ta.layerCapsList:
         if lc.xmlNamespace:
