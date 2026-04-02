@@ -79,7 +79,7 @@ export class Feature implements types.IFeature {
         this.attributes = attributes || {};
         this._editedAttributes = {};
 
-        let shape = this.attributes[this.geometryName];
+        let shape = this.attributes[this.geometryName] || this.attributes['geometry'];
         if (shape)
             this.setShape(shape);
         return this;
