@@ -1,3 +1,7 @@
+## Version 8.3.11
+
+- fix map drawing for editable features
+
 ## Version 8.3.10
 
 - options to watch QGIS projects for changes and reload them automatically
