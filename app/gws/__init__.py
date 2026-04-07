@@ -1206,6 +1206,17 @@ class Image:
             The resized image object.
         """
 
+    def resize_to(self, width: int = 0, height: int = 0, **kwargs) -> 'Image':
+        """Resizes the image to the specified width and height, maintaining aspect ratio if only one dimension is provided.
+
+        Args:
+            width: The desired width.
+            height: The desired height.
+
+        Returns:
+            The resized image object.
+        """
+
     def rotate(self, angle: int, **kwargs) -> 'Image':
         """Rotates the image.
 

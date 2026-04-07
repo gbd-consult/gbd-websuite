@@ -225,6 +225,18 @@ class Image(gws.Image):
         self.img = self.img.resize(_int_size(size), **kwargs)
         return self
 
+    def resize_to(self, width=0, height=0, **kwargs):
+        w, h = self.img.size
+        if width and height:
+            sz = (width, height)
+        elif width:
+            sz = (width, int(h * width / w))
+        elif height:
+            sz = (int(w * height / h), height)
+        else:
+            return self
+        return self.resize(sz, **kwargs)
+
     def rotate(self, angle, **kwargs):
         kwargs.setdefault('resample', PIL.Image.Resampling.BICUBIC)
         self.img = self.img.rotate(angle, **kwargs)
