@@ -1,44 +1,19 @@
 # QField :/admin-de/themen/qfield
 
-[QField](https://qfield.org) ist eine mobile GIS-Anwendung für Android und iOS,
-die auf QGIS basiert und die Erfassung sowie Bearbeitung von Geodaten im Außendienst
-ermöglicht. Die GBD WebSuite emuliert die QFieldCloud-API, sodass QField direkt mit
-dem GBD WebSuite Server synchronisieren kann – ohne einen separaten QFieldCloud-Dienst.
+[QField](https://qfield.org) ist eine mobile GIS-Anwendung, die auf QGIS basiert und die offline und online Erfassung sowie Bearbeitung von Geodaten im Außendienst ermöglicht. Die GBD WebSuite emuliert die QFieldCloud-API, sodass QField direkt mit dem GBD WebSuite Server synchronisieren kann – ohne einen separaten QFieldCloud-Dienst.
 
 %info
 Die GBD WebSuite implementiert die QFieldCloud REST-API selbst. QField kommuniziert
 dabei direkt mit dem GBD WebSuite Server und benötigt keinen externen QFieldCloud-Dienst.
 %end
 
-## Funktionsweise :funktionsweise
+**Bereitstellung von Daten für QField**: Die GBD WebSuite liest das konfigurierte QGIS-Projekt, sucht darin alle PostgreSQL-Layer die im QGIS-Projekt mit QFieldSync als "offline editierbar" markiert wurden, lädt deren Daten und erzeugt daraus ein GeoPackage-Paket. Hintergrundkarten werden als Raster-Kacheln gerendert und ebenfalls ins Paket aufgenommen. Das QGIS-Projektfile wird so angepasst, dass es auf die GeoPackage-Layer verweist.
 
-Die Integration basiert auf zwei Datensynchronisationsprozessen:
-
-**Download (Packaging)** – Daten von GBD WebSuite zu QField:
-
-Die GBD WebSuite liest das konfigurierte QGIS-Projekt, sucht darin alle PostgreSQL-Layer
-die im QGIS-Projekt mit QFieldSync als "offline editierbar" markiert wurden, lädt deren
-Daten und erzeugt daraus ein GeoPackage-Paket. Hintergrundkarten werden als Raster-Kacheln
-gerendert und ebenfalls ins Paket aufgenommen. Das QGIS-Projektfile wird so angepasst,
-dass es auf die GeoPackage-Layer verweist.
-
-**Upload (Patching)** – Daten von QField zu GBD WebSuite:
-
-QField sendet die im Außendienst vorgenommenen Änderungen als sogenannte "Deltas"
-an die GBD WebSuite. Diese extrahiert die geänderten Features und schreibt sie über
-die konfigurierten Datenmodelle in die PostgreSQL-Datenbank zurück.
-
-## Voraussetzungen :voraussetzungen
-
-- GBD WebSuite ab Version 8.x
-- QField ab Version 3.x auf dem mobilen Endgerät
-- QGIS Desktop mit dem Plugin **QFieldSync** zur Projektvorbereitung
-- PostgreSQL-Datenbank für die editierbaren Layer
-- Ein mit QFieldSync vorbereitetes QGIS-Projektfile (`.qgs`)
+**Synchronisation QField Daten mit GBD WebSuite**: QField sendet die vorgenommenen Änderungen als sogenannte "Deltas" an die GBD WebSuite. Diese extrahiert die geänderten Features und schreibt sie über die konfigurierten Datenmodelle in die PostgreSQL-Datenbank zurück.
 
 ## QGIS-Projekt vorbereiten :qgis-projekt
 
-Das QGIS-Projekt muss mit dem **QFieldSync**-Plugin für QField vorbereitet werden,
+Das QGIS-Projekt muss mit dem QGIS Plugin **QFieldSync** für QField vorbereitet werden,
 bevor es in der GBD WebSuite konfiguriert werden kann.
 
 In QFieldSync wird für jeden Layer eine Aktion festgelegt:
@@ -51,25 +26,19 @@ In QFieldSync wird für jeden Layer eine Aktion festgelegt:
 
 Zusätzlich können in QFieldSync folgende Projekteigenschaften gesetzt werden:
 
-- **Hintergrundkarte** (`baseMapType`): Aus einem Kartenthema (`mapTheme`) oder einem
-  einzelnen Layer (`singleLayer`) gerenderte Raster-Kacheln
-- **Bereich** (`areaOfInterest`): WKT-Geometrie, die den Ausschnitt für Daten und
-  Kacheln begrenzt
+- **Hintergrundkarte** (`baseMapType`): Aus einem Kartenthema (`mapTheme`) oder einem einzelnen Layer (`singleLayer`) gerenderte Raster-Kacheln
+- **Bereich** (`areaOfInterest`): WKT-Geometrie, die den Ausschnitt für Daten und Kacheln begrenzt
 - **Medienverzeichnisse** (`attachmentDirs`): Verzeichnisse mit Anhängen wie Fotos
 
-%warn
-Das QGIS-Projektfile muss auf dem GBD WebSuite Server erreichbar sein. Pfade zu
+%info
+Das QGIS-Projekt muss auf dem GBD WebSuite Server erreichbar sein. Pfade zu
 Datenbankverbindungen sollten über eine `pg_service.conf` konfiguriert sein, damit
-sowohl QGIS Desktop als auch der Server dieselbe Verbindungskonfiguration nutzen können.
-Siehe [PostgreSQL](/admin-de/themen/postgresql/pg_service.conf).
+sowohl QGIS Desktop als auch der GBD WebSuite Server dieselbe Verbindungskonfiguration nutzen können. Siehe dazu auch das Thema [PostgreSQL](/admin-de/themen/postgresql/pg_service.conf).
 %end
 
 ## Konfiguration :konfiguration
 
-### Grundkonfiguration
-
-Das QField-Plugin wird als Action vom Typ `qfieldcloud` in der GBD WebSuite
-Konfigurationsdatei eingebunden:
+Das QField-Plugin wird als Action vom Typ `qfieldcloud` in der GBD WebSuite Konfigurationsdatei eingebunden:
 
 ```javascript
 actions+ {
@@ -85,7 +54,7 @@ actions+ {
 }
 ```
 
-### Konfigurationsparameter
+**Konfigurationsparameter**
 
 | Parameter           | Typ        | Beschreibung                                                  |
 |---------------------|------------|---------------------------------------------------------------|
@@ -96,9 +65,9 @@ actions+ {
 | `access`            |            | Zugriffssteuerung (siehe [Zugriffssteuerung](/admin-de/themen/qfield/zugriffssteuerung)) |
 | `models`            | Liste      | Optionale Datenmodelle für editierbare Layer                  |
 
-### Demo-Konfiguration
+**Demo-Konfiguration**
 
-Die folgende Konfiguration entspricht der mitgelieferten Demo:
+Die folgende Konfiguration entspricht der Demo [Editieren mit QField](https://docs.gbd-websuite.de/demo/qfield_demo):
 
 ```javascript
 uid "qfield_demo"
@@ -124,7 +93,7 @@ map.layers+ {
 }
 ```
 
-## Datenmodelle :datenmodelle
+**Datenmodelle**
 
 Für jeden editierbaren PostgreSQL-Layer kann ein Datenmodell konfiguriert werden.
 Das Modell steuert, welche Felder synchronisiert werden, und ermöglicht
@@ -133,7 +102,7 @@ Datenbankzugriff mit Rechteverwaltung.
 Ohne explizites Modell erstellt die GBD WebSuite automatisch ein generisches Modell,
 das alle Felder und alle Features umfasst.
 
-### Modell konfigurieren
+**Modell konfigurieren**
 
 ```javascript
 actions+ {
@@ -168,7 +137,7 @@ Der `tableName` im Modell muss mit dem Namen der PostgreSQL-Tabelle übereinstim
 auf die der entsprechende QGIS-Layer zeigt.
 %end
 
-### Datei-Uploads :datei-uploads
+**Datei-Uploads** :datei-upload
 
 QField erlaubt es, Fotos und andere Dateien direkt an Features anzuhängen.
 Damit diese Anhänge in der Datenbank gespeichert werden, wird im Modell ein
