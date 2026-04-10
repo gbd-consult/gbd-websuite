@@ -20,7 +20,7 @@ import gws.config
 import gws.gis.cache
 import gws.gis.mpx.config
 import gws.lib.font
-import gws.lib.importer
+import gws.lib.dynimport
 import gws.base.metadata
 import gws.lib.osx
 import gws.server.manager

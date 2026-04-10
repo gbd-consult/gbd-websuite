@@ -5,7 +5,7 @@ from typing import Optional, cast
 import gws
 import gws.base.shape
 import gws.lib.crs
-import gws.lib.importer
+import gws.lib.dynimport
 import gws.lib.jsonx
 
 
@@ -49,7 +49,7 @@ class Object(gws.Node):
         else:
             xml = gws.u.read_file(p.src)
 
-        mod = gws.lib.importer.import_from_path(f'gws/plugin/ows_client/{protocol}/caps.py')
+        mod = gws.lib.dynimport.import_from_path(f'gws/plugin/ows_client/{protocol}/caps.py')
         res = mod.parse(xml)
 
         js = gws.lib.jsonx.to_pretty_string(res, default=_caps_json)

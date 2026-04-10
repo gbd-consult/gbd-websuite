@@ -13,7 +13,7 @@ import gws
 import gws.lib.jsonx
 import gws.lib.osx
 import gws.lib.datetimex
-import gws.lib.importer
+import gws.lib.dynimport
 import gws.lib.vendor.jump
 import gws.lib.vendor.slon
 import gws.spec.runtime
@@ -233,7 +233,7 @@ class _Parser:
 
     def read_py(self, path: str):
         try:
-            fn = gws.lib.importer.load_file(path).get('main')
+            fn = gws.lib.dynimport.load_file(path).get('main')
             if not fn:
                 _register_error(self.ctx, f'no "main" function found in {path!r}')
                 return

@@ -5,7 +5,7 @@ import gws
 import gws.spec.runtime
 import gws.lib.jsonx
 import gws.lib.osx
-import gws.lib.importer
+import gws.lib.dynimport
 
 from . import parser
 

@@ -6,7 +6,7 @@ import gws
 import gws.config
 import gws.base.shape
 import gws.lib.crs
-import gws.lib.importer
+import gws.lib.dynimport
 import gws.lib.jsonx
 
 from . import project

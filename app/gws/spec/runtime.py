@@ -6,7 +6,7 @@ import re
 
 import gws
 import gws.lib.jsonx
-import gws.lib.importer
+import gws.lib.dynimport
 
 from . import core, reader
 from .generator import main as generator_main
@@ -143,8 +143,8 @@ class Object(gws.SpecRuntime):
 
         if not desc.classPtr:
             try:
-                mod = gws.lib.importer.import_from_path(desc.modPath, gws.c.APP_DIR)
-            except gws.lib.importer.Error as exc:
+                mod = gws.lib.dynimport.import_from_path(desc.modPath, gws.c.APP_DIR)
+            except gws.lib.dynimport.Error as exc:
                 raise LoadError(f'cannot load class {classref!r} from {desc.modPath!r}') from exc
             desc.classPtr = getattr(mod, desc.ident)
             setattr(desc.classPtr, 'extName', desc.extName)

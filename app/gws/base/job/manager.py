@@ -4,7 +4,7 @@ from typing import Optional
 import sys
 
 import gws
-import gws.lib.importer
+import gws.lib.dynimport
 import gws.lib.jsonx
 import gws.lib.sqlitex
 import gws.lib.datetimex as dtx
@@ -151,7 +151,7 @@ class Object(gws.JobManager):
 
         try:
             mod_path, _, fn_name = job.worker.rpartition('.')
-            mod = gws.lib.importer.import_from_path(mod_path)
+            mod = gws.lib.dynimport.import_from_path(mod_path)
             worker_cls = getattr(mod, fn_name)
             worker_cls.run(self.root, job)
         except gws.JobTerminated as exc:

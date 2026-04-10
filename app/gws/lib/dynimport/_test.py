@@ -4,7 +4,7 @@ import os
 import pytest
 
 import gws
-import gws.lib.importer as importer
+import gws.lib.dynimport as di
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def import_log():
 
 @pytest.fixture(scope='module')
 def packages_path(tmpdir_factory):
-    base = str(tmpdir_factory.mktemp('importer'))
+    base = str(tmpdir_factory.mktemp('dynimport'))
     files = {
         "/p1/__init__.py":
             "gws.IMPORT_LOG.append('p1.init')",
@@ -66,67 +66,67 @@ def packages_path(tmpdir_factory):
 
 
 def test_app_module():
-    mod = importer.import_from_path(gws.c.APP_DIR + '/gws/lib/importer')
-    assert mod.__name__ == 'gws.lib.importer'
+    mod = di.import_from_path(gws.c.APP_DIR + '/gws/lib/dynimport')
+    assert mod.__name__ == 'gws.lib.dynimport'
 
 
 def test_app_relative_path():
-    mod = importer.import_from_path('gws/lib/importer')
-    assert mod.__name__ == 'gws.lib.importer'
+    mod = di.import_from_path('gws/lib/dynimport')
+    assert mod.__name__ == 'gws.lib.dynimport'
 
 
 def test_import_init(import_log, packages_path):
-    importer.import_from_path(packages_path + '/p1')
+    di.import_from_path(packages_path + '/p1')
     assert import_log == ['p1.init']
 
 
 def test_import_named(import_log, packages_path):
-    importer.import_from_path(packages_path + '/p1/mod.py')
+    di.import_from_path(packages_path + '/p1/mod.py')
     assert import_log == ['p1.init', 'p1.mod']
 
 
 def test_import_with_dot(import_log, packages_path):
-    importer.import_from_path(packages_path + '/p1/dot.py')
+    di.import_from_path(packages_path + '/p1/dot.py')
     assert import_log == ['p1.init', 'p1.dot', 'p1.mod']
 
 
 def test_import_deep_init(import_log, packages_path):
-    importer.import_from_path(packages_path + '/p2/deep/root/base/sub/sub2')
+    di.import_from_path(packages_path + '/p2/deep/root/base/sub/sub2')
     assert import_log == ['p2.base.init', 'p2.base.sub.init', 'p2.base.sub.sub2.init']
 
 
 def test_import_deep_named(import_log, packages_path):
-    importer.import_from_path(packages_path + '/p2/deep/root/base/sub/sub2/mod.py')
+    di.import_from_path(packages_path + '/p2/deep/root/base/sub/sub2/mod.py')
     assert import_log == ['p2.base.init', 'p2.base.sub.init', 'p2.base.sub.sub2.init', 'p2.base.sub.sub2.mod']
 
 
 def test_import_no_init(import_log, packages_path):
-    importer.import_from_path(packages_path + '/p3/mod.py')
+    di.import_from_path(packages_path + '/p3/mod.py')
     assert import_log == ['p3.mod']
 
 
 def test_with_circular_dependency(import_log, packages_path):
-    importer.import_from_path(packages_path + '/p4/circular.py')
+    di.import_from_path(packages_path + '/p4/circular.py')
     assert import_log == ['p4.init', 'p4.circular', 'p4.mod']
 
 
 def test_no_double_import(import_log, packages_path):
-    importer.import_from_path(packages_path + '/p3/mod.py')
-    importer.import_from_path(packages_path + '/p3/mod.py')
+    di.import_from_path(packages_path + '/p3/mod.py')
+    di.import_from_path(packages_path + '/p3/mod.py')
     assert import_log == ['p3.mod']
 
 
 def test_err_not_found(import_log, packages_path):
-    with pytest.raises(importer.Error):
-        importer.import_from_path(packages_path + '/BLAH')
+    with pytest.raises(di.Error):
+        di.import_from_path(packages_path + '/BLAH')
 
 
 def test_err_import_error(import_log, packages_path):
-    with pytest.raises(importer.Error):
-        importer.import_from_path(packages_path + '/p0/err.py')
+    with pytest.raises(di.Error):
+        di.import_from_path(packages_path + '/p0/err.py')
 
 
 def test_err_same_name(import_log, packages_path):
-    importer.import_from_path(packages_path + '/p5/a/same_name')
-    with pytest.raises(importer.Error):
-        importer.import_from_path(packages_path + '/p5/b/same_name')
+    di.import_from_path(packages_path + '/p5/a/same_name')
+    with pytest.raises(di.Error):
+        di.import_from_path(packages_path + '/p5/b/same_name')
