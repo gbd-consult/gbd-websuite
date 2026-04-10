@@ -99,12 +99,13 @@
 <!--
 QGIS Client Einstellungen
 -->
-### qfield
 ### select <--- is this useful on it's own?
 ### annotate
 ### dimension
 
 ## :/admin-de/themen/postgresql
+
+## :/admin-de/themen/qfield
 
 
 
