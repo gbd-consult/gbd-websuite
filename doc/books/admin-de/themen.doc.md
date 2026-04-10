@@ -50,7 +50,7 @@
 -->
 
 
-## Karten
+## :/admin-de/themen/karten
 <!--
 - map vs overviewMap
 - crs, center, extent, extentBuffer, zoom
@@ -130,7 +130,6 @@ QGIS Client Einstellungen
 -->
 
 ## Suche
-
 
 ### Nominatim
 
