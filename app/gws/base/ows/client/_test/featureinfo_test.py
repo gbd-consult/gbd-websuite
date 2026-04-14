@@ -215,19 +215,17 @@ def test_parse_getfeatureinforesponse_raster():
 
     assert len(rs) == 3
 
-    boston = rs[0]
-    assert boston.meta['layerName'] == 'ne:populated_places'
+    boston = next(r for r in rs if r.meta.get('layerName') == 'ne:populated_places')
     assert boston.attributes['name'] == 'Boston'
     assert boston.attributes['pop_max'] == '4628910'
     assert boston.shape is not None
 
-    avenue = rs[1]
+    avenue = next(r for r in rs if r.uid == 'roads.501')
     assert avenue.attributes['name'] == 'Commonwealth Ave'
     assert avenue.attributes['type'] == 'arterial'
 
-    highway = rs[2]
+    highway = next(r for r in rs if r.attributes.get('name') == 'Interstate 95')
     assert highway.meta['layerName'] == 'ne:roads'
-    assert highway.attributes['name'] == 'Interstate 95'
     assert highway.attributes['lanes'] == '6'
     assert highway.shape is not None
 
@@ -312,10 +310,12 @@ def test_parse_geobak():
     assert len(rs) == 2
 
     dresden_rec = next(r for r in rs if r.attributes.get('gemarkung') == 'Dresden')
+    assert dresden_rec.meta['layerName'] == 'Flurstücke'
     assert dresden_rec.attributes['flurstücksnummer'] == '123/45'
     assert dresden_rec.attributes['fläche'] == '1250.5'
 
     leipzig_rec = next(r for r in rs if r.attributes.get('gemarkung') == 'Leipzig')
+    assert leipzig_rec.meta['layerName'] == 'Flurstücke'
     assert leipzig_rec.attributes['flurstücksnummer'] == '678/90'
     assert leipzig_rec.attributes['fläche'] == '875.0'
 
@@ -498,10 +498,79 @@ def test_parse_multiple_geometries_last_wins():
     multi_geom = next(r for r in rs if r.uid == 'test.1')
     assert multi_geom.attributes['name'] == 'Multi Geometry Feature'
     assert multi_geom.shape is not None
+    # last geometry wins: LineString comes after Point
+    assert multi_geom.shape.type == 'linestring'
 
     single_geom = next(r for r in rs if r.uid == 'test.2')
     assert single_geom.attributes['name'] == 'Single Geometry Feature'
     assert single_geom.shape is not None
+    assert single_geom.shape.type == 'point'
+
+
+def test_parse_featurecollection_featuremembers():
+    """Test WFS 1.1.0 gml:featureMembers (plural) format."""
+    xml = """
+    <wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs"
+                            xmlns:gml="http://www.opengis.net/gml"
+                            xmlns:app="http://example.com/app">
+        <gml:featureMembers>
+            <app:rivers gml:id="rivers.1">
+                <app:name>Rhine</app:name>
+                <app:length>1230</app:length>
+            </app:rivers>
+            <app:rivers gml:id="rivers.2">
+                <app:name>Danube</app:name>
+                <app:length>2860</app:length>
+            </app:rivers>
+        </gml:featureMembers>
+    </wfs:FeatureCollection>
+    """
+
+    rs = featureinfo.parse(xml)
+
+    assert len(rs) == 2
+
+    rhine = next(r for r in rs if r.uid == 'rivers.1')
+    assert rhine.attributes['name'] == 'Rhine'
+    assert rhine.attributes['length'] == '1230'
+
+    danube = next(r for r in rs if r.uid == 'rivers.2')
+    assert danube.attributes['name'] == 'Danube'
+    assert danube.attributes['length'] == '2860'
+
+
+def test_parse_featurecollection_featuremember_singular():
+    """Test WFS 1.0 gml:featureMember (singular) format."""
+    xml = """
+    <wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs"
+                            xmlns:gml="http://www.opengis.net/gml"
+                            xmlns:app="http://example.com/app">
+        <gml:featureMember>
+            <app:lakes gml:id="lakes.10">
+                <app:name>Lake Superior</app:name>
+                <app:area>82103</app:area>
+            </app:lakes>
+        </gml:featureMember>
+        <gml:featureMember>
+            <app:lakes gml:id="lakes.11">
+                <app:name>Lake Victoria</app:name>
+                <app:area>68870</app:area>
+            </app:lakes>
+        </gml:featureMember>
+    </wfs:FeatureCollection>
+    """
+
+    rs = featureinfo.parse(xml)
+
+    assert len(rs) == 2
+
+    superior = next(r for r in rs if r.uid == 'lakes.10')
+    assert superior.attributes['name'] == 'Lake Superior'
+    assert superior.attributes['area'] == '82103'
+
+    victoria = next(r for r in rs if r.uid == 'lakes.11')
+    assert victoria.attributes['name'] == 'Lake Victoria'
+    assert victoria.attributes['area'] == '68870'
 
 
 def test_real_life_examples():

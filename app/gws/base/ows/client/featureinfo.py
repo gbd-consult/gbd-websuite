@@ -89,12 +89,16 @@ def _parse_featurecollection(xml_el: gws.XmlElement, default_crs, always_xy):
 
     for member_el in xml_el:
         if member_el.lcName in {'member', 'featuremember'}:
-            if len(member_el) == 1 and len(member_el[0]) > 0:
+            if len(member_el) == 1:
                 # <wfs:member><my:feature><attr...
                 recs.append(_record_from_gml(member_el[0], default_crs, always_xy))
             elif len(member_el) > 1:
                 # <wfs:member><attr...
                 recs.append(_record_from_gml(member_el, default_crs, always_xy))
+        elif member_el.lcName == 'featuremembers':
+            # WFS 1.1.0: features directly inside <gml:featureMembers>
+            for feature_el in member_el:
+                recs.append(_record_from_gml(feature_el, default_crs, always_xy))
 
     return recs
 
@@ -195,22 +199,21 @@ def _parse_geobak(xml_el: gws.XmlElement, default_crs, always_xy):
     #           ...
 
     recs = []
+    layer_name = ''
 
     for el in xml_el:
-        rec = gws.FeatureRecord(attributes={})
-
         if el.lcName == 'kartenebene':
-            rec.meta = {'layerName': el.text}
+            layer_name = el.text
             continue
 
         if el.lcName == 'inhalt':
+            rec = gws.FeatureRecord(attributes={}, meta={'layerName': layer_name})
             for attr_el in el[0]:
                 key = attr_el[0].text.strip().lower()
                 val = attr_el[1].text.strip()
                 if key != 'shape' and val.lower() != 'null':
                     rec.attributes[key] = val
-
-        recs.append(rec)
+            recs.append(rec)
 
     return recs
 
