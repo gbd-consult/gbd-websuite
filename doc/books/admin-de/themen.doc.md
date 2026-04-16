@@ -129,22 +129,7 @@ QGIS Client Einstellungen
     - server.*
 -->
 
-## Suche
-
-### Nominatim
-
-
-### postgres
-
-
-
-
-
-### wfs
-
-
-### wms
-
+## :/admin-de/themen/suche
 
 ## :/admin-de/config/template
 <!--
