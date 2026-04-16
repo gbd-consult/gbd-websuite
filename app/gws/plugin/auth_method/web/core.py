@@ -11,7 +11,7 @@ gws.ext.new.authMethod('web')
 
 
 class LoginRedirectRule(gws.Data):
-    """Login redirect rule. (added in 8.3)"""
+    """Login redirect rule."""
 
     pattern: Optional[gws.Regex]
     """URL matching pattern for pages that must be redirected."""
@@ -27,9 +27,9 @@ class Config(gws.base.auth.method.Config):
     cookiePath: str = '/'
     """Cookie path."""
     cookieSameSite: str = 'Lax'
-    """Cookie SameSite attribute. (added in 8.3)"""
+    """Cookie SameSite attribute."""
     loginRedirect: Optional[LoginRedirectRule]
-    """Rule to redirect if a login is required. (added in 8.3)"""
+    """Rule to redirect if a login is required."""
 
 
 ##

@@ -28,7 +28,7 @@ class FormatConfig(gws.Config):
     """Image format configuration."""
 
     name: str = ''
-    """Name of the format. (added in 8.3)"""
+    """Name of the format."""
     mimeTypes: list[gws.MimeType]
     """Mime types for this format."""
     options: Optional[dict]
