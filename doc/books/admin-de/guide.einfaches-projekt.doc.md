@@ -282,3 +282,9 @@ client.elements [
 
 Diese Liste fügt die Steuerelemente der Infobar am unteren Kartenrand in der 
 angegebenen Reihenfolge hinzu.
+
+
+%info
+Damit sind die Grundlagen für ein einfaches Projekt geschaffen.
+Wenn Sie noch weiter in die GBD WebSuite einsteigen möchten, finden Sie im Kapitel [Themen](/admin-de/themen) vertiefende Konfigurationsmöglichkeiten um ihr Projekt auszubauen.
+%end
