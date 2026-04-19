@@ -18,6 +18,7 @@ class Project(Node):
     actions: list['Action']
     finders: list['Finder']
     models: list['Model']
+    exporters: list['Exporter']
     printers: list['Printer']
     templates: list['Template']
     owsServices: list['OwsService']

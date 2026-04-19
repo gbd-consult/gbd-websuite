@@ -17,6 +17,7 @@ class ModelOperation(Enum):
     create = 'create'
     update = 'update'
     delete = 'delete'
+    export = 'export'
 
 
 class ModelReadTarget(Enum):
@@ -173,6 +174,7 @@ class Model(Node):
     geometryType: Optional[GeometryType]
     isEditable: bool
     loadingStrategy: 'FeatureLoadingStrategy'
+    exportStrategy: 'FeatureExportStrategy'
     title: str
     uidName: str
     withTableView: bool

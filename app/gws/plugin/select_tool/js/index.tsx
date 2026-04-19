@@ -2,32 +2,38 @@ import * as React from 'react';
 import * as ol from 'openlayers';
 
 import * as gc from 'gc';
-;
+
 import * as sidebar from 'gc/elements/sidebar';
 import * as toolbar from 'gc/elements/toolbar';
 import * as components from 'gc/components';
 import * as storage from 'gc/elements/storage';
 
-let {Form, Row, Cell} = gc.ui.Layout;
+
+let { Form, Row, Cell } = gc.ui.Layout;
 
 const MASTER = 'Shared.Select';
 
 
-let _master = (cc: gc.types.IController) => cc.app.controller(MASTER) as SelectController;
+function _master(obj: any) {
+    if (obj.app)
+        return obj.app.controller(MASTER) as Controller;
+    if (obj.props)
+        return obj.props.controller.app.controller(MASTER) as Controller;
+}
 
 interface ViewProps extends gc.types.ViewProps {
-    controller: SelectController;
+    controller: Controller;
     selectFeatures: Array<gc.types.IFeature>;
     selectShapeType: string;
-    selectSelectedFormat: string;
-    selectFormatDialogParams: object;
+    selectExporterUid: string;
+    selectExportActive: boolean;
 }
 
 const StoreKeys = [
     'selectFeatures',
     'selectShapeType',
-    'selectSelectedFormat',
-    'selectFormatDialogParams',
+    'selectExporterUid',
+    'selectExportActive',
 ];
 
 
@@ -39,7 +45,7 @@ class SelectTool extends gc.Tool {
     }
 
     start() {
-        this.app.call('setSidebarActiveTab', {tab: 'Sidebar.Select'});
+        this.app.call('setSidebarActiveTab', { tab: 'Sidebar.Select' });
         this.map.prependInteractions([
             this.map.pointerInteraction({
                 whenTouched: evt => this.run(evt),
@@ -59,11 +65,11 @@ export class SelectDrawTool extends gc.Tool {
     styleName: string = '.selectFeature';
 
     async init() {
-        this.update({selectShapeType: 'Polygon'});
+        this.update({ selectShapeType: 'Polygon' });
     }
 
     start() {
-        this.app.call('setSidebarActiveTab', {tab: 'Sidebar.Select'});
+        this.app.call('setSidebarActiveTab', { tab: 'Sidebar.Select' });
 
         this.reset();
 
@@ -97,7 +103,7 @@ export class SelectDrawTool extends gc.Tool {
 
     setShapeType(st) {
         this.drawCancel();
-        this.update({selectShapeType: st});
+        this.update({ selectShapeType: st });
         this.start();
     }
 
@@ -114,16 +120,96 @@ export class SelectDrawTool extends gc.Tool {
     }
 }
 
+
+class ExportAuxButton extends gc.View<ViewProps> {
+    render() {
+        let cc = _master(this);
+        let hasSelection = !gc.lib.isEmpty(this.props.selectFeatures);
+
+        if (cc.exporters.length === 0) {
+            return null;
+        }
+        return <sidebar.AuxButton
+            className="alkisExportAuxButton"
+            disabled={!hasSelection}
+            whenTouched={() => cc.whenExportButtonClicked()}
+            tooltip={cc.__('alkisExportTitle')}
+        />;
+    }
+}
+
+
 class SelectSidebarView extends gc.View<ViewProps> {
+    render() {
+        if (this.props.selectExportActive) {
+            return <ExportTab {...this.props} />
+        } else {
+            return <ListTab {...this.props} />
+        }
+    }
+}
+
+class ExportTab extends gc.View<ViewProps> {
+    render() {
+        let cc = _master(this.props.controller);
+        let features = this.props.selectFeatures;
+
+        console.log('export features', cc.exporters, features);
+
+
+        return <sidebar.Tab>
+            <sidebar.TabHeader>
+                <gc.ui.Title content={cc.__('alkisExportTitle')} />
+            </sidebar.TabHeader>
+            <sidebar.TabBody>
+                <div>
+                    <Form>
+                        {cc.exporters.length > 0 && <Row>
+                            <Cell flex>
+                                <gc.ui.Select
+                                    items={cc.exporters.map(e => ({ value: e.uid, text: e.title }))}
+                                    value={this.props.selectExporterUid}
+                                    whenChanged={v => cc.update({ selectExporterUid: v })}
+                                />
+                            </Cell>
+                        </Row>}
+                        <Row>
+                            <Cell flex />
+                            <Cell>
+                                <gc.ui.Button
+                                    className="cmpButtonFormOk"
+                                    tooltip={this.props.controller.__('dimensionSaveAuxButton')}
+                                    whenTouched={() => cc.whenExportOkButtonTouched()}
+                                />
+                            </Cell>
+                            <Cell>
+                                <gc.ui.Button
+                                    className="cmpButtonFormCancel"
+                                    whenTouched={() => cc.whenExportCancelButtonTouched()}
+                                />
+                            </Cell>
+                        </Row>
+                    </Form>
+                </div>
+            </sidebar.TabBody>
+            <sidebar.TabFooter>
+                <sidebar.AuxToolbar>
+                    <Cell flex />
+                </sidebar.AuxToolbar>
+            </sidebar.TabFooter>
+        </sidebar.Tab>
+    }
+}
+
+class ListTab extends gc.View<ViewProps> {
     render() {
 
         let cc = _master(this.props.controller);
-
         let hasSelection = !gc.lib.isEmpty(this.props.selectFeatures);
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
-                <gc.ui.Title content={this.__('selectSidebarTitle')}/>
+                <gc.ui.Title content={this.__('selectSidebarTitle')} />
             </sidebar.TabHeader>
 
             <sidebar.TabBody>
@@ -153,7 +239,8 @@ class SelectSidebarView extends gc.View<ViewProps> {
 
             <sidebar.TabFooter>
                 <sidebar.AuxToolbar>
-                    <Cell flex/>
+                    <ExportAuxButton {...this.props} />
+                    <Cell flex />
                     <storage.AuxButtons
                         controller={cc}
                         actionName="selectStorage"
@@ -208,15 +295,21 @@ class SelectDrawToolbarButton extends toolbar.Button {
 
 }
 
-class SelectController extends gc.Controller {
+class Controller extends gc.Controller {
     uid = MASTER;
     layer: gc.types.IFeatureLayer;
     tolerance: string = '';
+    exporters: Array<gc.gws.ext.props.exporter> = [];
 
     async init() {
+        this.exporters = (this.app.project.exporters || []).filter(e => e.supportsVector);
         this.update({
-            selectFeatures: []
+            selectFeatures: [],
+            selectShapeType: 'Polygon',
+            selectExporterUid: this.exporters.length > 0 ? this.exporters[0].uid : null,
+            selectExportActive: false,
         });
+
         this.app.whenCalled('selectFeature', args => {
             this.addFeature(args.feature);
         });
@@ -231,7 +324,7 @@ class SelectController extends gc.Controller {
     }
 
     async doSelect(geometry: ol.geom.Geometry, toggle: boolean) {
-        let features = await this.map.searchForFeatures({geometry, tolerance: this.tolerance});
+        let features = await this.map.searchForFeatures({ geometry, tolerance: this.tolerance });
 
         if (gc.lib.isEmpty(features))
             return;
@@ -250,7 +343,7 @@ class SelectController extends gc.Controller {
 
         if (!feature.oFeature) {
             let geometry = feature.geometry;
-            feature.oFeature = new ol.Feature({geometry});
+            feature.oFeature = new ol.Feature({ geometry });
         }
 
         let f = this.findFeatureByUid(feature.uid);
@@ -267,6 +360,10 @@ class SelectController extends gc.Controller {
         });
     }
 
+    getFeatures() {
+        return this.getValue('selectFeatures') as Array<gc.types.IFeature>;
+    }
+
     featureTitle(feature: gc.types.IFeature) {
         if (feature.views.title)
             return feature.views.title;
@@ -281,7 +378,7 @@ class SelectController extends gc.Controller {
                 features: [f],
                 mode: 'draw',
             },
-            infoboxContent: <components.feature.InfoList controller={this} features={[f]}/>
+            infoboxContent: <components.feature.InfoList controller={this} features={[f]} />
         });
     }
 
@@ -327,10 +424,37 @@ class SelectController extends gc.Controller {
         this.map.readFeatures(fs).forEach(f => this.addFeature(f));
     }
 
+    //
+
+    whenExportButtonClicked() {
+        let fs = this.getFeatures();
+        if (fs.length === 0) {
+            return;
+        }
+        this.update({ selectExportActive: true });
+    }
+
+    async whenExportOkButtonTouched() {
+        let fs = this.getFeatures();
+        let exporterUid = this.getValue('selectExporterUid');
+        let req: gc.gws.ExportRequest = {
+            type: gc.gws.ExportRequestType.vector,
+            exporterUid,
+            features: fs.map(f => f.getProps()),
+        };
+        let ctl = this.app.controller('Shared.Exporter');
+        ctl['startJob'](this.app.server.call('exporterStart', req));
+        this.update({ selectExportActive: false });
+    }
+
+    whenExportCancelButtonTouched() {
+        this.update({ selectExportActive: false });
+    }
+
 }
 
 gc.registerTags({
-    [MASTER]: SelectController,
+    [MASTER]: Controller,
     'Toolbar.Select': SelectToolbarButton,
     'Toolbar.Select.Draw': SelectDrawToolbarButton,
     'Sidebar.Select': SelectSidebar,

@@ -8,10 +8,11 @@ import gws.base.application.middleware
 import gws.base.auth
 import gws.base.client
 import gws.base.database
+import gws.base.exporter
 import gws.base.job
+import gws.base.metadata
 import gws.base.model
 import gws.base.printer
-import gws.base.project
 import gws.base.search
 import gws.base.storage
 import gws.base.template
@@ -20,12 +21,8 @@ import gws.config
 import gws.gis.cache
 import gws.gis.mpx.config
 import gws.lib.font
-import gws.lib.dynimport
-import gws.base.metadata
-import gws.lib.osx
 import gws.server.manager
 import gws.server.monitor
-import gws.spec
 
 _DEFAULT_LOCALE = ['en_CA']
 
@@ -94,6 +91,8 @@ class Config(gws.ConfigWithAccess):
     """Database configuration."""
     developer: Optional[dict]
     """Developer options."""
+    exporters: Optional[list[gws.ext.config.exporter]]
+    """Exporters configuration."""
     finders: Optional[list[gws.ext.config.finder]]
     """Global search providers."""
     fonts: Optional[gws.lib.font.Config]
@@ -140,7 +139,7 @@ class Object(gws.Application):
 
     def configure(self):
         self.vars = self.cfg('vars') or {}
-        
+
         self.serverMgr = self.create_child(gws.server.manager.Object, self.cfg('server'))
         # NB need defaults from the server
         self.config.server = self.serverMgr.config
@@ -205,6 +204,9 @@ class Object(gws.Application):
         for cfg in _DEFAULT_TEMPLATES:
             self.templates.append(self.root.create_shared(gws.ext.object.template, cfg))
 
+        self.exporterMgr = self.create_child(gws.base.exporter.manager.Object)
+        self.exporters = self.create_children(gws.ext.object.exporter, self.cfg('exporters'))
+
         self.jobMgr = self.create_child(gws.base.job.manager.Object)
 
         self.printerMgr = self.create_child(gws.base.printer.manager.Object)
@@ -219,7 +221,7 @@ class Object(gws.Application):
 
     def post_configure(self):
         if not self.cfg('server.mapproxy.disabled'):
-            self.mpxUrl = f"http://{self.cfg('server.mapproxy.host')}:{self.cfg('server.mapproxy.port')}"
+            self.mpxUrl = f'http://{self.cfg("server.mapproxy.host")}:{self.cfg("server.mapproxy.port")}'
             self.mpxConfig = gws.gis.mpx.config.create_and_save(self.root)
 
     def activate(self):

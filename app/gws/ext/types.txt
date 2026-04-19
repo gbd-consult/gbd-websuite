@@ -6,6 +6,7 @@ authProvider
 authSessionManager
 cli
 databaseProvider
+exporter
 finder
 helper
 layer

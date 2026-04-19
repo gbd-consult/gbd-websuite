@@ -3188,6 +3188,7 @@ class ModelOperation(Enum):
     create = 'create'
     update = 'update'
     delete = 'delete'
+    export = 'export'
 
 
 class ModelReadTarget(Enum):
@@ -3344,6 +3345,7 @@ class Model(Node):
     geometryType: Optional[GeometryType]
     isEditable: bool
     loadingStrategy: 'FeatureLoadingStrategy'
+    exportStrategy: 'FeatureExportStrategy'
     title: str
     uidName: str
     withTableView: bool
@@ -3986,6 +3988,7 @@ class Project(Node):
     actions: list['Action']
     finders: list['Finder']
     models: list['Model']
+    exporters: list['Exporter']
     printers: list['Printer']
     templates: list['Template']
     owsServices: list['OwsService']
@@ -4608,6 +4611,85 @@ class WebSite(Node):
 ################################################################################
 
 
+################################################################################
+# /base/exporter/types.pyinc
+
+
+class ExportArgs(Data):
+    """Exporter arguments."""
+
+    features: Optional[list['Feature']]
+    shape: Optional['Shape']
+    project: 'Project'
+    user: 'User'
+    notify: Callable
+
+
+class ExportTarget(Enum):
+    file = 'file'
+    download = 'download'
+
+
+class ExportResult(Data):
+    """Export result."""
+
+    path: str
+    mime: str
+    numFiles: int
+    numFeaturesTotal: int
+    numFeaturesExported: int
+    errors: list[str]
+
+
+class FeatureExportStrategy(Enum):
+    """Export strategy for features."""
+
+    load = 'load'
+    """Load features by ids from the source model."""
+    client = 'client'
+    """Export features using properties as received from the client."""
+
+
+class ExportRequestType(Enum):
+    vector = 'vector'
+    raster = 'raster'
+
+
+class ExportRequest(Request):
+    type: ExportRequestType
+    exporterUid: str
+    features: Optional[list['FeatureProps']]
+    shape: Optional['ShapeProps']
+
+
+class ExportResponse(Response):
+    content: str | bytes
+    contentFilename: str
+    mime: str
+
+
+class ExporterManager(Node):
+    """Exporter manager."""
+
+    def start_export_job(self, request: ExportRequest, user: 'User') -> 'JobStatusResponse': ...
+
+    def exec_export(self, request: ExportRequest, out_path: str): ...
+
+    def list_exporters(self, where: list['Node'], user: 'User') -> list['Exporter']: ...
+
+    def get_exporter(self, where: list['Node'], uid: str, user: 'User') -> Optional['Exporter']: ...
+
+
+class Exporter(Node):
+    """Exporter object."""
+
+    title: str
+
+    def run(self, ea: ExportArgs) -> ExportResult:
+        """Perform format-specific export."""
+################################################################################
+
+
 
 ################################################################################
 # /base/application/types.pyinc
@@ -4659,6 +4741,9 @@ class Application(Node):
     databaseMgr: 'DatabaseManager'
     """Manager for database operations."""
 
+    exporterMgr: 'ExporterManager'
+    """Manager for exporters."""
+
     jobMgr: 'JobManager'
     """Manager for handling jobs."""
 
@@ -4691,6 +4776,9 @@ class Application(Node):
 
     projects: list['Project']
     """List of configured projects."""
+
+    exporters: list['Exporter']
+    """List of configured exporters."""
 
     finders: list['Finder']
     """List of finder objects."""

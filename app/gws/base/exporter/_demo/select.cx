@@ -1,0 +1,59 @@
+uid "select_export"
+
+title "Select Tool mit Exportfunktion"
+
+metadata.keywords [ "client" "search" "export" ]
+
+metadata.abstract """
+In disem Beispiel wird die Select-Funktion des Select Tools mit der Exportfunktion kombiniert.
+Die Objekte (Features), die mit der Select-Funktion ausgewählt wurden, können über die Exportfunktion exportiert werden. 
+
+Global muss die `export` Aktion aktiviert werden, damit die Exportfunktion in diesem Beispiel genutzt werden kann.
+"""
+
+client.addElements+ { tag "Sidebar.Select" }
+client.addElements+ { tag "Toolbar.Select" }
+client.addElements+ { tag "Toolbar.Select.Draw" }
+client.addElements+ { tag "Task.Select" }
+
+
+exporters+ {
+    type "shapefile"
+    title "ESRI Shapefile"
+    target "download"
+}
+
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 4000
+    zoom.maxScale  1000000
+}
+
+map.layers+ {
+    type "postgres"
+    title "POIs"
+    tableName "edit.poi_small"
+    cssSelector ".point-pink"
+
+    templates+ {
+        subject "feature.title"
+        type "html"
+        text "{{name}} {{id}}"
+    }
+}
+
+map.layers+ {
+    title "Districts"
+    type "postgres"
+    tableName "edit.district"
+    cssSelector ".custom_district"
+    
+    templates+ {
+        subject "feature.title"
+        type "html"
+        text "{{name}}"
+    }
+}
+
+{demo_osm_background}

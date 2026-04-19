@@ -34,6 +34,8 @@ class Config(gws.ConfigWithAccess):
     """Model fields."""
     loadingStrategy: Optional[gws.FeatureLoadingStrategy]
     """Loading strategy for features."""
+    exportStrategy: Optional[gws.FeatureExportStrategy]
+    """Export strategy for features."""
     title: str = ''
     """Model title."""
     isEditable: bool = False
@@ -85,6 +87,7 @@ class Object(gws.Model):
         self.geometryType = None
         self.uidName = ''
         self.loadingStrategy = self.cfg('loadingStrategy')
+        self.exportStrategy = self.cfg('exportStrategy', default=gws.FeatureExportStrategy.load)
         self.title = self.cfg('title')
         self.clientOptions = self.cfg('clientOptions') or gws.Data()
 

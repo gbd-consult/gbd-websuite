@@ -40,6 +40,7 @@ TYPES = [
     "authSessionManager",
     "cli",
     "databaseProvider",
+    "exporter",
     "finder",
     "helper",
     "layer",
@@ -76,6 +77,7 @@ class _new:
     def authSessionManager(self, *args): pass
     def cli(self, *args): pass
     def databaseProvider(self, *args): pass
+    def exporter(self, *args): pass
     def finder(self, *args): pass
     def helper(self, *args): pass
     def layer(self, *args): pass
@@ -106,6 +108,7 @@ class object:
     class authSessionManager (_classTag): extName = 'gws.ext.object.authSessionManager'
     class cli (_classTag): extName = 'gws.ext.object.cli'
     class databaseProvider (_classTag): extName = 'gws.ext.object.databaseProvider'
+    class exporter (_classTag): extName = 'gws.ext.object.exporter'
     class finder (_classTag): extName = 'gws.ext.object.finder'
     class helper (_classTag): extName = 'gws.ext.object.helper'
     class layer (_classTag): extName = 'gws.ext.object.layer'
@@ -133,6 +136,7 @@ class config:
     class authSessionManager (_classTag): extName = 'gws.ext.config.authSessionManager'
     class cli (_classTag): extName = 'gws.ext.config.cli'
     class databaseProvider (_classTag): extName = 'gws.ext.config.databaseProvider'
+    class exporter (_classTag): extName = 'gws.ext.config.exporter'
     class finder (_classTag): extName = 'gws.ext.config.finder'
     class helper (_classTag): extName = 'gws.ext.config.helper'
     class layer (_classTag): extName = 'gws.ext.config.layer'
@@ -160,6 +164,7 @@ class props:
     class authSessionManager (_classTag): extName = 'gws.ext.props.authSessionManager'
     class cli (_classTag): extName = 'gws.ext.props.cli'
     class databaseProvider (_classTag): extName = 'gws.ext.props.databaseProvider'
+    class exporter (_classTag): extName = 'gws.ext.props.exporter'
     class finder (_classTag): extName = 'gws.ext.props.finder'
     class helper (_classTag): extName = 'gws.ext.props.helper'
     class layer (_classTag): extName = 'gws.ext.props.layer'

@@ -23,6 +23,8 @@ class Config(gws.ConfigWithAccess):
     """Project-specific assets options."""
     client: Optional[gws.base.client.Config]
     """Project-specific gws client configuration."""
+    exporters: Optional[list[gws.ext.config.exporter]]
+    """Project-specific exporters."""
     finders: Optional[list[gws.ext.config.finder]]
     """Search providers."""
     locales: Optional[list[gws.LocaleUid]]
@@ -53,6 +55,7 @@ class Props(gws.Props):
     description: str
     locales: list[str]
     map: gws.ext.props.map
+    exporters: list[gws.ext.props.exporter]
     models: list[gws.ext.props.model]
     metadata: gws.base.metadata.Props
     overviewMap: gws.ext.props.map
@@ -91,6 +94,7 @@ class Object(gws.Project):
         self.models = self.create_children(gws.ext.object.model, self.cfg('models'))
         self.finders = self.create_children(gws.ext.object.finder, self.cfg('finders'))
         self.templates = self.create_children(gws.ext.object.template, self.cfg('templates'))
+        self.exporters = self.create_children(gws.ext.object.exporter, self.cfg('exporters'))
         self.client = self.create_child_if_configured(gws.base.client.Object, self.cfg('client'))
         self.owsServices = self.create_children(gws.ext.object.owsService, self.cfg('owsServices'))
 
@@ -111,6 +115,7 @@ class Object(gws.Project):
             description=desc.content if desc else '',
             map=self.map,
             metadata=gws.base.metadata.props(self.metadata),
+            exporters=self.root.app.exporterMgr.list_exporters([self, self.root.app], user=user),
             models=[],
             overviewMap=self.overviewMap,
             printers=printers,

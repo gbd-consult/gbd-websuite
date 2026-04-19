@@ -44,6 +44,9 @@ class Application(Node):
     databaseMgr: 'DatabaseManager'
     """Manager for database operations."""
 
+    exporterMgr: 'ExporterManager'
+    """Manager for exporters."""
+
     jobMgr: 'JobManager'
     """Manager for handling jobs."""
 
@@ -76,6 +79,9 @@ class Application(Node):
 
     projects: list['Project']
     """List of configured projects."""
+
+    exporters: list['Exporter']
+    """List of configured exporters."""
 
     finders: list['Finder']
     """List of finder objects."""
