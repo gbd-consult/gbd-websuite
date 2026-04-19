@@ -303,7 +303,7 @@ def is_a(root, node, classref):
     if name:
         return class_name(node) == name
     if ext_name:
-        return node.extName.startswith(ext_name)
+        return node.extName == ext_name or node.extName.startswith(ext_name + '.')
     return False
 
 
