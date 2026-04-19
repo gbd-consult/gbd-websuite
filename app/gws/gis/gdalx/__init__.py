@@ -761,7 +761,7 @@ def _attr_to_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, value, encoding)
     return gd_feature.SetField(idx, value)
 
 
-def is_attribute_supported(typ):
+def is_attribute_type_supported(typ):
     return typ in _ATTR_TO_OGR
 
 
