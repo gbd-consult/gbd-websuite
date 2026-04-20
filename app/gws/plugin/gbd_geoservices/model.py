@@ -96,7 +96,7 @@ class Object(gws.base.model.default_model.Object):
             rec = gws.FeatureRecord(uid=f['id'], attributes=a, shape=shape)
             features[a['title']] = self.feature_from_record(rec, mc)
 
-        return [f for _, f in sorted(features.items())]
+        return [f for _, f in features.items()]
 
     def _query(self, request) -> dict:
         try:
