@@ -118,20 +118,20 @@ Hier finden Sie Konfigurationsbeispiele und Erklärungen zu verschiedenen Funkti
 ## :/admin-de/themen/layer
 
 
-### Raster-Layers
+<!-- ### Raster-Layers -->
 <!--
 - qgis,qgisflat,tile,wms,wmsflat,wmts
 - caching (/admin-de/layer/cache)
 -->
 
-### Vector-Layers
+<!-- ### Vector-Layers -->
 <!--
 - geojson,postgres,wfs,??wfsflat??
 - link to styling
 - link to editing & models
 -->
 
-### Flat/Tree/Group Layers
+<!-- ### Flat/Tree/Group Layers -->
 <!--
 - group geojson postgres qgis qgisflat tile wfs wfsflat wms wmsflat wmts
 - clientOptions, autoLayers
@@ -145,35 +145,37 @@ Hier finden Sie Konfigurationsbeispiele und Erklärungen zu verschiedenen Funkti
 ## :/admin-de/plugin/ows
 
 
-## Plugins
+## :/admin-de/themen/plugins
 <!--
 - usage and including of plugins, not plugin development
 -->
-
+<!-- 
 ### alkis
-### gekos
-### :/admin-de/plugin/qgis
+### gekos -->
 
-<!--
-QGIS Client Einstellungen
--->
-### select <--- is this useful on it's own?
+<!-- ### select <--- is this useful on it's own?
 ### annotate
-### dimension
+### dimension -->
 
-## :/admin-de/themen/postgresql
-
-## :/admin-de/themen/qfield
-
-
-
-## Projekte
+## :/admin-de/themen/projekte
 <!--
 - uids, metadata and usage in assets/index.cx.html
 - project-level templates
 - inclusion via projects vs projectDirs vs projectPaths
 - overriding global configuration for assets, actions, client.xxx, ...
 -->
+
+## :/admin-de/themen/postgresql
+
+## :/admin-de/themen/qfield
+
+### :/admin-de/plugin/qgis
+
+<!--
+QGIS Client Einstellungen
+-->
+
+
 
 ## :/admin-de/config/server
 <!--
