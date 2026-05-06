@@ -1,0 +1,36 @@
+{
+  "gws.plugin.nominatim.finder.Config": [
+    {
+      "title": {
+        "de": "Öffentliches OSM-Nominatim",
+        "en": "Public OSM Nominatim"
+      },
+      "purpose": {
+        "de": "Adress-Suche über den öffentlichen OpenStreetMap-Server. Geeignet für Tests und Anwendungen mit geringem Suchvolumen.",
+        "en": "Address search against the public OpenStreetMap server. Suitable for tests and low-traffic applications."
+      },
+      "template": {
+        "type": "nominatim",
+        "title": "Adress-Suche",
+        "country": "de",
+        "language": "de"
+      }
+    },
+    {
+      "title": {
+        "de": "Eigener Nominatim-Server",
+        "en": "Self-hosted Nominatim server"
+      },
+      "purpose": {
+        "de": "Adress-Suche gegen einen selbst betriebenen Nominatim-Server. Empfohlen ab nennenswertem Suchvolumen oder für offline-/Behörden-Setups.",
+        "en": "Address search against a self-hosted Nominatim server. Recommended for non-trivial traffic or offline/agency setups."
+      },
+      "template": {
+        "type": "nominatim",
+        "title": "Adress-Suche",
+        "country": "de",
+        "language": "de"
+      }
+    }
+  ]
+}
