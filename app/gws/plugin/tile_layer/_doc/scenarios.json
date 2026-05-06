@@ -1,0 +1,38 @@
+{
+  "gws.plugin.tile_layer.layer.Config": [
+    {
+      "title": {
+        "de": "OpenStreetMap als Hintergrund",
+        "en": "OpenStreetMap as background"
+      },
+      "purpose": {
+        "de": "Standard-Webkartenhintergrund von tile.openstreetmap.org. Bitte die OSM-Tile-Usage-Policy beachten.",
+        "en": "Standard web map background from tile.openstreetmap.org. Mind the OSM tile usage policy."
+      },
+      "template": {
+        "type": "tile",
+        "title": "OpenStreetMap",
+        "provider": {
+          "url": "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        }
+      }
+    },
+    {
+      "title": {
+        "de": "Eigener Tile-Cache",
+        "en": "Local tile cache"
+      },
+      "purpose": {
+        "de": "Eigener Tile-Server unter z/x/y-Schema, üblich für vorgerechnete Cachekacheln.",
+        "en": "Self-hosted tile server using a z/x/y scheme, typical for pre-rendered tile caches."
+      },
+      "template": {
+        "type": "tile",
+        "title": "Local tiles",
+        "provider": {
+          "url": "https://tiles.example.com/{z}/{x}/{y}.png"
+        }
+      }
+    }
+  ]
+}
