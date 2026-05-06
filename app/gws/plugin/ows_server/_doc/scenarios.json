@@ -1,0 +1,66 @@
+{
+  "gws.plugin.ows_server.wms.Config": [
+    {
+      "title": {
+        "de": "WMS-Standardveröffentlichung",
+        "en": "Standard WMS publication"
+      },
+      "purpose": {
+        "de": "WMS-Dienst mit Basis-Metadaten und einem konservativen Layer-Limit.",
+        "en": "WMS service with basic metadata and a conservative layer limit."
+      },
+      "template": {
+        "type": "wms",
+        "uid": "wms_service",
+        "layerLimit": 10,
+        "maxPixelSize": 4096,
+        "metadata": {
+          "title": "WMS Service",
+          "abstract": "Standard map service",
+          "keywords": ["map", "wms"]
+        }
+      }
+    }
+  ],
+  "gws.plugin.ows_server.wfs.Config": [
+    {
+      "title": {
+        "de": "WFS-Downloaddienst",
+        "en": "WFS download service"
+      },
+      "purpose": {
+        "de": "WFS-2.0-Basic mit GeoJSON-Output für Web-Clients.",
+        "en": "WFS 2.0 Basic with GeoJSON output for web clients."
+      },
+      "template": {
+        "type": "wfs",
+        "uid": "wfs_service",
+        "metadata": {
+          "title": "WFS Download Service",
+          "abstract": "Feature download service"
+        }
+      }
+    }
+  ],
+  "gws.plugin.ows_server.csw.Config": [
+    {
+      "title": {
+        "de": "CSW-Katalog (ISO 19115)",
+        "en": "CSW catalog (ISO 19115)"
+      },
+      "purpose": {
+        "de": "Metadaten-Katalog mit ISO-19115-Profil für INSPIRE-Konformität.",
+        "en": "Metadata catalog with ISO 19115 profile for INSPIRE compliance."
+      },
+      "template": {
+        "type": "csw",
+        "uid": "csw_service",
+        "profile": "ISO",
+        "metadata": {
+          "title": "Metadata Catalog",
+          "abstract": "ISO 19115 metadata catalog"
+        }
+      }
+    }
+  ]
+}
