@@ -1,0 +1,22 @@
+{
+  "gws.plugin.geojson.layer.Config": [
+    {
+      "title": {
+        "de": "GeoJSON-Layer aus Datei",
+        "en": "GeoJSON layer from file"
+      },
+      "purpose": {
+        "de": "Vektor-Layer mit Punkt-Symbolisierung aus einer lokalen GeoJSON-Datei.",
+        "en": "Vector layer with point symbology from a local GeoJSON file."
+      },
+      "template": {
+        "type": "geojson",
+        "title": "POI",
+        "provider": {
+          "path": "/data/poi.geojson"
+        },
+        "cssSelector": ".poi"
+      }
+    }
+  ]
+}
