@@ -1,0 +1,359 @@
+{
+  "gws.ext.config.databaseProvider": [
+    {
+      "title": {
+        "de": "Lokaler PostgreSQL/PostGIS-Server",
+        "en": "Local PostgreSQL/PostGIS server"
+      },
+      "purpose": {
+        "de": "Standard-Setup auf einem lokalen oder Container-internen PostgreSQL-Server. Geeignet für Entwicklung und einfache Single-Host-Installationen.",
+        "en": "Standard setup on a local or container-internal PostgreSQL server. Suitable for development and simple single-host installations."
+      },
+      "template": {
+        "type": "postgres",
+        "host": "localhost",
+        "port": 5432,
+        "database": "gws",
+        "username": "gws",
+        "password": "CHANGE_ME"
+      }
+    },
+    {
+      "title": {
+        "de": "Verbindung über pg_service-Eintrag",
+        "en": "Connection via pg_service entry"
+      },
+      "purpose": {
+        "de": "Verbindungsdaten kommen aus der pg_service.conf-Datei statt explizit. Saubere Lösung, wenn Passwörter nicht in der WebSuite-Konfiguration stehen sollen.",
+        "en": "Connection details come from pg_service.conf rather than being declared inline. Clean solution when secrets must not live in the WebSuite config."
+      },
+      "template": {
+        "type": "postgres",
+        "serviceName": "gws"
+      }
+    }
+  ],
+
+  "gws.ext.config.authProvider": [
+    {
+      "title": {
+        "de": "Datei-basierte Auth (Demo / lokale Entwicklung)",
+        "en": "File-based auth (demo / local development)"
+      },
+      "purpose": {
+        "de": "JSON-Datei mit Benutzerkonten — schnell aufgesetzt, geeignet für Demos, Tests und kleine Installationen.",
+        "en": "JSON file with user accounts — quick to set up, suitable for demos, tests and small installations."
+      },
+      "template": {
+        "type": "file",
+        "path": "/data/users.json"
+      }
+    },
+    {
+      "title": {
+        "de": "Active-Directory / LDAP",
+        "en": "Active Directory / LDAP"
+      },
+      "purpose": {
+        "de": "Anbindung an einen LDAP- oder Active-Directory-Server. Typischer Einsatz in Unternehmens-Installationen.",
+        "en": "Integration with an LDAP or Active Directory server. Typical for enterprise installations."
+      },
+      "template": {
+        "type": "ldap",
+        "url": "ldap://ad.example.com:389",
+        "bindDN": "CN=gws-bind,OU=Service,DC=example,DC=com",
+        "bindPassword": "CHANGE_ME",
+        "users": "OU=Users,DC=example,DC=com"
+      }
+    },
+    {
+      "title": {
+        "de": "PostgreSQL-Benutzer-Tabelle",
+        "en": "PostgreSQL user table"
+      },
+      "purpose": {
+        "de": "Benutzer und Rollen in einer eigenen Datenbank-Tabelle. Voraussetzung: konfigurierter databaseProvider mit derselben UID wie hier referenziert.",
+        "en": "User accounts and roles in a dedicated database table. Requires a configured databaseProvider with the UID referenced here."
+      },
+      "template": {
+        "type": "postgres",
+        "dbUid": "main_db",
+        "getUserSql": "SELECT * FROM users WHERE login = :username",
+        "authorizationSql": "SELECT roles FROM user_roles WHERE login = :username"
+      }
+    },
+    {
+      "title": {
+        "de": "WebSuite-Konten-Verwaltung",
+        "en": "WebSuite account management"
+      },
+      "purpose": {
+        "de": "Eingebaute Konten-Verwaltung mit Self-Service-Workflows (Registrierung, Passwort-Reset, MFA). Voraussetzung: konfigurierter Account-Helper.",
+        "en": "Built-in account management with self-service workflows (sign-up, password reset, MFA). Requires a configured account helper."
+      },
+      "template": {
+        "type": "account"
+      }
+    }
+  ],
+
+  "gws.ext.config.authMethod": [
+    {
+      "title": {
+        "de": "Web-Login mit Session-Cookie",
+        "en": "Web login with session cookie"
+      },
+      "purpose": {
+        "de": "Standard-Browser-Login per Login-Formular. Sitzungen werden im Cookie verwaltet. Pflicht für die Web-UI.",
+        "en": "Standard browser login via login form. Sessions tracked through a cookie. Required for the web UI."
+      },
+      "template": {
+        "type": "web",
+        "secure": true
+      }
+    },
+    {
+      "title": {
+        "de": "Token-Authentifizierung (API-Skripte)",
+        "en": "Token authentication (API scripts)"
+      },
+      "purpose": {
+        "de": "Lange Tokens im Authorization-Header für script-basierte API-Zugriffe. Tokens werden serverseitig persistiert.",
+        "en": "Long-lived tokens in the Authorization header for scripted API access. Tokens are persisted server-side."
+      },
+      "template": {
+        "type": "token",
+        "headerName": "Authorization",
+        "lifeTime": "30d"
+      }
+    },
+    {
+      "title": {
+        "de": "HTTP-Basic für Server-zu-Server",
+        "en": "HTTP Basic for server-to-server"
+      },
+      "purpose": {
+        "de": "HTTP-Basic-Authentifizierung — geeignet für Server-zu-Server-Aufrufe in vertrauenswürdigen Netzen.",
+        "en": "HTTP Basic authentication — suitable for server-to-server calls inside trusted networks."
+      },
+      "template": {
+        "type": "basic"
+      }
+    }
+  ],
+
+  "gws.ext.config.authMultiFactorAdapter": [
+    {
+      "title": {
+        "de": "TOTP (Authenticator-App)",
+        "en": "TOTP (authenticator app)"
+      },
+      "purpose": {
+        "de": "Zeitbasierte Einmalpasswörter aus einer Authenticator-App (Google Authenticator, FreeOTP, …). Empfohlen für Administratoren.",
+        "en": "Time-based one-time passwords from an authenticator app (Google Authenticator, FreeOTP, …). Recommended for administrators."
+      },
+      "template": {
+        "type": "totp",
+        "issuer": "GBD WebSuite"
+      }
+    },
+    {
+      "title": {
+        "de": "E-Mail-Code",
+        "en": "E-mail code"
+      },
+      "purpose": {
+        "de": "Bestätigungscode per E-Mail. Geeignet für Konten ohne Smartphone-App, Voraussetzung ist ein konfigurierter email_helper.",
+        "en": "Confirmation code via e-mail. Suitable for accounts without a smartphone app; requires a configured email_helper."
+      },
+      "template": {
+        "type": "email",
+        "lifeTime": "300",
+        "maxVerifyAttempts": 3
+      }
+    }
+  ],
+
+  "gws.ext.config.layer": [
+    {
+      "title": {
+        "de": "OSM-Hintergrund (Tile-Layer)",
+        "en": "OSM background (tile layer)"
+      },
+      "purpose": {
+        "de": "Standard-OpenStreetMap-Tiles als Hintergrund-Layer. Schnelle Karten-Grundlage ohne eigene Daten.",
+        "en": "Standard OpenStreetMap tiles as a background layer. Quick map base without own data."
+      },
+      "template": {
+        "type": "tile",
+        "title": "OpenStreetMap",
+        "provider": {
+          "url": "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        }
+      }
+    },
+    {
+      "title": {
+        "de": "PostGIS-Vektor-Layer",
+        "en": "PostGIS vector layer"
+      },
+      "purpose": {
+        "de": "Vektor-Layer aus einer PostGIS-Tabelle. Voraussetzung: ein databaseProvider mit der hier referenzierten UID.",
+        "en": "Vector layer backed by a PostGIS table. Requires a databaseProvider with the UID referenced here."
+      },
+      "template": {
+        "type": "postgres",
+        "dbUid": "main_db",
+        "tableName": "public.flurstuecke",
+        "title": "Flurstücke"
+      }
+    },
+    {
+      "title": {
+        "de": "QGIS-Projekt-Layer",
+        "en": "QGIS project layer"
+      },
+      "purpose": {
+        "de": "Layer aus einem QGIS-Projekt. Stilisierung und Beschriftung kommen direkt aus QGIS.",
+        "en": "Layer from a QGIS project. Styling and labelling come straight from QGIS."
+      },
+      "template": {
+        "type": "qgis",
+        "provider": {
+          "path": "/data/qgis/project.qgs"
+        },
+        "rootLayers": {"names": ["Hauptlayer"]}
+      }
+    },
+    {
+      "title": {
+        "de": "GeoJSON-Layer",
+        "en": "GeoJSON layer"
+      },
+      "purpose": {
+        "de": "Vektor-Layer aus einer GeoJSON-Datei oder URL. Geeignet für statische Datasets.",
+        "en": "Vector layer from a GeoJSON file or URL. Suitable for static datasets."
+      },
+      "template": {
+        "type": "geojson",
+        "provider": {
+          "path": "/data/geojson/poi.geojson"
+        },
+        "title": "Points of Interest"
+      }
+    }
+  ],
+
+  "gws.ext.config.owsService": [
+    {
+      "title": {
+        "de": "WMS-Veröffentlichung",
+        "en": "WMS publication"
+      },
+      "purpose": {
+        "de": "Standard-WMS-Dienst — Karten-Layer als Bilder für externe GIS-Clients. Layer mit `withOws` werden automatisch aufgenommen.",
+        "en": "Standard WMS service — map layers as images for external GIS clients. Layers with `withOws` are picked up automatically."
+      },
+      "template": {
+        "type": "wms",
+        "supportedVersions": ["1.3.0"]
+      }
+    },
+    {
+      "title": {
+        "de": "WFS-Vektor-Veröffentlichung",
+        "en": "WFS vector publication"
+      },
+      "purpose": {
+        "de": "WFS-Dienst zur Bereitstellung von Vektor-Layern für externe GIS-Clients (QGIS, ArcGIS).",
+        "en": "WFS service exposing vector layers to external GIS clients (QGIS, ArcGIS)."
+      },
+      "template": {
+        "type": "wfs",
+        "supportedVersions": ["2.0.0"]
+      }
+    },
+    {
+      "title": {
+        "de": "WMTS (gekachelt, performant)",
+        "en": "WMTS (tiled, performant)"
+      },
+      "purpose": {
+        "de": "WMTS-Dienst mit vorgekachelter Auslieferung. Gut geeignet, wenn MapProxy-Caching aktiv ist.",
+        "en": "WMTS service delivering pre-tiled images. Pairs well with MapProxy caching."
+      },
+      "template": {
+        "type": "wmts",
+        "supportedVersions": ["1.0.0"]
+      }
+    },
+    {
+      "title": {
+        "de": "CSW-Metadatenkatalog",
+        "en": "CSW metadata catalog"
+      },
+      "purpose": {
+        "de": "CSW 2.0.2 / 3.0 Metadatenkatalog. Veröffentlicht Service- und Datensatz-Metadaten gemäß INSPIRE.",
+        "en": "CSW 2.0.2 / 3.0 metadata catalog. Publishes service and dataset metadata per INSPIRE."
+      },
+      "template": {
+        "type": "csw",
+        "supportedVersions": ["2.0.2", "3.0.0"]
+      }
+    }
+  ],
+
+  "gws.ext.config.helper": [
+    {
+      "title": {
+        "de": "SMTP-E-Mail-Versand",
+        "en": "SMTP e-mail sending"
+      },
+      "purpose": {
+        "de": "Konfiguriert einen SMTP-Server für ausgehende E-Mails (Account-Workflows, MFA-Codes, Benachrichtigungen).",
+        "en": "Configures an SMTP server for outgoing e-mails (account workflows, MFA codes, notifications)."
+      },
+      "template": {
+        "type": "email",
+        "smtp": {
+          "host": "mail.example.com",
+          "port": 587,
+          "username": "noreply@example.com",
+          "password": "CHANGE_ME"
+        },
+        "mailFrom": "noreply@example.com"
+      }
+    },
+    {
+      "title": {
+        "de": "CSV-Helper (Standard-Export)",
+        "en": "CSV helper (standard export)"
+      },
+      "purpose": {
+        "de": "Standard-CSV-Format mit Semikolon-Trennzeichen und UTF-8-BOM — passt für Excel und deutsche Locale.",
+        "en": "Standard CSV format with semicolon separator and UTF-8 BOM — compatible with Excel and German locale."
+      },
+      "template": {
+        "type": "csv",
+        "format": {
+          "delimiter": ";",
+          "encoding": "utf-8-sig"
+        }
+      }
+    },
+    {
+      "title": {
+        "de": "XML-Namespace-Pool",
+        "en": "XML namespace pool"
+      },
+      "purpose": {
+        "de": "Sammlung benutzerdefinierter XML-Namespaces, die in OWS-Capabilities und Templates referenziert werden können.",
+        "en": "Collection of custom XML namespaces referenceable from OWS capabilities and templates."
+      },
+      "template": {
+        "type": "xml",
+        "namespaces": []
+      }
+    }
+  ]
+}
