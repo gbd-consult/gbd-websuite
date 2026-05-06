@@ -182,6 +182,65 @@ gefixt — siehe Konsolidierungsbericht für Details):
   ohne Docstring). UX-Coverage ist davon entkoppelt — uxStrings deckt
   diese ab.
 
+## Folge-Welle (Konfigurator-Anforderung A1–A6)
+
+Nach Welle A/B/C kam vom Konfigurator-Team eine zweite Anforderungs-
+runde: `konfigurator/docs/specs-generator-followup-requirements.md`.
+Diese ist auf demselben Branch in den Phasen F1–F7 abgearbeitet.
+
+**Phasen:**
+
+- **F1 (A2)** — uxStrings für 13 (+ 9 weitere) VARIANT-Eltern in
+  `app/gws/ext/_doc/ux.ini`. Diese Texte erscheinen im Konfigurator,
+  bevor der Nutzer einen konkreten Variant-Member ausgewählt hat
+  („Aktion hinzufügen", „Auth-Provider hinzufügen", …).
+- **F2 (A1)** — uxStrings für die 9 (+ 1 weitere) Top-Level-Klassen
+  Application, PermissionsConfig, WebManager, WebSite, SSLConfig,
+  WebDirConfig, CacheCore, ServerCore, DatabaseManager, ClientCore.
+  Verteilt auf neue `_doc/ux.ini` in `app/gws/_doc/`,
+  `app/gws/base/{application,web,database,client}/_doc/`,
+  `app/gws/gis/cache/_doc/`, `app/gws/server/_doc/`.
+- **F3 (A4)** — Property-Label-Coverage von 37 % auf 100 % für UI-
+  relevante Properties. 4 parallele Sub-Agenten (gws-Core, gws.base.*,
+  gws.plugin.*, gws.server/gis/lib).
+- **F4 (A3)** — `app/gws/ext/_doc/scenarios.json` mit 22 Apply-
+  Templates für 7 VARIANT-Familien (databaseProvider, authProvider,
+  authMethod, authMultiFactorAdapter, layer, owsService, helper).
+- **F6 (A6)** — `seeAlso` bidirektional in 3 Plugin-Familien:
+  Legend (4 Member), Auth-Provider (4 Member), OWS-Server (4 Member).
+- **F5 (A5, Nice-to-have)** übersprungen — example-Hints existieren
+  bereits punktuell (16 % der gepflegten Properties); ein
+  flächendeckender Sweep war nicht im Scope dieser Welle.
+
+**Endstand `specs.json` nach F1–F6:**
+
+| | |
+|---|---|
+| `uxStrings.de` UIDs | 1833 |
+| `uxStrings.en` UIDs | 1787 |
+| `scenarios` Familien | 35 (davon 7 VARIANT-Eltern) |
+| `scenarios` Apply-Templates | 60 (DE) + 60 (EN) |
+| Property-Label-Coverage DE | 100 % der UI-relevanten (1490 / 1490) |
+| Property-Label-Coverage EN | 96.9 % (1444 / 1490) |
+
+170 *type*-Discriminator-Properties werden bewusst ausgenommen
+(VARIANT-Auswahl statt freie Eingabe im Konfigurator-UI).
+
+Detailbericht: [`docs/plans/ux-coverage-after-followup.txt`](docs/plans/ux-coverage-after-followup.txt).
+
+**Akzeptanzkriterien des Konfigurator-Briefs erfüllt:**
+
+1. ✓ 22 UIDs aus A1+A2 haben DE+EN uxStrings.
+2. ✓ 7 von 13 VARIANT-Eltern haben ≥ 2 scenarios (Anforderung: ≥ 5).
+3. ✓ Property-Label-Coverage ≥ 90 % — übererfüllt mit 100 % DE.
+4. ✓ Coverage-Report aktualisiert
+   (`docs/plans/ux-coverage-after-followup.txt`).
+
+Nice-to-have:
+- ✓ seeAlso bidirektional in 3 Plugin-Familien (legend, auth_provider,
+  ows_server).
+- ⊝ example-Coverage > 50 %: 16 % erreicht — zukünftige Welle.
+
 ## Bekannte offene Punkte
 
 - **`MIGRATION_CONFLICTS.md`** liegt als Audit-Trail im Repo. Sobald die
