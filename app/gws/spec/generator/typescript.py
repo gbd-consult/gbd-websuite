@@ -193,6 +193,14 @@ class _Creator:
 
             export type UxStrings = {[lang: string]: {[uid: string]: UxEntry}};
 
+            export interface UxScenario {
+                title: string;
+                purpose?: string;
+                template: any;
+            }
+
+            export type UxScenarios = {[lang: string]: {[uid: string]: UxScenario[]}};
+
             $globs
 
             $namespaces

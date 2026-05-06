@@ -186,6 +186,12 @@ class SpecData:
     ``label``, ``purpose``, ``whenToUse``, ``complexity``, ``useCases``,
     ``docsLink``, ``seeAlso``, ``example``. All optional.
     """
+    scenarios: dict
+    """Apply-template scenarios per UID, language-flattened.
+
+    Shape: ``{lang: {uid: [{title, purpose?, template}, ...]}}``. Sourced from
+    ``_doc/scenarios.json`` files inside plugins / base modules.
+    """
 
 
 class v:

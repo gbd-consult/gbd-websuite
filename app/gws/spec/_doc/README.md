@@ -8,6 +8,7 @@ Source-Tree zusammen und schreibt sie nach `specs.json`:
 | Klassen-/Property-Docstrings (Englisch) | `serverTypes[].doc` und `strings.en` |
 | `_doc/strings.ini`       | `strings[lang]` (mehrsprachig)              |
 | `_doc/ux.ini` (neu)      | `uxStrings[lang]` (strukturierte UX-Doku)   |
+| `_doc/scenarios.json` (neu) | `scenarios[lang]` (Apply-Templates)     |
 | Field-List-Marker im Docstring | `uxStrings.en[uid]` (Fallback)         |
 
 Diese Datei dokumentiert die Konvention für Modul-Maintainer.
@@ -18,8 +19,9 @@ Diese Datei dokumentiert die Konvention für Modul-Maintainer.
 app/gws/<bereich>/<modul>/
 ├── …
 └── _doc/
-    ├── strings.ini    # Übersetzungen pro UID
-    └── ux.ini         # strukturierte UX-Doku (label, purpose, …)
+    ├── strings.ini       # Übersetzungen pro UID
+    ├── ux.ini            # strukturierte UX-Doku (label, purpose, …)
+    └── scenarios.json    # Apply-Templates für typische Setups
 ```
 
 Beide Dateien sind optional. Der Generator findet sie über das Pattern
@@ -87,6 +89,39 @@ gws.plugin.foo.Config.label = Foo provider
 
 Unbekannte Felder werden vom Generator ignoriert und mit einer Warning
 in den Build-Logs erwähnt.
+
+## `_doc/scenarios.json` — Apply-Templates pro UID
+
+Format:
+
+```json
+{
+  "gws.plugin.postgres.provider.Config": [
+    {
+      "title":   {"de": "Lokales PostgreSQL", "en": "Local PostgreSQL"},
+      "purpose": {"de": "Standard-Setup auf Entwicklerrechner.",
+                  "en": "Standard developer-machine setup."},
+      "template": {
+        "host": "localhost",
+        "port": 5432,
+        "database": "gws"
+      }
+    }
+  ]
+}
+```
+
+- Top-Level ist ein Objekt: `<full.uid>` → Liste von Szenarien.
+- Pro Szenario:
+  - `title` (Pflicht) — Sprach-Map mit kurzem Namen.
+  - `purpose` (optional) — Sprach-Map mit 1-Satz-Erklärung.
+  - `template` (Pflicht) — Roher Config-Snippet, der vom UI angewendet
+    werden kann.
+- Der Generator faltet die Sprach-Maps auf eine flache Form
+  `scenarios[lang][uid] → [scenario, …]`. Fehlt eine Sprache, wird auf
+  `en` zurückgefallen.
+- Ungültiges JSON führt zum Build-Fehler. Einzelne fehlerhafte Einträge
+  (kein `template`, kein Listentyp) werden mit Warning übersprungen.
 
 ## Field-List-Marker im Docstring
 

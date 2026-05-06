@@ -33,6 +33,7 @@ def to_path(specs: core.SpecData, path: str):
             'serverTypes': specs.serverTypes,
             'strings': specs.strings,
             'uxStrings': getattr(specs, 'uxStrings', {}) or {},
+            'scenarios': getattr(specs, 'scenarios', {}) or {},
         },
     )
     return path
@@ -46,6 +47,7 @@ def from_path(path: str) -> core.SpecData:
     s.serverTypes = [core.make_type(t) for t in d['serverTypes']]
     s.strings = d['strings']
     s.uxStrings = d.get('uxStrings') or {}
+    s.scenarios = d.get('scenarios') or {}
     return s
 
 
@@ -75,6 +77,7 @@ def _run_generator(root_dir='', out_dir='', manifest_path='', debug=False):
     #    landen (collect liest typ.doc).
     gen.uxStrings = strings.collect_docstring_markers(gen)
     gen.uxStrings = strings.collect_ux(gen)
+    gen.scenarios = strings.collect_scenarios(gen)
     strings.apply_ux_to_variants(gen)
 
     gen.strings = strings.collect(gen)
@@ -89,6 +92,7 @@ def _run_generator(root_dir='', out_dir='', manifest_path='', debug=False):
     gen.specData.serverTypes = gen.serverTypes
     gen.specData.strings = gen.strings
     gen.specData.uxStrings = gen.uxStrings
+    gen.specData.scenarios = gen.scenarios
 
     return gen
 

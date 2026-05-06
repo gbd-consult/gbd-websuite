@@ -1,3 +1,4 @@
+import json
 import re
 
 from . import base, util
@@ -97,6 +98,72 @@ def collect_ux(gen: base.Generator):
                 ux.setdefault(lang, {}).setdefault(uid, {})[field] = (text or '').strip()
 
     return ux
+
+
+def collect_scenarios(gen: base.Generator):
+    """Collect per-plugin ``_doc/scenarios.json`` apply-templates.
+
+    Source format on disk::
+
+        {
+          "<full.uid>": [
+            {
+              "title":   {"de": "...", "en": "..."},
+              "purpose": {"de": "...", "en": "..."},   # optional
+              "template": {<config snippet>}
+            }
+          ]
+        }
+
+    Output is flattened per language so the consumer can render scenarios
+    for one locale without traversing nested language maps. Missing
+    languages fall back to ``en``; if even ``en`` is missing the fields are
+    rendered empty.
+
+    Returns a dict ``{lang: {uid: [scenario, ...]}}``.
+    """
+    out: dict = {}
+
+    for path in util.find_files(gen.rootDir, pattern=r'/scenarios\.json$', deep=True):
+        if '/_doc/' not in path:
+            continue
+        base.log.debug(f'parsing scenarios from {path!r}')
+        try:
+            data = json.loads(util.read_file(path))
+        except json.JSONDecodeError as exc:
+            raise base.GeneratorError(f'invalid JSON in {path!r}: {exc}') from exc
+
+        if not isinstance(data, dict):
+            raise base.GeneratorError(f'expected an object at top of {path!r}, got {type(data).__name__}')
+
+        for uid, scenarios in data.items():
+            if not isinstance(scenarios, list):
+                base.log.warning(f'expected list for {uid!r} in {path!r}, got {type(scenarios).__name__}')
+                continue
+            for sc in scenarios:
+                if not isinstance(sc, dict) or 'template' not in sc:
+                    base.log.warning(f'skipping invalid scenario for {uid!r} in {path!r}')
+                    continue
+
+                title_map = sc.get('title') or {}
+                purpose_map = sc.get('purpose') or {}
+                template = sc.get('template')
+
+                if not isinstance(title_map, dict) or not isinstance(purpose_map, dict):
+                    base.log.warning(f'title/purpose must be lang-maps in {path!r} for {uid!r}')
+                    continue
+
+                langs = set(title_map.keys()) | set(purpose_map.keys()) | {'en'}
+                for lang in langs:
+                    flat = {
+                        'title': title_map.get(lang) or title_map.get('en') or '',
+                        'template': template,
+                    }
+                    if purpose_map.get(lang) or purpose_map.get('en'):
+                        flat['purpose'] = purpose_map.get(lang) or purpose_map.get('en')
+                    out.setdefault(lang, {}).setdefault(uid, []).append(flat)
+
+    return out
 
 
 def apply_ux_to_variants(gen: base.Generator):

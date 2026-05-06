@@ -67,6 +67,7 @@ class Generator:
         self.configRef = {}
         self.strings = {}
         self.uxStrings: dict = {}
+        self.scenarios: dict = {}
         self.manifestPath = ''
         self.outDir = ''
         self.rootDir = ''
