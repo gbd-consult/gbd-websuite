@@ -35,10 +35,13 @@ def parse_ini(text):
 
     for ln in text.strip().splitlines():
         ln = ln.strip()
+        if not ln:
+            continue
         if ln.startswith((';', '#', '//')):
             continue
         if ln.startswith('['):
             section = ln[1:-1].strip()
+            key = ''  # Reset key cursor when entering a new section.
             continue
         m = re.match(r'^([a-zA-Z0-9_.]+)\s*=(.*)', ln)
         if m:
@@ -46,8 +49,8 @@ def parse_ini(text):
             val = m.group(2)
             dct.setdefault(section, {})[key] = val.strip().replace('\\n', '\n')
         elif key:
-            dct[section][key] += '\n' + ln.strip()
-        elif ln:
+            dct[section][key] += '\n' + ln
+        else:
             raise ValueError(f'invalid ini string {ln!r}')
 
     return dct

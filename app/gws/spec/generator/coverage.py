@@ -117,8 +117,12 @@ def _fmt_cell(covered: int, total: int) -> str:
 def render_table(metrics: dict, lang: str) -> str:
     headers = ['module', 'classDoc', 'propDoc', f'uxStrings[{lang}]']
     rows = [headers]
+    # Skip modules with zero counters across all three metrics — those are
+    # noise rows for LITERAL/UNION/etc. types that don't carry doc themselves.
     for mod in sorted(metrics):
         m = metrics[mod]
+        if all(m[k][1] == 0 for k in ('classDoc', 'propDoc', 'uxStrings')):
+            continue
         rows.append(
             [
                 mod,
