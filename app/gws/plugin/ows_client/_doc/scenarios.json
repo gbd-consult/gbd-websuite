@@ -1,0 +1,60 @@
+{
+  "gws.plugin.ows_client.wms.flatlayer.Config": [
+    {
+      "title": {
+        "de": "WMS-Hintergrundlayer",
+        "en": "WMS background layer"
+      },
+      "purpose": {
+        "de": "Standard-Setup für die Einbindung eines WMS als flacher Hintergrundlayer.",
+        "en": "Standard setup for embedding a WMS as a flat background layer."
+      },
+      "template": {
+        "type": "wmsflat",
+        "title": "WMS background",
+        "provider": {
+          "url": "https://example.org/wms?service=WMS"
+        }
+      }
+    }
+  ],
+  "gws.plugin.ows_client.wms.finder.Config": [
+    {
+      "title": {
+        "de": "WMS GetFeatureInfo-Suche",
+        "en": "WMS GetFeatureInfo search"
+      },
+      "purpose": {
+        "de": "Klick-Sachdatenabfrage über WMS GetFeatureInfo.",
+        "en": "Click-based attribute query via WMS GetFeatureInfo."
+      },
+      "template": {
+        "type": "wms",
+        "title": "WMS feature info",
+        "provider": {
+          "url": "https://example.org/wms?service=WMS"
+        }
+      }
+    }
+  ],
+  "gws.plugin.ows_client.wmts.layer.Config": [
+    {
+      "title": {
+        "de": "WMTS-Hintergrundkarte",
+        "en": "WMTS background map"
+      },
+      "purpose": {
+        "de": "Hintergrundkarte als WMTS-Kacheln einbinden.",
+        "en": "Embed a background map as WMTS tiles."
+      },
+      "template": {
+        "type": "wmts",
+        "title": "WMTS background",
+        "provider": {
+          "url": "https://example.org/wmts?service=WMTS"
+        },
+        "style": "default"
+      }
+    }
+  ]
+}
