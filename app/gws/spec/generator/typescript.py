@@ -180,6 +180,19 @@ class _Creator:
             type _bytes = any;
             type _dict = {[k: string]: any};
 
+            export interface UxEntry {
+                label?: string;
+                purpose?: string;
+                whenToUse?: string;
+                complexity?: 'basic' | 'intermediate' | 'advanced';
+                useCases?: string;
+                docsLink?: string;
+                seeAlso?: string;
+                example?: string;
+            }
+
+            export type UxStrings = {[lang: string]: {[uid: string]: UxEntry}};
+
             $globs
 
             $namespaces
