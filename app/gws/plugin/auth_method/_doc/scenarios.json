@@ -1,0 +1,69 @@
+{
+  "gws.plugin.auth_method.web.core.Config": [
+    {
+      "title": {
+        "de": "Standard-Web-Login",
+        "en": "Standard web login"
+      },
+      "purpose": {
+        "de": "Cookie-basiertes Login mit Default-Werten — passt für die meisten Projekte.",
+        "en": "Cookie-based login with default values — fits most projects."
+      },
+      "template": {
+        "type": "web",
+        "cookieName": "auth",
+        "cookiePath": "/",
+        "cookieSameSite": "Lax"
+      }
+    },
+    {
+      "title": {
+        "de": "Web-Login mit Redirect zur Login-Seite",
+        "en": "Web login with redirect to login page"
+      },
+      "purpose": {
+        "de": "Unangemeldete Browser-Aufrufe werden auf eine Login-Seite umgeleitet, statt 401/403 zurückzugeben.",
+        "en": "Unauthenticated browser requests are redirected to a login page instead of returning 401/403."
+      },
+      "template": {
+        "type": "web",
+        "loginRedirect": {
+          "target": "/login"
+        }
+      }
+    }
+  ],
+  "gws.plugin.auth_method.token.Config": [
+    {
+      "title": {
+        "de": "Bearer-Token im Authorization-Header",
+        "en": "Bearer token in Authorization header"
+      },
+      "purpose": {
+        "de": "Klassischer ``Authorization: Bearer <token>``-Stil für Server-zu-Server-Aufrufe.",
+        "en": "Classic ``Authorization: Bearer <token>`` style for server-to-server calls."
+      },
+      "template": {
+        "type": "token",
+        "header": "Authorization",
+        "prefix": "Bearer"
+      }
+    }
+  ],
+  "gws.plugin.auth_method.basic.Config": [
+    {
+      "title": {
+        "de": "HTTP-Basic mit Standard-Realm",
+        "en": "HTTP Basic with default realm"
+      },
+      "purpose": {
+        "de": "Einfaches Basic-Auth für Skript-Clients. Nur über HTTPS einsetzen.",
+        "en": "Simple Basic auth for script clients. Use over HTTPS only."
+      },
+      "template": {
+        "type": "basic",
+        "realm": "Restricted Area"
+      }
+    }
+  ]
+}
