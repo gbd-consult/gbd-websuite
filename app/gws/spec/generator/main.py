@@ -69,9 +69,16 @@ def _run_generator(root_dir='', out_dir='', manifest_path='', debug=False):
     extractor.extract(gen)
     gen.dump('003_extracted')
 
-    gen.typescript = typescript.create(gen)
-    gen.strings = strings.collect(gen)
+    # 1. Marker aus Class-Docstrings extrahieren (Vor-Befüllung von gen.uxStrings).
+    # 2. _doc/ux.ini einsammeln und über die Marker mergen (ini hat Vorrang).
+    # 3. VARIANTs mit purpose aus uxStrings backfillen, damit sie auch in `strings`
+    #    landen (collect liest typ.doc).
+    gen.uxStrings = strings.collect_docstring_markers(gen)
     gen.uxStrings = strings.collect_ux(gen)
+    strings.apply_ux_to_variants(gen)
+
+    gen.strings = strings.collect(gen)
+    gen.typescript = typescript.create(gen)
 
     gen.configRef['en'] = configref.create(gen, 'en')
     gen.configRef['de'] = configref.create(gen, 'de')
