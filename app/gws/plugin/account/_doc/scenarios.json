@@ -1,0 +1,57 @@
+{
+  "gws.plugin.account.helper.Config": [
+    {
+      "title": {
+        "de": "Konten ohne MFA",
+        "en": "Accounts without MFA"
+      },
+      "purpose": {
+        "de": "Minimaler Helper für admin-gepflegte Konten ohne MFA und ohne Self-Service-Editor.",
+        "en": "Minimal helper for admin-managed accounts without MFA and without an end-user editor."
+      },
+      "template": {
+        "type": "account",
+        "usernameColumn": "email",
+        "tcLifeTime": "1h",
+        "onboardingUrl": "https://gws.example.com/onboarding",
+        "onboardingCompletionUrl": "https://gws.example.com/login",
+        "adminModel": {
+          "type": "postgres",
+          "tableName": "public.accounts"
+        }
+      }
+    },
+    {
+      "title": {
+        "de": "Konten mit TOTP-MFA",
+        "en": "Accounts with TOTP MFA"
+      },
+      "purpose": {
+        "de": "Self-Service-Onboarding inkl. TOTP-MFA über eine Authenticator-App.",
+        "en": "Self-service onboarding incl. TOTP MFA via an authenticator app."
+      },
+      "template": {
+        "type": "account",
+        "usernameColumn": "email",
+        "tcLifeTime": "1h",
+        "mfaIssuer": "GBD WebSuite",
+        "mfa": [
+          {
+            "mfaUid": "mfa_totp",
+            "title": "Authenticator-App"
+          }
+        ],
+        "onboardingUrl": "https://gws.example.com/onboarding",
+        "onboardingCompletionUrl": "https://gws.example.com/login",
+        "adminModel": {
+          "type": "postgres",
+          "tableName": "public.accounts"
+        },
+        "userModel": {
+          "type": "postgres",
+          "tableName": "public.accounts"
+        }
+      }
+    }
+  ]
+}
