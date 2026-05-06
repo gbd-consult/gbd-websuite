@@ -1,0 +1,80 @@
+{
+  "gws.plugin.postgres.provider.Config": [
+    {
+      "title": {
+        "de": "Lokaler PostgreSQL/PostGIS-Server",
+        "en": "Local PostgreSQL/PostGIS server"
+      },
+      "purpose": {
+        "de": "Standard-Setup auf demselben Host: Verbindung über localhost mit explizitem Benutzer und Passwort.",
+        "en": "Standard same-host setup: connection via localhost with explicit user and password."
+      },
+      "template": {
+        "type": "postgres",
+        "uid": "postgres",
+        "host": "localhost",
+        "port": 5432,
+        "database": "gws",
+        "username": "gws",
+        "password": "CHANGE_ME"
+      }
+    },
+    {
+      "title": {
+        "de": "Verbindung über pg_service",
+        "en": "Connection via pg_service"
+      },
+      "purpose": {
+        "de": "Verbindungsparameter werden zentral aus der pg_services-Datei geladen — empfohlen, wenn keine Klartext-Passwörter in der Konfiguration stehen sollen.",
+        "en": "Connection parameters are read from the central pg_services file — recommended when configuration must not contain plain-text passwords."
+      },
+      "template": {
+        "type": "postgres",
+        "uid": "postgres",
+        "serviceName": "gws_main"
+      }
+    },
+    {
+      "title": {
+        "de": "Externer Datenbankserver mit SSL",
+        "en": "External database server with SSL"
+      },
+      "purpose": {
+        "de": "Verbindung zu einem entfernten PostgreSQL-Server mit erzwungenem SSL-Modus über libpq-Optionen.",
+        "en": "Connection to a remote PostgreSQL server with enforced SSL mode via libpq options."
+      },
+      "template": {
+        "type": "postgres",
+        "uid": "postgres_remote",
+        "host": "db.example.com",
+        "port": 5432,
+        "database": "gws",
+        "username": "gws_reader",
+        "password": "CHANGE_ME",
+        "options": {
+          "sslmode": "require"
+        }
+      }
+    }
+  ],
+  "gws.plugin.postgres.layer.Config": [
+    {
+      "title": {
+        "de": "Einfacher PostGIS-Layer",
+        "en": "Simple PostGIS layer"
+      },
+      "purpose": {
+        "de": "Vektor-Layer auf einer einzelnen PostGIS-Tabelle mit automatisch erkannter Geometriespalte.",
+        "en": "Vector layer based on a single PostGIS table with automatically detected geometry column."
+      },
+      "template": {
+        "type": "postgres",
+        "title": "PostGIS-Layer",
+        "tableName": "public.poi",
+        "provider": {
+          "uid": "postgres"
+        }
+      }
+    }
+  ]
+}
