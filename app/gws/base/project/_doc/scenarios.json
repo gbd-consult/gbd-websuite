@@ -1,0 +1,53 @@
+{
+  "gws.base.project.core.Config": [
+    {
+      "title": {
+        "de": "Minimales Projekt",
+        "en": "Minimal project"
+      },
+      "purpose": {
+        "de": "Kleinstes lauffähiges Projekt mit Titel und einer Karte.",
+        "en": "Smallest viable project with a title and a single map."
+      },
+      "template": {
+        "uid": "demo",
+        "title": "Demo-Projekt",
+        "map": {
+          "crs": "EPSG:3857",
+          "layers": []
+        }
+      }
+    },
+    {
+      "title": {
+        "de": "Projekt mit Übersichtskarte und Druck",
+        "en": "Project with overview map and print"
+      },
+      "purpose": {
+        "de": "Setup für klassische Karten-Frontends mit Druckausgabe.",
+        "en": "Setup for classic map frontends with print output."
+      },
+      "template": {
+        "uid": "demo_print",
+        "title": "Demo mit Druck",
+        "map": {
+          "crs": "EPSG:25832",
+          "layers": []
+        },
+        "overviewMap": {
+          "crs": "EPSG:25832",
+          "layers": []
+        },
+        "printers": [
+          {
+            "template": {
+              "type": "html",
+              "path": "templates/print.cx.html"
+            },
+            "qualityLevels": [{"dpi": 96}, {"dpi": 150}]
+          }
+        ]
+      }
+    }
+  ]
+}
