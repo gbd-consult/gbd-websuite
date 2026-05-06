@@ -1,0 +1,21 @@
+{
+  "gws.plugin.mbtiles_layer.layer.Config": [
+    {
+      "title": {
+        "de": "Lokales MBTiles-Paket",
+        "en": "Local MBTiles package"
+      },
+      "purpose": {
+        "de": "Vorgerechnete Tile-Pyramide aus einer .mbtiles-Datei als Karten-Layer.",
+        "en": "Pre-rendered tile pyramid from an .mbtiles file used as a map layer."
+      },
+      "template": {
+        "type": "mbtiles",
+        "title": "MBTiles",
+        "provider": {
+          "path": "/data/tiles/region.mbtiles"
+        }
+      }
+    }
+  ]
+}
