@@ -2,7 +2,10 @@
 
 **Branch:** `feat/spec-ux-strings` (von `master`)
 **Anforderungsdokument:** `konfigurator/docs/specs-generator-requirements.md`
-**Implementierungsplan:** [`docs/plans/spec-ux-strings.md`](docs/plans/spec-ux-strings.md)
+**Implementierungspläne:**
+- [`docs/plans/spec-ux-strings.md`](docs/plans/spec-ux-strings.md) (Vorlauf-Phase)
+- [`docs/plans/ux-bootstrap-and-plugin-rollout.md`](docs/plans/ux-bootstrap-and-plugin-rollout.md) (Master-Plan zweite Phase)
+- [`docs/plans/ux-rollout-execution-state.md`](docs/plans/ux-rollout-execution-state.md) (Operativer Tracker)
 
 ---
 
@@ -113,6 +116,71 @@ isolierte Folgearbeit. Für den Konfigurator-Konsumenten zählt sowieso
 PYTHONPATH=app pytest app/gws/spec/generator/_test/   # 8 Cases, läuft ohne Docker
 ./make.sh test go -k ux                               # vollständig im Container-Stack
 ```
+
+## UX-Pflege-Status (zweite Phase, Welle A/B/C)
+
+Nach dem Pilot postgres wurden in 3 parallelisierten Wellen alle
+WebSuite-Plugins und Base-Module mit `_doc/ux.ini` versehen. Pro Welle
+wurden 3-5 Sub-Agenten parallel gespawnt; jeder Sub-Agent erzeugte mit
+`bootstrap_ux.py` ein Skelett, polierte zu echtem Deutsch und
+committete pro Plugin separat.
+
+**Tooling, das in dieser Phase entstanden ist:**
+
+- `app/gws/spec/generator/bootstrap_ux.py` — CLI, das aus `specs.json`
+  ein `_doc/ux.ini`-Skelett mit Label-/Purpose-/Complexity-Vorschlägen
+  erzeugt. Tests in `_test/bootstrap_ux_test.py`.
+- `app/gws/spec/generator/strings.py::collect_scenarios` — neuer
+  Sammler für `_doc/scenarios.json` (Apply-Templates pro UID).
+  Top-Level-Key `scenarios` in `specs.json`. Tests in
+  `_test/scenarios_test.py`.
+
+**Coverage nach Rollout** (Stand: nach Welle C, frische `specs.json`):
+
+| | |
+|---|---|
+| `uxStrings.de` Einträge gesamt | 838 |
+| `uxStrings.en` Einträge gesamt | 792 |
+| `scenarios.de` UIDs | 28 |
+| `scenarios` Apply-Templates gesamt | 38 (de) + 38 (en) |
+
+Per-Modul-Bericht in [`docs/plans/ux-coverage-after-rollout.txt`](docs/plans/ux-coverage-after-rollout.txt).
+
+**Vollständig gepflegte Bereiche:**
+
+- Welle A — Auth/Login: `gws.base.auth` + `auth_method`, `auth_mfa`,
+  `auth_provider`, `auth_session_manager`, `account` (alle Configs ≥ 100 %
+  uxStrings.de).
+- Welle B — Map/Project/Layer/Model: `base.{project,map,layer,model,
+  metadata}` plus alle Layer-Plugins (`qgis`, `geojson`, `tile_layer`,
+  `mbtiles_layer`, `raster_layer`) und Model-Plugins (`model_field`,
+  `model_widget`, `model_validator`, `model_value`).
+- Welle C — Drucken/Templates/OWS/Edit/Werkzeuge/ALKIS:
+  `base.{printer,template,exporter,edit,search}` plus alle entsprechenden
+  Plugins (`ows_server`, `ows_client`, `xml_helper`, `template`,
+  `exporter`, `csv_helper`, `upload_helper`, `email_helper`,
+  `select_tool`, `identify_tool`, `location_tool`, `annotate_tool`,
+  `storage_provider`, `nominatim`, `gbd_geoservices`, `gekos`,
+  `qfieldcloud`, `alkis`).
+
+**Ausgelassene Bereiche** (bewusst, kein UX-Konsument):
+
+- `gws` Top-Level (Core-Types, Mixins).
+- `gws.lib.*`, `gws.gis.*` (interne Helfer).
+- `gws.base.{client,database,web,application,storage}.*` (Infrastruktur).
+- `gws.base.action.cli`, `*.api`, `*.cli` (interne Wire-Schemas).
+- `*.Object`, `*.Props` in vielen Plugins (Runtime-Repräsentationen).
+
+**Beobachtete Auffälligkeiten** (Sub-Agent-Berichte, nicht im Branch
+gefixt — siehe Konsolidierungsbericht für Details):
+
+- `bootstrap_ux.py` schlägt für rein-englische Identifier (`Url`,
+  `Time`) automatisch deutsche Labels vor, die manuell gepflegt werden
+  müssen (z.B. `Url` → `URL`). Die Heuristik sieht das als Default-
+  Vorschlag; Maintainer überschreiben händisch.
+- Mehrere Module zeigen niedrige `classDoc`-Coverage (Object-Klassen
+  ohne Docstring). UX-Coverage ist davon entkoppelt — uxStrings deckt
+  diese ab.
 
 ## Bekannte offene Punkte
 
