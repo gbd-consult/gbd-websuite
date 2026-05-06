@@ -66,6 +66,7 @@ class Generator:
         self.specData: core.SpecData
         self.configRef = {}
         self.strings = {}
+        self.uxStrings: dict = {}
         self.manifestPath = ''
         self.outDir = ''
         self.rootDir = ''

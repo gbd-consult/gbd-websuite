@@ -32,6 +32,7 @@ def to_path(specs: core.SpecData, path: str):
             'chunks': specs.chunks,
             'serverTypes': specs.serverTypes,
             'strings': specs.strings,
+            'uxStrings': getattr(specs, 'uxStrings', {}) or {},
         },
     )
     return path
@@ -44,6 +45,7 @@ def from_path(path: str) -> core.SpecData:
     s.chunks = [core.Chunk(**c) for c in d['chunks']]
     s.serverTypes = [core.make_type(t) for t in d['serverTypes']]
     s.strings = d['strings']
+    s.uxStrings = d.get('uxStrings') or {}
     return s
 
 
@@ -69,6 +71,7 @@ def _run_generator(root_dir='', out_dir='', manifest_path='', debug=False):
 
     gen.typescript = typescript.create(gen)
     gen.strings = strings.collect(gen)
+    gen.uxStrings = strings.collect_ux(gen)
 
     gen.configRef['en'] = configref.create(gen, 'en')
     gen.configRef['de'] = configref.create(gen, 'de')
@@ -78,6 +81,7 @@ def _run_generator(root_dir='', out_dir='', manifest_path='', debug=False):
     gen.specData.chunks = gen.chunks
     gen.specData.serverTypes = gen.serverTypes
     gen.specData.strings = gen.strings
+    gen.specData.uxStrings = gen.uxStrings
 
     return gen
 

@@ -179,6 +179,13 @@ class SpecData:
     """List of types used by the server (configuration types, request types and commands)."""
     strings: dict
     """Documentation strings, translated to multiple languages."""
+    uxStrings: dict
+    """Structured UX documentation per type and property, translated to multiple languages.
+
+    Shape: ``{lang: {uid: {field: value}}}``. Allowed fields:
+    ``label``, ``purpose``, ``whenToUse``, ``complexity``, ``useCases``,
+    ``docsLink``, ``seeAlso``, ``example``. All optional.
+    """
 
 
 class v:
