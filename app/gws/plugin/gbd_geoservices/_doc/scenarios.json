@@ -1,0 +1,19 @@
+{
+  "gws.plugin.gbd_geoservices.finder.Config": [
+    {
+      "title": {
+        "de": "GBD-Geoservices mit API-Key",
+        "en": "GBD geoservices with API key"
+      },
+      "purpose": {
+        "de": "Standard-Setup mit individuellem API-Schlüssel der GBD-Geoservices.",
+        "en": "Standard setup with an individual GBD geoservices API key."
+      },
+      "template": {
+        "type": "gbd_geoservices",
+        "title": "Adress-Suche",
+        "apiKey": "REPLACE-WITH-YOUR-API-KEY"
+      }
+    }
+  ]
+}
