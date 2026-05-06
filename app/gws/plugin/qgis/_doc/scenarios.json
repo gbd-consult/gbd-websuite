@@ -1,0 +1,55 @@
+{
+  "gws.plugin.qgis.provider.Config": [
+    {
+      "title": {
+        "de": "QGIS-Projekt aus Datei",
+        "en": "QGIS project from file"
+      },
+      "purpose": {
+        "de": "Standard-Setup: Pfad zur QGIS-Projektdatei im Server-Dateisystem.",
+        "en": "Standard setup: path to the QGIS project file on the server file system."
+      },
+      "template": {
+        "type": "qgis",
+        "path": "/data/projects/main.qgs"
+      }
+    },
+    {
+      "title": {
+        "de": "QGIS-Projekt aus PostgreSQL",
+        "en": "QGIS project from PostgreSQL"
+      },
+      "purpose": {
+        "de": "Projekt-in-PostgreSQL: Projekt wird aus einer Datenbank geladen, mit automatischer Aktualisierung beim Speichern.",
+        "en": "Project-in-PostgreSQL: project is loaded from a database, automatically refreshed on save."
+      },
+      "template": {
+        "type": "qgis",
+        "dbUid": "postgres",
+        "schema": "public",
+        "projectName": "main",
+        "withWatch": true,
+        "watchFrequency": "30s"
+      }
+    }
+  ],
+  "gws.plugin.qgis.layer.Config": [
+    {
+      "title": {
+        "de": "QGIS-Layerbaum",
+        "en": "QGIS layer tree"
+      },
+      "purpose": {
+        "de": "Übernimmt den kompletten Layerbaum aus dem QGIS-Projekt.",
+        "en": "Takes over the complete layer tree from the QGIS project."
+      },
+      "template": {
+        "type": "qgis",
+        "title": "QGIS-Layer",
+        "provider": {
+          "uid": "qgis_main"
+        }
+      }
+    }
+  ]
+}
