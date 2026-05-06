@@ -1,0 +1,75 @@
+{
+  "gws.plugin.auth_provider.file.Config": [
+    {
+      "title": {
+        "de": "Lokale Benutzerdatei",
+        "en": "Local users file"
+      },
+      "purpose": {
+        "de": "Wenige Benutzer in einer JSON-Datei unterhalb von /data.",
+        "en": "Few users stored in a JSON file under /data."
+      },
+      "template": {
+        "type": "file",
+        "path": "/data/users.json"
+      }
+    }
+  ],
+  "gws.plugin.auth_provider.ldap.Config": [
+    {
+      "title": {
+        "de": "OpenLDAP-Bind",
+        "en": "OpenLDAP bind"
+      },
+      "purpose": {
+        "de": "Anbindung eines klassischen OpenLDAP-Servers über uid mit technischem Bind-Account.",
+        "en": "Bind to a classic OpenLDAP server via uid using a technical bind account."
+      },
+      "template": {
+        "type": "ldap",
+        "url": "ldap://ldap.example.com:389/ou=users,dc=example,dc=com?uid",
+        "activeDirectory": false,
+        "bindDN": "cn=gws-bind,ou=service,dc=example,dc=com",
+        "bindPassword": "...",
+        "displayNameFormat": "{givenName} {sn}",
+        "users": [
+          {
+            "memberOf": "(cn=gws-users,ou=groups,dc=example,dc=com)",
+            "roles": ["user"]
+          },
+          {
+            "memberOf": "(cn=gws-editors,ou=groups,dc=example,dc=com)",
+            "roles": ["editor", "user"]
+          }
+        ]
+      }
+    },
+    {
+      "title": {
+        "de": "Active Directory mit LDAPS",
+        "en": "Active Directory over LDAPS"
+      },
+      "purpose": {
+        "de": "Active-Directory-Anbindung über LDAPS mit sAMAccountName als Login-Attribut.",
+        "en": "Active Directory binding over LDAPS using sAMAccountName as the login attribute."
+      },
+      "template": {
+        "type": "ldap",
+        "url": "ldap://dc.example.local:636/dc=example,dc=local?sAMAccountName",
+        "activeDirectory": true,
+        "bindDN": "CN=gws-bind,OU=Service,DC=example,DC=local",
+        "bindPassword": "...",
+        "displayNameFormat": "{displayName}",
+        "ssl": {
+          "ca": "/etc/ssl/certs/ad-ca.pem"
+        },
+        "users": [
+          {
+            "memberOf": "(CN=GWS-Users,OU=Groups,DC=example,DC=local)",
+            "roles": ["user"]
+          }
+        ]
+      }
+    }
+  ]
+}
