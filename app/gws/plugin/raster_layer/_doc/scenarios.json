@@ -1,0 +1,22 @@
+{
+  "gws.plugin.raster_layer.layer.Config": [
+    {
+      "title": {
+        "de": "Orthophoto-Mosaik per Pfad-Muster",
+        "en": "Orthophoto mosaic via path pattern"
+      },
+      "purpose": {
+        "de": "Sammelt alle GeoTIFFs eines Verzeichnisses als einen einzigen Raster-Layer.",
+        "en": "Collects all GeoTIFFs in a directory as a single raster layer."
+      },
+      "template": {
+        "type": "raster",
+        "title": "Orthophotos",
+        "provider": {
+          "pathPattern": "/data/dop/*.tif",
+          "crs": "EPSG:25832"
+        }
+      }
+    }
+  ]
+}
