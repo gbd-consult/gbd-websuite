@@ -1,0 +1,57 @@
+{
+  "gws.plugin.template.html.Config": [
+    {
+      "title":   {"de": "HTML-Druckvorlage A4 mit Kopf- und Fußzeile",
+                  "en": "A4 HTML print template with header and footer"},
+      "purpose": {"de": "Standard-Druckvorlage A4 hoch mit Karte, Kopfzeile und Seitennummerierung.",
+                  "en": "Default A4 portrait print template with map, header and page numbers."},
+      "template": {
+        "type": "html",
+        "title": "A4 Übersicht",
+        "subject": "feature.print",
+        "pageSize": [210, 297, "mm"],
+        "pageMargin": [15, 15, 15, 15, "mm"],
+        "mapSize": [180, 180, "mm"],
+        "text": "@page width=\"210\" height=\"297\" margin=\"15 15 15 15\"\n@header\n  <h1>{project.title}</h1>\n@end header\n@footer\n  Seite {page} von {numpages}\n@end footer\n@map width=\"180\" height=\"180\"\n"
+      }
+    },
+    {
+      "title":   {"de": "Feature-Infobox",
+                  "en": "Feature infobox"},
+      "purpose": {"de": "Kurze HTML-Vorlage für die Anzeige von Feature-Attributen im Client.",
+                  "en": "Short HTML template that renders feature attributes for the client info panel."},
+      "template": {
+        "type": "html",
+        "subject": "feature.description",
+        "text": "<table>@each attributes as a\n  <tr><td>{a.name}</td><td>{a.value}</td></tr>\n@end</table>"
+      }
+    }
+  ],
+  "gws.plugin.template.map.Config": [
+    {
+      "title":   {"de": "Reine Karten-Vorlage A3 quer",
+                  "en": "Map-only template, A3 landscape"},
+      "purpose": {"de": "Reine Kartenausgabe ohne Layout, geeignet für schnelle Screenshots oder externe Weiterverarbeitung.",
+                  "en": "Map-only output without layout, good for quick screenshots or external post-processing."},
+      "template": {
+        "type": "map",
+        "title": "A3 Karte",
+        "pageSize": [420, 297, "mm"],
+        "mapSize": [400, 280, "mm"]
+      }
+    }
+  ],
+  "gws.plugin.template.text.Config": [
+    {
+      "title":   {"de": "Feature-Titel aus Attributen",
+                  "en": "Feature title from attributes"},
+      "purpose": {"de": "Erzeugt einen kurzen Anzeigetitel pro Feature aus Attributwerten.",
+                  "en": "Builds a short display title per feature from attribute values."},
+      "template": {
+        "type": "text",
+        "subject": "feature.title",
+        "text": "{name} ({fid})"
+      }
+    }
+  ]
+}
