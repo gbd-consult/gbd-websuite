@@ -21,6 +21,14 @@ STRINGS['en'] = {
     'label_added': 'added',
     'label_deprecated': 'deprecated',
     'label_changed': 'changed',
+    'ux_label': 'Label',
+    'ux_purpose': 'Purpose',
+    'ux_whenToUse': 'When to use',
+    'ux_complexity': 'Complexity',
+    'ux_useCases': 'Use cases',
+    'ux_docsLink': 'Docs',
+    'ux_seeAlso': 'See also',
+    'ux_example': 'Example',
 }
 
 STRINGS['de'] = {
@@ -37,7 +45,17 @@ STRINGS['de'] = {
     'label_added': 'neu',
     'label_deprecated': 'veraltet',
     'label_changed': 'geändert',
+    'ux_label': 'Label',
+    'ux_purpose': 'Zweck',
+    'ux_whenToUse': 'Wann verwenden',
+    'ux_complexity': 'Komplexität',
+    'ux_useCases': 'Anwendungsfälle',
+    'ux_docsLink': 'Doku',
+    'ux_seeAlso': 'Siehe auch',
+    'ux_example': 'Beispiel',
 }
+
+UX_RENDER_ORDER = ['label', 'purpose', 'whenToUse', 'complexity', 'useCases', 'seeAlso', 'docsLink', 'example']
 
 LIST_FORMAT = '<nobr>{}**[ ]**</nobr>'
 DEFAULT_FORMAT = ' _{}:_ {}.'
@@ -101,6 +119,10 @@ class _Creator:
 
         yield header('object', tid)
         yield subhead(self.strings['category_object'], self.docstring_as_header(tid))
+
+        ux_block = self.ux_block(tid)
+        if ux_block:
+            yield ux_block
 
         rows = {False: [], True: []}
 
@@ -239,6 +261,37 @@ class _Creator:
             text += DEFAULT_FORMAT.format(self.strings['head_default'], dflt)
 
         return [text, label, dev_label]
+
+    def ux_block(self, tid):
+        """Render structured UX fields (purpose, whenToUse, …) as a markdown block.
+
+        Falls back to the english uxStrings entry when the requested language
+        has nothing for this UID. Returns ``''`` when no UX entry exists.
+        """
+        ux = self.gen.uxStrings or {}
+        entry = (ux.get(self.lang) or {}).get(tid) or {}
+        if not entry:
+            entry = (ux.get('en') or {}).get(tid) or {}
+        if not entry:
+            return ''
+
+        lines = []
+        for field in UX_RENDER_ORDER:
+            value = entry.get(field)
+            if value is None or value == '':
+                continue
+            label = self.strings.get(f'ux_{field}', field)
+            text = str(value).strip()
+            if '\n' in text:
+                indented = '\n'.join('  ' + ln for ln in text.split('\n'))
+                lines.append(f'**{label}:**\n\n{indented}')
+            else:
+                lines.append(f'**{label}:** {text}')
+
+        if not lines:
+            return ''
+
+        return '\n\n'.join(lines) + '\n\n'
 
     def extract_label(self, text):
         m = re.match(rf'(.+?)\(({LABELS}) in (\d[\d.]+)\)$', text)

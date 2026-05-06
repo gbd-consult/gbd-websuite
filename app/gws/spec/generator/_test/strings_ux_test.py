@@ -158,3 +158,42 @@ def test_apply_ux_to_variants_does_not_overwrite_existing_doc(tmp_path):
 
     strings.apply_ux_to_variants(gen)
     assert variant.doc == 'Existing doc.'
+
+
+def test_configref_ux_block_renders_fields(tmp_path):
+    """The configref renderer turns uxStrings entries into a markdown block."""
+    from gws.spec.generator import configref
+
+    gen = _gen(tmp_path)
+    gen.uxStrings = {
+        'de': {
+            'gws.plugin.foo.Config': {
+                'label': 'Foo-Provider',
+                'purpose': 'Verbindet das Foo-System.',
+                'complexity': 'intermediate',
+            }
+        }
+    }
+
+    creator = configref._Creator(gen, 'de')
+    block = creator.ux_block('gws.plugin.foo.Config')
+    assert '**Label:** Foo-Provider' in block
+    assert '**Zweck:** Verbindet das Foo-System.' in block
+    assert '**Komplexität:** intermediate' in block
+
+    # No entry -> empty string.
+    assert creator.ux_block('gws.plugin.foo.Config.host') == ''
+
+
+def test_configref_ux_block_falls_back_to_english(tmp_path):
+    from gws.spec.generator import configref
+
+    gen = _gen(tmp_path)
+    gen.uxStrings = {
+        'en': {'gws.plugin.foo.Config': {'purpose': 'English only.'}},
+        'de': {},
+    }
+
+    creator = configref._Creator(gen, 'de')
+    block = creator.ux_block('gws.plugin.foo.Config')
+    assert 'English only.' in block
