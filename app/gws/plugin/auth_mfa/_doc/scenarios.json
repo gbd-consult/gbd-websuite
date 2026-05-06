@@ -1,0 +1,39 @@
+{
+  "gws.plugin.auth_mfa.totp.Config": [
+    {
+      "title": {
+        "de": "TOTP für Admin-Konten",
+        "en": "TOTP for admin accounts"
+      },
+      "purpose": {
+        "de": "Pflicht-MFA mit Authenticator-App für administrative Benutzer.",
+        "en": "Mandatory MFA with an authenticator app for administrative users."
+      },
+      "template": {
+        "type": "totp",
+        "message": "Bitte gib den Code aus deiner Authenticator-App ein.",
+        "lifeTime": 300,
+        "maxVerifyAttempts": 3
+      }
+    }
+  ],
+  "gws.plugin.auth_mfa.email.Config": [
+    {
+      "title": {
+        "de": "E-Mail-OTP mit Wiederholversuchen",
+        "en": "Email OTP with retries"
+      },
+      "purpose": {
+        "de": "Zweiter Faktor per E-Mail; bis zu drei Wiederholungen pro Login, ein erneutes Senden möglich.",
+        "en": "Second factor by email; up to three retries per login, code can be re-sent once."
+      },
+      "template": {
+        "type": "email",
+        "message": "Wir haben dir einen Code per E-Mail geschickt.",
+        "lifeTime": 300,
+        "maxVerifyAttempts": 3,
+        "maxRestarts": 1
+      }
+    }
+  ]
+}
