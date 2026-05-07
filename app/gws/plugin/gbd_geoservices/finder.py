@@ -3,9 +3,7 @@
 
 import gws
 import gws.base.search
-import gws.base.template
 import gws.config.util
-import gws.lib.net
 
 
 gws.ext.new.finder('gbd_geoservices')
@@ -15,17 +13,19 @@ _DEFAULT_TEMPLATES = [
         subject='feature.teaser',
         type='html',
         text='''
-            <p>{title}</p>
+            <p class="uiLink">{title | html}</p>
         '''
     ),
     gws.Config(
         subject='feature.description',
         type='html',
         text='''
-            <p class="head2">{title}</p>
+            <p class="head2">{title | html}</p>
             <table>
             @for k, v in feature.attributes
-                <tr><td>{k}</td><td>{v | html}</td></tr>
+                @with v 
+                    <tr><td>{k}</td><td>{v | html}</td></tr>
+                @end
             @end
             </table>
         '''

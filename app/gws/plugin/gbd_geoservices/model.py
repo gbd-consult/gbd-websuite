@@ -65,7 +65,8 @@ class Object(gws.base.model.default_model.Object):
             else:
                 request['name'] = kw
 
-        features = {}
+        features = []
+        titles = set()
 
         res = self._query(request)
 
@@ -84,19 +85,17 @@ class Object(gws.base.model.default_model.Object):
                     a.get('addr_city') or '',
                 ]
             )
-
             a['address'] = ' '.join(address.split())
             a['name'] = a.get('name') or ''
 
-            if a['name'] and a['address']:
-                a['title'] = a['name'] + ' (' + a['address'] + ')'
-            else:
-                a['title'] = a['name'] or a['address']
+            a['title'] = self._get_title(a)
+            if a['title'] in titles:
+                continue
 
             rec = gws.FeatureRecord(uid=f['id'], attributes=a, shape=shape)
-            features[a['title']] = self.feature_from_record(rec, mc)
+            features.append(self.feature_from_record(rec, mc))
 
-        return [f for _, f in features.items()]
+        return features
 
     def _query(self, request) -> dict:
         try:
@@ -110,3 +109,18 @@ class Object(gws.base.model.default_model.Object):
         except gws.lib.net.Error as e:
             gws.log.error('geoservices request error', e)
             return {}
+
+    def _get_title(self, a):
+        if a['name'] and a['address']:
+            return f'{a["name"]} ({a["address"]})'
+
+        if a['address']:
+            return a['address']
+
+        subcat = a.get('subcategory')
+        if not subcat:
+            return a['name']
+
+        # @TODO
+        subcat = re.sub(r'^\(\d+\)\s+', '', subcat)
+        return f'{a["name"]} ({subcat})'
