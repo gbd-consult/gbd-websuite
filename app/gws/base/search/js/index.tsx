@@ -65,11 +65,12 @@ class SearchResults extends gc.View<SearchViewProps> {
             </div>
         }
 
-        fs.sort((a, b) => {
-            let ka = a.views.teaser || a.views.title;
-            let kb = b.views.teaser || b.views.title;
-            return ka.localeCompare(kb)
-        });
+        // features are supposed to be sorted on the server
+        // fs.sort((a, b) => {
+        //     let ka = a.views.teaser || a.views.title;
+        //     let kb = b.views.teaser || b.views.title;
+        //     return ka.localeCompare(kb)
+        // });
 
         let zoomTo = f => this.props.controller.update({
             marker: {
