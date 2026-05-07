@@ -3,13 +3,13 @@
 Der Spec-Generator zieht zur Build-Zeit drei Doku-Quellen aus dem
 Source-Tree zusammen und schreibt sie nach `specs.json`:
 
-| Quelle                   | Ziel im Spec                               |
-|--------------------------|---------------------------------------------|
-| Klassen-/Property-Docstrings (Englisch) | `serverTypes[].doc` und `strings.en` |
-| `_doc/strings.ini`       | `strings[lang]` (mehrsprachig)              |
-| `_doc/ux.ini` (neu)      | `uxStrings[lang]` (strukturierte UX-Doku)   |
-| `_doc/scenarios.json` (neu) | `scenarios[lang]` (Apply-Templates)     |
-| Field-List-Marker im Docstring | `uxStrings.en[uid]` (Fallback)         |
+| Quelle                                  | Ziel im Spec                              |
+|-----------------------------------------|-------------------------------------------|
+| Klassen-/Property-Docstrings (Englisch) | `serverTypes[].doc` und `strings.en`      |
+| `_doc/strings.ini`                      | `strings[lang]` (mehrsprachig)            |
+| `_doc/ux.ini` (neu)                     | `uxStrings[lang]` (strukturierte UX-Doku) |
+| `_doc/scenarios.json` (neu)             | `scenarios[lang]` (Apply-Templates)       |
+| Field-List-Marker im Docstring          | `uxStrings.en[uid]` (Fallback)            |
 
 Diese Datei dokumentiert die Konvention für Modul-Maintainer.
 
@@ -76,16 +76,16 @@ gws.plugin.foo.Config.label = Foo provider
 
 ### Erlaubte Felder
 
-| Feld         | Bedeutung                                                            |
-|--------------|----------------------------------------------------------------------|
-| `label`      | Lesbares UI-Label statt Source-Variablenname.                        |
-| `purpose`    | „Was ist das?" — 1–3 Sätze, fachliche Erklärung.                     |
-| `whenToUse`  | „Wann brauche ich das?" — typische Use-Cases.                        |
+| Feld         | Bedeutung                                                                     |
+|--------------|-------------------------------------------------------------------------------|
+| `label`      | Lesbares UI-Label statt Source-Variablenname.                                 |
+| `purpose`    | „Was ist das?" — 1–3 Sätze, fachliche Erklärung.                              |
+| `whenToUse`  | „Wann brauche ich das?" — typische Use-Cases.                                 |
 | `complexity` | `basic` ∣ `intermediate` ∣ `advanced` (UI-Filterung „Erweiterte ausblenden"). |
-| `useCases`   | Konkrete Anwendungsbeispiele.                                        |
-| `docsLink`   | Pfad/Anker in die ausführliche Doku.                                 |
-| `seeAlso`    | UIDs verwandter Typen/Properties.                                    |
-| `example`    | Beispielwert als roher String (kein parsiertes Objekt).              |
+| `useCases`   | Konkrete Anwendungsbeispiele.                                                 |
+| `docsLink`   | Pfad/Anker in die ausführliche Doku.                                          |
+| `seeAlso`    | UIDs verwandter Typen/Properties.                                             |
+| `example`    | Beispielwert als roher String (kein parsiertes Objekt).                       |
 
 Unbekannte Felder werden vom Generator ignoriert und mit einer Warning
 in den Build-Logs erwähnt.
@@ -98,9 +98,14 @@ Format:
 {
   "gws.plugin.postgres.provider.Config": [
     {
-      "title":   {"de": "Lokales PostgreSQL", "en": "Local PostgreSQL"},
-      "purpose": {"de": "Standard-Setup auf Entwicklerrechner.",
-                  "en": "Standard developer-machine setup."},
+      "title": {
+        "de": "Lokales PostgreSQL",
+        "en": "Local PostgreSQL"
+      },
+      "purpose": {
+        "de": "Standard-Setup auf Entwicklerrechner.",
+        "en": "Standard developer-machine setup."
+      },
       "template": {
         "host": "localhost",
         "port": 5432,
@@ -113,10 +118,10 @@ Format:
 
 - Top-Level ist ein Objekt: `<full.uid>` → Liste von Szenarien.
 - Pro Szenario:
-  - `title` (Pflicht) — Sprach-Map mit kurzem Namen.
-  - `purpose` (optional) — Sprach-Map mit 1-Satz-Erklärung.
-  - `template` (Pflicht) — Roher Config-Snippet, der vom UI angewendet
-    werden kann.
+    - `title` (Pflicht) — Sprach-Map mit kurzem Namen.
+    - `purpose` (optional) — Sprach-Map mit 1-Satz-Erklärung.
+    - `template` (Pflicht) — Roher Config-Snippet, der vom UI angewendet
+      werden kann.
 - Der Generator faltet die Sprach-Maps auf eine flache Form
   `scenarios[lang][uid] → [scenario, …]`. Fehlt eine Sprache, wird auf
   `en` zurückgefallen.
