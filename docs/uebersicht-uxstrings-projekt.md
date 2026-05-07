@@ -291,8 +291,8 @@ Stand am Ende der Arbeit:
 
 | Kennzahl                                           | Wert                             |
 |----------------------------------------------------|----------------------------------|
-| Hilfetext-Einträge Deutsch                         | 1 833                            |
-| Hilfetext-Einträge Englisch                        | 1 787                            |
+| Hilfetext-Einträge Deutsch                         | 1.833                            |
+| Hilfetext-Einträge Englisch                        | 1.787                            |
 | Variant-Familien mit Apply-Vorlagen                | 35                               |
 | Apply-Vorlagen gesamt                              | 60 (DE) + 60 (EN)                |
 | Property-Label-Abdeckung Deutsch                   | 100 % der UI-relevanten Optionen |
