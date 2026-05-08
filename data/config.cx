@@ -70,8 +70,8 @@ projects+ {
             <p class="head">Willkommen bei der GBD WebSuite!</p>
             <p>Wenn Sie diese Seite sehen, haben Sie die GBD Websuite erfolgreich installiert.</p>
             <ul>
-                <li><a href="https://gbd-websuite.de/doc/8.0/index.html" target="_blank">Lesen Sie die Dokumentation</a></li>
-                <li><a href="https://gbd-websuite.de/" target="_blank">Besuchen Sie die Projekt Webseite</a></li>
+                <li><a href="https://docs.gbd-websuite.de/stable" target="_blank">Lesen Sie die Dokumentation</a></li>
+                <li><a href="https://gbd-websuite.de" target="_blank">Besuchen Sie die Projekt Webseite</a></li>
             </ul>
         """
     }
