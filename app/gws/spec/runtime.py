@@ -230,3 +230,9 @@ class Object(gws.SpecRuntime):
             return classref, '', ''
 
         raise Error(f'invalid class reference {classref!r}')
+
+    def get_types(self):
+        return [vars(t) for t in self.serverTypes]
+
+    def get_strings(self, lang):
+        return self.strings.get(lang) or {}

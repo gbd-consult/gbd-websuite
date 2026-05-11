@@ -27,7 +27,7 @@ class TemplateRenderInput(Data):
     user: 'User'
 
 
-class TemplateQualityLevel(Data):
+class TemplateQualityLevel(Config):
     """Template quality level."""
 
     name: str

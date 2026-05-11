@@ -48,6 +48,7 @@ class ExtCommandDescriptor(Data):
 
     Contains attributes to describe and handle a specific extension command.
     """
+
     extName: str
     """Full extension name like ``gws.ext.object.layer.wms``."""
     extType: str
@@ -113,36 +114,36 @@ class SpecRuntime:
     def read(self, value, type_name: str, path: str = '', options: set[SpecReadOption] = None):
         """Read a raw value according to a spec.
 
-         Args:
-             value: Raw value from config or request.
-             type_name: Object type name.
-             path: Config file path.
-             options: Read options.
+        Args:
+            value: Raw value from config or request.
+            type_name: Object type name.
+            path: Config file path.
+            options: Read options.
 
-         Returns:
-             A parsed object.
-         """
+        Returns:
+            A parsed object.
+        """
 
     def object_descriptor(self, type_name: str) -> Optional[ExtObjectDescriptor]:
         """Get an object descriptor.
 
-         Args:
-             type_name: Object type name.
+        Args:
+            type_name: Object type name.
 
-         Returns:
-             A descriptor or ``None`` if the type is not found.
-         """
+        Returns:
+            A descriptor or ``None`` if the type is not found.
+        """
 
     def command_descriptor(self, command_category: CommandCategory, command_name: str) -> Optional[ExtCommandDescriptor]:
         """Get a command descriptor.
 
-         Args:
-             command_category: Command category.
-             command_name: Command name.
+        Args:
+            command_category: Command category.
+            command_name: Command name.
 
-         Returns:
-             A descriptor or ``None`` if the command is not found.
-         """
+        Returns:
+            A descriptor or ``None`` if the command is not found.
+        """
 
     def register_object(self, ext_name: ClassRef, obj_type: str, cls: type):
         """Dynamically register an extension object."""
@@ -167,3 +168,9 @@ class SpecRuntime:
         Returns:
             A tuple ``(class object, class name, extension name)``.
         """
+
+    def get_types(self) -> list[dict]:
+        """Get a list of spec types as dictionaries."""
+
+    def get_strings(self, lang: str) -> dict[str, str]:
+        """Get a dictionary of spec strings for a specified language."""

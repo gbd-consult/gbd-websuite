@@ -62,10 +62,9 @@ class Object:
         self.config = None
         self.root = None
 
-    def configure(self) -> Optional[gws.Root]:
+    def configure(self) -> gws.ConfigResult:
         if not self._init_specs():
-            self._print_report(ok=False)
-            return
+            return self._result()
 
         self._run_hook('preConfigure')
         if not self.config:
@@ -83,36 +82,28 @@ class Object:
             self.root = self._create_root(self.fallbackConfig)
 
         if not self.root:
-            self._print_report(ok=False)
-            return
+            return self._result()
 
         if self.ctx.errors and self.ctx.specs.manifest.withStrictConfig:
-            self._print_report(ok=False)
-            return
-
-        self._print_report(ok=True)
+            self.root = None
+            return self._result()
 
         self.root.configPaths = list(self.ctx.paths)
-        return self.root
+        return self._result()
 
-    def parse(self) -> Optional[gws.Config]:
+    def parse(self) -> gws.ConfigResult:
         if not self._init_specs():
-            self._print_report(ok=False)
-            return
+            return self._result()
 
-        cfg = self._create_config()
-        if not cfg:
-            self._print_report(ok=False)
-            return
+        self.config = self._create_config()
+        if not self.config:
+            return self._result()
 
-        self._print_report(ok=True)
-        return cfg
+        return self._result()
 
     ##
 
     def _init_specs(self):
-        # if not self.manifestPath:
-        #     self._error(gws.ConfigurationError('no manifest file found'))
         try:
             self.ctx.specs = gws.spec.runtime.create(
                 manifest_path=self.manifestPath,
@@ -137,8 +128,8 @@ class Object:
     def _create_root(self, cfg):
         root = initialize(self.ctx.specs, cfg)
         if root:
-            for err in root.configErrors:
-                self._error(err)
+            for ce in root.configErrors:
+                self.ctx.errors.append(gws.ConfigErrorInfo(ce))
         return root
 
     def _run_hook(self, event):
@@ -152,42 +143,18 @@ class Object:
                 self._error(exc)
 
     def _error(self, exc):
-        self.ctx.errors.append(getattr(exc, 'args', repr(exc)))
+        cei = gws.ConfigErrorInfo(message=str(exc))
+        if exc.__cause__:
+            cei.cause = repr(exc.__cause__)
+        self.ctx.errors.append(cei)
 
-    def _print_report(self, ok):
-        err_cnt = len(self.ctx.errors)
-
-        if err_cnt > 0:
-            for n, err in enumerate(self.ctx.errors, 1):
-                gws.log.error(f'{_ERROR_PREFIX}: {n} of {err_cnt}')
-                self._log(err)
-                gws.log.error(f'{_ERROR_PREFIX}: {"-" * 60}')
-
-        info = _info_string(self.root, self.tm1)
-
-        if not ok:
-            gws.log.error(f'configuration FAILED, {err_cnt} errors, {info}')
-            return
-
-        if err_cnt > 0:
-            gws.log.warning(f'configuration complete,  {err_cnt} error(s), {info}')
-            return
-
-        gws.log.info(f'configuration ok, {info}')
-
-    def _log(self, a):
-        if isinstance(a, (list, tuple)):
-            for item in a:
-                self._log(item)
-            return
-
-        if hasattr(a, 'args'):
-            lines = [str(x) for x in a.args]
-        else:
-            lines = str(a).split('\n')
-
-        for s in lines:
-            gws.log.error(f'{_ERROR_PREFIX}: {s}')
+    def _result(self):
+        return gws.ConfigResult(
+            errors=self.ctx.errors,
+            root=self.root,
+            config=self.config,
+            info=_info_string(self.root, self.tm1),
+        )
 
 
 def configure(
@@ -197,8 +164,8 @@ def configure(
     fallback_config=None,
     with_spec_cache=True,
     hooks: list = None,
-) -> Optional[gws.Root]:
-    """Configure the server, return the Root object."""
+) -> gws.ConfigResult:
+    """Configure the server."""
 
     ldr = Object(
         manifest_path,
@@ -211,8 +178,8 @@ def configure(
     return ldr.configure()
 
 
-def parse(manifest_path='', config_path='') -> Optional[gws.Config]:
-    """Parse input configuration and return a config object."""
+def parse(manifest_path='', config_path='') -> gws.ConfigResult:
+    """Parse input configuration."""
 
     ldr = Object(
         manifest_path,
@@ -284,7 +251,11 @@ def get_root() -> gws.Root:
 def real_config_path(config_path: str) -> str:
     p = config_path or gws.env.GWS_CONFIG
     if p:
-        return p
+        for s in p.split(','):
+            s = s.strip()
+            if gws.u.is_file(s):
+                return s
+        return ''
     for p in _DEFAULT_CONFIG_PATHS:
         if gws.u.is_file(p):
             return p
@@ -299,6 +270,58 @@ def real_manifest_path(manifest_path: str) -> str:
         if gws.u.is_file(p):
             return p
     return ''
+
+
+def log_report(cr: gws.ConfigResult):
+    err_cnt = len(cr.errors) if cr.errors else 0
+    ln = "*" * 80
+    fn = gws.log.info if err_cnt == 0 else gws.log.warning
+
+    fn(ln)
+    if err_cnt > 0:
+        fn(f'configured wth errors: {err_cnt} error(s), {cr.info}')
+    else:
+        fn(f'configured: {cr.info}')
+
+    fn(ln)
+    
+    if err_cnt > 0:
+        for n, cei in enumerate(cr.errors, 1):
+            gws.log.error(f'{_ERROR_PREFIX}: {n} of {err_cnt}')
+            _log_error(cei)
+            gws.log.error(f'{_ERROR_PREFIX}: ')
+        fn(ln)
+
+
+def _log_error(cei: gws.ConfigErrorInfo):
+    ls = []
+    ls.append(cei.message)
+    tab = ' ' * 4
+
+    if cei.path:
+        ls.append(f'PATH:  {cei.path}')
+    if cei.line:
+        ls.append(f'LINE:  {cei.line}')
+    if cei.value:
+        ls.append(f'VALUE: {cei.value}')
+    if cei.cause:
+        ls.append(f'CAUSE: {cei.cause}')
+    if cei.stack:
+        for loc in cei.stack:
+            p = [
+                loc.objectType,
+                repr(loc.objectName) if loc.objectName else None,
+                f'uid={loc.objectUid}' if loc.objectUid else None,
+            ]
+            p = '<' + ' '.join(gws.u.compact(p)) + '>'
+            if loc.propName:
+                p = f'{loc.propName!r} {p}'
+            ls.append(f'{tab}in {p}')
+    if cei.contextLines:
+        ls.extend(cei.contextLines)
+    
+    for s in ls:
+        gws.log.error(f'{_ERROR_PREFIX}: {s}')
 
 
 def _time_and_memory():

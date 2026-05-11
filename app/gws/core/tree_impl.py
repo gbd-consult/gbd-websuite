@@ -8,7 +8,6 @@ from . import (
 
 Access = None
 Error = None
-ConfigurationError = None
 Data = None
 Props = None
 Object = None
@@ -211,6 +210,7 @@ def root_create_application(self, config, **kwargs):
 
 ##
 
+
 def class_name(node):
     return node.__class__.__module__ + '.' + node.__class__.__name__
 
@@ -238,14 +238,12 @@ def configure_permissions(self):
     p = self.cfg('permissions')
     if p:
         for k, v in vars(p).items():
-            a = u.parse_acl(v)
-            if a:
-                if k == 'all':
-                    perms[Access.read] = perms[Access.write] = perms[Access.create] = perms[Access.delete] = a
-                elif k == 'edit':
-                    perms[Access.write] = perms[Access.create] = perms[Access.delete] = a
-                else:
-                    perms[k] = a
+            if k == 'all':
+                perms[Access.read] = perms[Access.write] = perms[Access.create] = perms[Access.delete] = u.parse_acl(v)
+            elif k == 'edit':
+                perms[Access.write] = perms[Access.create] = perms[Access.delete] = u.parse_acl(v)
+            elif k in {Access.read, Access.write, Access.create, Access.delete}:
+                perms[k] = u.parse_acl(v)
 
     return perms
 
@@ -256,7 +254,7 @@ def create_node(self, classref, parent, config, temp=False):
     node.parent = parent
     node.children = []
 
-    log.debug('configure: ' + ('.' * 4 * len(self.configStack)) + f'{node!r} IN {parent or self !r}')
+    log.debug('configure: ' + ('.' * 4 * len(self.configStack)) + f'{node!r} IN {parent or self!r}')
     ok = self.initialize(node, config)
     if not ok:
         log.debug(f'FAILED {node!r}')
@@ -340,10 +338,18 @@ def make_props2(obj, user):
 
 
 def register_config_error(self, exc):
-    lines = ['in ' + repr(val) for val in reversed(self.configStack)]
-    err = ConfigurationError(repr(exc), *lines)
-    err.__cause__ = exc
-    self.configErrors.append(err)
+    cei = Data(message=repr(exc), stack=[])
+    for node in reversed(self.configStack):
+        cei.stack.append(
+            # @TODO actually this is a ConfigLocation object
+            Data(
+                objectUid=getattr(node, 'uid', ''),
+                objectType=getattr(node, 'extName', None) or class_name(node),
+                objectName=getattr(node, 'name', '') or getattr(node, 'title', ''),
+                propName='',
+            )
+        )
+    self.configErrors.append(cei)
 
 
 def super_invoke(node, method):

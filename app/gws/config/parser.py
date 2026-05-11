@@ -98,7 +98,7 @@ def read_from_path(path: str, ctx: gws.ConfigContext) -> Optional[dict]:
 def _parse_app_dict(dct: dict, path, pp: '_Parser'):
     dct = gws.u.to_dict(dct)
     if not isinstance(dct, dict):
-        _register_error(pp.ctx, f'app config must be a dict: {path!r}')
+        _register_error(pp.ctx, f'app config must be a dict', path=path)
         return
 
     # the timezone must be set before everything else
@@ -174,13 +174,13 @@ class _Parser:
             return
         d = _to_plain(val)
         if not isinstance(d, dict):
-            _register_error(self.ctx, f'unsupported configuration type: {type(val)!r}', path)
+            _register_error(self.ctx, f'unsupported configuration type {type(val)!r}', path=path)
             return
         return d
 
     def parse_dict(self, dct: dict, path: str, as_type: str) -> Optional[gws.Config]:
         if not isinstance(dct, dict):
-            _register_error(self.ctx, 'unsupported configuration', path)
+            _register_error(self.ctx, 'unsupported configuration', path=path)
             return
         if path:
             _register_path(self.ctx, path)
@@ -193,22 +193,12 @@ class _Parser:
             )
             return cast(gws.Config, cfg)
         except gws.spec.runtime.ReadError as exc:
-            message, _, details = exc.args
-            lines = []
-            pp = details.get('path')
-            if pp:
-                lines.append(f'PATH: {pp!r}')
-            pp = details.get('formatted_value')
-            if pp:
-                lines.append(f'VALUE: {pp}')
-            pp = details.get('formatted_stack')
-            if pp:
-                lines.extend(pp)
-            _register_error(self.ctx, f'parse error: {message}', *lines, cause=exc)
+            message, _, cei = exc.args
+            _register_error(self.ctx, f'parse error: {message}', cei=cei)
 
     def read_from_path(self, path: str):
         if not os.path.isfile(path):
-            _register_error(self.ctx, f'file not found: {path!r}')
+            _register_error(self.ctx, f'file not found', path=path)
             return
 
         _register_path(self.ctx, path)
@@ -229,37 +219,37 @@ class _Parser:
         if path.endswith('.cx'):
             return self.read_cx(path)
 
-        _register_error(self.ctx, 'unsupported configuration', path)
+        _register_error(self.ctx, 'unsupported configuration', path=path)
 
     def read_py(self, path: str):
         try:
             fn = gws.lib.dynimport.load_file(path).get('main')
             if not fn:
-                _register_error(self.ctx, f'no "main" function found in {path!r}')
+                _register_error(self.ctx, f'no "main" function found', path=path)
                 return
             return fn(self.ctx)
         except Exception as exc:
             gws.log.exception()
-            _register_error(self.ctx, f'python error: {exc}', cause=exc)
+            _register_error(self.ctx, f'python error: {exc}', path=path)
 
     def read_json(self, path: str):
         try:
             return gws.lib.jsonx.from_path(path)
         except Exception as exc:
-            _register_error(self.ctx, 'json error', cause=exc)
+            _register_error(self.ctx, f'json error: {exc}', path=path)
 
     def read_yaml(self, path: str):
         try:
             with open(path, encoding='utf8') as fp:
                 return yaml.safe_load(fp)
         except Exception as exc:
-            _register_error(self.ctx, 'yaml error', cause=exc)
+            _register_error(self.ctx, f'yaml error: {exc}', path=path)
 
     def read_cx(self, path: str):
         err_cnt = [0]
 
         def _error_handler(exc, path, line, env):
-            _register_syntax_error(self.ctx, path, gws.u.read_file(path), repr(exc), line)
+            _register_syntax_error(self.ctx, path, gws.u.read_file(path), message=repr(exc), line=line)
             err_cnt[0] += 1
             return True
 
@@ -272,7 +262,7 @@ class _Parser:
         try:
             tpl = gws.lib.vendor.jump.compile_path(path, loader=_loader)
         except gws.lib.vendor.jump.CompileError as exc:
-            _register_syntax_error(self.ctx, path, gws.u.read_file(exc.path), exc.message, exc.line, cause=exc)
+            _register_syntax_error(self.ctx, path, gws.u.read_file(exc.path), message=exc.message, line=exc.line)
             return
 
         args = args = {
@@ -291,7 +281,7 @@ class _Parser:
         try:
             return gws.lib.vendor.slon.loads(slon, as_object=True)
         except gws.lib.vendor.slon.SlonError as exc:
-            _register_syntax_error(self.ctx, path, slon, exc.args[0], exc.args[2], cause=exc)
+            _register_syntax_error(self.ctx, path, slon, message=exc.args[0], line=exc.args[2])
 
 
 ##
@@ -301,15 +291,21 @@ def _register_path(ctx, path):
     ctx.paths.add(path)
 
 
-def _register_error(ctx, message, *args, cause=None):
-    err = gws.ConfigurationError(message, *args)
-    if cause:
-        err.__cause__ = cause
-    ctx.errors.append(err)
+def _register_error(ctx: gws.ConfigContext, message: str, **kwargs):
+    cei = kwargs.pop('cei', None) or gws.ConfigErrorInfo()
+    cei.message = message
+    cei.update(kwargs)
+    ctx.errors.append(cei)
 
 
 def _register_syntax_error(ctx, path, src, message, line, context=10, cause=None):
-    lines = [f'PATH: {path!r}']
+    cei = gws.ConfigErrorInfo(
+        path=path,
+        line=line,
+        message=f'syntax error: {message}',
+        contextLines=[],
+        cause=cause,
+    )
 
     for n, ln in enumerate(src.splitlines(), 1):
         if n < line - context:
@@ -319,9 +315,9 @@ def _register_syntax_error(ctx, path, src, message, line, context=10, cause=None
         ln = f'{n}: {ln}'
         if n == line:
             ln = f'>>> {ln}'
-        lines.append(ln)
+        cei.contextLines.append(ln)
 
-    _register_error(ctx, f'syntax error: {message}', *lines, cause=cause)
+    ctx.errors.append(cei)
 
 
 def _save_debug(src, src_path, ext):

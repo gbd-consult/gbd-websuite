@@ -16,12 +16,12 @@ import gws.config
 config_path = 'path to your config'
 manifest_path = 'path to your manifest'
 
-root = gws.config.configure(
+config_result = gws.config.configure(
     config_path=config_path,
     manifest_path=manifest_path
 )
 
-gws.config.activate(root)
+gws.config.activate(config_result.root)
 ```
 
 Now, the `root` object contains the configured GWS object tree. You can access the `Application` object with `root.app` or find an object of interest with `root.get`. For example, if you about to debug an object with an id `my_object`:
@@ -44,12 +44,12 @@ import gws.base.web.wsgi_app
 config_path = 'my_config.cx'
 manifest_path = 'my_manifest.json'
 
-root = gws.config.configure(
+config_result = gws.config.configure(
     config_path=config_path,
     manifest_path=manifest_path
 )
 
-gws.config.activate(root)
+gws.config.activate(config_result.root)
 
 client = werkzeug.test.Client(
     gws.base.web.wsgi_app.initialized_application,

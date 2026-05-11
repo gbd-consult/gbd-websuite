@@ -22,7 +22,7 @@ class Access(Enum):
     """Permission to delete objects."""
 
 
-class PermissionsConfig:
+class PermissionsConfig(Config):
     """Permissions configuration."""
 
     all: Optional[AclStr]

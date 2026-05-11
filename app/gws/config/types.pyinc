@@ -1,7 +1,49 @@
+class ConfigLocation(Data):
+    """Location in the configuration tree."""
+    
+    objectUid: str
+    """UID of the object."""
+    objectType: str
+    """Type of the object."""
+    objectName: str
+    """Name of the object."""
+    propName: str
+    """Property of the parent this object is located at."""
+
+
+class ConfigErrorInfo(Data):
+    """Full information about a configuration error."""
+
+    message: str
+    """Error message."""
+    path: str
+    """Path to the configuration file."""
+    line: int
+    """Line number where the error occurred."""
+    value: str
+    """Value that caused the error."""
+    stack: list[ConfigLocation]
+    """Stack trace of the error."""
+    contextLines: list[str]
+    """Lines of context around the error."""
+    cause: str
+    """Cause of the error."""
+
+
 class ConfigContext(Data):
     """Configuration context for parsing and validation."""
-    
+
     specs: SpecRuntime
     readOptions: set[SpecReadOption]
-    errors: list
+    errors: list[ConfigErrorInfo]
     paths: set[str]
+
+
+
+class ConfigResult(Data):
+    """Configuration result."""
+
+    root: Optional['Root']
+    config: Optional['Config']
+    errors: list[ConfigErrorInfo]
+    info: str

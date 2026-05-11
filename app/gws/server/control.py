@@ -93,15 +93,16 @@ def configure(manifest_path='', config_path='', is_starting=False):
     if is_starting:
         hooks.append(['preInitialize', _pre_init])
 
-    root = gws.config.configure(
+    cr = gws.config.configure(
         manifest_path=manifest_path,
         config_path=config_path,
         fallback_config=_FALLBACK_CONFIG,
         hooks=hooks,
     )
-    if not root:
+    gws.config.log_report(cr)
+    if not cr.root:
         raise gws.ConfigurationError('configuration failed')
-    return root
+    return gws.u.require(cr.root)
 
 
 def config_test(
@@ -117,9 +118,10 @@ def config_test(
         gws.log.info(f'TESTING CONFIGURATION...')
         gws.log.info('=' * 80)
         if with_parse_only:
-            gws.config.parse(manifest_path, config_path)
+            cr = gws.config.parse(manifest_path, config_path)
         else:
-            gws.config.configure(manifest_path, config_path)
+            cr = gws.config.configure(manifest_path, config_path)
+        gws.config.log_report(cr)
 
     _check()
 

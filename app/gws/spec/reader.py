@@ -42,7 +42,7 @@ class Reader:
         try:
             return self.read2(value, type_uid)
         except core.ReadError as exc:
-            raise self.add_error_details(exc)
+            raise self.add_config_error_info(exc)
 
     def read2(self, value, type_uid):
         typ = self.runtime.get_type(type_uid)
@@ -58,13 +58,13 @@ class Reader:
 
         return _READERS[typ.c](self, value, typ)
 
-    def add_error_details(self, exc: Exception):
-        details = {
-            'formatted_value': _format_error_value(exc),
-            'path': self.path,
-            'formatted_stack': _format_error_stack(self.stack or []),
-        }
-        exc.args = (exc.args[0], exc.args[1], details)
+    def add_config_error_info(self, exc: Exception):
+        cei = gws.ConfigErrorInfo(
+            value=_format_error_value(exc),
+            path=self.path,
+            stack=_prepare_error_stack(self.stack or []),
+        )
+        exc.args = (exc.args[0], exc.args[1], cei)
         return exc
 
 
@@ -430,7 +430,7 @@ def _comma(ls):
 def _format_error_value(exc):
     try:
         val = exc.args[1]
-    except (AttributeError, IndexError):
+    except Exception:
         return ''
 
     s = repr(val)
@@ -439,29 +439,21 @@ def _format_error_value(exc):
     return s
 
 
-def _format_error_stack(stack):
-    f = []
+def _prepare_error_stack(stack):
+    ls = []
 
     for name, value, type_uid in reversed(stack):
-        line = ''
+        obj_name = gws.u.get(value, 'name') or gws.u.get(value, 'title')
+        ls.append(
+            gws.ConfigLocation(
+                objectUid=gws.u.get(value, 'uid'),
+                objectType=type_uid or gws.u.get(value, 'type'),
+                objectName=obj_name if isinstance(obj_name, str) else '',
+                propName=str(name) if name is not None else '',
+            )
+        )
 
-        if name:
-            name = repr(name)
-            line = f'item {name}' if name.isdigit() else name
-
-        obj = type_uid or 'object'
-        for p in 'uid', 'title', 'type':
-            try:
-                s = value.get(p)
-                if s is not None:
-                    obj += f' {p}={s!r}'
-                    break
-            except AttributeError:
-                pass
-
-        f.append(f'in {line} <{obj}>')
-
-    return f
+    return ls
 
 
 #

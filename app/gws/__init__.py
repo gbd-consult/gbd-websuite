@@ -428,7 +428,7 @@ class Access(Enum):
     """Permission to delete objects."""
 
 
-class PermissionsConfig:
+class PermissionsConfig(Config):
     """Permissions configuration."""
 
     all: Optional[AclStr]
@@ -548,6 +548,7 @@ class ExtCommandDescriptor(Data):
 
     Contains attributes to describe and handle a specific extension command.
     """
+
     extName: str
     """Full extension name like ``gws.ext.object.layer.wms``."""
     extType: str
@@ -613,36 +614,36 @@ class SpecRuntime:
     def read(self, value, type_name: str, path: str = '', options: set[SpecReadOption] = None):
         """Read a raw value according to a spec.
 
-         Args:
-             value: Raw value from config or request.
-             type_name: Object type name.
-             path: Config file path.
-             options: Read options.
+        Args:
+            value: Raw value from config or request.
+            type_name: Object type name.
+            path: Config file path.
+            options: Read options.
 
-         Returns:
-             A parsed object.
-         """
+        Returns:
+            A parsed object.
+        """
 
     def object_descriptor(self, type_name: str) -> Optional[ExtObjectDescriptor]:
         """Get an object descriptor.
 
-         Args:
-             type_name: Object type name.
+        Args:
+            type_name: Object type name.
 
-         Returns:
-             A descriptor or ``None`` if the type is not found.
-         """
+        Returns:
+            A descriptor or ``None`` if the type is not found.
+        """
 
     def command_descriptor(self, command_category: CommandCategory, command_name: str) -> Optional[ExtCommandDescriptor]:
         """Get a command descriptor.
 
-         Args:
-             command_category: Command category.
-             command_name: Command name.
+        Args:
+            command_category: Command category.
+            command_name: Command name.
 
-         Returns:
-             A descriptor or ``None`` if the command is not found.
-         """
+        Returns:
+            A descriptor or ``None`` if the command is not found.
+        """
 
     def register_object(self, ext_name: ClassRef, obj_type: str, cls: type):
         """Dynamically register an extension object."""
@@ -667,6 +668,12 @@ class SpecRuntime:
         Returns:
             A tuple ``(class object, class name, extension name)``.
         """
+
+    def get_types(self) -> list[dict]:
+        """Get a list of spec types as dictionaries."""
+
+    def get_strings(self, lang: str) -> dict[str, str]:
+        """Get a dictionary of spec strings for a specified language."""
 ################################################################################
 
 
@@ -696,7 +703,6 @@ from .core import tree_impl
 
 setattr(tree_impl, 'Access', Access)
 setattr(tree_impl, 'Error', Error)
-setattr(tree_impl, 'ConfigurationError', ConfigurationError)
 setattr(tree_impl, 'Data', Data)
 setattr(tree_impl, 'Props', Props)
 setattr(tree_impl, 'Object', Object)
@@ -2073,13 +2079,55 @@ class SourceLayer(Data):
 # /config/types.pyinc
 
 
+class ConfigLocation(Data):
+    """Location in the configuration tree."""
+    
+    objectUid: str
+    """UID of the object."""
+    objectType: str
+    """Type of the object."""
+    objectName: str
+    """Name of the object."""
+    propName: str
+    """Property of the parent this object is located at."""
+
+
+class ConfigErrorInfo(Data):
+    """Full information about a configuration error."""
+
+    message: str
+    """Error message."""
+    path: str
+    """Path to the configuration file."""
+    line: int
+    """Line number where the error occurred."""
+    value: str
+    """Value that caused the error."""
+    stack: list[ConfigLocation]
+    """Stack trace of the error."""
+    contextLines: list[str]
+    """Lines of context around the error."""
+    cause: str
+    """Cause of the error."""
+
+
 class ConfigContext(Data):
     """Configuration context for parsing and validation."""
-    
+
     specs: SpecRuntime
     readOptions: set[SpecReadOption]
-    errors: list
+    errors: list[ConfigErrorInfo]
     paths: set[str]
+
+
+
+class ConfigResult(Data):
+    """Configuration result."""
+
+    root: Optional['Root']
+    config: Optional['Config']
+    errors: list[ConfigErrorInfo]
+    info: str
 ################################################################################
 
 
@@ -4243,7 +4291,7 @@ class TemplateRenderInput(Data):
     user: 'User'
 
 
-class TemplateQualityLevel(Data):
+class TemplateQualityLevel(Config):
     """Template quality level."""
 
     name: str
