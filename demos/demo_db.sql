@@ -139,12 +139,10 @@ create table edit.district_photo
     description  text default null,
     updated_at   date  default '2000-01-01',
     updated_by   text default '',
-    photo_1 text,
-    photo_img_1  bytea,
-    photo_2 text,
-    photo_img_2  bytea,
-    photo_3 text,
-    photo_img_3  bytea,
+    path_1       text,
+    image_1      bytea,
+    path_2       text,
+    image_2      bytea,
     geom         geometry(MultiPolygon, 3857)
 );
 

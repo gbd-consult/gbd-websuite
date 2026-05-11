@@ -27,9 +27,24 @@ actions+ {
     projects+ {
         uid "qfield_demo"
         title "QField Demo"
-        provider.path "/demos/poi_districts_qfield.qgs"
+        provider.path "/demos/qfield.qgs"
         mapCacheLifeTime "7d"
         access "allow all"
+        models+ {
+            type "postgres"
+            tableName "edit.district_photo"
+            withAutoFields true
+            isEditable true
+            permissions.edit "allow user, deny all"
+            fields+ {
+                type "file"
+                name "image_file"
+                contentColumn "image_content"
+                nameColumn "image"
+            }
+        }
+
+
     }
 }
 
@@ -40,18 +55,9 @@ map {
 }
 
 map.layers+ {
-    title "Points of interest"
-    type "qgisflat"
-    provider.path "/demos/poi_districts_qfield.qgs"
-    sourceLayers.names [ "Points of interest" ]
-}
-
-map.layers+ {
-    title "Districts"
-    type "qgisflat"
-    provider.path "/demos/poi_districts_qfield.qgs"
-    sourceLayers.names [ "Districts" ]
-    opacity 0.5
+    title "QGIS Project"
+    type "qgis"
+    provider.path "/demos/qfield.qgs"
 }
 
 {demo_osm_background}
