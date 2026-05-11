@@ -1,3 +1,7 @@
+## Version 8.3.12
+
+- fix the MAX_IMAGE_PIXELS setting
+
 ## Version 8.3.11
 
 - fix map drawing for editable features
