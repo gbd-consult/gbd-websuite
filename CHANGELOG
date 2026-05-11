@@ -1,3 +1,9 @@
+## Version 8.4.1
+
+- basic feature export framework
+- configuration now accepts multiple comma-separated paths
+- improved config error reporting 
+
 ## Version 8.4.0
 
 - added functions to scale GDAL rasters
