@@ -3730,6 +3730,7 @@ class Job(Data):
     step: int
     stepName: str
     payload: dict
+    result: dict
     timeCreated: datetime.datetime
     timeUpdated: datetime.datetime
 
@@ -3749,7 +3750,7 @@ class JobStatusResponse(Response):
 class JobManager(Node):
     """Job Manager."""
 
-    def create_job(self, worker: type, user: User, payload: dict = None) -> Job: ...
+    def create_job(self, worker: type, user: User, payload: dict | Data = None) -> Job: ...
 
     def get_job(self, job_uid: str, user: User = None, state: JobState = None) -> Optional[Job]: ...
 
@@ -3764,6 +3765,8 @@ class JobManager(Node):
     def schedule_job(self, job: Job) -> Job: ...
 
     def require_job(self, req: 'WebRequester', p: JobRequest) -> Job: ...
+    
+    def require_result(self, req: 'WebRequester', p: JobRequest) -> dict: ...
 
     def handle_status_request(self, req: 'WebRequester', p: JobRequest) -> JobStatusResponse: ...
 
@@ -3992,6 +3995,13 @@ class PrintRequest(Request):
     printerUid: Optional[str]
     dpi: Optional[int]
     outputSize: Optional[Size]
+
+
+class PrintResult(Data):
+    """Print result."""
+
+    path: str
+    mime: str
 
 
 class Printer(Node):

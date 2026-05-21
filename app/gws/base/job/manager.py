@@ -25,6 +25,7 @@ class Object(gws.JobManager):
             step          INTEGER DEFAULT 0,
             stepName      TEXT DEFAULT '',
             payload       TEXT DEFAULT '',
+            result        TEXT DEFAULT '',
             created       INTEGER DEFAULT 0,
             updated       INTEGER DEFAULT 0
         )
@@ -42,15 +43,17 @@ class Object(gws.JobManager):
 
         self._db().insert(self.TABLE, dict(uid=job_uid))
 
+        mod_path = gws.u.require(sys.modules.get(worker.__module__)).__file__
         self._write(
             job_uid,
             dict(
                 uid=job_uid,
                 userUid=user.uid,
                 userStr=self.root.app.authMgr.serialize_user(user),
-                worker=sys.modules.get(worker.__module__).__file__ + '.' + worker.__name__,
+                worker=f'{mod_path}:{worker.__name__}',
                 state=gws.JobState.open,
                 payload=payload,
+                result={},
                 created=gws.u.stime(),
                 updated=gws.u.stime(),
             ),
@@ -100,6 +103,7 @@ class Object(gws.JobManager):
             step=rec['step'] or 0,
             stepName=rec['stepName'] or '',
             payload=gws.lib.jsonx.from_string(rec['payload'] or '{}'),
+            result=gws.lib.jsonx.from_string(rec['result'] or '{}'),
             timeCreated=dtx.from_timestamp(rec['created'] or 0),
             timeUpdated=dtx.from_timestamp(rec['updated'] or 0),
         )
@@ -114,9 +118,10 @@ class Object(gws.JobManager):
 
     def _write(self, job_uid, rec):
         rec['updated'] = gws.u.stime()
-        p = rec.get('payload')
-        if p is not None and not isinstance(p, str):
-            rec['payload'] = gws.lib.jsonx.to_string(p)
+
+        rec['payload'] = gws.lib.jsonx.to_string(rec.get('payload') or  {})
+        rec['result'] = gws.lib.jsonx.to_string(rec.get('result') or  {})
+
         gws.log.debug(f'JOB {job_uid}: save {rec=}')
         self._db().update(self.TABLE, rec, job_uid)
 
@@ -150,7 +155,7 @@ class Object(gws.JobManager):
         # now it's ours, let's run it
 
         try:
-            mod_path, _, fn_name = job.worker.rpartition('.')
+            mod_path, _, fn_name = job.worker.rpartition(':')
             mod = gws.lib.dynimport.import_from_path(mod_path)
             worker_cls = getattr(mod, fn_name)
             worker_cls.run(self.root, job)
@@ -175,6 +180,14 @@ class Object(gws.JobManager):
         if not job:
             raise gws.NotFoundError(f'JOB {p.jobUid}: not found')
         return job
+
+    def require_result(self, req, p):
+        job = self.require_job(req, p)
+        if job.state != gws.JobState.complete:
+            raise gws.NotFoundError(f'JOB {p.jobUid}: wrong state {job.state!r}')
+        if not job.result:
+            raise gws.NotFoundError(f'JOB {p.jobUid}: no result')
+        return job.result
 
     def handle_status_request(self, req, p):
         job = self.require_job(req, p)

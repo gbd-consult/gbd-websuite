@@ -24,7 +24,7 @@ class Object:
         )
         if not job:
             self.jobUid = ''
-            raise gws.JobTerminated(f'JOB {self.jobUid!r} TERMINATED')
+            raise gws.JobTerminated('JOB TERMINATED')
         return job
 
     def update_job(self, **kwargs):

@@ -41,7 +41,7 @@ class Object(gws.base.action.Object):
     def exporter_status(self, req: gws.WebRequester, p: gws.JobRequest) -> gws.JobStatusResponse:
         res = self.root.app.jobMgr.handle_status_request(req, p)
         if res.state == gws.JobState.complete:
-            er = self._result(req, p)
+            er = gws.ExportResult(self.root.app.jobMgr.require_result(req, p))
             res.output = {
                 'numFiles': er.numFiles,
                 'numFeaturesTotal': er.numFeaturesTotal,
@@ -59,7 +59,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.get('exporterOutput')
     def exporter_output(self, req: gws.WebRequester, p: gws.JobRequest) -> gws.ContentResponse:
-        er = self._result(req, p)
+        er = gws.ExportResult(self.root.app.jobMgr.require_result(req, p))
         if not er.path:
             raise gws.NotFoundError('export result not found')
         return gws.ContentResponse(
@@ -79,15 +79,3 @@ class Object(gws.base.action.Object):
         )
 
         root.app.exporterMgr.exec_export(cast(gws.ExportRequest, request), p.output)
-
-    def _result(self, req: gws.WebRequester, p: gws.JobRequest) -> gws.ExportResult:
-        job = self.root.app.jobMgr.require_job(req, p)
-
-        if job.state != gws.JobState.complete:
-            raise gws.NotFoundError(f'JOB {p.jobUid}: wrong state {job.state!r}')
-
-        res = job.payload.get('result')
-        if not res:
-            raise gws.NotFoundError(f'JOB {p.jobUid}: no result')
-
-        return gws.ExportResult(res)

@@ -17,7 +17,7 @@ class Object(gws.base.job.worker.Object):
     project: gws.Project
     request: gws.ExportRequest
     tmpDir: str
-    er: Optional[gws.ExportResult]
+    result: Optional[gws.ExportResult]
     features: list[gws.Feature]
     numFeaturesTotal: int
 
@@ -30,7 +30,7 @@ class Object(gws.base.job.worker.Object):
     def __init__(self, root: gws.Root, user: gws.User, job: Optional[gws.Job], request: gws.ExportRequest):
         super().__init__(root, user, job)
         self.request = request
-        self.er = None
+        self.result = None
         self.features = []
         self.numFeaturesTotal = 0
 
@@ -50,9 +50,9 @@ class Object(gws.base.job.worker.Object):
             notify=self.notify,
         )
 
-        self.er = exporter.run(ea)
-        self.er.numFeaturesTotal = self.numFeaturesTotal
-        self.update_job(state=gws.JobState.complete, payload=dict(result=self.er))
+        self.result = exporter.run(ea)
+        self.result.numFeaturesTotal = self.numFeaturesTotal
+        self.update_job(state=gws.JobState.complete, result=self.result)
 
     def load_features(self):
         

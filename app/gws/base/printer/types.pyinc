@@ -68,6 +68,13 @@ class PrintRequest(Request):
     outputSize: Optional[Size]
 
 
+class PrintResult(Data):
+    """Print result."""
+
+    path: str
+    mime: str
+
+
 class Printer(Node):
     """Printer object."""
 

@@ -39,7 +39,13 @@ class Object(gws.base.job.worker.Object):
         self.prepare()
         res = self.template.render(self.tri)
         self.contentPath = res.contentPath
-        self.update_job(state=gws.JobState.complete, payload=dict(outputPath=self.contentPath))
+        self.update_job(
+            state=gws.JobState.complete, 
+            result=gws.PrintResult(
+                path=self.contentPath,
+                mime=gws.lib.mime.for_path(self.contentPath),
+            ),
+        )
 
     def prepare(self):
         self.project = cast(gws.Project, self.user.require(self.request.projectUid, gws.ext.object.project))

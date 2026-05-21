@@ -19,7 +19,6 @@ class Object(gws.PrinterManager):
                     request,
                     gws.u.ephemeral_path('print.pickle')
                 ),
-                outputPath='',
             )
         )
         job = mgr.schedule_job(job)
