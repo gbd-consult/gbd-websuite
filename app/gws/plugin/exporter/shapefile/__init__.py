@@ -70,7 +70,7 @@ def run_export(ea: gws.ExportArgs) -> gws.ExportResult:
     er.path = base_dir + '/export.zip'
     er.mime = gws.lib.mime.ZIP
     paths = gws.lib.osx.find_files(base_dir, deep=False)
-    gws.lib.zipx.zip_to_path(er.path, *paths, flat=True)
+    gws.lib.zipx.zip_to_path(er.path, list(paths), flat=True)
 
     return er
 

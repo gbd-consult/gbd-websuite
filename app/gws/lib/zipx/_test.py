@@ -1,226 +1,353 @@
 """Tests for the zipx module."""
 import io
-import os
 import zipfile
 
-import gws
-import gws.test.util as u
 import gws.lib.zipx as zipx
 
 
-def test_zip(tmp_path):
-    d = tmp_path / "test"
-    d.mkdir()
-    z = d / 'zip'
-    z2 = d / 'zip2'
-    f = d / 'f1.txt'
-    f.write_text('foobar')
+# --- zip_to_path ---
 
-    ret = zipx.zip_to_path(str(z), str(f), flat=False)
-    ret2 = zipx.zip_to_path(str(z2), str(f), flat=True)
-    assert zipfile.is_zipfile(z)
-    assert sorted(os.listdir(d)) == sorted(['zip', 'zip2', 'f1.txt'])
+def test_zip_to_path_single_file(tmp_path):
+    f = tmp_path / 'a.txt'
+    f.write_text('hello')
+    z = tmp_path / 'out.zip'
+
+    ret = zipx.zip_to_path(str(z), [str(f)])
+
     assert ret == 1
-    assert ret2 == 1
-    assert zipx.unzip_path_to_dict(str(z)) != zipx.unzip_path_to_dict(str(z2))
+    assert zipfile.is_zipfile(str(z))
 
 
-# test zip with no src
-def test_zip_empty(tmp_path):
-    d = tmp_path / 'test'
-    d.mkdir()
-    z = d / 'zip'
-    ret = zipx.zip_to_path(str(z))
-    assert not os.listdir(str(d))
+def test_zip_to_path_multiple_files(tmp_path):
+    (tmp_path / 'a.txt').write_text('aaa')
+    (tmp_path / 'b.txt').write_text('bbb')
+    z = tmp_path / 'out.zip'
+
+    ret = zipx.zip_to_path(str(z), [str(tmp_path / 'a.txt'), str(tmp_path / 'b.txt')])
+
+    assert ret == 2
+
+
+def test_zip_to_path_empty_sources(tmp_path):
+    z = tmp_path / 'out.zip'
+
+    ret = zipx.zip_to_path(str(z), [])
+
     assert ret == 0
+    assert not z.exists()
 
 
-# test dir as src
-def test_zip_dir(tmp_path):
-    d = tmp_path / 'test'
+def test_zip_to_path_directory(tmp_path):
+    d = tmp_path / 'subdir'
     d.mkdir()
+    (d / 'x.txt').write_text('x')
+    (d / 'y.txt').write_text('y')
+    z = tmp_path / 'out.zip'
 
-    z = d / 'zip'
-    dr = d / 'dir'
-    dr.mkdir()
+    ret = zipx.zip_to_path(str(z), [str(d)])
 
-    f = dr / 'f1.txt'
-    f.write_text('foo')
-    f2 = dr / 'f2.txt'
-    f2.write_text('bar')
-
-    ret = zipx.zip_to_path(str(z), str(dr))
-    assert sorted(os.listdir(str(d))) == sorted(['zip', 'dir'])
     assert ret == 2
 
 
-# test zip with empty dir
-def test_zip_dir_empty(tmp_path):
-    d = tmp_path / 'test'
+def test_zip_to_path_empty_directory(tmp_path):
+    d = tmp_path / 'empty'
     d.mkdir()
+    z = tmp_path / 'out.zip'
 
-    z = d / 'zip'
-    dr = d / 'dir'
-    dr.mkdir()
+    ret = zipx.zip_to_path(str(z), [str(d)])
 
-    ret = zipx.zip_to_path(str(z), str(dr))
-    assert sorted(os.listdir(str(d))) == sorted(['dir'])
     assert ret == 0
+    assert not z.exists()
 
 
-def test_zip_to_bytes(tmp_path):
-    d = tmp_path / 'test'
+def test_zip_to_path_dict_source(tmp_path):
+    z = tmp_path / 'out.zip'
+
+    ret = zipx.zip_to_path(str(z), [{'hello.txt': b'world', 'data.bin': b'\x00\x01'}])
+
+    assert ret == 2
+    with zipfile.ZipFile(str(z)) as zf:
+        assert zf.read('hello.txt') == b'world'
+        assert zf.read('data.bin') == b'\x00\x01'
+
+
+def test_zip_to_path_flat(tmp_path):
+    d = tmp_path / 'sub'
     d.mkdir()
+    (d / 'f.txt').write_text('flat')
+    z = tmp_path / 'out.zip'
 
-    f = d / 'f1.txt'
-    f.write_text('foo')
-    f2 = d / 'f2.txt'
-    f2.write_text('bar')
+    zipx.zip_to_path(str(z), [str(d / 'f.txt')], flat=True)
 
-    ret = zipx.zip_to_bytes(str(f), str(f2), flat=False)
-    # assert ret = 'someByteString'
-    os.remove(str(f))
-    os.remove(str(f2))
-    zipx.unzip_bytes(ret, str(d), flat=True)
-    assert sorted(os.listdir(str(d))) == sorted(['f2.txt', 'f1.txt'])
+    with zipfile.ZipFile(str(z)) as zf:
+        assert zf.namelist() == ['f.txt']
 
 
-# test zip_to_bytes with no src
-def test_zip_to_bytes_empty(tmp_path):
-    d = tmp_path / 'test'
+def test_zip_to_path_basedir(tmp_path):
+    d = tmp_path / 'base' / 'sub'
+    d.mkdir(parents=True)
+    (d / 'f.txt').write_text('hi')
+    z = tmp_path / 'out.zip'
+    base_dir = str(tmp_path / 'base') + '/'
+
+    zipx.zip_to_path(str(z), [str(d / 'f.txt')], base_dir=base_dir)
+
+    with zipfile.ZipFile(str(z)) as zf:
+        assert zf.namelist() == ['sub/f.txt']
+
+
+def test_zip_to_path_mixed_sources(tmp_path):
+    (tmp_path / 'real.txt').write_text('real')
+    z = tmp_path / 'out.zip'
+
+    ret = zipx.zip_to_path(str(z), [str(tmp_path / 'real.txt'), {'virtual.txt': b'virtual'}])
+
+    assert ret == 2
+    with zipfile.ZipFile(str(z)) as zf:
+        assert 'virtual.txt' in zf.namelist()
+
+
+def test_zip_to_path_invalid_source(tmp_path):
+    z = tmp_path / 'out.zip'
+
+    try:
+        zipx.zip_to_path(str(z), ['/nonexistent/path/file.txt'])
+        assert False, 'expected Error'
+    except zipx.Error:
+        pass
+
+
+# --- zip_to_bytes ---
+
+def test_zip_to_bytes_returns_bytes(tmp_path):
+    (tmp_path / 'a.txt').write_text('abc')
+
+    result = zipx.zip_to_bytes([str(tmp_path / 'a.txt')])
+
+    assert isinstance(result, bytes)
+    assert len(result) > 0
+    assert zipfile.is_zipfile(io.BytesIO(result))
+
+
+def test_zip_to_bytes_empty_sources():
+    result = zipx.zip_to_bytes([])
+
+    assert result == b''
+
+
+def test_zip_to_bytes_dict_source():
+    result = zipx.zip_to_bytes([{'note.txt': b'content'}])
+
+    with zipfile.ZipFile(io.BytesIO(result)) as zf:
+        assert zf.read('note.txt') == b'content'
+
+
+def test_zip_to_bytes_flat(tmp_path):
+    d = tmp_path / 'sub'
     d.mkdir()
+    (d / 'f.txt').write_text('x')
 
-    ret = zipx.zip_to_bytes()
-    assert not os.listdir(str(d))
-    assert not sorted(os.listdir(d))
-    assert ret == b''
+    result = zipx.zip_to_bytes([str(d / 'f.txt')], flat=True)
+
+    with zipfile.ZipFile(io.BytesIO(result)) as zf:
+        assert zf.namelist() == ['f.txt']
 
 
-# test zip_to_bytes with dir as src
-def test_zip_to_bytes_dir(tmp_path):
-    d = tmp_path / 'test'
+# --- unzip_path ---
+
+def test_unzip_path_basic(tmp_path):
+    src = tmp_path / 'src'
+    src.mkdir()
+    (src / 'a.txt').write_text('aaa')
+    (src / 'b.txt').write_text('bbb')
+    z = tmp_path / 'arc.zip'
+    zipx.zip_to_path(str(z), [str(src / 'a.txt'), str(src / 'b.txt')], flat=True)
+
+    out = tmp_path / 'out'
+    out.mkdir()
+    ret = zipx.unzip_path(str(z), str(out), flat=True)
+
+    assert ret == 2
+    assert (out / 'a.txt').read_text() == 'aaa'
+    assert (out / 'b.txt').read_text() == 'bbb'
+
+
+def test_unzip_path_preserves_structure(tmp_path):
+    d = tmp_path / 'sub'
     d.mkdir()
+    (d / 'f.txt').write_text('hi')
+    z = tmp_path / 'arc.zip'
+    zipx.zip_to_path(str(z), [str(d)], base_dir=str(tmp_path) + '/')
 
-    z = d / 'zip'
-    dr = d / 'dir'
-    dr.mkdir()
+    out = tmp_path / 'out'
+    out.mkdir()
+    zipx.unzip_path(str(z), str(out), flat=False)
 
-    f = dr / 'f1.txt'
-    f.write_text('foo')
-    f2 = dr / 'f2.txt'
-    f2.write_text('bar')
-
-    ret = zipx.zip_to_bytes(str(dr), flat=False)
-    # assert ret = 'someByteString'
-    zipx.unzip_bytes(ret, str(d), flat=True)
-    assert sorted(os.listdir(str(d))) == sorted(['f1.txt', 'f2.txt', 'dir'])
+    assert (out / 'sub' / 'f.txt').read_text() == 'hi'
 
 
-# test zip_to_bytes with empty dir
-def test_zip_to_bytes_dir_empty(tmp_path):
-    d = tmp_path / 'test'
-    d.mkdir()
+def test_unzip_path_flat(tmp_path):
+    d = tmp_path / 'deep' / 'nested'
+    d.mkdir(parents=True)
+    (d / 'f.txt').write_text('deep')
+    z = tmp_path / 'arc.zip'
+    zipx.zip_to_path(str(z), [str(d / 'f.txt')])
 
-    dr = d / 'dir'
-    dr.mkdir()
+    out = tmp_path / 'out'
+    out.mkdir()
+    zipx.unzip_path(str(z), str(out), flat=True)
 
-    ret = zipx.zip_to_bytes(str(dr))
-    assert sorted(os.listdir(d)) == sorted(['dir'])
-    assert ret == b''
+    assert (out / 'f.txt').read_text() == 'deep'
 
 
-# Has no return although return type is int
-def test_unzip(tmp_path):
-    d = tmp_path / 'test'
-    d.mkdir()
+def test_unzip_path_returns_count(tmp_path):
+    files = ['a.txt', 'b.txt', 'c.txt']
+    for name in files:
+        (tmp_path / name).write_text(name)
+    z = tmp_path / 'arc.zip'
+    zipx.zip_to_path(str(z), [str(tmp_path / n) for n in files], flat=True)
 
-    z = d / 'zip'
+    out = tmp_path / 'out'
+    out.mkdir()
+    ret = zipx.unzip_path(str(z), str(out))
 
-    f = d / 'f1.txt'
-    f.write_text('foo')
-    f2 = d / 'f2.txt'
-    f2.write_text('bar')
+    assert ret == 3
 
-    zipx.zip_to_path(str(z), str(f), str(f2), flat=True)
-    os.remove(str(f))
-    os.remove(str(f2))
-    ret = zipx.unzip_path(str(z), str(d), flat=False)
-    os.remove(str(z))
-    assert sorted(os.listdir(str(d))) == sorted(['f2.txt', 'f1.txt'])
+
+# --- unzip_bytes ---
+
+def test_unzip_bytes_basic(tmp_path):
+    (tmp_path / 'a.txt').write_text('hello')
+    data = zipx.zip_to_bytes([str(tmp_path / 'a.txt')], flat=True)
+
+    out = tmp_path / 'out'
+    out.mkdir()
+    ret = zipx.unzip_bytes(data, str(out), flat=True)
+
+    assert ret == 1
+    assert (out / 'a.txt').read_text() == 'hello'
+
+
+def test_unzip_bytes_returns_count(tmp_path):
+    data = zipx.zip_to_bytes([{'x.txt': b'x', 'y.txt': b'y'}])
+
+    out = tmp_path / 'out'
+    out.mkdir()
+    ret = zipx.unzip_bytes(data, str(out), flat=True)
+
     assert ret == 2
 
 
-# test for unzipping files into dir containing same named files
-def test_unzip_name(tmp_path):
-    d = tmp_path / 'test'
+# --- unzip_path_to_dict ---
+
+def test_unzip_path_to_dict_flat(tmp_path):
+    (tmp_path / 'a.txt').write_text('aaa')
+    (tmp_path / 'b.txt').write_text('bbb')
+    z = tmp_path / 'arc.zip'
+    zipx.zip_to_path(str(z), [str(tmp_path / 'a.txt'), str(tmp_path / 'b.txt')], flat=True)
+
+    result = zipx.unzip_path_to_dict(str(z), flat=True)
+
+    assert result == {'a.txt': b'aaa', 'b.txt': b'bbb'}
+
+
+def test_unzip_path_to_dict_full_paths(tmp_path):
+    d = tmp_path / 'sub'
     d.mkdir()
+    (d / 'f.txt').write_text('hi')
+    z = tmp_path / 'arc.zip'
+    zipx.zip_to_path(str(z), [str(d / 'f.txt')], base_dir=str(tmp_path) + '/')
 
-    z = d / 'zip'
+    result = zipx.unzip_path_to_dict(str(z), flat=False)
 
-    f = d / 'f1.txt'
-    f.write_text('foo')
-    f2 = d / 'f2.txt'
-    f2.write_text('bar')
-
-    zipx.zip_to_path(str(z), str(f), str(f2), flat=False)
-    os.remove(str(f))
-    os.remove(str(f2))
-    ret = zipx.unzip_path(str(z), str(d), flat=True)
-    os.remove(str(z))
-    assert sorted(os.listdir(str(d))) == sorted(['f2.txt', 'f1.txt'])
-    assert ret == 2
+    assert result == {'sub/f.txt': b'hi'}
 
 
-def test_unzip_bytes(tmp_path):
-    d = tmp_path / 'test'
-    d.mkdir()
+def test_unzip_path_to_dict_no_extraction(tmp_path):
+    (tmp_path / 'f.txt').write_text('data')
+    z = tmp_path / 'arc.zip'
+    zipx.zip_to_path(str(z), [str(tmp_path / 'f.txt')], flat=True)
+    (tmp_path / 'f.txt').unlink()
 
-    z = d / 'zip'
+    result = zipx.unzip_path_to_dict(str(z), flat=True)
 
-    f = d / 'f1.txt'
-    f.write_text('foo')
-    f2 = d / 'f2.txt'
-    f2.write_text('bar')
-
-    z = zipx.zip_to_bytes(str(f), str(f2), flat=False)
-    os.remove(str(f))
-    os.remove(str(f2))
-    ret = zipx.unzip_bytes(z, str(d), flat=True)
-    assert ret == 2
-    assert sorted(os.listdir(str(d))) == sorted(['f1.txt', 'f2.txt'])
+    assert result == {'f.txt': b'data'}
+    assert not (tmp_path / 'f.txt').exists()
 
 
-def test_unzip_to_dict(tmp_path):
-    d = tmp_path / 'test'
-    d.mkdir()
-
-    z = d / 'zip'
-
-    f = d / 'f1.txt'
-    f.write_text('foo')
-    f2 = d / 'f2.txt'
-    f2.write_text('bar')
-
-    zipx.zip_to_path(str(z), str(f), str(f2))
-    os.remove(str(f))
-    os.remove(str(f2))
-    ret = zipx.unzip_path_to_dict(str(z), flat=True)
-    assert ret == {'f1.txt': b'foo', 'f2.txt': b'bar'}
-    assert sorted(os.listdir(str(d))) == sorted(['zip'])
-
+# --- unzip_bytes_to_dict ---
 
 def test_unzip_bytes_to_dict(tmp_path):
-    d = tmp_path / 'test'
-    d.mkdir()
+    data = zipx.zip_to_bytes([{'one.txt': b'1', 'two.txt': b'2'}])
 
-    z = d / 'zip'
+    result = zipx.unzip_bytes_to_dict(data, flat=True)
 
-    f = d / 'f1.txt'
-    f.write_text('foo')
-    byt = zipx.zip_to_bytes(str(f))
-    ret = zipx.unzip_bytes_to_dict(byt)
-    zipx.zip_to_path(str(z), str(f))
-    os.remove(str(f))
-    ret2 = zipx.unzip_path_to_dict(str(z))
-    assert ret == ret2
-    assert sorted(os.listdir(d)) == ['zip']
+    assert result == {'one.txt': b'1', 'two.txt': b'2'}
+
+
+def test_unzip_bytes_to_dict_matches_path_to_dict(tmp_path):
+    (tmp_path / 'f.txt').write_text('same')
+    z = tmp_path / 'arc.zip'
+    zipx.zip_to_path(str(z), [str(tmp_path / 'f.txt')], flat=True)
+    data = zipx.zip_to_bytes([str(tmp_path / 'f.txt')], flat=True)
+
+    r1 = zipx.unzip_path_to_dict(str(z), flat=True)
+    r2 = zipx.unzip_bytes_to_dict(data, flat=True)
+
+    assert r1 == r2
+
+
+# --- security: zip slip / malicious entries ---
+
+def test_unzip_skips_absolute_path_entries(tmp_path):
+    z = tmp_path / 'evil.zip'
+    with zipfile.ZipFile(str(z), 'w') as zf:
+        zf.writestr('/etc/passwd', 'evil')
+        zf.writestr('safe.txt', 'ok')
+
+    out = tmp_path / 'out'
+    out.mkdir()
+    ret = zipx.unzip_path(str(z), str(out), flat=True)
+
+    assert ret == 1
+    assert (out / 'safe.txt').exists()
+
+
+def test_unzip_skips_dotdot_entries(tmp_path):
+    z = tmp_path / 'evil.zip'
+    with zipfile.ZipFile(str(z), 'w') as zf:
+        zf.writestr('../escape.txt', 'evil')
+        zf.writestr('safe.txt', 'ok')
+
+    out = tmp_path / 'out'
+    out.mkdir()
+    ret = zipx.unzip_path(str(z), str(out), flat=True)
+
+    assert ret == 1
+    assert not (tmp_path / 'escape.txt').exists()
+
+
+def test_unzip_skips_dot_prefixed_entries(tmp_path):
+    z = tmp_path / 'hidden.zip'
+    with zipfile.ZipFile(str(z), 'w') as zf:
+        zf.writestr('.hidden', 'secret')
+        zf.writestr('visible.txt', 'ok')
+
+    out = tmp_path / 'out'
+    out.mkdir()
+    ret = zipx.unzip_path(str(z), str(out), flat=True)
+
+    assert ret == 1
+    assert not (out / '.hidden').exists()
+
+
+# --- Windows path separators ---
+
+def test_unzip_normalizes_windows_separators(tmp_path):
+    z = tmp_path / 'win.zip'
+    with zipfile.ZipFile(str(z), 'w') as zf:
+        zf.writestr('sub\\file.txt', 'windows')
+
+    result = zipx.unzip_path_to_dict(str(z), flat=True)
+
+    assert result == {'file.txt': b'windows'}

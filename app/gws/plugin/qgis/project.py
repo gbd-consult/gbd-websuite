@@ -121,7 +121,7 @@ class Object:
         if store.type == StoreType.postgres:
             src = self.to_xml()
             name = store.projectName + _PRJ_EXT
-            content = gws.lib.zipx.zip_to_bytes({name: src})
+            content = gws.lib.zipx.zip_to_bytes([{name: src}])
             return _to_db(root, store, content)
         raise Error(f'qgis project cannot be stored')
 
@@ -129,7 +129,7 @@ class Object:
         src = self.to_xml()
         if path.endswith(_ZIP_EXT):
             name = os.path.basename(path).replace(_ZIP_EXT, _PRJ_EXT)
-            content = gws.lib.zipx.zip_to_bytes({name: src})
+            content = gws.lib.zipx.zip_to_bytes([{name: src}])
             gws.u.write_file_b(path, content)
         else:
             gws.u.write_file(path, src)
