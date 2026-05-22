@@ -610,7 +610,9 @@ def write_file(path: str, s: str, user: int = None, group: int = None):
         raise
 
 
-def write_file_b(path: str, s: bytes, user: int = None, group: int = None):
+def write_file_b(path: str, s: str | bytes, user: int = None, group: int = None):
+    if isinstance(s, str):
+        s = s.encode('utf8')
     try:
         with open(path, 'wb') as fp:
             fp.write(s)

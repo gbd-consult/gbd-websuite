@@ -5,7 +5,7 @@ import math
 import os
 import re
 import typing
-from typing import Optional
+from typing import Optional, Generator
 
 import pytest
 import requests
@@ -493,7 +493,7 @@ def temp_file_in_base_dir(content='', keep=False):
 
 
 @contextlib.contextmanager
-def temp_dir_in_base_dir(keep=False):
+def temp_dir_in_base_dir(keep=False) -> Generator[str]:
     base = option('BASE_DIR')
 
     d = f'{base}/tmp/' + gws.u.random_string(16)

@@ -28,6 +28,23 @@ class DriverInfo(gws.Data):
     metaData: dict
 
 
+class ResampleAlg:
+    NearestNeighbour = gdal.GRA_NearestNeighbour
+    Bilinear = gdal.GRA_Bilinear
+    Cubic = gdal.GRA_Cubic
+    CubicSpline = gdal.GRA_CubicSpline
+    Lanczos = gdal.GRA_Lanczos
+    Average = gdal.GRA_Average
+    Mode = gdal.GRA_Mode
+    Max = gdal.GRA_Max
+    Min = gdal.GRA_Min
+    Med = gdal.GRA_Med
+    Q1 = gdal.GRA_Q1
+    Q3 = gdal.GRA_Q3
+    Sum = gdal.GRA_Sum
+    RMS = gdal.GRA_RMS
+
+
 class _DriverInfoCache(gws.Data):
     infos: list[DriverInfo]
     extToName: dict
@@ -267,52 +284,26 @@ class RasterDataSet(_DataSet):
 
         return gws.lib.image.from_array(arr)
 
-    _resampleAlg = {
-        'NearestNeighbour': gdal.GRA_NearestNeighbour,
-        'Bilinear': gdal.GRA_Bilinear,
-        'Cubic': gdal.GRA_Cubic,
-        'CubicSpline': gdal.GRA_CubicSpline,
-        'Lanczos': gdal.GRA_Lanczos,
-        'Average': gdal.GRA_Average,
-        'Mode': gdal.GRA_Mode,
-        'Max': gdal.GRA_Max,
-        'Min': gdal.GRA_Min,
-        'Med': gdal.GRA_Med,
-        'Q1': gdal.GRA_Q1,
-        'Q3': gdal.GRA_Q3,
-        'Sum': gdal.GRA_Sum,
-        'RMS': gdal.GRA_RMS,
-    }
+    def warp_to_path(self, path: str, options: dict):
+        """Warp a dataset and store it at the given path.
 
-    def resize(self, size: gws.Size, alg: str = 'Cubic', options: dict = None) -> 'RasterDataSet':
-        """Resize the raster dataset, returning a new in-memory dataset.
-        
         Args:
-            size: New size (width, height).
-            alg: Resampling algorithm, as string.
-            options: GDAL WarpOptions.
+            path: Destination path.
+            options: GDAL WarpOptions (see https://gdal.org/en/stable/api/python/utilities.html#osgeo.gdal.WarpOptions)
+
         """
 
         gdal.UseExceptions()
 
-        opts = {
-            'format': 'MEM',
-            'resampleAlg': alg,
-            'width': 0,
-            'height': 0,
-        }
-        if options:
-            opts.update(options)
-        opts['width'] = size[0]
-        opts['height'] = size[1]
-        opts['resampleAlg'] = self._resampleAlg.get(opts['resampleAlg'], opts['resampleAlg'])
+        if 'format' not in options:
+            options = dict(options)
+            options['format'] = _driver_from_args(path, '', True).GetDescription()
 
-        gd = gdal.Warp('', self.gdDataset, **opts)
+        gd = gdal.Warp(path, self.gdDataset, **options)
         if gd is None:
-            raise Error(f'resize failed')
-
-        dso = _DataSetOptions(path='', defaultCrs=self.dso.defaultCrs)
-        return RasterDataSet(dso, gd)
+            raise Error(f'warp failed')
+        gd.FlushCache()
+        gd = None
 
     def save_as(self, path: str, driver: str = '', strict=False, options: dict = None):
         """Create a copy of a DataSet.
@@ -610,13 +601,13 @@ def _driver_from_args(path, driver_name, need_raster):
         names = di.extToName.get(ext)
         if not names:
             raise Error(f'no default driver found for {path!r}')
-        if len(names) > 1:
-            if ext in ('tif', 'tiff'):
-                driver_name = 'GTiff'
-            else:
-                raise Error(f'multiple drivers found for {path!r}: {names}')
-        else:
+        if len(names) == 1:
             driver_name = names[0]
+        elif ext in ('tif', 'tiff'):
+            ## names = ['GTiff', 'COG']
+            driver_name = 'GTiff'
+        else:
+            raise Error(f'multiple drivers found for {path!r}: {names}')
 
     is_vector = driver_name in di.vectorNames
     is_raster = driver_name in di.rasterNames

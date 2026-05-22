@@ -44,52 +44,54 @@ def test_size_from_file():
             assert ds.size() == (320, 240)
 
 
-def test_resize():
-    img = gws.lib.image.from_size((100, 200), '#ff00ff32')
-    b = gws.lib.bounds.from_extent((753000, 6640000, 755000, 6641000), gws.lib.crs.WEBMERCATOR)
-    with gdalx.open_from_image(img, b) as ds:
-        resized = ds.resize((50, 100))
-        assert resized.size() == (50, 100)
-        resized.close()
-
-
-def test_resize_upscale():
-    img = gws.lib.image.from_size((100, 200), '#ff00ff32')
-    b = gws.lib.bounds.from_extent((753000, 6640000, 755000, 6641000), gws.lib.crs.WEBMERCATOR)
-    with gdalx.open_from_image(img, b) as ds:
-        resized = ds.resize((400, 800))
-        assert resized.size() == (400, 800)
-        resized.close()
-
-
-def test_resize_save():
+def test_warp_to_path():
     with u.temp_dir_in_base_dir(True) as d:
         img = gws.lib.image.from_size((100, 200), '#ff00ff32')
         b = gws.lib.bounds.from_extent((753000, 6640000, 755000, 6641000), gws.lib.crs.WEBMERCATOR)
         with gdalx.open_from_image(img, b) as ds:
-            resized = ds.resize((50, 100))
-            resized.save_as(f'{d}/resized.tif')
-            resized.close()
+            ds.warp_to_path(f'{d}/resized.tif', {'width': 50, 'height': 100})
+        with gdalx.open_raster(f'{d}/resized.tif') as ds:
+            assert ds.size() == (50, 100)
+
+
+def test_warp_to_path_upscale():
+    with u.temp_dir_in_base_dir(True) as d:
+        img = gws.lib.image.from_size((100, 200), '#ff00ff32')
+        b = gws.lib.bounds.from_extent((753000, 6640000, 755000, 6641000), gws.lib.crs.WEBMERCATOR)
+        with gdalx.open_from_image(img, b) as ds:
+            ds.warp_to_path(f'{d}/resized.tif', {'width': 400, 'height': 800})
+        with gdalx.open_raster(f'{d}/resized.tif') as ds:
+            assert ds.size() == (400, 800)
+
+
+def test_warp_to_path_save():
+    with u.temp_dir_in_base_dir(True) as d:
+        img = gws.lib.image.from_size((100, 200), '#ff00ff32')
+        b = gws.lib.bounds.from_extent((753000, 6640000, 755000, 6641000), gws.lib.crs.WEBMERCATOR)
+        with gdalx.open_from_image(img, b) as ds:
+            ds.warp_to_path(f'{d}/resized.tif', {'width': 50, 'height': 100})
 
         with gdalx.open_raster(f'{d}/resized.tif') as ds:
             assert ds.size() == (50, 100)
 
 
-def test_resize_to_image():
-    img = gws.lib.image.from_size((100, 200), '#ff00ff32')
-    b = gws.lib.bounds.from_extent((753000, 6640000, 755000, 6641000), gws.lib.crs.WEBMERCATOR)
-    with gdalx.open_from_image(img, b) as ds:
-        resized = ds.resize((50, 100))
-        out_img = resized.to_image()
-        assert out_img.size() == (50, 100)
-        resized.close()
-
-
-def test_resize_algorithms():
-    img = gws.lib.image.from_size((100, 200), '#ff00ff32')
-    b = gws.lib.bounds.from_extent((753000, 6640000, 755000, 6641000), gws.lib.crs.WEBMERCATOR)
-    for alg in ('NearestNeighbour', 'Bilinear', 'Cubic', 'Lanczos', 'Average'):
+def test_warp_to_path_to_image():
+    with u.temp_dir_in_base_dir(True) as d:
+        img = gws.lib.image.from_size((100, 200), '#ff00ff32')
+        b = gws.lib.bounds.from_extent((753000, 6640000, 755000, 6641000), gws.lib.crs.WEBMERCATOR)
         with gdalx.open_from_image(img, b) as ds:
-            resized = ds.resize((50, 100), alg=alg)
-            assert resized.size() == (50, 100), f'resize with {alg} failed'
-            resized.close()
+            ds.warp_to_path(f'{d}/resized.tif', {'width': 50, 'height': 100})
+        with gdalx.open_raster(f'{d}/resized.tif') as ds:
+            out_img = ds.to_image()
+            assert out_img.size() == (50, 100)
+
+
+def test_warp_to_path_algorithms():
+    with u.temp_dir_in_base_dir(True) as d:
+        img = gws.lib.image.from_size((100, 200), '#ff00ff32')
+        b = gws.lib.bounds.from_extent((753000, 6640000, 755000, 6641000), gws.lib.crs.WEBMERCATOR)
+        for alg in ('NearestNeighbour', 'Bilinear', 'Cubic', 'Lanczos', 'Average'):
+            with gdalx.open_from_image(img, b) as ds:
+                ds.warp_to_path(f'{d}/{alg}.tif', {'width': 50, 'height': 100, 'resampleAlg': getattr(gdalx.ResampleAlg, alg)})
+            with gdalx.open_raster(f'{d}/{alg}.tif') as ds:
+                assert ds.size() == (50, 100), f'warp_to_path with {alg} failed'
