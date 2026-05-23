@@ -28,23 +28,6 @@ class DriverInfo(gws.Data):
     metaData: dict
 
 
-class ResampleAlg:
-    NearestNeighbour = gdal.GRA_NearestNeighbour
-    Bilinear = gdal.GRA_Bilinear
-    Cubic = gdal.GRA_Cubic
-    CubicSpline = gdal.GRA_CubicSpline
-    Lanczos = gdal.GRA_Lanczos
-    Average = gdal.GRA_Average
-    Mode = gdal.GRA_Mode
-    Max = gdal.GRA_Max
-    Min = gdal.GRA_Min
-    Med = gdal.GRA_Med
-    Q1 = gdal.GRA_Q1
-    Q3 = gdal.GRA_Q3
-    Sum = gdal.GRA_Sum
-    RMS = gdal.GRA_RMS
-
-
 class _DriverInfoCache(gws.Data):
     infos: list[DriverInfo]
     extToName: dict
@@ -298,6 +281,13 @@ class RasterDataSet(_DataSet):
         if 'format' not in options:
             options = dict(options)
             options['format'] = _driver_from_args(path, '', True).GetDescription()
+
+        if 'resampleAlg' in options and isinstance(options['resampleAlg'], str):
+            s = options['resampleAlg']
+            alg = getattr(gdal, 'GRA_' + s, None)
+            if alg is None:
+                raise Error(f'invalid resampling algorithm {s!r}')
+            options['resampleAlg'] = alg
 
         gd = gdal.Warp(path, self.gdDataset, **options)
         if gd is None:

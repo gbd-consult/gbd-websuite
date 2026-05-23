@@ -92,6 +92,6 @@ def test_warp_to_path_algorithms():
         b = gws.lib.bounds.from_extent((753000, 6640000, 755000, 6641000), gws.lib.crs.WEBMERCATOR)
         for alg in ('NearestNeighbour', 'Bilinear', 'Cubic', 'Lanczos', 'Average'):
             with gdalx.open_from_image(img, b) as ds:
-                ds.warp_to_path(f'{d}/{alg}.tif', {'width': 50, 'height': 100, 'resampleAlg': getattr(gdalx.ResampleAlg, alg)})
+                ds.warp_to_path(f'{d}/{alg}.tif', {'width': 50, 'height': 100, 'resampleAlg': alg})
             with gdalx.open_raster(f'{d}/{alg}.tif') as ds:
                 assert ds.size() == (50, 100), f'warp_to_path with {alg} failed'

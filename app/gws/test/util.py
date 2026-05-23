@@ -493,7 +493,7 @@ def temp_file_in_base_dir(content='', keep=False):
 
 
 @contextlib.contextmanager
-def temp_dir_in_base_dir(keep=False) -> Generator[str]:
+def temp_dir_in_base_dir(keep=False) -> Generator[str, None, None]:
     base = option('BASE_DIR')
 
     d = f'{base}/tmp/' + gws.u.random_string(16)
