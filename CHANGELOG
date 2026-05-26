@@ -1,3 +1,7 @@
+## Version 8.2.22
+
+- update SSL configuration to the Mozilla intermediate profile
+
 ## Version 8.2.21
 
 - fixed MapProxy seeding issues, added `concurrency` option
