@@ -482,7 +482,14 @@ function _loc2url(loc) {
     });
 
     let h = hs.join(';');
-    return loc['base'] + (h ? '/@' + h : '') + _cleanqs(loc.qs);
+    let u = loc['base'] || '';
+    if (h) {
+        if (!u.endsWith('/')) {
+            u += '/';
+        }
+        u = u + '@' + h;
+    }
+    return u + _cleanqs(loc.qs);
 }
 
 function _cleanqs(qs) {
