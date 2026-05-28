@@ -110,7 +110,6 @@ def _parse_app_dict(dct: dict, path, pp: '_Parser'):
     # remove 'projects' from the config, parse them later on
     inline_projects = dct.pop('projects', [])
 
-    gws.log.info('parsing main configuration...')
     app_cfg = pp.parse_dict(dct, path, as_type='gws.base.application.core.Config')
     if not app_cfg:
         return

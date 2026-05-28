@@ -53,9 +53,13 @@ class Object(gws.AuthManager):
     ##
 
     def enter_middleware(self, req: gws.WebRequester):
-        sess = self._try_open_session(req) or self.guestSession
-        req.set_session(sess)
-        gws.log.debug(f'session opened: user={req.session.user.uid!r} roles={req.session.user.roles}')
+        sess = self._try_open_session(req)
+        if sess:
+            gws.log.debug(f'session: user={req.session.user.uid!r} roles={req.session.user.roles}')
+            req.set_session(sess)
+        else:
+            gws.log.debug('session: guest')
+            req.set_session(self.guestSession)
 
     def _try_open_session(self, req):
         for meth in self.methods:

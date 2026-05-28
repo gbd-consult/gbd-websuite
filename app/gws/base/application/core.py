@@ -138,14 +138,6 @@ class Object(gws.Application):
     mpxConfig = ''
 
     def configure(self):
-        self.vars = self.cfg('vars') or {}
-
-        self.serverMgr = self.create_child(gws.server.manager.Object, self.cfg('server'))
-        # NB need defaults from the server
-        self.config.server = self.serverMgr.config
-
-        gws.log.set_level(self.cfg('server.log.level'))
-
         self.version = self.root.specs.version
         self.versionString = f'GWS version {self.version}'
 
@@ -156,6 +148,15 @@ class Object(gws.Application):
             gws.log.info('*' * 80)
             gws.log.info(self.versionString)
             gws.log.info('*' * 80)
+
+        self.vars = self.cfg('vars') or {}
+
+        self.serverMgr = self.create_child(gws.server.manager.Object, self.cfg('server'))
+        # NB need defaults from the server
+        self.config.server = self.serverMgr.config
+
+        gws.log.set_level(self.cfg('server.log.level'))
+
 
         self._developerOptions = self.cfg('developer') or {}
         if self._developerOptions:
