@@ -20,7 +20,7 @@ gws.ext.new.action('qfieldcloud')
 
 class Config(gws.ConfigWithAccess):
     """QField Cloud action. (added in 8.3)"""
-    
+
     projects: list[core.ProjectConfig]
     """QField Cloud projects."""
 
@@ -67,22 +67,15 @@ def route(pattern: str):
     return decorator
 
 
-class AuthMethod(gws.AuthMethod):
-    """Dummy auth method for API sessions."""
-
-    def configure(self):
-        self.uid = 'gws.plugin.qfieldcloud.auth'
-
-
 class Object(gws.base.action.Object):
     """QField Cloud API action."""
-    
+
     qfcProjects: list[core.QfcProject]
     capsCache: dict[str, caps.Caps]
     method: gws.AuthMethod
 
     def configure(self):
-        self.method = cast(gws.AuthMethod, self.create_child(AuthMethod))
+        self.method = cast(gws.AuthMethod, self.create_child(gws.ext.object.authMethod, type='qfieldcloud'))
         self.qfcProjects = []
         for p in self.cfg('projects') or []:
             qp = self.create_child(core.QfcProject, p)
