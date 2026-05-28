@@ -1,3 +1,9 @@
+## Version 8.3.13
+
+- update SSL configuration to the Mozilla intermediate profile
+- fixed a bug in the QField Cloud authorization
+- fixed navigation issues when the start page is set to a project
+
 ## Version 8.3.12
 
 - fix the MAX_IMAGE_PIXELS setting
