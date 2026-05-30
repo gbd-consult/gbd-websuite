@@ -25,31 +25,27 @@ class DriverInfo(gws.Data):
     index: int
     name: str
     longName: str
+    extensions: list[str]
     metaData: dict
 
 
-class _DriverInfoCache(gws.Data):
-    infos: list[DriverInfo]
-    extToName: dict
-    vectorNames: set[str]
-    rasterNames: set[str]
-
-
-class _DataSetOptions(gws.Data):
-    path: str
-    mode: str
-    driver: str
-    encoding: str
-    defaultCrs: gws.Crs
-    geometryAsText: bool
-    gdalOpts: dict
-
-
-def drivers() -> list[DriverInfo]:
+def get_drivers() -> list[DriverInfo]:
     """Enumerate GDAL drivers."""
 
     di = gws.u.get_app_global('gdal_drivers', _fetch_driver_infos)
     return di.infos
+
+
+def get_driver(name: str) -> Optional[DriverInfo]:
+    """Get driver info by name."""
+
+    for di in get_drivers():
+        if di.name == name:
+            return di
+
+
+def supported_attribute_types():
+    return list(_ATTR_TO_OGR.keys())
 
 
 @contextlib.contextmanager
@@ -135,44 +131,6 @@ def open_vector(
     return cast(VectorDataSet, _open(dso, need_raster=False))
 
 
-def _open(dso: _DataSetOptions, need_raster):
-    if not dso.mode:
-        dso.mode = 'r'
-    if dso.mode not in 'rwa':
-        raise Error(f'invalid open mode {dso.mode!r}')
-
-    gdal.UseExceptions()
-
-    drv = _driver_from_args(dso.path, dso.driver, need_raster)
-    dso.defaultCrs = dso.defaultCrs or gws.lib.crs.WEBMERCATOR
-
-    if dso.mode == 'w':
-        gd = drv.CreateDataSource(dso.path, _option_list(dso.gdalOpts))
-        if gd is None:
-            raise Error(f'cannot create {dso.path!r}')
-        if need_raster:
-            return RasterDataSet(dso, gd)
-        return VectorDataSet(dso, gd)
-
-    flags = gdal.OF_VERBOSE_ERROR
-    if dso.mode == 'r':
-        flags += gdal.OF_READONLY
-    if dso.mode == 'a':
-        flags += gdal.OF_UPDATE
-    if need_raster:
-        flags += gdal.OF_RASTER
-    else:
-        flags += gdal.OF_VECTOR
-
-    gd = gdal.OpenEx(dso.path, flags, open_options=_option_list(dso.gdalOpts))
-    if gd is None:
-        raise Error(f'cannot open {dso.path!r}')
-
-    if need_raster:
-        return RasterDataSet(dso, gd)
-    return VectorDataSet(dso, gd)
-
-
 def open_from_image(
     image: gws.Image,
     bounds: gws.Bounds,
@@ -216,6 +174,61 @@ def open_from_image(
 
 
 ##
+
+
+class _DriverInfoCache(gws.Data):
+    infos: list[DriverInfo]
+    extToName: dict
+    vectorNames: set[str]
+    rasterNames: set[str]
+
+
+class _DataSetOptions(gws.Data):
+    path: str
+    mode: str
+    driver: str
+    encoding: str
+    defaultCrs: gws.Crs
+    geometryAsText: bool
+    gdalOpts: dict
+
+
+def _open(dso: _DataSetOptions, need_raster):
+    if not dso.mode:
+        dso.mode = 'r'
+    if dso.mode not in 'rwa':
+        raise Error(f'invalid open mode {dso.mode!r}')
+
+    gdal.UseExceptions()
+
+    drv = _driver_from_args(dso.path, dso.driver, need_raster)
+    dso.defaultCrs = dso.defaultCrs or gws.lib.crs.WEBMERCATOR
+
+    if dso.mode == 'w':
+        gd = drv.CreateDataSource(dso.path, _option_list(dso.gdalOpts))
+        if gd is None:
+            raise Error(f'cannot create {dso.path!r}')
+        if need_raster:
+            return RasterDataSet(dso, gd)
+        return VectorDataSet(dso, gd)
+
+    flags = gdal.OF_VERBOSE_ERROR
+    if dso.mode == 'r':
+        flags += gdal.OF_READONLY
+    if dso.mode == 'a':
+        flags += gdal.OF_UPDATE
+    if need_raster:
+        flags += gdal.OF_RASTER
+    else:
+        flags += gdal.OF_VECTOR
+
+    gd = gdal.OpenEx(dso.path, flags, open_options=_option_list(dso.gdalOpts))
+    if gd is None:
+        raise Error(f'cannot open {dso.path!r}')
+
+    if need_raster:
+        return RasterDataSet(dso, gd)
+    return VectorDataSet(dso, gd)
 
 
 class _DataSet:
@@ -593,9 +606,8 @@ def _driver_from_args(path, driver_name, need_raster):
             raise Error(f'no default driver found for {path!r}')
         if len(names) == 1:
             driver_name = names[0]
-        elif ext in ('tif', 'tiff'):
-            ## names = ['GTiff', 'COG']
-            driver_name = 'GTiff'
+        elif ext in _DEFAULT_DRIVERS:
+            driver_name = _DEFAULT_DRIVERS[ext]
         else:
             raise Error(f'multiple drivers found for {path!r}: {names}')
 
@@ -612,8 +624,17 @@ def _driver_from_args(path, driver_name, need_raster):
     return ogr.GetDriverByName(driver_name)
 
 
+_DEFAULT_DRIVERS = {
+    'gif': 'GIF',
+    'gml': 'GML',
+    'kml': 'KML',
+    'tif': 'GTiff',
+    'tiff': 'GTiff',
+}
+
+
 def _fetch_driver_infos() -> _DriverInfoCache:
-    di = _DriverInfoCache(
+    dic = _DriverInfoCache(
         infos=[],
         extToName={},
         vectorNames=set(),
@@ -622,22 +643,24 @@ def _fetch_driver_infos() -> _DriverInfoCache:
 
     for n in range(gdal.GetDriverCount()):
         drv = gdal.GetDriver(n)
-        inf = DriverInfo(
+        di = DriverInfo(
             index=n,
             name=str(drv.ShortName),
             longName=str(drv.LongName),
+            extensions=[],
             metaData=dict(drv.GetMetadata() or {}),
         )
-        di.infos.append(inf)
+        dic.infos.append(di)
 
-        for e in inf.metaData.get(gdal.DMD_EXTENSIONS, '').split():
-            di.extToName.setdefault(e, []).append(inf.name)
-        if inf.metaData.get('DCAP_VECTOR') == 'YES':
-            di.vectorNames.add(inf.name)
-        if inf.metaData.get('DCAP_RASTER') == 'YES':
-            di.rasterNames.add(inf.name)
+        for e in di.metaData.get(gdal.DMD_EXTENSIONS, '').split():
+            dic.extToName.setdefault(e, []).append(di.name)
+            di.extensions.append(e)
+        if di.metaData.get('DCAP_VECTOR') == 'YES':
+            dic.vectorNames.add(di.name)
+        if di.metaData.get('DCAP_RASTER') == 'YES':
+            dic.rasterNames.add(di.name)
 
-    return di
+    return dic
 
 
 _name_to_srid = {}
@@ -740,10 +763,6 @@ def _attr_to_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, value, encoding)
         return gd_feature.SetField(idx, [float(x) for x in value])
 
     return gd_feature.SetField(idx, value)
-
-
-def is_attribute_type_supported(typ):
-    return typ in _ATTR_TO_OGR
 
 
 def _bounds_to_geotransform(bounds: gws.Bounds, px_size: gws.Size, rotation: gws.Size | None) -> tuple[float, float, float, float, float, float]:
