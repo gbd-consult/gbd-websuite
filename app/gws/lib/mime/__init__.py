@@ -7,6 +7,7 @@ import mimetypes
 BIN = 'application/octet-stream'
 CSS = 'text/css'
 CSV = 'text/csv'
+DOC = 'application/msword'
 GEOJSON = 'application/geo+json'
 GIF = 'image/gif'
 GML = 'application/gml+xml'
@@ -17,23 +18,24 @@ HTML = 'text/html'
 JPEG = 'image/jpeg'
 JS = 'application/javascript'
 JSON = 'application/json'
+KML = 'application/vnd.google-earth.kml+xml'
 PDF = 'application/pdf'
 PNG = 'image/png'
+PPT = 'application/vnd.ms-powerpoint'
 SVG = 'image/svg+xml'
 TTF = 'application/x-font-ttf'
 TXT = 'text/plain'
+WEBP = 'image/webp'
+XLS = 'application/vnd.ms-excel'
 XML = 'text/xml'
 ZIP = 'application/zip'
-DOC = 'application/msword'
-XLS = 'application/vnd.ms-excel'
-PPT = 'application/vnd.ms-powerpoint'
-WEBP = 'image/webp'
 
 
 _common = {
     BIN,
     CSS,
     CSV,
+    DOC,
     GEOJSON,
     GIF,
     GML,
@@ -44,57 +46,54 @@ _common = {
     JPEG,
     JS,
     JSON,
+    KML,
     PDF,
     PNG,
+    PPT,
     SVG,
     TTF,
     TXT,
+    XLS,
     XML,
     ZIP,
-    DOC,
-    XLS,
-    PPT,
 }
 
 _common_extensions = {
     'css': CSS,
     'csv': CSV,
+    'doc': DOC,
     'gif': GIF,
-    'gml2': GML2,
     'gml': GML,
+    'gml2': GML2,
     'html': HTML,
     'jpeg': JPEG,
     'jpg': JPEG,
     'js': JS,
     'json': JSON,
+    'kml': KML,
     'pdf': PDF,
     'png': PNG,
+    'ppt': PPT,
     'svg': SVG,
     'ttf': TTF,
     'txt': TXT,
+    'xls': XLS,
     'xml': XML,
     'zip': ZIP,
-
-    'doc': DOC,
-    'xls': XLS,
-    'ppt': PPT,
 }
 
 _aliases = {
-
     'application/vnd.ogc.gml': GML2,
     'application/vnd.ogc.gml/3.1.1': GML,
     'application/gml:3': GML,
     'application/xml;subtype=gml/2': GML2,
     'application/xml;subtype=gml/3': GML,
-
     'application/html': HTML,
     'application/x-gzip': GZIP,
     'application/x-pdf': PDF,
     'image/jpg': JPEG,
     'text/xhtml': HTML,
     'application/xml': XML,
-
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': DOC,
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': XLS,
     'application/vnd.openxmlformats-officedocument.presentationml.presentation': PPT,
