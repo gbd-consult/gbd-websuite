@@ -36,12 +36,13 @@ class Object:
 
     def __init__(
         self,
-        manifest_path: str = '',
-        config_path: str = '',
+        manifest_path='',
+        config_path='',
+        specs=None,
         raw_config=None,
         fallback_config=None,
-        with_spec_cache=True,
-        hooks: list = None,
+        with_spec_cache=False,
+        hooks=None,
     ):
         self.tm1 = _time_and_memory()
 
@@ -58,6 +59,7 @@ class Object:
         self.fallbackConfig = fallback_config
         self.withSpecCache = with_spec_cache
         self.hooks = hooks or []
+        self.specs = specs
 
         self.config = None
         self.root = None
@@ -104,11 +106,15 @@ class Object:
     ##
 
     def _init_specs(self):
+        if self.specs:
+            self.ctx.specs = self.specs
+            return True
+        
         try:
             self.ctx.specs = gws.spec.runtime.create(
                 manifest_path=self.manifestPath,
-                # read_cache=self.withSpecCache,
-                # write_cache=self.withSpecCache,
+                read_cache=self.withSpecCache,
+                write_cache=self.withSpecCache,
             )
             return True
         except Exception as exc:
@@ -160,9 +166,10 @@ class Object:
 def configure(
     manifest_path='',
     config_path='',
-    raw_config=None,
-    fallback_config=None,
-    with_spec_cache=True,
+    specs: Optional[gws.SpecRuntime] = None,
+    raw_config: dict | gws.Data = None,
+    fallback_config: dict | gws.Data = None,
+    with_spec_cache=False,
     hooks: list = None,
 ) -> gws.ConfigResult:
     """Configure the server."""
@@ -170,6 +177,7 @@ def configure(
     ldr = Object(
         manifest_path,
         config_path,
+        specs,
         raw_config,
         fallback_config,
         with_spec_cache,
@@ -178,12 +186,17 @@ def configure(
     return ldr.configure()
 
 
-def parse(manifest_path='', config_path='') -> gws.ConfigResult:
+def parse(
+    manifest_path='',
+    config_path='',
+    specs: Optional[gws.SpecRuntime] = None,
+) -> gws.ConfigResult:
     """Parse input configuration."""
 
     ldr = Object(
         manifest_path,
         config_path,
+        specs,
     )
     return ldr.parse()
 
@@ -274,7 +287,7 @@ def real_manifest_path(manifest_path: str) -> str:
 
 def log_report(cr: gws.ConfigResult):
     err_cnt = len(cr.errors) if cr.errors else 0
-    ln = "*" * 80
+    ln = '*' * 80
     fn = gws.log.info if err_cnt == 0 else gws.log.warning
 
     fn(ln)
@@ -284,7 +297,7 @@ def log_report(cr: gws.ConfigResult):
         fn(f'configured: {cr.info}')
 
     fn(ln)
-    
+
     if err_cnt > 0:
         for n, cei in enumerate(cr.errors, 1):
             gws.log.error(f'{_ERROR_PREFIX}: {n} of {err_cnt}')
@@ -319,7 +332,7 @@ def _log_error(cei: gws.ConfigErrorInfo):
             ls.append(f'{tab}in {p}')
     if cei.contextLines:
         ls.extend(cei.contextLines)
-    
+
     for s in ls:
         gws.log.error(f'{_ERROR_PREFIX}: {s}')
 
