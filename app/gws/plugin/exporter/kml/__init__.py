@@ -1,0 +1,35 @@
+"""Exporter for the KML format.
+
+See https://gdal.org/en/stable/drivers/vector/kml.html#creation-options for supported options.
+"""
+
+import gws
+import gws.base.exporter
+import gws.lib.mime
+
+
+gws.ext.new.exporter('kml')
+
+
+class Config(gws.base.exporter.Config):
+    """KML Exporter configuration."""
+
+    pass
+
+
+class Props(gws.base.exporter.Props):
+    """KML Exporter properties."""
+
+    pass
+
+
+class Object(gws.base.exporter.Object):
+    supportsVector = True
+    supportsRaster = False
+
+    def run(self, ea, er):
+        return run_export(ea, er)
+
+
+def run_export(ea: gws.ExportArgs, er: gws.ExportResult):
+    gws.base.exporter.util.run_gdal_vector_export('KML', gws.lib.mime.KML, ea, er)

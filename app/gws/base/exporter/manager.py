@@ -46,11 +46,5 @@ class Object(gws.ExporterManager):
         if w.result and w.result.path:
             gws.lib.osx.copy(w.result.path, out_path)
             return
-        raise gws.Error('export failed')
-
-    def handle_request(self, req, p):
-        project = req.user.require_project(p.projectUid)
-        exporter = self.get_exporter([project, self.root.app], p.exporterUid, req.user)
-        if not exporter:
-            raise gws.NotFoundError('exporter not found')
-        return self.start_export_job(p, req.user)
+        raise gws.Error('no features exported')
+    

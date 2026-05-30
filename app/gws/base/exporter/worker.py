@@ -1,25 +1,16 @@
 from typing import Optional, cast
 
 import gws
-import gws.base.model
 import gws.base.job
-import gws.lib.crs
-import gws.gis.render
-import gws.lib.image
-import gws.lib.intl
-import gws.lib.mime
-import gws.lib.osx
-import gws.lib.style
-import gws.lib.uom
 
 
 class Object(gws.base.job.worker.Object):
     project: gws.Project
     request: gws.ExportRequest
-    tmpDir: str
-    result: Optional[gws.ExportResult]
-    features: list[gws.Feature]
-    numFeaturesTotal: int
+    result: gws.ExportResult
+    progressTotal: int = 1
+    progressStep: int = 0
+    progressPercent: int = 0
 
     @classmethod
     def run(cls, root: gws.Root, job: gws.Job):
@@ -30,36 +21,50 @@ class Object(gws.base.job.worker.Object):
     def __init__(self, root: gws.Root, user: gws.User, job: Optional[gws.Job], request: gws.ExportRequest):
         super().__init__(root, user, job)
         self.request = request
-        self.result = None
-        self.features = []
-        self.numFeaturesTotal = 0
+        self.result = gws.ExportResult(
+            path='',
+            mime='',
+            numFiles=0,
+            numFeaturesTotal=0,
+            numFeaturesExported=0,
+            errors=[],
+        )
 
     def work(self):
         self.project = cast(gws.Project, self.user.require(self.request.projectUid, gws.ext.object.project))
-        self.features = self.load_features()
 
-        exporter = self.root.app.exporterMgr.get_exporter([self.project, self.root.app], self.request.exporterUid, self.user)
+        exporter = self.root.app.exporterMgr.get_exporter(
+            [self.project, self.root.app],
+            self.request.exporterUid,
+            self.user,
+        )
         if not exporter:
             raise gws.NotFoundError('exporter not found')
 
+        # load + features + write
+        self.progressTotal = 1 + len(self.request.features or []) + 1
+        self.update_job(numSteps=100)
+
+        features = self.load_features()
+        self.notify('load')
+
         ea = gws.ExportArgs(
-            features=self.features,
+            exporter=exporter,
+            features=features,
             shape=self.request.shape,
             project=self.project,
             user=self.user,
             notify=self.notify,
         )
 
-        self.result = exporter.run(ea)
-        self.result.numFeaturesTotal = self.numFeaturesTotal
+        exporter.run(ea, self.result)
         self.update_job(state=gws.JobState.complete, result=self.result)
 
     def load_features(self):
-        
         if not self.request.features:
             return []
 
-        self.numFeaturesTotal = len(self.request.features)
+        self.result.numFeaturesTotal = len(self.request.features)
 
         models: dict[str, gws.Model] = {}
         uid_map: dict[str, set[str]] = {}
@@ -106,4 +111,11 @@ class Object(gws.base.job.worker.Object):
         return fs
 
     def notify(self, event, details=None):
-        gws.log.debug(f'notify: {event} {details}')
+        job = self.get_job()
+        if not job:
+            return
+        self.progressStep += 1
+        p = int(self.progressStep / self.progressTotal * 100)
+        if p > self.progressPercent:
+            self.progressPercent = p
+            self.update_job(numSteps=100, step=self.progressPercent)

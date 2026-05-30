@@ -12,6 +12,16 @@ class Config(gws.ConfigWithAccess):
     """Target export type."""
     targetPath: Optional[str]
     """Target export path (if applicable)."""
+    withNoGeometry: bool = False
+    """Allow features with no geometry."""
+    withMixedGeometry: bool = False
+    """Allow features with different geometries in the same layer."""
+    withMixedCrs: bool = False
+    """Allow features with different coordinate reference systems in the same layer."""
+    withSplitTypes: bool = False
+    """Create separate files for different layers."""
+    options: dict = {}
+    """Additional exporter-specific options."""
 
 
 class Props(gws.Props):
@@ -28,7 +38,6 @@ class Props(gws.Props):
 class Object(gws.Exporter):
     """Exporter object."""
 
-    title: str
     supportsVector: bool
     supportsRaster: bool
 
@@ -36,6 +45,12 @@ class Object(gws.Exporter):
         self.title = self.cfg('title')
         self.targetType = self.cfg('targetType')
         self.targetPath = self.cfg('targetPath')
+        self.withNoGeometry = self.cfg('withNoGeometry')
+        self.withMixedGeometry = self.cfg('withMixedGeometry')
+        self.withMixedCrs = self.cfg('withMixedCrs')
+        self.withSplitTypes = self.cfg('withSplitTypes')
+        self.options = gws.u.to_dict(self.cfg('options')) or {}
+        self.supportedAttributeTypes = []
 
     def props(self, user) -> Props:
         """Return exporter properties."""

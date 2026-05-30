@@ -4676,11 +4676,13 @@ class WebSite(Node):
 class ExportArgs(Data):
     """Exporter arguments."""
 
+    exporter: 'Exporter'
     features: Optional[list['Feature']]
     shape: Optional['Shape']
     project: 'Project'
     user: 'User'
     notify: Callable
+    maxErrors: int = 100
 
 
 class ExportTarget(Enum):
@@ -4742,8 +4744,16 @@ class Exporter(Node):
     """Exporter object."""
 
     title: str
+    options: dict
+    
+    withNoGeometry: bool
+    withMixedGeometry: bool
+    withMixedCrs: bool
+    withSplitTypes: bool
 
-    def run(self, ea: ExportArgs) -> ExportResult:
+    supportedAttributeTypes: Optional[list[gws.AttributeType]]
+
+    def run(self, ea: ExportArgs, er: ExportResult):
         """Perform format-specific export."""
 ################################################################################
 
