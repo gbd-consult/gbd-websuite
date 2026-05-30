@@ -79,6 +79,10 @@ class Object(gws.base.ows.client.provider.Object):
             search_shape = search.shape.tolerance_polygon(geometry_tolerance)
             bounds = search_shape.bounds()
 
+        if not bounds:
+            gws.log.warning('get_features: no bounds or shape given')
+            return []
+
         request_crs = self.forceCrs or gws.lib.crs.WGS84
 
         bbox = gws.lib.bounds.transform(bounds, request_crs).extent
