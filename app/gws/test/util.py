@@ -129,7 +129,7 @@ def _config_defaults():
             uid "GWS_TEST_POSTGRES_PROVIDER" 
             type "postgres" 
             host     {OPTIONS['service.postgres.host']!r}
-            port     {OPTIONS['service.postgres.port']!r}
+            port     {int(OPTIONS['service.postgres.port'])}
             username {OPTIONS['service.postgres.user']!r}
             password {OPTIONS['service.postgres.password']!r}
             database {OPTIONS['service.postgres.database']!r}
@@ -430,11 +430,14 @@ class mockserver:
 ##
 
 
-def fxml(s):
-    """Format XML for easier comparison in tests."""
+def fxml(s, nl=True):
+    """Remove unsignificant whitespace from XML for easier comparison in tests.
+    If nl is True, also put each tag on a new line for better readability.
+    """
     s = re.sub(r'\s+', ' ', s.strip())
     s = re.sub(r'\s*(<|>)\s*', r'\1', s)
-    s = s.replace('<', '\n<').replace('>', '>\n').replace('\n\n', '\n')
+    if nl:
+        s = s.replace('<', '\n<').replace('>', '>\n').replace('\n\n', '\n')
     return s.strip()
 
 
@@ -477,14 +480,14 @@ def path_in_base_dir(path):
 
 
 @contextlib.contextmanager
-def temp_file_in_base_dir(content='', keep=False):
+def temp_file_in_base_dir(content='', keep=False, name='tmp'):
     # for exec/chmod tests, which cannot use tmp_path
 
     base = option('BASE_DIR')
     d = f'{base}/tmp'
     ensure_dir(d)
 
-    p = d + '/' + gws.u.random_string(16)
+    p = d + '/' + gws.u.random_string(16) + name
     gws.u.write_file(p, content)
     yield p
 
