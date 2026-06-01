@@ -90,7 +90,7 @@ def test_warp_to_path_algorithms():
     with u.temp_dir_in_base_dir(True) as d:
         img = gws.lib.image.from_size((100, 200), '#ff00ff32')
         b = gws.lib.bounds.from_extent((753000, 6640000, 755000, 6641000), gws.lib.crs.WEBMERCATOR)
-        for alg in ('NearestNeighbour', 'Bilinear', 'Cubic', 'Lanczos', 'Average'):
+        for alg in ('near', 'bilinear', 'cubic', 'cubicspline', 'lanczos', 'average'):
             with gdalx.open_from_image(img, b) as ds:
                 ds.warp_to_path(f'{d}/{alg}.tif', {'width': 50, 'height': 100, 'resampleAlg': alg})
             with gdalx.open_raster(f'{d}/{alg}.tif') as ds:

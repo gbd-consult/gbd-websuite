@@ -285,8 +285,11 @@ class RasterDataSet(_DataSet):
 
         Args:
             path: Destination path.
-            options: GDAL WarpOptions (see https://gdal.org/en/stable/api/python/utilities.html#osgeo.gdal.WarpOptions)
+            options: GDAL WarpOptions
 
+        See:
+            https://gdal.org/en/stable/api/python/utilities.html#osgeo.gdal.WarpOptions
+            https://gdal.org/en/stable/programs/gdalwarp.html
         """
 
         gdal.UseExceptions()
@@ -294,13 +297,6 @@ class RasterDataSet(_DataSet):
         if 'format' not in options:
             options = dict(options)
             options['format'] = _driver_from_args(path, '', True).GetDescription()
-
-        if 'resampleAlg' in options and isinstance(options['resampleAlg'], str):
-            s = options['resampleAlg']
-            alg = getattr(gdal, 'GRA_' + s, None)
-            if alg is None:
-                raise Error(f'invalid resampling algorithm {s!r}')
-            options['resampleAlg'] = alg
 
         gd = gdal.Warp(path, self.gdDataset, **options)
         if gd is None:
