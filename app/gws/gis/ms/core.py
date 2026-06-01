@@ -58,7 +58,6 @@ Example usage::
 
 """
 
-from typing import Optional
 import mapscript
 import re
 

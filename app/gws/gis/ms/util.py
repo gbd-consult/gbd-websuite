@@ -5,7 +5,8 @@
 import gws
 import gws.base.layer
 import gws.lib.bounds
-import gws.gis.ms
+
+from . import core
 
 # @TODO check memory usage
 MAX_BOX_SIZE = 9000
@@ -17,7 +18,7 @@ def raster_render(layer: gws.Layer, lri: gws.LayerRenderInput) -> gws.LayerRende
     if lri.type == gws.LayerRenderInputType.box:
 
         def get_box(bounds, width, height):
-            ms_map = gws.gis.ms.new_map()
+            ms_map = core.new_map()
             ms_map.add_layer(layer.msOptions)
             img = ms_map.draw(bounds, (width, height))
             if layer.root.app.developer_option('mapserver.save_temp_maps'):
@@ -28,7 +29,7 @@ def raster_render(layer: gws.Layer, lri: gws.LayerRenderInput) -> gws.LayerRende
         return gws.LayerRenderOutput(content=content)
 
     if lri.type == gws.LayerRenderInputType.xyz:
-        ms_map = gws.gis.ms.new_map()
+        ms_map = core.new_map()
         ms_map.add_layer(layer.msOptions)
 
         ext = layer.bounds.extent
@@ -55,3 +56,5 @@ def raster_render(layer: gws.Layer, lri: gws.LayerRenderInput) -> gws.LayerRende
         content = img.to_bytes(layer.imageFormat.mimeTypes[0], layer.imageFormat.options)
 
         return gws.LayerRenderOutput(content=content)
+
+    raise gws.Error(f'unsupported render input type: {lri.type}')
