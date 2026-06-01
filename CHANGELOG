@@ -1,3 +1,8 @@
+## Version 8.4.2
+
+- shapefile, KML and GML exporters
+- update SSL configuration to the Mozilla intermediate profile
+
 ## Version 8.4.1
 
 - basic feature export framework
