@@ -1,5 +1,5 @@
 [tool.ruff]
-ignore = ["F541"]
+ignore = ["F541", "F401"]
 line-length = 150
 
 [tool.ruff.format]
