@@ -1,9 +1,14 @@
 """Tests for the MapServer module."""
+import os
+
+
 import gws
 import gws.lib.mapserver as ms
 from gws.test import util as u
 import gws.lib.crs as crs
 import gws.lib.image as image
+
+DIR = os.path.dirname(__file__)
 
 
 def create_cross():
@@ -15,15 +20,15 @@ def create_cross():
     block = image.from_size((12, 4), color=(0, 0, 0, 255))
     img.paste(block, where=(0, 4))
 
-    output_path = f"/data/cross.png"
+    output_path = f'/data/cross.png'
     img.to_path(str(output_path))
     return output_path
 
 
 def create_square(color, size, crs=None, pgw_str=None):
-    if color == "red":
+    if color == 'red':
         c = (255, 0, 0, 125)
-    elif color == "blue":
+    elif color == 'blue':
         c = (0, 0, 255, 125)
     else:
         c = (0, 255, 0, 125)
@@ -33,45 +38,45 @@ def create_square(color, size, crs=None, pgw_str=None):
 
     img.paste(block, where=(0, 0))
 
-    output_path = f"/data/{color}_square_{crs}.png"
+    output_path = f'/data/{color}_square_{crs}.png'
     img.to_path(str(output_path))
 
     if crs:
-        with open(f"/data/{color}_square_{crs}.pgw", "w") as file:
+        with open(f'/data/{color}_square_{crs}.pgw', 'w') as file:
             file.write(pgw_str)
 
-        with open(f"/data/{color}_square_{crs}.prj", "w") as file:
-            file.write(f"""EPSG:{crs}""")
+        with open(f'/data/{color}_square_{crs}.prj', 'w') as file:
+            file.write(f'EPSG:{crs}')
     return output_path
 
 
 def red_square_4326():
-    return create_square("red", 100, 4326, "0.01\n0\n0\n-0.01\n5.005\n54.995")
+    return create_square('red', 100, 4326, '0.01\n0\n0\n-0.01\n5.005\n54.995')
 
 
 def blue_square_4326():
-    return create_square("blue", 100, 4326, "0.01\n0\n0\n-0.01\n5.005\n54.995")
+    return create_square('blue', 100, 4326, '0.01\n0\n0\n-0.01\n5.005\n54.995')
 
 
 def red_square_3857():
-    return create_square("red", 100, 3857, "1113.194908\n0\n0\n-1113.194908\n557154.0514203343\n7360895.77546744")
+    return create_square('red', 100, 3857, '1113.194908\n0\n0\n-1113.194908\n557154.0514203343\n7360895.77546744')
 
 
 def blue_square_3857():
-    return create_square("blue", 100, 3857,
-                         "1113.194908\n0\n0\n-1113.194908\n557154.0514203343\n7360895.77546744")
+    return create_square('blue', 100, 3857, '1113.194908\n0\n0\n-1113.194908\n557154.0514203343\n7360895.77546744')
 
 
 def test_rendering():
-    raster_image_path = create_square("red", 100)
+    raster_image_path = create_square('red', 100)
 
     map = ms.new_map()
 
     map.add_layer(
-        gws.MapServerLayerOptions(type=gws.MapServerLayerType.raster,
-                        path=str(raster_image_path),
-                        crs=crs.WEBMERCATOR
-                        )
+        gws.MapServerLayerOptions(
+            type=gws.MapServerLayerType.raster,
+            path=str(raster_image_path),
+            crs=crs.WEBMERCATOR,
+        )
     )
 
     img = map.draw(
@@ -81,26 +86,26 @@ def test_rendering():
         ),
         size=(100, 100),
     )
-    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/red_square.png")
+    image_original = image.from_path(f'{DIR}/red_square.png')
 
     assert img.compare_to(image_original) < 0.01
 
 
 def test_rendering_add_layer():
-    raster_image_path = create_square("red", 100)
+    raster_image_path = create_square('red', 100)
 
     map = ms.new_map()
 
     map.add_layer_from_config(f'''
-                    LAYER
-                        TYPE RASTER
-                        STATUS ON
-                        DATA "{raster_image_path}"
-                        PROJECTION
-                            "init=epsg:3857"
-                        END
-                    END
-                ''')
+        LAYER
+            TYPE RASTER
+            STATUS ON
+            DATA "{raster_image_path}"
+            PROJECTION
+                "init=epsg:3857"
+            END
+        END
+    ''')
 
     img = map.draw(
         bounds=gws.Bounds(
@@ -110,7 +115,7 @@ def test_rendering_add_layer():
         size=(100, 100),
     )
 
-    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/red_square.png")
+    image_original = image.from_path(f'{DIR}/red_square.png')
 
     assert img.compare_to(image_original) < 0.01
 
@@ -136,7 +141,7 @@ def test_reprojecting():
         size=(200, 200),
     )
 
-    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/overlay.png")
+    image_original = image.from_path(f'{DIR}/overlay.png')
 
     assert img.compare_to(image_original) < 0.01
 
@@ -162,7 +167,7 @@ def test_reprojecting_bottom_right():
         size=(200, 200),
     )
 
-    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/overlay_bottom_right.png")
+    image_original = image.from_path(f'{DIR}/overlay_bottom_right.png')
 
     assert img.compare_to(image_original) < 0.01
 
@@ -182,14 +187,18 @@ def test_reprojecting_crs():
 
     img = map.draw(
         bounds=gws.Bounds(
-            extent=[(557154.0514203343 - 111319.4908) + 111319.4908, (7360895.77546744 - 111319.4908) - 111319.4908,
-                    (557154.0514203343 + 111319.4908) + 111319.4908, (7360895.77546744 + 111319.4908) - 111319.4908],
+            extent=[
+                (557154.0514203343 - 111319.4908) + 111319.4908,
+                (7360895.77546744 - 111319.4908) - 111319.4908,
+                (557154.0514203343 + 111319.4908) + 111319.4908,
+                (7360895.77546744 + 111319.4908) - 111319.4908,
+            ],
             # 557154.0514203343\n7360895.77546744
             crs=crs.WEBMERCATOR,
         ),
         size=(200, 200),
     )
-    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/reprojecting_crs.png")
+    image_original = image.from_path(f'{DIR}/reprojecting_crs.png')
 
     assert img.compare_to(image_original) < 0.01
 
@@ -198,25 +207,25 @@ def test_vectors():
     map = ms.new_map()
 
     map.add_layer_from_config('''
-                    LAYER
-                    TYPE LINE
-                    STATUS ON
-                    FEATURE
-                      POINTS
-                        751539 6669003
-                        751539 6672326
-                        755559 6672326
-                        751539 6669003
-                      END
-                    END
-                    CLASS
-                      STYLE
-                        COLOR 80 150 55
-                        WIDTH 5
-                      END
-                    END
-                  END
-              ''')
+        LAYER
+        TYPE LINE
+        STATUS ON
+        FEATURE
+            POINTS
+            751539 6669003
+            751539 6672326
+            755559 6672326
+            751539 6669003
+            END
+        END
+        CLASS
+            STYLE
+            COLOR 80 150 55
+            WIDTH 5
+            END
+        END
+        END
+    ''')
 
     img = map.draw(
         bounds=gws.Bounds(
@@ -226,42 +235,44 @@ def test_vectors():
         size=(800, 600),
     )
 
-    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/vectors.png")
+    image_original = image.from_path(f'{DIR}/vectors.png')
 
     assert img.compare_to(image_original) < 0.01
 
 
 def test_geometry_style():
-    u.pg.create('test_table',
-                {'id': 'int primary key', 'geom': 'geometry(LINESTRING, 4326)', 'label': 'text'})
+    u.pg.create('test_table', {'id': 'int primary key', 'geom': 'geometry(LINESTRING, 4326)', 'label': 'text'})
 
     data = [
         {'id': 4, 'geom': 'LINESTRING(0 -5,-10 0)', 'label': 'label 4'},
-        {'id': 5, 'geom': 'LINESTRING(0 0, 5 0, 2.5 5, 0 0)', 'label': 'label 5'}
+        {'id': 5, 'geom': 'LINESTRING(0 0, 5 0, 2.5 5, 0 0)', 'label': 'label 5'},
     ]
 
     u.pg.insert('test_table', data)
 
     map = ms.new_map()
 
-    style_vals = gws.StyleValues(fill='blue',
-                                 stroke='green',
-                                 stroke_width=10,
-                                 stroke_dasharray=[20, 40, -1],
-                                 stroke_linejoin='miter',
-                                 stroke_miterlimit=10,
-                                 stroke_linecap='round',
-                                 with_geometry='all',
-                                 offset_x=10,
-                                 offset_y=0,
-                                 )
+    style_vals = gws.StyleValues(
+        fill='blue',
+        stroke='green',
+        stroke_width=10,
+        stroke_dasharray=[20, 40, -1],
+        stroke_linejoin='miter',
+        stroke_miterlimit=10,
+        stroke_linecap='round',
+        with_geometry='all',
+        offset_x=10,
+        offset_y=0,
+    )
 
-    vl_opts = gws.MapServerLayerOptions(type=gws.MapServerLayerType.line,
-                              connectionType="postgres",
-                              connectionString=u.pg.url(),
-                              crs=crs.WGS84,
-                              dataString="geom FROM test_table USING UNIQUE id USING SRID=4326",
-                              style=style_vals)
+    vl_opts = gws.MapServerLayerOptions(
+        type=gws.MapServerLayerType.line,
+        connectionType='postgres',
+        connectionString=u.pg.url(),
+        crs=crs.WGS84,
+        dataString='geom FROM test_table USING UNIQUE id USING SRID=4326',
+        style=style_vals,
+    )
 
     map.add_layer(vl_opts)
 
@@ -272,7 +283,7 @@ def test_geometry_style():
         ),
         size=(800, 600),
     )
-    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/geometry_style.png")
+    image_original = image.from_path(f'{DIR}/geometry_style.png')
 
     assert img.compare_to(image_original) < 0.01
 
@@ -281,49 +292,48 @@ def test_label_style():
     # setup and fill pg table with vectordata
     u.pg.create('test_table', {'id': 'int primary key', 'geom': 'geometry(POINT, 4326)', 'label': 'text'})
 
-    data = [
-        {'id': 1, 'geom': 'POINT(0 0)', 'label': 'label 1'},
-        {'id': 2, 'geom': 'POINT(5 5)', 'label': 'label 2'}
-    ]
+    data = [{'id': 1, 'geom': 'POINT(0 0)', 'label': 'label 1'}, {'id': 2, 'geom': 'POINT(5 5)', 'label': 'label 2'}]
 
     u.pg.insert('test_table', data)
 
     map = ms.new_map()
 
-    style_vals = gws.StyleValues(fill='blue',
-                                 stroke='green',
-                                 stroke_width=10,
-                                 with_geometry='all',
+    style_vals = gws.StyleValues(
+        fill='blue',
+        stroke='green',
+        stroke_width=10,
+        with_geometry='all',
+        with_label='all',
+        label_align='left',
+        label_background='red',
+        label_fill='black',
+        # label_font_family='sans',
+        label_font_size=30,
+        # label_font_style='italic',
+        # label_font_weight='bold',
+        # label_line_height=100,
+        # label_min_scale=1000,
+        # label_max_scale=10000,
+        label_offset_x=10,
+        label_offset_y=10,
+        label_padding=[2, 3, 4, 5],
+        label_placement='start',
+        label_stroke='yellow',
+        label_stroke_dasharray=[5, 10, -1],
+        label_stroke_linecap='round',
+        label_stroke_linejoin='miter',
+        label_stroke_miterlimit=10,
+        label_stroke_width=10,
+    )
 
-                                 with_label='all',
-                                 label_align='left',
-                                 label_background='red',
-                                 label_fill='black',
-                                 # label_font_family='sans',
-                                 label_font_size=30,
-                                 # label_font_style='italic',
-                                 # label_font_weight='bold',
-                                 # label_line_height=100,
-                                 # label_min_scale=1000,
-                                 # label_max_scale=10000,
-                                 label_offset_x=10,
-                                 label_offset_y=10,
-                                 label_padding=[2, 3, 4, 5],
-                                 label_placement='start',
-                                 label_stroke='yellow',
-                                 label_stroke_dasharray=[5, 10, -1],
-                                 label_stroke_linecap='round',
-                                 label_stroke_linejoin='miter',
-                                 label_stroke_miterlimit=10,
-                                 label_stroke_width=10,
-                                 )
-
-    vl_opts = gws.MapServerLayerOptions(type=gws.MapServerLayerType.point,
-                              connectionType="postgres",
-                              connectionString=u.pg.url(),
-                              crs=crs.WGS84,
-                              dataString="geom FROM test_table USING UNIQUE id USING SRID=4326",
-                              style=style_vals)
+    vl_opts = gws.MapServerLayerOptions(
+        type=gws.MapServerLayerType.point,
+        connectionType='postgres',
+        connectionString=u.pg.url(),
+        crs=crs.WGS84,
+        dataString='geom FROM test_table USING UNIQUE id USING SRID=4326',
+        style=style_vals,
+    )
 
     map.add_layer(vl_opts)
 
@@ -334,7 +344,7 @@ def test_label_style():
         ),
         size=(800, 600),
     )
-    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/label_style.png")
+    image_original = image.from_path(f'{DIR}/label_style.png')
 
     assert img.compare_to(image_original) < 0.01
 
@@ -342,35 +352,34 @@ def test_label_style():
 def test_marker_style():
     u.pg.create('test_table', {'id': 'int primary key', 'geom': 'geometry(LINESTRING, 4326)'})
 
-    data = [
-        {'id': 1, 'geom': 'LINESTRING(-10 0, 10 0)'},
-        {'id': 2, 'geom': 'LINESTRING(0 -5, 0 5)'}
-    ]
+    data = [{'id': 1, 'geom': 'LINESTRING(-10 0, 10 0)'}, {'id': 2, 'geom': 'LINESTRING(0 -5, 0 5)'}]
 
     u.pg.insert('test_table', data)
 
     map = ms.new_map()
 
-    style_vals = gws.StyleValues(fill='blue',
-                                 stroke='green',
-                                 stroke_width=10,
-                                 with_geometry='none',
+    style_vals = gws.StyleValues(
+        fill='blue',
+        stroke='green',
+        stroke_width=10,
+        with_geometry='none',
+        marker='arrow',
+        marker_fill='red',
+        marker_stroke_dashoffset=-25,
+        marker_stroke_linecap='round',
+        marker_stroke_linejoin='miter',
+        marker_stroke_miterlimit=10,
+        marker_size=10,
+    )
 
-                                 marker='arrow',
-                                 marker_fill='red',
-                                 marker_stroke_dashoffset=-25,
-                                 marker_stroke_linecap='round',
-                                 marker_stroke_linejoin='miter',
-                                 marker_stroke_miterlimit=10,
-                                 marker_size=10
-                                 )
-
-    vl_opts = gws.MapServerLayerOptions(type=gws.MapServerLayerType.line,
-                              connectionType="postgres",
-                              connectionString=u.pg.url(),
-                              crs=crs.WGS84,
-                              dataString="geom FROM test_table USING UNIQUE id USING SRID=4326",
-                              style=style_vals)
+    vl_opts = gws.MapServerLayerOptions(
+        type=gws.MapServerLayerType.line,
+        connectionType='postgres',
+        connectionString=u.pg.url(),
+        crs=crs.WGS84,
+        dataString='geom FROM test_table USING UNIQUE id USING SRID=4326',
+        style=style_vals,
+    )
 
     map.add_layer(vl_opts)
 
@@ -381,7 +390,7 @@ def test_marker_style():
         ),
         size=(800, 600),
     )
-    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/marker_style.png")
+    image_original = image.from_path(f'{DIR}/marker_style.png')
 
     assert img.compare_to(image_original) < 0.01
 
@@ -390,50 +399,49 @@ def test_icon():
     create_cross()
     u.pg.create('test_table', {'id': 'int primary key', 'geom': 'geometry(POINT, 4326)', 'label': 'text'})
 
-    data = [
-        {'id': 1, 'geom': 'POINT(0 0)', 'label': 'label 1'},
-        {'id': 2, 'geom': 'POINT(5 5)', 'label': 'label 2'}
-    ]
+    data = [{'id': 1, 'geom': 'POINT(0 0)', 'label': 'label 1'}, {'id': 2, 'geom': 'POINT(5 5)', 'label': 'label 2'}]
 
     u.pg.insert('test_table', data)
 
     map = ms.new_map()
 
-    style_vals = gws.StyleValues(fill='blue',
-                                 stroke='green',
-                                 stroke_width=10,
-                                 with_geometry='all',
-                                 icon='/data/cross.png',
+    style_vals = gws.StyleValues(
+        fill='blue',
+        stroke='green',
+        stroke_width=10,
+        with_geometry='all',
+        icon='/data/cross.png',
+        with_label='all',
+        label_align='left',
+        label_background='red',
+        label_fill='black',
+        # label_font_family='sans',
+        label_font_size=30,
+        # label_font_style='italic',
+        # label_font_weight='bold',
+        # label_line_height=100,
+        # label_min_scale=1000,
+        # label_max_scale=10000,
+        label_offset_x=10,
+        label_offset_y=10,
+        label_padding=[2, 3, 4, 5],
+        label_placement='start',
+        label_stroke='yellow',
+        label_stroke_dasharray=[5, 10, -1],
+        label_stroke_linecap='round',
+        label_stroke_linejoin='miter',
+        label_stroke_miterlimit=10,
+        label_stroke_width=10,
+    )
 
-                                 with_label='all',
-                                 label_align='left',
-                                 label_background='red',
-                                 label_fill='black',
-                                 # label_font_family='sans',
-                                 label_font_size=30,
-                                 # label_font_style='italic',
-                                 # label_font_weight='bold',
-                                 # label_line_height=100,
-                                 # label_min_scale=1000,
-                                 # label_max_scale=10000,
-                                 label_offset_x=10,
-                                 label_offset_y=10,
-                                 label_padding=[2, 3, 4, 5],
-                                 label_placement='start',
-                                 label_stroke='yellow',
-                                 label_stroke_dasharray=[5, 10, -1],
-                                 label_stroke_linecap='round',
-                                 label_stroke_linejoin='miter',
-                                 label_stroke_miterlimit=10,
-                                 label_stroke_width=10,
-                                 )
-
-    vl_opts = gws.MapServerLayerOptions(type=gws.MapServerLayerType.point,
-                              connectionType="postgres",
-                              connectionString=u.pg.url(),
-                              crs=crs.WGS84,
-                              dataString="geom FROM test_table USING UNIQUE id USING SRID=4326",
-                              style=style_vals)
+    vl_opts = gws.MapServerLayerOptions(
+        type=gws.MapServerLayerType.point,
+        connectionType='postgres',
+        connectionString=u.pg.url(),
+        crs=crs.WGS84,
+        dataString='geom FROM test_table USING UNIQUE id USING SRID=4326',
+        style=style_vals,
+    )
 
     map.add_layer(vl_opts)
 
@@ -444,6 +452,6 @@ def test_icon():
         ),
         size=(800, 600),
     )
-    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/icon.png")
+    image_original = image.from_path(f'{DIR}/icon.png')
 
     assert img.compare_to(image_original) < 0.01

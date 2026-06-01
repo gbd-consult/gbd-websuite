@@ -1,6 +1,6 @@
 services:
   gws:
-    image: gbdconsult/gws-amd64:8.2
+    image: gbdconsult/gws-amd64:latest
     container_name: gws
     command: "python3 /gws-app/gws/lib/mapserver/live_config/server.py"
     ports:
