@@ -107,6 +107,8 @@ class Layer(Node):
     models: list['Model']
     ows: 'LayerOws'
 
+    msOptions: Optional['MapServerLayerOptions']
+
     layers: list['Layer']
 
     sourceLayers: list['SourceLayer']

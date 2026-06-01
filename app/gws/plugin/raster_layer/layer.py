@@ -36,11 +36,10 @@ class Config(gws.base.layer.Config):
 class Object(gws.base.layer.image.Object):
     serviceProvider: provider.Object
     entries: list[provider.ImageEntry]
-    msOptions: gws.lib.mapserver.LayerOptions
 
     def configure(self):
-        self.msOptions = gws.lib.mapserver.LayerOptions(
-            type=gws.lib.mapserver.LayerType.raster,
+        self.msOptions = gws.MapServerLayerOptions(
+            type=gws.MapServerLayerType.raster,
             processing=self.cfg('processing', default=[]),
             transparentColor=self.cfg('transparentColor'),
             sldPath=self.cfg('sldPath'),

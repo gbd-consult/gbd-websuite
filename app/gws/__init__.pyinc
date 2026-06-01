@@ -60,6 +60,7 @@ u.to_data_object = to_data_object
 
 # @include core/_tree.pyinc
 
+# @include lib/mapserver/types.pyinc
 # @include lib/mime/types.pyinc
 # @include lib/uom/types.pyinc
 # @include lib/image/types.pyinc

@@ -68,7 +68,7 @@ def test_rendering():
     map = ms.new_map()
 
     map.add_layer(
-        ms.LayerOptions(type=ms.LayerType.raster,
+        gws.MapServerLayerOptions(type=gws.MapServerLayerType.raster,
                         path=str(raster_image_path),
                         crs=crs.WEBMERCATOR
                         )
@@ -81,7 +81,7 @@ def test_rendering():
         ),
         size=(100, 100),
     )
-    image_original = image.from_path("/gws-app/gws/gis/ms/_test/red_square.png")
+    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/red_square.png")
 
     assert img.compare_to(image_original) < 0.01
 
@@ -110,7 +110,7 @@ def test_rendering_add_layer():
         size=(100, 100),
     )
 
-    image_original = image.from_path("/gws-app/gws/gis/ms/_test/red_square.png")
+    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/red_square.png")
 
     assert img.compare_to(image_original) < 0.01
 
@@ -120,12 +120,12 @@ def test_reprojecting():
 
     # adjust image
     rsl_path = blue_square_4326()
-    rsl_opt2 = ms.LayerOptions(type=ms.LayerType.raster, path=str(rsl_path), crs=crs.WGS84)
+    rsl_opt2 = gws.MapServerLayerOptions(type=gws.MapServerLayerType.raster, path=str(rsl_path), crs=crs.WGS84)
     map.add_layer(rsl_opt2)
 
     # adjust image
     rsl_path = red_square_3857()
-    rsl_opt = ms.LayerOptions(type=ms.LayerType.raster, path=str(rsl_path), crs=crs.WEBMERCATOR)
+    rsl_opt = gws.MapServerLayerOptions(type=gws.MapServerLayerType.raster, path=str(rsl_path), crs=crs.WEBMERCATOR)
     map.add_layer(rsl_opt)
 
     img = map.draw(
@@ -136,7 +136,7 @@ def test_reprojecting():
         size=(200, 200),
     )
 
-    image_original = image.from_path("/gws-app/gws/gis/ms/_test/overlay.png")
+    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/overlay.png")
 
     assert img.compare_to(image_original) < 0.01
 
@@ -146,12 +146,12 @@ def test_reprojecting_bottom_right():
 
     # adjust image
     rsl_path = blue_square_4326()
-    rsl_opt2 = ms.LayerOptions(type=ms.LayerType.raster, path=str(rsl_path), crs=crs.WGS84)
+    rsl_opt2 = gws.MapServerLayerOptions(type=gws.MapServerLayerType.raster, path=str(rsl_path), crs=crs.WGS84)
     map.add_layer(rsl_opt2)
 
     # adjust image
     rsl_path = red_square_3857()
-    rsl_opt = ms.LayerOptions(type=ms.LayerType.raster, path=str(rsl_path), crs=crs.WEBMERCATOR)
+    rsl_opt = gws.MapServerLayerOptions(type=gws.MapServerLayerType.raster, path=str(rsl_path), crs=crs.WEBMERCATOR)
     map.add_layer(rsl_opt)
 
     img = map.draw(
@@ -162,7 +162,7 @@ def test_reprojecting_bottom_right():
         size=(200, 200),
     )
 
-    image_original = image.from_path("/gws-app/gws/gis/ms/_test/overlay_bottom_right.png")
+    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/overlay_bottom_right.png")
 
     assert img.compare_to(image_original) < 0.01
 
@@ -172,12 +172,12 @@ def test_reprojecting_crs():
 
     # adjust image
     rsl_path = blue_square_3857()
-    rsl_opt2 = ms.LayerOptions(type=ms.LayerType.raster, path=str(rsl_path), crs=crs.WEBMERCATOR)
+    rsl_opt2 = gws.MapServerLayerOptions(type=gws.MapServerLayerType.raster, path=str(rsl_path), crs=crs.WEBMERCATOR)
     map.add_layer(rsl_opt2)
 
     # adjust image
     rsl_path = red_square_4326()
-    rsl_opt = ms.LayerOptions(type=ms.LayerType.raster, path=str(rsl_path), crs=crs.WGS84)
+    rsl_opt = gws.MapServerLayerOptions(type=gws.MapServerLayerType.raster, path=str(rsl_path), crs=crs.WGS84)
     map.add_layer(rsl_opt)
 
     img = map.draw(
@@ -189,7 +189,7 @@ def test_reprojecting_crs():
         ),
         size=(200, 200),
     )
-    image_original = image.from_path("/gws-app/gws/gis/ms/_test/reprojecting_crs.png")
+    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/reprojecting_crs.png")
 
     assert img.compare_to(image_original) < 0.01
 
@@ -226,7 +226,7 @@ def test_vectors():
         size=(800, 600),
     )
 
-    image_original = image.from_path("/gws-app/gws/gis/ms/_test/vectors.png")
+    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/vectors.png")
 
     assert img.compare_to(image_original) < 0.01
 
@@ -256,7 +256,7 @@ def test_geometry_style():
                                  offset_y=0,
                                  )
 
-    vl_opts = ms.LayerOptions(type=ms.LayerType.line,
+    vl_opts = gws.MapServerLayerOptions(type=gws.MapServerLayerType.line,
                               connectionType="postgres",
                               connectionString=u.pg.url(),
                               crs=crs.WGS84,
@@ -272,7 +272,7 @@ def test_geometry_style():
         ),
         size=(800, 600),
     )
-    image_original = image.from_path("/gws-app/gws/gis/ms/_test/geometry_style.png")
+    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/geometry_style.png")
 
     assert img.compare_to(image_original) < 0.01
 
@@ -318,7 +318,7 @@ def test_label_style():
                                  label_stroke_width=10,
                                  )
 
-    vl_opts = ms.LayerOptions(type=ms.LayerType.point,
+    vl_opts = gws.MapServerLayerOptions(type=gws.MapServerLayerType.point,
                               connectionType="postgres",
                               connectionString=u.pg.url(),
                               crs=crs.WGS84,
@@ -334,7 +334,7 @@ def test_label_style():
         ),
         size=(800, 600),
     )
-    image_original = image.from_path("/gws-app/gws/gis/ms/_test/label_style.png")
+    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/label_style.png")
 
     assert img.compare_to(image_original) < 0.01
 
@@ -365,7 +365,7 @@ def test_marker_style():
                                  marker_size=10
                                  )
 
-    vl_opts = ms.LayerOptions(type=ms.LayerType.line,
+    vl_opts = gws.MapServerLayerOptions(type=gws.MapServerLayerType.line,
                               connectionType="postgres",
                               connectionString=u.pg.url(),
                               crs=crs.WGS84,
@@ -381,7 +381,7 @@ def test_marker_style():
         ),
         size=(800, 600),
     )
-    image_original = image.from_path("/gws-app/gws/gis/ms/_test/marker_style.png")
+    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/marker_style.png")
 
     assert img.compare_to(image_original) < 0.01
 
@@ -428,7 +428,7 @@ def test_icon():
                                  label_stroke_width=10,
                                  )
 
-    vl_opts = ms.LayerOptions(type=ms.LayerType.point,
+    vl_opts = gws.MapServerLayerOptions(type=gws.MapServerLayerType.point,
                               connectionType="postgres",
                               connectionString=u.pg.url(),
                               crs=crs.WGS84,
@@ -444,6 +444,6 @@ def test_icon():
         ),
         size=(800, 600),
     )
-    image_original = image.from_path("/gws-app/gws/gis/ms/_test/icon.png")
+    image_original = image.from_path("/gws-app/gws/lib/mapserver/_test/icon.png")
 
     assert img.compare_to(image_original) < 0.01

@@ -1,63 +1,3 @@
-"""MapServer support.
-
-This module dynamically creates and renders MapServer maps.
-
-To render a map, create a map object with `new_map`, add layers to it using ``add_`` methods
-and invoke ``draw``.
-
-Reference: MapServer documentation (https://mapserver.org/documentation.html)
-
-Example usage::
-
-    import gws.lib.mapserver as ms
-
-    # create a new map
-    map = ms.new_map()
-
-    # add a raster layer from an image file
-    map.add_layer(
-        ms.LayerOptions(
-            type=ms.LayerType.raster,
-            path='/path/to/image.tif',
-        )
-    )
-
-    # add a layer using a configuration string
-    map.add_layer_from_config('''
-        LAYER
-            TYPE LINE
-            STATUS ON
-            FEATURE
-                POINTS
-                    751539 6669003
-                    751539 6672326
-                    755559 6672326
-                END
-            END
-            CLASS
-                STYLE
-                    COLOR 0 255 0
-                    WIDTH 5
-                END
-            END
-        END
-    ''')
-
-    # draw the map into an Image object
-    img = map.draw(
-        bounds=gws.Bounds(
-            extent=[738040, 6653804, 765743, 6683686],
-            crs=gws.lib.crs.WEBMERCATOR,
-        ),
-        size=(800, 600),
-    )
-
-    # save the image to a file
-    img.to_path('/path/to/output.png')
-
-
-"""
-
 import mapscript
 import re
 
@@ -75,50 +15,13 @@ class Error(gws.Error):
     pass
 
 
-class LayerType(gws.Enum):
-    """MapServer layer type."""
-
-    point = 'point'
-    line = 'line'
-    polygon = 'polygon'
-    raster = 'raster'
-
-
 _LAYER_TYPE_TO_MS = {
-    LayerType.point: mapscript.MS_LAYER_POINT,
-    LayerType.line: mapscript.MS_LAYER_LINE,
-    LayerType.polygon: mapscript.MS_LAYER_POLYGON,
-    LayerType.raster: mapscript.MS_LAYER_RASTER,
+    gws.MapServerLayerType.point: mapscript.MS_LAYER_POINT,
+    gws.MapServerLayerType.line: mapscript.MS_LAYER_LINE,
+    gws.MapServerLayerType.polygon: mapscript.MS_LAYER_POLYGON,
+    gws.MapServerLayerType.raster: mapscript.MS_LAYER_RASTER,
 }
 
-
-class LayerOptions(gws.Data):
-    """Options for a mapserver layer."""
-
-    type: LayerType
-    """Layer type."""
-    path: str
-    """Path to the image file."""
-    tileIndex: str
-    """Path to the tile index SHP file"""
-    crs: gws.Crs
-    """Layer CRS."""
-    connectionType: str
-    """Type of connection (e.g., 'postgres')."""
-    connectionString: str
-    """Connection string for the data source."""
-    dataString: str
-    """Layer DATA option."""
-    style: gws.StyleValues
-    """Style for the layer."""
-    processing: list[str]
-    """Processing options for the layer."""
-    transparentColor: str
-    """Color to treat as transparent in the layer (OFFSITE)."""
-    sldPath: str
-    """Path to SLD file for styling the layer."""
-    sldName: str
-    """Name of an SLD NamedLayer to apply."""
 
 
 def new_map(config: str = '') -> 'Map':
@@ -161,7 +64,7 @@ class Map:
         except mapscript.MapServerError as exc:
             raise Error(f'ms: add error:: {exc}') from exc
 
-    def add_layer(self, opts: LayerOptions) -> mapscript.layerObj:
+    def add_layer(self, opts: gws.MapServerLayerOptions) -> mapscript.layerObj:
         """Adds a layer to the map."""
 
         try:
@@ -170,7 +73,7 @@ class Map:
         except mapscript.MapServerError as exc:
             raise Error(f'ms: add error:: {exc}') from exc
 
-    def _make_layer(self, opts: LayerOptions) -> mapscript.layerObj:
+    def _make_layer(self, opts: gws.MapServerLayerOptions) -> mapscript.layerObj:
         lo = mapscript.layerObj(self.mapObj)
         lc = self.mapObj.numlayers
         lo.name = f'_gws_{lc}'
@@ -221,7 +124,7 @@ class Map:
 
             if opts.style.marker or opts.style.icon:
                 if opts.style.marker:
-                    self.mapObj.setSymbolSet('/gws-app/gws/gis/ms/symbolset.sym')
+                    self.mapObj.setSymbolSet('/gws-app/gws/lib/mapserver/symbolset.sym')
                     so = self.style_symbol(opts.style)
                     cls.insertStyle(so)
 

@@ -1022,6 +1022,48 @@ def props_of(obj: Object, user: 'User', *context) -> Optional['Props']:
 
 
 ################################################################################
+# /lib/mapserver/types.pyinc
+
+
+class MapServerLayerType(Enum):
+    """MapServer layer type."""
+
+    point = 'point'
+    line = 'line'
+    polygon = 'polygon'
+    raster = 'raster'
+
+class MapServerLayerOptions(Data):
+    """Options for a MapServer-based layer."""
+
+    type: MapServerLayerType
+    """Layer type."""
+    path: str
+    """Path to the image file."""
+    tileIndex: str
+    """Path to the tile index SHP file"""
+    crs: 'Crs'
+    """Layer CRS."""
+    connectionType: str
+    """Type of connection (e.g., 'postgres')."""
+    connectionString: str
+    """Connection string for the data source."""
+    dataString: str
+    """Layer DATA option."""
+    style: 'StyleValues'
+    """Style for the layer."""
+    processing: list[str]
+    """Processing options for the layer."""
+    transparentColor: str
+    """Color to treat as transparent in the layer (OFFSITE)."""
+    sldPath: str
+    """Path to SLD file for styling the layer."""
+    sldName: str
+    """Name of an SLD NamedLayer to apply."""
+################################################################################
+
+
+################################################################################
 # /lib/mime/types.pyinc
 
 
@@ -3153,6 +3195,8 @@ class Layer(Node):
     templates: list['Template']
     models: list['Model']
     ows: 'LayerOws'
+
+    msOptions: Optional['MapServerLayerOptions']
 
     layers: list['Layer']
 
