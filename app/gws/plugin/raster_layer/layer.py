@@ -6,7 +6,7 @@ import gws
 import gws.base.layer
 import gws.base.shape
 import gws.config.util
-import gws.gis.gdalx
+import gws.lib.gdalx
 import gws.gis.ms
 import gws.gis.ms.util
 import gws.gis.zoom

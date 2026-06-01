@@ -7,7 +7,7 @@ import gws
 import gws.base.shape
 import gws.lib.osx
 import gws.lib.crs
-import gws.gis.gdalx
+import gws.lib.gdalx
 
 
 class Config(gws.Config):
@@ -59,9 +59,9 @@ class Object(gws.Node):
 
         for path in self.paths:
             try:
-                with gws.gis.gdalx.open_raster(path, default_crs=default_crs) as gd:
+                with gws.lib.gdalx.open_raster(path, default_crs=default_crs) as gd:
                     es1.append(ImageEntry(path=path, bounds=gd.bounds()))
-            except gws.gis.gdalx.Error as exc:
+            except gws.lib.gdalx.Error as exc:
                 gws.log.warning(f'raster_provider: {path!r}: ERROR: ({exc})')
 
         if not es1:
@@ -91,7 +91,7 @@ class Object(gws.Node):
                 )
             )
 
-        with gws.gis.gdalx.open_vector(idx_path, 'w') as ds:
+        with gws.lib.gdalx.open_vector(idx_path, 'w') as ds:
             la = ds.create_layer(
                 name=file_name,
                 columns={'location': gws.AttributeType.str},

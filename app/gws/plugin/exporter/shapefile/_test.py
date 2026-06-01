@@ -3,7 +3,7 @@ import zipfile
 
 import gws
 import gws.base.shape
-import gws.gis.gdalx
+import gws.lib.gdalx
 import gws.lib.crs
 import gws.lib.zipx
 import gws.test.util as u
@@ -111,7 +111,7 @@ def _read_shapefile(zip_path, shp_name):
     with u.temp_dir_in_base_dir() as tmp_dir:
         gws.lib.zipx.unzip_path(zip_path, tmp_dir, flat=True)
         shp_path = os.path.join(tmp_dir, shp_name)
-        with gws.gis.gdalx.open_vector(shp_path) as ds:
+        with gws.lib.gdalx.open_vector(shp_path) as ds:
             la = ds.layer(0)
             return la.get_all()
 

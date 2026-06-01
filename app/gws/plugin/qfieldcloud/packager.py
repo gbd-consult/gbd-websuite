@@ -1,7 +1,7 @@
 from typing import cast
 
 import gws
-import gws.gis.gdalx
+import gws.lib.gdalx
 import gws.lib.jsonx
 import gws.lib.image
 import gws.lib.bounds
@@ -80,7 +80,7 @@ class Object:
                 continue
             path = f'{self.args.packageDir}/{le.dataSourceFileName}'
             self.pathMap[le.dataSourceFileName] = path
-            with gws.gis.gdalx.open_vector(path, 'w') as ds:
+            with gws.lib.gdalx.open_vector(path, 'w') as ds:
                 self.write_features(le, ds)
 
     def write_base_map(self):
@@ -122,7 +122,7 @@ class Object:
         gws.AttributeType.time,
     }
 
-    def write_features(self, le: caps_mod.LayerEntry, ds: gws.gis.gdalx.VectorDataSet):
+    def write_features(self, le: caps_mod.LayerEntry, ds: gws.lib.gdalx.VectorDataSet):
         features = self.get_features_for_layer(le)
 
         me = le.modelEntry
@@ -227,7 +227,7 @@ class Object:
         lro = gws.u.require(flat_layer.render(lri))
         img = gws.lib.image.from_bytes(lro.content)
 
-        with gws.gis.gdalx.open_from_image(img, bounds) as src:
+        with gws.lib.gdalx.open_from_image(img, bounds) as src:
             src.save_as(cache_path)
 
         self.pathMap[le.dataSourceFileName] = cache_path

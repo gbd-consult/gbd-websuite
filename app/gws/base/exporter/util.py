@@ -2,7 +2,7 @@
 
 from typing import Optional
 import gws
-import gws.gis.gdalx
+import gws.lib.gdalx
 import gws.lib.mime
 import gws.lib.osx
 import gws.lib.zipx
@@ -61,7 +61,7 @@ def _create_group(features: list[gws.Feature], ea: gws.ExportArgs, er: gws.Expor
     if not grp.title:
         grp.title = f.model.uid
 
-    types = ea.exporter.supportedAttributeTypes or gws.gis.gdalx.supported_attribute_types()
+    types = ea.exporter.supportedAttributeTypes or gws.lib.gdalx.supported_attribute_types()
     for fld in f.model.fields:
         if fld.attributeType in types:
             grp.columns[fld.name] = fld.attributeType
@@ -126,7 +126,7 @@ def zip_all(base_dir: str, er: gws.ExportResult):
 def run_gdal_vector_export(driver_name: str, mime: str, ea: gws.ExportArgs, er: gws.ExportResult):
     """Run the export for a GDAL vector driver."""
 
-    di = gws.gis.gdalx.get_driver(driver_name)
+    di = gws.lib.gdalx.get_driver(driver_name)
     if not di:
         raise gws.Error(f'unsupported driver: {driver_name}')
 
@@ -140,7 +140,7 @@ def run_gdal_vector_export(driver_name: str, mime: str, ea: gws.ExportArgs, er: 
     if ea.exporter.withSplitTypes:
         for grp in groups:
             er.path = base_dir + f'/{gws.u.to_uid(grp.title)}.{ext}'
-            with gws.gis.gdalx.open_vector(er.path, 'w', driver=di.name, options=ea.exporter.options) as ds:
+            with gws.lib.gdalx.open_vector(er.path, 'w', driver=di.name, options=ea.exporter.options) as ds:
                 er.numFiles += 1
                 la = ds.create_layer(grp.title, grp.columns, grp.geomType, grp.crs)
                 la.insert(grp.records)
@@ -148,7 +148,7 @@ def run_gdal_vector_export(driver_name: str, mime: str, ea: gws.ExportArgs, er: 
     else:
         er.path = base_dir + f'/export.{ext}'
         er.mime = mime
-        with gws.gis.gdalx.open_vector(er.path, 'w', driver=di.name, options=ea.exporter.options) as ds:
+        with gws.lib.gdalx.open_vector(er.path, 'w', driver=di.name, options=ea.exporter.options) as ds:
             er.numFiles += 1
             for grp in groups:
                 la = ds.create_layer(grp.title, grp.columns, grp.geomType, grp.crs)

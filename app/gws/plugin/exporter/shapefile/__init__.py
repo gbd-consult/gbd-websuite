@@ -3,7 +3,7 @@
 
 import gws
 import gws.base.exporter
-import gws.gis.gdalx
+import gws.lib.gdalx
 
 
 gws.ext.new.exporter('shapefile')
@@ -42,7 +42,7 @@ def run_export(ea: gws.ExportArgs, er: gws.ExportResult):
     base_dir = gws.u.ephemeral_dir(gws.u.random_string(64))
     for grp in groups:
         path = base_dir + '/' + gws.u.to_uid(grp.title) + '.shp'
-        with gws.gis.gdalx.open_vector(path, 'w', driver='ESRI Shapefile') as ds:
+        with gws.lib.gdalx.open_vector(path, 'w', driver='ESRI Shapefile') as ds:
             la = ds.create_layer(grp.title, grp.columns, grp.geomType, grp.crs)
             la.insert(grp.records)
 

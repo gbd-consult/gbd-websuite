@@ -2,7 +2,7 @@
 
 import gws
 import gws.test.util as u
-import gws.gis.gdalx as gdalx
+import gws.lib.gdalx as gdalx
 import gws.base.shape
 import gws.lib.datetimex as datetimex
 import gws.lib.crs

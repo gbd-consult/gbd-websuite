@@ -5,7 +5,7 @@ from typing import Optional
 import gws
 import gws.base.layer
 import gws.config.util
-import gws.gis.gdalx
+import gws.lib.gdalx
 import gws.gis.ms
 import gws.gis.ms.util
 import gws.gis.zoom
@@ -46,7 +46,7 @@ class Object(gws.base.layer.image.Object):
     def configure_bounds(self):
         if super().configure_bounds():
             return True
-        with gws.gis.gdalx.open_raster(self.msOptions.path) as gd:
+        with gws.lib.gdalx.open_raster(self.msOptions.path) as gd:
             self.bounds = gws.lib.bounds.transform(gd.bounds(), self.mapCrs)
         self.msOptions.crs = self.bounds.crs
         return True
