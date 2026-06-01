@@ -127,9 +127,6 @@ def _run_export(root, features, out_path, exporter_uid='EXP_1'):
 def _read_gml(path):
     with open(path) as f:
         text = f.read()
-    print(f'\nBEGIN {path}')
-    print(text)
-    print(f'END {path}')
     return text
 
 
