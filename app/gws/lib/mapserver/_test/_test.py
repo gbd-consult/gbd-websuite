@@ -1,6 +1,6 @@
 """Tests for the MapServer module."""
 import gws
-import gws.gis.ms as ms
+import gws.lib.mapserver as ms
 from gws.test import util as u
 import gws.lib.crs as crs
 import gws.lib.image as image

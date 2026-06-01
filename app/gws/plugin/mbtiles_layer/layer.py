@@ -6,8 +6,7 @@ import gws
 import gws.base.layer
 import gws.config.util
 import gws.lib.gdalx
-import gws.gis.ms
-import gws.gis.ms.util
+import gws.lib.mapserver
 import gws.gis.zoom
 import gws.lib.bounds
 
@@ -28,12 +27,12 @@ class Config(gws.base.layer.Config):
 
 
 class Object(gws.base.layer.image.Object):
-    msOptions: gws.gis.ms.LayerOptions
+    msOptions: gws.lib.mapserver.LayerOptions
     serviceProvider: provider.Object
 
     def configure(self):
-        self.msOptions = gws.gis.ms.LayerOptions(
-            type=gws.gis.ms.LayerType.raster,
+        self.msOptions = gws.lib.mapserver.LayerOptions(
+            type=gws.lib.mapserver.LayerType.raster,
             processing=self.cfg('processing', default=[]),
             transparentColor=self.cfg('transparentColor', default=None),
         )
@@ -68,4 +67,4 @@ class Object(gws.base.layer.image.Object):
     ##
 
     def render(self, lri):
-        return gws.gis.ms.util.raster_render(self, lri)
+        return gws.lib.mapserver.util.raster_render(self, lri)

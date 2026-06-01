@@ -9,7 +9,7 @@ Reference: MapServer documentation (https://mapserver.org/documentation.html)
 
 Example usage::
 
-    import gws.gis.ms as ms
+    import gws.lib.mapserver as ms
 
     # create a new map
     map = ms.new_map()
