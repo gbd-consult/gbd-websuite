@@ -229,7 +229,12 @@ def alloc_node(self, classref, typ=None):
 
 
 def configure_permissions(self):
-    perms = {}
+    perms = {
+        Access.read: [],
+        Access.write: [],
+        Access.create: [],
+        Access.delete: [],
+    }
 
     p = self.cfg('access')
     if p:
@@ -237,12 +242,18 @@ def configure_permissions(self):
 
     p = self.cfg('permissions')
     if p:
-        for k, v in vars(p).items():
-            if k == 'all':
-                perms[Access.read] = perms[Access.write] = perms[Access.create] = perms[Access.delete] = u.parse_acl(v)
-            elif k == 'edit':
-                perms[Access.write] = perms[Access.create] = perms[Access.delete] = u.parse_acl(v)
-            elif k in {Access.read, Access.write, Access.create, Access.delete}:
+        d = vars(p)
+        v = d.get('all')
+        if v:
+            perms[Access.read] = perms[Access.write] = perms[Access.create] = perms[Access.delete] = u.parse_acl(v)
+
+        v = d.get('edit')
+        if v:
+            perms[Access.write] = perms[Access.create] = perms[Access.delete] = u.parse_acl(v)
+
+        for k in {Access.read, Access.write, Access.create, Access.delete}:
+            v = d.get(k)
+            if v:
                 perms[k] = u.parse_acl(v)
 
     return perms
