@@ -20,7 +20,11 @@ class Unpickler(pickle.Unpickler):
         if module == 'builtins':
             return getattr(builtins, name)
 
-        class T:
+        class Meta(type):
+            def __getattr__(cls, item):
+                return '??' + item
+
+        class T(metaclass=Meta):
             CLASS_NAME = module + '.' + name
 
             def __init__(self, *args):

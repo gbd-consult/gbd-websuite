@@ -67,7 +67,6 @@ def _create_group(features: list[gws.Feature], ea: gws.ExportArgs, er: gws.Expor
             grp.columns[fld.name] = fld.attributeType
 
     for n, f in enumerate(features, 1):
-        er.numFeaturesTotal += 1
         if ea.notify:
             ea.notify('')
         rec = _feature_to_record(f, grp, ea, er)
