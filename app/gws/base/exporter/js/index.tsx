@@ -3,9 +3,6 @@ import * as React from 'react';
 
 import * as gc from 'gc';
 
-import * as components from 'gc/components';
-import * as toolbar from 'gc/elements/toolbar';
-import { FormField } from 'gc/components/form';
 
 let { VBox, VRow } = gc.ui.Layout;
 
@@ -141,9 +138,6 @@ class Controller extends gc.Controller {
     async init() {
         await super.init();
         this.app.whenChanged('exportJob', job => this.jobUpdated(job));
-        // this.update({ exportState: 'complete' });
-
-
     }
 
     reset() {

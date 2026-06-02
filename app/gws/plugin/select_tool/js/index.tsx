@@ -440,7 +440,11 @@ class Controller extends gc.Controller {
         let req: gc.gws.ExportRequest = {
             type: gc.gws.ExportRequestType.vector,
             exporterUid,
-            features: fs.map(f => f.getProps()),
+            features: fs.map(f => { 
+                let pf = f.getProps(); 
+                pf.views = {}; 
+                return pf; 
+            }),
         };
         let ctl = this.app.controller('Shared.Exporter');
         ctl['startJob'](this.app.server.call('exporterStart', req));

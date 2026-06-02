@@ -28,8 +28,4 @@ class Object(gws.base.exporter.Object):
     supportsRaster = False
 
     def run(self, ea, er):
-        return run_export(ea, er)
-
-
-def run_export(ea: gws.ExportArgs, er: gws.ExportResult):
-    gws.base.exporter.util.run_gdal_vector_export('KML', gws.lib.mime.KML, ea, er)
+        gws.base.exporter.util.run_gdal_vector_export('KML', gws.lib.mime.KML, ea, er)

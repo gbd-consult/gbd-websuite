@@ -72,7 +72,6 @@ def _create_group(features: list[gws.Feature], ea: gws.ExportArgs, er: gws.Expor
         rec = _feature_to_record(f, grp, ea, er)
         if rec:
             grp.records.append(rec)
-            er.numFeaturesExported += 1
 
     return grp if grp.records else None
 
@@ -111,17 +110,6 @@ def _feature_to_record(f: gws.Feature, grp: Group, ea: gws.ExportArgs, er: gws.E
 ##
 
 
-def zip_all(base_dir: str, er: gws.ExportResult):
-    er.path = base_dir + '/export.zip'
-    er.mime = gws.lib.mime.ZIP
-    paths = gws.lib.osx.find_files(base_dir, deep=False)
-    n = gws.lib.zipx.zip_to_path(er.path, list(paths), flat=True)
-    er.numFiles += n
-
-
-##
-
-
 def run_gdal_vector_export(driver_name: str, mime: str, ea: gws.ExportArgs, er: gws.ExportResult):
     """Run the export for a GDAL vector driver."""
 
@@ -136,14 +124,20 @@ def run_gdal_vector_export(driver_name: str, mime: str, ea: gws.ExportArgs, er: 
     base_dir = gws.u.ephemeral_dir(gws.u.random_string(64))
     ext = di.extensions[0] if di.extensions else 'dat'
 
-    if ea.exporter.withSplitTypes:
+    if ea.exporter.withSplitLayers:
         for grp in groups:
-            er.path = base_dir + f'/{gws.u.to_uid(grp.title)}.{ext}'
-            with gws.lib.gdalx.open_vector(er.path, 'w', driver=di.name, options=ea.exporter.options) as ds:
-                er.numFiles += 1
+            path = base_dir + f'/{gws.u.to_uid(grp.title)}.{ext}'
+            with gws.lib.gdalx.open_vector(path, 'w', driver=di.name, options=ea.exporter.options) as ds:
                 la = ds.create_layer(grp.title, grp.columns, grp.geomType, grp.crs)
-                la.insert(grp.records)
-        zip_all(base_dir, er)
+                fids = la.insert(grp.records)
+                er.numFeaturesExported += len(fids)
+
+        er.path = base_dir + '/export.zip'
+        er.mime = gws.lib.mime.ZIP
+        paths = gws.lib.osx.find_files(base_dir, deep=False)
+        n = gws.lib.zipx.zip_to_path(er.path, list(paths), flat=True)
+        er.numFiles = n
+
     else:
         er.path = base_dir + f'/export.{ext}'
         er.mime = mime
@@ -151,4 +145,5 @@ def run_gdal_vector_export(driver_name: str, mime: str, ea: gws.ExportArgs, er: 
             er.numFiles += 1
             for grp in groups:
                 la = ds.create_layer(grp.title, grp.columns, grp.geomType, grp.crs)
-                la.insert(grp.records)
+                fids = la.insert(grp.records)
+                er.numFeaturesExported += len(fids)

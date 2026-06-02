@@ -45,6 +45,6 @@ class Object(gws.ExporterManager):
         w.work()
         if w.result and w.result.path:
             gws.lib.osx.copy(w.result.path, out_path)
-            return
+            return w.result
         raise gws.Error('no features exported')
     

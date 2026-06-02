@@ -18,7 +18,7 @@ class Config(gws.ConfigWithAccess):
     """Allow features with different geometries in the same layer."""
     withMixedCrs: bool = False
     """Allow features with different coordinate reference systems in the same layer."""
-    withSplitTypes: bool = False
+    withSplitLayers: bool = False
     """Create separate files for different layers."""
     options: dict = {}
     """Additional exporter-specific options."""
@@ -48,7 +48,7 @@ class Object(gws.Exporter):
         self.withNoGeometry = self.cfg('withNoGeometry')
         self.withMixedGeometry = self.cfg('withMixedGeometry')
         self.withMixedCrs = self.cfg('withMixedCrs')
-        self.withSplitTypes = self.cfg('withSplitTypes')
+        self.withSplitLayers = self.cfg('withSplitLayers')
         self.options = gws.u.to_dict(self.cfg('options')) or {}
         self.supportedAttributeTypes = []
 

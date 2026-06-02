@@ -94,7 +94,7 @@ def root():
                 title "GML Exporter Split"
                 target "download"
                 access "allow all"
-                withSplitTypes true
+                withSplitLayers true
             }
 
             exporters+ {
@@ -207,7 +207,7 @@ def test_export_both_models_single_file(root: gws.Root, tmp_path):
     assert 'Polygon' in xml
 
 
-def test_export_split_types(root: gws.Root, tmp_path):
+def test_export_split_layers(root: gws.Root, tmp_path):
     import zipfile
 
     p1 = _point(8.5, 51.2)

@@ -4793,7 +4793,7 @@ class Exporter(Node):
     withNoGeometry: bool
     withMixedGeometry: bool
     withMixedCrs: bool
-    withSplitTypes: bool
+    withSplitLayers: bool
 
     supportedAttributeTypes: Optional[list[gws.AttributeType]]
 
