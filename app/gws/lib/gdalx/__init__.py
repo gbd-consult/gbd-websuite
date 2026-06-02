@@ -1,7 +1,9 @@
 """GDAL/OGR wrapper."""
 
-from typing import Optional, Iterable, cast
+from typing import Any, Optional, Iterable, cast
 
+import datetime
+import decimal
 import contextlib
 import numpy as np
 
@@ -471,17 +473,20 @@ class VectorLayer:
             typ = fdef.GetType()
             if typ not in _OGR_TO_ATTR:
                 continue
+            attr_type = _OGR_TO_ATTR[typ]
+            if fdef.GetSubType() == ogr.OFSTBoolean:
+                attr_type = gws.AttributeType.bool
             cols.append(
                 gws.ColumnDescription(
                     name=fdef.GetName(),
-                    type=_OGR_TO_ATTR[typ],
+                    type=attr_type,
                     nativeType=typ,
                     columnIndex=i,
                 )
             )
 
         for i in range(self.gdDefn.GetGeomFieldCount()):
-            fdef: ogr.GeomFieldDefn = self.gdDefn.GetGeomFieldDefn(i)
+            fdef = self.gdDefn.GetGeomFieldDefn(i)
             typ = fdef.GetType()
             cols.append(
                 gws.ColumnDescription(
@@ -568,19 +573,18 @@ class VectorLayer:
         )
 
         for i in range(gd_feature.GetFieldCount()):
-            gd_field_defn: ogr.FieldDefn = gd_feature.GetFieldDefnRef(i)
-            name = gd_field_defn.GetName()
-            val = _attr_from_ogr(gd_feature, gd_field_defn.type, i, self.dso.encoding)
-            rec.attributes[name] = val
+            fdef = gd_feature.GetFieldDefnRef(i)
+            val = _attr_from_ogr(gd_feature, fdef.GetType(), fdef.GetSubType(), i, self.dso.encoding)
+            rec.attributes[fdef.GetName()] = val
 
         cnt = gd_feature.GetGeomFieldCount()
         if cnt > 0:
             # NB take the last geom
             # @TODO multigeometry support
-            gd_geom_defn = gd_feature.GetGeomFieldRef(cnt - 1)
-            if gd_geom_defn:
-                srid = _srid_from_srs(gd_geom_defn.GetSpatialReference()) or self.dso.defaultCrs.srid
-                wkt = gd_geom_defn.ExportToWkt()
+            fdef = gd_feature.GetGeomFieldRef(cnt - 1)
+            if fdef:
+                srid = _srid_from_srs(fdef.GetSpatialReference()) or self.dso.defaultCrs.srid
+                wkt = fdef.ExportToWkt()
                 if self.dso.geometryAsText:
                     rec.ewkt = f'SRID={srid};{wkt}'
                 else:
@@ -691,7 +695,7 @@ def _srid_from_srs(srs):
     return srid
 
 
-def _attr_from_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, encoding: str = 'utf8'):
+def _attr_from_ogr(gd_feature: ogr.Feature, gtype: int, gsubtype: int, idx: int, encoding: str):
     if gd_feature.IsFieldNull(idx):
         return None
 
@@ -701,27 +705,35 @@ def _attr_from_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, encoding: str 
             return b.decode(encoding)
         return bytes(b)
 
-    if gtype in {ogr.OFTDate, ogr.OFTTime, ogr.OFTDateTime}:
-        # python GetFieldAsDateTime appears to use float seconds, as in
-        # GetFieldAsDateTime (int i, int *pnYear, int *pnMonth, int *pnDay, int *pnHour, int *pnMinute, float *pfSecond, int *pnTZFlag)
-        #
+    # GetFieldAsDateTime uses float seconds:
+    # GetFieldAsDateTime(int i, int *pnYear, int *pnMonth, int *pnDay, int *pnHour, int *pnMinute, float *pfSecond, int *pnTZFlag)
+
+    if gtype == ogr.OFTDate:
+        v = gd_feature.GetFieldAsDateTime(idx)
+        return datetime.date(v[0], v[1], v[2])
+
+    if gtype == ogr.OFTTime:
         v = gd_feature.GetFieldAsDateTime(idx)
         sec, fsec = divmod(v[5], 1)
-        try:
-            return datetimex.new(v[0], v[1], v[2], v[3], v[4], int(sec), int(fsec * 1e6), tz=_tzflag_to_tz(v[6]))
-        except ValueError:
-            return
+        return datetime.time(v[3], v[4], int(sec), int(fsec * 1e6))
 
-    if gtype == ogr.OFSTBoolean:
-        return gd_feature.GetFieldAsInteger(idx) != 0
-    if gtype in {ogr.OFTInteger, ogr.OFTInteger64}:
-        return gd_feature.GetFieldAsInteger(idx)
+    if gtype == ogr.OFTDateTime:
+        v = gd_feature.GetFieldAsDateTime(idx)
+        sec, fsec = divmod(v[5], 1)
+        return datetimex.new(v[0], v[1], v[2], v[3], v[4], int(sec), int(fsec * 1e6), tz=_tzflag_to_tz(v[6]))
+
     if gtype in {ogr.OFTIntegerList, ogr.OFTInteger64List}:
         return gd_feature.GetFieldAsIntegerList(idx)
-    if gtype in {ogr.OFTReal, ogr.OFSTFloat32}:
-        return gd_feature.GetFieldAsDouble(idx)
     if gtype == ogr.OFTRealList:
         return gd_feature.GetFieldAsDoubleList(idx)
+    if gtype == ogr.OFTStringList:
+        return list(gd_feature.GetFieldAsStringList(idx))
+    if gtype in {ogr.OFTInteger, ogr.OFTInteger64}:
+        if gsubtype == ogr.OFSTBoolean:
+            return gd_feature.GetFieldAsInteger(idx) != 0
+        return gd_feature.GetFieldAsInteger(idx)
+    if gtype == ogr.OFTReal:
+        return gd_feature.GetFieldAsDouble(idx)
     if gtype == ogr.OFTBinary:
         return gd_feature.GetFieldAsBinary(idx)
 
@@ -740,23 +752,32 @@ def _tzflag_to_tz(tzflag):
     return f'Etc/GMT{hrs:+}'
 
 
-def _attr_to_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, value, encoding):
+def _attr_to_ogr(gd_feature: ogr.Feature, gtype: int, idx: int, value: Any, encoding):
+    if isinstance(value, decimal.Decimal):
+        value = float(value)
+
     if gtype == ogr.OFTDate:
         return gd_feature.SetField(idx, datetimex.to_iso_date_string(value))
     if gtype == ogr.OFTTime:
         return gd_feature.SetField(idx, datetimex.to_iso_time_string(value))
     if gtype == ogr.OFTDateTime:
-        return gd_feature.SetField(idx, datetimex.to_iso_string(value))
-    if gtype == ogr.OFSTBoolean:
-        return gd_feature.SetField(idx, bool(value))
+        return gd_feature.SetField(idx, datetimex.to_iso_string(datetimex.to_utc(value), with_tz='Z'))
     if gtype in {ogr.OFTInteger, ogr.OFTInteger64}:
-        return gd_feature.SetField(idx, int(value))
+        return gd_feature.SetField(idx, int(bool(value) if isinstance(value, bool) else value))
     if gtype in {ogr.OFTIntegerList, ogr.OFTInteger64List}:
-        return gd_feature.SetField(idx, [int(x) for x in value])
-    if gtype in {ogr.OFTReal, ogr.OFSTFloat32}:
-        return gd_feature.SetField(idx, float(value))
+        return gd_feature.SetFieldIntegerList(idx, [int(x) for x in value])
     if gtype == ogr.OFTRealList:
-        return gd_feature.SetField(idx, [float(x) for x in value])
+        return gd_feature.SetFieldDoubleList(idx, [float(x) for x in value])
+    if gtype == ogr.OFTReal:
+        return gd_feature.SetField(idx, float(value))
+    if gtype == ogr.OFTString:
+        if isinstance(value, bytes):
+            return gd_feature.SetField(idx, value.decode(encoding or 'utf8'))
+        return gd_feature.SetField(idx, str(value))
+    if gtype == ogr.OFTStringList:
+        return gd_feature.SetFieldStringList(idx, [str(x) for x in value])
+    if gtype == ogr.OFTBinary:
+        return gd_feature.SetFieldBinaryFromHexString(idx, value.hex() if isinstance(value, bytes) else value)
 
     return gd_feature.SetField(idx, value)
 
@@ -800,7 +821,6 @@ _ATTR_TO_OGR = {
 
 _OGR_TO_ATTR = {
     ogr.OFTBinary: gws.AttributeType.bytes,
-    ogr.OFSTBoolean: gws.AttributeType.bool,
     ogr.OFTDate: gws.AttributeType.date,
     ogr.OFTDateTime: gws.AttributeType.datetime,
     ogr.OFTReal: gws.AttributeType.float,
