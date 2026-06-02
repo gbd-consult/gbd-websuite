@@ -7,6 +7,7 @@ import traceback
 
 class Level:
     """Log level."""
+
     CRITICAL = 50
     ERROR = 40
     WARN = 30
@@ -122,6 +123,7 @@ def exception_backtrace(exc: BaseException | None) -> list:
 
 ##
 
+
 def _name(exc):
     typ = type(exc) or Exception
     # if typ == Error:
@@ -155,6 +157,8 @@ _PREFIX = {
     Level.DEBUG: 'DEBUG',
 }
 
+_MAX_MSG_LENGTH = 4096
+
 
 def _raw(level, msg, args=None, kwargs=None):
     if level < _current_level:
@@ -164,6 +168,9 @@ def _raw(level, msg, args=None, kwargs=None):
         if len(args) == 1 and args[0] and isinstance(args[0], dict):
             args = args[0]
         msg = msg % args
+
+    if len(msg) > _MAX_MSG_LENGTH:
+        msg = msg[:_MAX_MSG_LENGTH] + '...'
 
     pid = os.getpid()
     loc = ' '
