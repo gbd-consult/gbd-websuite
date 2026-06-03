@@ -575,7 +575,6 @@ export class Controller extends gc.Controller {
         });
 
         let newFeature = this.app.modelRegistry.featureFromProps(res.feature);
-        newFeature.isNew = true;
         if (withFeature) {
             newFeature.createWithFeatures = [withFeature];
         }

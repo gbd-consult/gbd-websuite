@@ -164,6 +164,8 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
             for fld in rf.model.fields:
                 fld.do_init_related(feature, mc)
 
+        feature.isNew = True
+
     def create_feature(self, feature, mc):
         if not mc.user.can_create(self):
             raise gws.ForbiddenError(f'model {self.uid!r} can_create=False')
