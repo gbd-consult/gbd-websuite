@@ -109,7 +109,7 @@ class Object:
         if self.specs:
             self.ctx.specs = self.specs
             return True
-        
+
         try:
             self.ctx.specs = gws.spec.runtime.create(
                 manifest_path=self.manifestPath,
@@ -288,22 +288,23 @@ def real_manifest_path(manifest_path: str) -> str:
 def log_report(cr: gws.ConfigResult):
     err_cnt = len(cr.errors) if cr.errors else 0
     ln = '*' * 80
-    fn = gws.log.info if err_cnt == 0 else gws.log.warning
 
-    fn(ln)
-    if err_cnt > 0:
-        fn(f'configured wth errors: {err_cnt} error(s), {cr.info}')
-    else:
-        fn(f'configured: {cr.info}')
+    if err_cnt == 0:
+        gws.log.info(ln)
+        gws.log.info(f'configured: {cr.info}')
+        gws.log.info(ln)
+        return
 
-    fn(ln)
+    gws.log.error(ln)
+    gws.log.error(f'configured wth errors: errors: {err_cnt}, {cr.info}')
+    gws.log.error(ln)
 
-    if err_cnt > 0:
-        for n, cei in enumerate(cr.errors, 1):
-            gws.log.error(f'{_ERROR_PREFIX}: {n} of {err_cnt}')
-            _log_error(cei)
-            gws.log.error(f'{_ERROR_PREFIX}: ')
-        fn(ln)
+    for n, cei in enumerate(cr.errors, 1):
+        gws.log.error(f'{_ERROR_PREFIX}: {n} of {err_cnt}')
+        _log_error(cei)
+        gws.log.error(f'{_ERROR_PREFIX}: ')
+
+    gws.log.error(ln)
 
 
 def _log_error(cei: gws.ConfigErrorInfo):
@@ -343,7 +344,7 @@ def _time_and_memory():
 
 def _info_string(root, tm1):
     tm2 = _time_and_memory()
-    return '{:d} objects, time: {:d} s., memory: {:.2f} MB'.format(
+    return 'objects: {:d}, time: {:d}s., memory: {:.2f} MB'.format(
         root.object_count() if root else 0,
         tm2[0] - tm1[0],
         tm2[1] - tm1[1],
