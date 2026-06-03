@@ -242,17 +242,18 @@ def configure_permissions(self):
 
     p = self.cfg('permissions')
     if p:
-        d = vars(p)
-        v = d.get('all')
+        if isinstance(p, Data):
+            p = vars(p)
+        v = p.get('all')
         if v:
             perms[Access.read] = perms[Access.write] = perms[Access.create] = perms[Access.delete] = u.parse_acl(v)
 
-        v = d.get('edit')
+        v = p.get('edit')
         if v:
             perms[Access.write] = perms[Access.create] = perms[Access.delete] = u.parse_acl(v)
 
         for k in {Access.read, Access.write, Access.create, Access.delete}:
-            v = d.get(k)
+            v = p.get(k)
             if v:
                 perms[k] = u.parse_acl(v)
 
