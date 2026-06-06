@@ -25,6 +25,7 @@ class Props(gws.base.exporter.Props):
 class Object(gws.base.exporter.Object):
     supportsVector = True
     supportsRaster = False
+    supportsMultiLayer = True
 
     def run(self, ea, er):
         gws.base.exporter.util.run_gdal_vector_export('GML', gws.lib.mime.GML, ea, er)

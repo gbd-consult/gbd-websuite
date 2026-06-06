@@ -7,8 +7,6 @@ metadata.keywords [ "client" "search" "export" ]
 metadata.abstract """
 In disem Beispiel wird die Select-Funktion des Select Tools mit der Exportfunktion kombiniert.
 Die Objekte (Features), die mit der Select-Funktion ausgewählt wurden, können über die Exportfunktion exportiert werden. 
-
-Global muss die `export` Aktion aktiviert werden, damit die Exportfunktion in diesem Beispiel genutzt werden kann.
 """
 
 client.addElements+ { tag "Sidebar.Select" }
@@ -16,44 +14,115 @@ client.addElements+ { tag "Toolbar.Select" }
 client.addElements+ { tag "Toolbar.Select.Draw" }
 client.addElements+ { tag "Task.Select" }
 
-
-exporters+ {
-    type "shapefile"
-    title "ESRI Shapefile"
-    target "download"
+actions+ {
+    type "exporter"
 }
 
-
-map {
-    center {demo_point_duesseldorf_3857}
-    zoom.initScale 4000
-    zoom.maxScale  1000000
-}
-
-map.layers+ {
-    type "postgres"
-    title "POIs"
-    tableName "edit.poi_small"
-    cssSelector ".point-pink"
-
-    templates+ {
-        subject "feature.title"
-        type "html"
-        text "{{name}} {{id}}"
+actions+ {
+    type "select"
+    storage {
+        permissions {
+            read "allow all"
+            write "allow all"
+            create "allow all"
+        }
     }
 }
 
-map.layers+ {
-    title "Districts"
-    type "postgres"
-    tableName "edit.district"
-    cssSelector ".custom_district"
+exporters+ {
+    uid "shapefile_exporter"
+    type "shapefile"
+    title "Shapefile"
+    target "download"
+    access "allow all"
+}
+
+exporters+ {
+    uid "kml_exporter"
+    type "kml"
+    title "KML"
+    target "download"
+    access "allow all"
+}
+
+exporters+ {
+    uid "gml_exporter"
+    type "gml"
+    title "GML"
+    target "download"
+    access "allow all"
+}
     
+exporters+ {
+    uid "gml_multi_exporter"
+    type "gml"
+    title "GML (alle Layer in einer Datei)"
+    target "download"
+    access "allow all"
+    withMultiLayer true
+}
+
+exporters+ {
+    uid "geojson_exporter"
+    type "geojson"
+    title "GeoJSON"
+    target "download"
+    access "allow all"
+}
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 30000
+    zoom.maxScale  1000000
+    zoom.minScale  1000
+}
+
+map.layers+ {
+    title "Interessante Orte"
+    type "qgisflat"
+    provider.path "/demos/search_multi.qgs"
+    sourceLayers.names [ "Interessante Orte" ]
+    finders+ {
+        type "postgres"
+        tableName "edit.poi"
+    }
     templates+ {
-        subject "feature.title"
         type "html"
+        subject "feature.title"
         text "{{name}}"
     }
 }
 
+map.layers+ {
+    title "Parks"
+    type "qgisflat"
+    provider.path "/demos/search_multi.qgs"
+    sourceLayers.names [ "Parks" ]
+    finders+ {
+        type "postgres"
+        tableName "edit.park"
+    }
+    templates+ {
+        type "html"
+        subject "feature.title"
+        text "{{name}}"
+    }
+}
+
+map.layers+ {
+    title "Wasserflächen"
+    type "qgisflat"
+    provider.path "/demos/search_multi.qgs"
+    sourceLayers.names [ "Wasserflächen" ]
+    finders+ {
+        type "postgres"
+        tableName "edit.water"
+    }
+    templates+ {
+        type "html"
+        subject "feature.title"
+        text "{{name}}"
+    }
+}
+ 
 {demo_osm_background}

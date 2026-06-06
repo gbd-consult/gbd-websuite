@@ -25,10 +25,7 @@ class Props(gws.base.exporter.Props):
 class Object(gws.base.exporter.Object):
     supportsVector = True
     supportsRaster = False
-
-    def configure(self):
-        self.withSplitLayers = True
-        self.withNoGeometry = True
+    supportsMultiLayer = False
 
     def run(self, ea, er):
         gws.base.exporter.util.run_gdal_vector_export('CSV', gws.lib.mime.CSV, ea, er)

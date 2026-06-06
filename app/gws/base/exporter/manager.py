@@ -21,7 +21,7 @@ class Object(gws.ExporterManager):
                 titles.add(e.title)
                 exporters.append(e)
 
-        return sorted(exporters, key=lambda e: e.title)
+        return exporters
 
     def get_exporter(self, where, uid, user):
         for e in self.list_exporters(where, user):

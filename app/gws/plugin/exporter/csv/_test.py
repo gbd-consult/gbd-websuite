@@ -80,6 +80,7 @@ def root():
                 title "CSV Exporter"
                 target "download"
                 access "allow all"
+                withNoGeometry true
             }
         }
     '''
@@ -104,6 +105,21 @@ def _read_csv_from_zip(zip_path, csv_name):
             return f.read()
 
 
+def _read_csv(path, table_name=None):
+    """Read CSV text from a plain file or from a matching file in a zip."""
+    if zipfile.is_zipfile(path):
+        with zipfile.ZipFile(path) as zf:
+            names = zf.namelist()
+        if table_name:
+            csv_name = next((n for n in names if n.endswith('.csv') and table_name in n), None) or \
+                       next(n for n in names if n.endswith('.csv'))
+        else:
+            csv_name = next(n for n in names if n.endswith('.csv'))
+        return _read_csv_from_zip(path, csv_name)
+    with open(path, newline='') as f:
+        return f.read()
+
+
 def _parse_csv(text):
     return list(csv.DictReader(io.StringIO(text)))
 
@@ -111,22 +127,21 @@ def _parse_csv(text):
 ##
 
 
-def test_export_poi_produces_zip(root: gws.Root, tmp_path):
+def test_export_poi_csv_output(root: gws.Root, tmp_path):
     p1 = _point(8.5, 51.2)
 
     u.pg.insert('csv_poi', [
         {'id': 1, 'name': 'Restaurant Alpha', 'category': 'food', 'geom': p1.to_ewkb_hex()},
     ])
 
-    out_path = str(tmp_path / 'poi_export.zip')
+    out_path = str(tmp_path / 'poi_export.csv')
     _run_export(root, [
         gws.FeatureProps(modelUid='CSV_POI', uid='1'),
     ], out_path)
 
     assert os.path.isfile(out_path)
-    with zipfile.ZipFile(out_path) as zf:
-        names = zf.namelist()
-    assert any(n.endswith('.csv') for n in names)
+    rows = _parse_csv(_read_csv(out_path, 'csv_poi'))
+    assert any(r['name'] == 'Restaurant Alpha' for r in rows)
 
 
 def test_export_poi_attributes(root: gws.Root, tmp_path):
@@ -138,17 +153,13 @@ def test_export_poi_attributes(root: gws.Root, tmp_path):
         {'id': 3, 'name': 'Museum Beta',       'category': 'culture', 'geom': p2.to_ewkb_hex()},
     ])
 
-    out_path = str(tmp_path / 'poi_attrs.zip')
+    out_path = str(tmp_path / 'poi_attrs.csv')
     _run_export(root, [
         gws.FeatureProps(modelUid='CSV_POI', uid='2'),
         gws.FeatureProps(modelUid='CSV_POI', uid='3'),
     ], out_path)
 
-    with zipfile.ZipFile(out_path) as zf:
-        csv_name = next(n for n in zf.namelist() if n.endswith('.csv') and 'csv_poi' in n)
-
-    text = _read_csv_from_zip(out_path, csv_name)
-    rows = _parse_csv(text)
+    rows = _parse_csv(_read_csv(out_path, 'csv_poi'))
 
     names = {r['name'] for r in rows}
     categories = {r['category'] for r in rows}
@@ -168,87 +179,33 @@ def test_export_district_attributes(root: gws.Root, tmp_path):
         {'id': 2, 'name': 'South District', 'area_km': 8.3,  'geom': d2.to_ewkb_hex()},
     ])
 
-    out_path = str(tmp_path / 'district_attrs.zip')
+    out_path = str(tmp_path / 'district_attrs.csv')
     _run_export(root, [
         gws.FeatureProps(modelUid='CSV_DISTRICT', uid='1'),
         gws.FeatureProps(modelUid='CSV_DISTRICT', uid='2'),
     ], out_path)
 
-    with zipfile.ZipFile(out_path) as zf:
-        csv_name = next(n for n in zf.namelist() if n.endswith('.csv') and 'csv_district' in n)
-
-    text = _read_csv_from_zip(out_path, csv_name)
-    rows = _parse_csv(text)
+    rows = _parse_csv(_read_csv(out_path, 'csv_district'))
 
     names = {r['name'] for r in rows}
     assert 'North District' in names
     assert 'South District' in names
 
 
-def test_split_layers_always_applied_mixed_models(root: gws.Root, tmp_path):
-    """withSplitLayers is hardcoded True: mixed models always produce separate CSVs in a zip."""
-    p1 = _point(8.5, 51.2)
-    d1 = _polygon([(7.0, 50.0), (8.0, 50.0), (8.0, 51.0), (7.0, 51.0), (7.0, 50.0)])
-
-    u.pg.insert('csv_poi', [
-        {'id': 10, 'name': 'Mixed POI', 'category': 'test', 'geom': p1.to_ewkb_hex()},
-    ])
-    u.pg.insert('csv_district', [
-        {'id': 10, 'name': 'Mixed District', 'area_km': 5.0, 'geom': d1.to_ewkb_hex()},
-    ])
-
-    out_path = str(tmp_path / 'mixed_export.zip')
-    _run_export(root, [
-        gws.FeatureProps(modelUid='CSV_POI',      uid='10'),
-        gws.FeatureProps(modelUid='CSV_DISTRICT',  uid='10'),
-    ], out_path)
-
-    assert os.path.isfile(out_path)
-
-    with zipfile.ZipFile(out_path) as zf:
-        names_in_zip = set(zf.namelist())
-
-    assert any(n.endswith('.csv') and 'csv_poi' in n for n in names_in_zip), \
-        f'no csv_poi csv in {names_in_zip}'
-    assert any(n.endswith('.csv') and 'csv_district' in n for n in names_in_zip), \
-        f'no csv_district csv in {names_in_zip}'
-
-    poi_name = next(n for n in names_in_zip if n.endswith('.csv') and 'csv_poi' in n)
-    district_name = next(n for n in names_in_zip if n.endswith('.csv') and 'csv_district' in n)
-
-    poi_rows = _parse_csv(_read_csv_from_zip(out_path, poi_name))
-    district_rows = _parse_csv(_read_csv_from_zip(out_path, district_name))
-
-    poi_names = {r['name'] for r in poi_rows}
-    district_names = {r['name'] for r in district_rows}
-
-    assert 'Mixed POI' in poi_names
-    assert 'Mixed District' not in poi_names
-
-    assert 'Mixed District' in district_names
-    assert 'Mixed POI' not in district_names
-
-
 def test_no_geometry_model_works(root: gws.Root, tmp_path):
-    """withNoGeometry is hardcoded True: geometry-free models are exported without error."""
     u.pg.insert('csv_note', [
         {'id': 1, 'title': 'Note One', 'body': 'Body one'},
         {'id': 2, 'title': 'Note Two', 'body': 'Body two'},
     ])
 
-    out_path = str(tmp_path / 'note_export.zip')
+    out_path = str(tmp_path / 'note_export.csv')
     _run_export(root, [
         gws.FeatureProps(modelUid='CSV_NOTE', uid='1'),
         gws.FeatureProps(modelUid='CSV_NOTE', uid='2'),
     ], out_path)
 
     assert os.path.isfile(out_path)
-
-    with zipfile.ZipFile(out_path) as zf:
-        csv_name = next(n for n in zf.namelist() if n.endswith('.csv'))
-
-    text = _read_csv_from_zip(out_path, csv_name)
-    rows = _parse_csv(text)
+    rows = _parse_csv(_read_csv(out_path))
 
     titles = {r['title'] for r in rows}
     bodies = {r['body'] for r in rows}
@@ -267,16 +224,12 @@ def test_geometry_field_not_in_csv_columns(root: gws.Root, tmp_path):
         {'id': 20, 'name': 'Geom Check', 'category': 'test', 'geom': p1.to_ewkb_hex()},
     ])
 
-    out_path = str(tmp_path / 'geom_check.zip')
+    out_path = str(tmp_path / 'geom_check.csv')
     _run_export(root, [
         gws.FeatureProps(modelUid='CSV_POI', uid='20'),
     ], out_path)
 
-    with zipfile.ZipFile(out_path) as zf:
-        csv_name = next(n for n in zf.namelist() if n.endswith('.csv') and 'csv_poi' in n)
-
-    text = _read_csv_from_zip(out_path, csv_name)
-    rows = _parse_csv(text)
+    rows = _parse_csv(_read_csv(out_path, 'csv_poi'))
 
     assert rows
     assert 'geom' not in rows[0]

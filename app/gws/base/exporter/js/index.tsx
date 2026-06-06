@@ -42,7 +42,7 @@ class Dialog extends gc.View<ViewProps> {
 
         if (ps === 'running') {
 
-            let label = '';
+            let label = this.__('exporterWait');
 
             if (job.stepName)
                 label = gc.lib.shorten(job.stepName, 40);

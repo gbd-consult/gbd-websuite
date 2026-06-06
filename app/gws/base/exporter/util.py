@@ -124,7 +124,14 @@ def run_gdal_vector_export(driver_name: str, mime: str, ea: gws.ExportArgs, er: 
     base_dir = gws.u.ephemeral_dir(gws.u.random_string(64))
     ext = di.extensions[0] if di.extensions else 'dat'
 
-    if ea.exporter.withSplitLayers:
+    if ea.exporter.withMultiLayer:
+        path = base_dir + f'/export.{ext}'
+        with gws.lib.gdalx.open_vector(path, 'w', driver=di.name, options=ea.exporter.options) as ds:
+            for grp in groups:
+                la = ds.create_layer(grp.title, grp.columns, grp.geomType, grp.crs)
+                fids = la.insert(grp.records)
+                er.numFeaturesExported += len(fids)
+    else:
         for grp in groups:
             path = base_dir + f'/{gws.u.to_uid(grp.title)}.{ext}'
             with gws.lib.gdalx.open_vector(path, 'w', driver=di.name, options=ea.exporter.options) as ds:
@@ -132,18 +139,12 @@ def run_gdal_vector_export(driver_name: str, mime: str, ea: gws.ExportArgs, er: 
                 fids = la.insert(grp.records)
                 er.numFeaturesExported += len(fids)
 
+    paths = list(gws.lib.osx.find_files(base_dir, deep=False))
+    er.numFiles = len(paths)
+    if er.numFiles > 1:
         er.path = base_dir + '/export.zip'
         er.mime = gws.lib.mime.ZIP
-        paths = gws.lib.osx.find_files(base_dir, deep=False)
-        n = gws.lib.zipx.zip_to_path(er.path, list(paths), flat=True)
-        er.numFiles = n
-
+        gws.lib.zipx.zip_to_path(er.path, paths, flat=True)
     else:
-        er.path = base_dir + f'/export.{ext}'
+        er.path = paths[0]
         er.mime = mime
-        with gws.lib.gdalx.open_vector(er.path, 'w', driver=di.name, options=ea.exporter.options) as ds:
-            er.numFiles += 1
-            for grp in groups:
-                la = ds.create_layer(grp.title, grp.columns, grp.geomType, grp.crs)
-                fids = la.insert(grp.records)
-                er.numFeaturesExported += len(fids)

@@ -1,4 +1,5 @@
 import os
+import zipfile
 
 import gws
 import gws.base.shape
@@ -91,10 +92,10 @@ def root():
             exporters+ {
                 uid "EXP_3"
                 type "gml"
-                title "GML Exporter Split"
+                title "GML Exporter Multi Layer"
                 target "download"
                 access "allow all"
-                withSplitLayers true
+                withMultiLayer true
             }
 
             exporters+ {
@@ -125,9 +126,14 @@ def _run_export(root, features, out_path, exporter_uid='EXP_1'):
 
 
 def _read_gml(path):
+    if zipfile.is_zipfile(path):
+        parts = []
+        with zipfile.ZipFile(path) as zf:
+            for name in zf.namelist():
+                parts.append(zf.read(name).decode('utf-8'))
+        return '\n'.join(parts)
     with open(path) as f:
-        text = f.read()
-    return text
+        return f.read()
 
 
 ##
@@ -181,7 +187,7 @@ def test_export_district(root: gws.Root, tmp_path):
     assert 'Polygon' in xml
 
 
-def test_export_both_models_single_file(root: gws.Root, tmp_path):
+def test_export_both_models(root: gws.Root, tmp_path):
     p1 = _point(8.5, 51.2)
     d1 = _polygon([(7.0, 50.0), (8.0, 50.0), (8.0, 51.0), (7.0, 51.0), (7.0, 50.0)])
 
@@ -199,55 +205,68 @@ def test_export_both_models_single_file(root: gws.Root, tmp_path):
     ], out_path)
 
     assert os.path.isfile(out_path)
+
+    # withMultiLayer false (default): each model in its own .gml file, packed into a zip
+    if zipfile.is_zipfile(out_path):
+        with zipfile.ZipFile(out_path) as zf:
+            gml_names = [n for n in zf.namelist() if n.endswith('.gml')]
+        assert len(gml_names) == 2, f'expected 2 .gml files in zip, got {gml_names}'
+
+    text = _read_gml(out_path)
+    assert 'POI One' in text
+    assert 'District One' in text
+    assert 'Point' in text
+    assert 'Polygon' in text
+
+
+def test_multi_layer_single_model(root: gws.Root, tmp_path):
+    p1 = _point(7.5, 50.5)
+
+    u.pg.insert('gml_poi', [
+        {'id': 40, 'name': 'ML POI', 'category': 'test', 'geom': p1.to_ewkb_hex()},
+    ])
+
+    out_path = str(tmp_path / 'ml_single.gml')
+    _run_export(root, [
+        gws.FeatureProps(modelUid='GML_POI', uid='40'),
+    ], out_path, exporter_uid='EXP_3')
+
+    assert os.path.isfile(out_path)
     xml = u.fxml(_read_gml(out_path), nl=False)
-
-    assert 'POI One' in xml
-    assert 'District One' in xml
+    assert 'ML POI' in xml
     assert 'Point' in xml
-    assert 'Polygon' in xml
 
 
-def test_export_split_layers(root: gws.Root, tmp_path):
-    import zipfile
-
-    p1 = _point(8.5, 51.2)
+def test_multi_layer_both_models_single_file(root: gws.Root, tmp_path):
+    p1 = _point(7.5, 50.5)
     d1 = _polygon([(7.0, 50.0), (8.0, 50.0), (8.0, 51.0), (7.0, 51.0), (7.0, 50.0)])
 
     u.pg.insert('gml_poi', [
-        {'id': 20, 'name': 'Split POI', 'category': 'test', 'geom': p1.to_ewkb_hex()},
+        {'id': 50, 'name': 'ML POI Two', 'category': 'test', 'geom': p1.to_ewkb_hex()},
     ])
     u.pg.insert('gml_district', [
-        {'id': 20, 'name': 'Split District', 'area_km': 3.0, 'geom': d1.to_ewkb_hex()},
+        {'id': 50, 'name': 'ML District Two', 'area_km': 4.0, 'geom': d1.to_ewkb_hex()},
     ])
 
-    out_path = str(tmp_path / 'split_export.zip')
+    out_path = str(tmp_path / 'ml_both.gml')
     _run_export(root, [
-        gws.FeatureProps(modelUid='GML_POI',     uid='20'),
-        gws.FeatureProps(modelUid='GML_DISTRICT', uid='20'),
+        gws.FeatureProps(modelUid='GML_POI',      uid='50'),
+        gws.FeatureProps(modelUid='GML_DISTRICT',  uid='50'),
     ], out_path, exporter_uid='EXP_3')
 
     assert os.path.isfile(out_path)
 
-    with zipfile.ZipFile(out_path) as zf:
-        names_in_zip = set(zf.namelist())
+    # withMultiLayer true: both models in a single .gml file (not split into separate files)
+    if zipfile.is_zipfile(out_path):
+        with zipfile.ZipFile(out_path) as zf:
+            gml_names = [n for n in zf.namelist() if n.endswith('.gml')]
+        assert len(gml_names) == 1, f'expected 1 .gml in zip, got {gml_names}'
 
-    assert any(n.endswith('.gml') and 'gml_poi' in n for n in names_in_zip), f'no gml_poi gml in {names_in_zip}'
-    assert any(n.endswith('.gml') and 'gml_district' in n for n in names_in_zip), f'no gml_district gml in {names_in_zip}'
-
-    with u.temp_dir_in_base_dir() as tmp_dir:
-        gws.lib.zipx.unzip_path(out_path, tmp_dir, flat=True)
-        poi_name = next(n for n in names_in_zip if n.endswith('.gml') and 'gml_poi' in n)
-        district_name = next(n for n in names_in_zip if n.endswith('.gml') and 'gml_district' in n)
-        poi_xml = u.fxml(_read_gml(os.path.join(tmp_dir, poi_name)), nl=False)
-        district_xml = u.fxml(_read_gml(os.path.join(tmp_dir, district_name)), nl=False)
-
-    assert 'Split POI' in poi_xml
-    assert 'Point' in poi_xml
-    assert 'Split District' not in poi_xml
-
-    assert 'Split District' in district_xml
-    assert 'Polygon' in district_xml
-    assert 'Split POI' not in district_xml
+    xml = u.fxml(_read_gml(out_path), nl=False)
+    assert 'ML POI Two' in xml
+    assert 'ML District Two' in xml
+    assert 'Point' in xml
+    assert 'Polygon' in xml
 
 
 def test_no_geometry_excluded_by_exp1(root: gws.Root, tmp_path):

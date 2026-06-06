@@ -1,6 +1,5 @@
 """Exporter for the ESRI Shapefile format."""
 
-
 import gws
 import gws.base.exporter
 import gws.lib.gdalx
@@ -24,9 +23,7 @@ class Props(gws.base.exporter.Props):
 class Object(gws.base.exporter.Object):
     supportsVector = True
     supportsRaster = False
-
-    def configure(self):
-        self.withSplitLayers = True
+    supportsMultiLayer = False
 
     def run(self, ea, er):
         gws.base.exporter.util.run_gdal_vector_export('ESRI Shapefile', '', ea, er)

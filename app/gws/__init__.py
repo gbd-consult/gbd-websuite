@@ -4790,10 +4790,14 @@ class Exporter(Node):
     title: str
     options: dict
     
+    supportsVector: bool
+    supportsRaster: bool
+    supportsMultiLayer: bool
+
     withNoGeometry: bool
     withMixedGeometry: bool
     withMixedCrs: bool
-    withSplitLayers: bool
+    withMultiLayer: bool
 
     supportedAttributeTypes: Optional[list[gws.AttributeType]]
 

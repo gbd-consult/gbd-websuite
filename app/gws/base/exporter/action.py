@@ -6,7 +6,6 @@ import gws
 import gws.base.action
 import gws.config
 import gws.lib.jsonx
-import gws.lib.osx
 import gws.lib.mime
 
 gws.ext.new.action('exporter')
@@ -49,7 +48,7 @@ class Object(gws.base.action.Object):
             }
             if er.path:
                 ext = gws.lib.mime.extension_for(er.mime) or 'bin'
-                res.output['url'] = gws.u.action_url_path('exporterOutput', jobUid=res.jobUid) + f'/gws.{ext}'
+                res.output['url'] = gws.u.action_url_path('exporterOutput', projectUid=p.projectUid, jobUid=res.jobUid) + f'/gws.{ext}'
 
         return res
 

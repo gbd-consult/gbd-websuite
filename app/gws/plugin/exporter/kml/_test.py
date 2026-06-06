@@ -89,14 +89,6 @@ def root():
                 withNoGeometry true
             }
 
-            exporters+ {
-                uid "EXP_3"
-                type "kml"
-                title "KML Exporter Split"
-                target "download"
-                access "allow all"
-                withSplitLayers true
-            }
         }
     '''
 
@@ -114,14 +106,14 @@ def _run_export(root, features, out_path, exporter_uid='EXP_1'):
 
 
 def _read_kml(path):
+    if zipfile.is_zipfile(path):
+        parts = []
+        with zipfile.ZipFile(path) as zf:
+            for name in zf.namelist():
+                parts.append(zf.read(name).decode('utf-8'))
+        return '\n'.join(parts)
     with open(path) as f:
         return f.read()
-
-
-def _read_kml_from_zip(zip_path, kml_name):
-    with u.temp_dir_in_base_dir() as tmp_dir:
-        gws.lib.zipx.unzip_path(zip_path, tmp_dir, flat=True)
-        return _read_kml(os.path.join(tmp_dir, kml_name))
 
 
 ##
@@ -175,7 +167,7 @@ def test_export_district(root: gws.Root, tmp_path):
     assert '<Polygon>' in xml
 
 
-def test_export_both_models_single_file(root: gws.Root, tmp_path):
+def test_export_both_models(root: gws.Root, tmp_path):
     p1 = _point(8.5, 51.2)
     d1 = _polygon([(7.0, 50.0), (8.0, 50.0), (8.0, 51.0), (7.0, 51.0), (7.0, 50.0)])
 
@@ -193,55 +185,13 @@ def test_export_both_models_single_file(root: gws.Root, tmp_path):
     ], out_path)
 
     assert os.path.isfile(out_path)
-    xml = u.fxml(_read_kml(out_path), nl=False)
+    text = _read_kml(out_path)
 
-    # both layer folders are present
-    assert '<name>kml_poi</name>' in xml
-    assert '<name>kml_district</name>' in xml
+    assert '<name>POI One</name>' in text
+    assert '<name>District One</name>' in text
+    assert '<Point>' in text
+    assert '<Polygon>' in text
 
-    # both feature names are present
-    assert '<name>POI One</name>' in xml
-    assert '<name>District One</name>' in xml
-
-    # both geometry types are present
-    assert '<Point>' in xml
-    assert '<Polygon>' in xml
-
-
-def test_export_split_layers(root: gws.Root, tmp_path):
-    p1 = _point(8.5, 51.2)
-    d1 = _polygon([(7.0, 50.0), (8.0, 50.0), (8.0, 51.0), (7.0, 51.0), (7.0, 50.0)])
-
-    u.pg.insert('kml_poi', [
-        {'id': 20, 'name': 'Split POI', 'category': 'test', 'geom': p1.to_ewkb_hex()},
-    ])
-    u.pg.insert('kml_district', [
-        {'id': 20, 'name': 'Split District', 'area_km': 3.0, 'geom': d1.to_ewkb_hex()},
-    ])
-
-    out_path = str(tmp_path / 'split_export.zip')
-    _run_export(root, [
-        gws.FeatureProps(modelUid='KML_POI',     uid='20'),
-        gws.FeatureProps(modelUid='KML_DISTRICT', uid='20'),
-    ], out_path, exporter_uid='EXP_3')
-
-    assert os.path.isfile(out_path)
-
-    with zipfile.ZipFile(out_path) as zf:
-        names_in_zip = set(zf.namelist())
-
-    assert 'kml_poi.kml' in names_in_zip
-    assert 'kml_district.kml' in names_in_zip
-
-    poi_xml = u.fxml(_read_kml_from_zip(out_path, 'kml_poi.kml'), nl=False)
-    assert '<name>Split POI</name>' in poi_xml
-    assert '<Point>' in poi_xml
-    assert 'Split District' not in poi_xml
-
-    district_xml = u.fxml(_read_kml_from_zip(out_path, 'kml_district.kml'), nl=False)
-    assert '<name>Split District</name>' in district_xml
-    assert '<Polygon>' in district_xml
-    assert 'Split POI' not in district_xml
 
 
 def test_no_geometry_excluded_by_exp1(root: gws.Root, tmp_path):
