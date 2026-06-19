@@ -1,7 +1,7 @@
 """DOG - the documentation generator."""
 
 from .options import Options
-from . import builder, server
+from . import builder, server, util
 
 
 def build_html(opts: Options | dict):

@@ -177,7 +177,7 @@ class SpecData:
     """List of chunks."""
     serverTypes: list[Type]
     """List of types used by the server (configuration types, request types and commands)."""
-    strings: dict
+    strings: dict[str, dict[str, str]]
     """Documentation strings, translated to multiple languages."""
 
 

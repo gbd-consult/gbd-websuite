@@ -18,6 +18,14 @@ LoadError = core.LoadError
 
 
 def create(manifest_path: str = '', read_cache=False, write_cache=False) -> 'Object':
+    """Create a new Runtime object by generating or loading the specs.
+    
+    Args:
+        manifest_path: Optional path to the application manifest. If not provided, the generator will try to find it automatically.
+        read_cache: If True, try to read the specs from a cache file. 
+        write_cache: If True, write the generated specs to a cache file.
+    """
+
     sd = _get_specs(manifest_path, read_cache, write_cache)
     return Object(sd)
 
@@ -42,7 +50,7 @@ def _get_specs(manifest_path: str = '', read_cache=False, write_cache=False) -> 
 
     if write_cache:
         try:
-            generator_main.to_path(specs, cache_path)
+            generator_main.to_path(cache_path, specs)
             gws.log.debug(f'spec.create: stored to {cache_path!r}')
         except gws.lib.jsonx.Error:
             gws.log.exception(f'spec.create: store failed')

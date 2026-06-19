@@ -27,7 +27,7 @@ Commands:
     doc                 		- build the Docs
     doc-api             		- build the API Docs
     doc-dev-server      		- start the Doc dev server
-    doc-markdown -out path/directory    - build the Docs as MarkDown
+    doc-markdown            - build the Docs as MarkDown
     image               		- build docker images
     package             		- create an Application tarball
     spec                		- build the Specs

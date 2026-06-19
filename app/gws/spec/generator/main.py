@@ -7,24 +7,30 @@ Error = base.Error
 
 
 def generate_and_write(root_dir='', out_dir='', manifest_path='', debug=False):
+    """Generate the specs and write them to disk."""
+    
     base.log.set_level('DEBUG' if debug else 'INFO')
 
     gen = _run_generator(root_dir, out_dir, manifest_path, debug)
 
-    to_path(gen.specData, out_dir + '/specs.json')
+    to_path(f'{gen.outDir}/specs.json', gen.specData)
 
-    util.write_file(gen.outDir + '/gws.generated.ts', gen.typescript)
+    util.write_file(f'{gen.outDir}/gws.generated.ts', gen.typescript)
 
-    util.write_file(gen.outDir + '/configref.en.md', gen.configRef['en'])
-    util.write_file(gen.outDir + '/configref.de.md', gen.configRef['de'])
+    util.write_file(f'{gen.outDir}/configref.en.md', gen.configRef['en'])
+    util.write_file(f'{gen.outDir}/configref.de.md', gen.configRef['de'])
 
 
 def generate(manifest_path='') -> core.SpecData:
+    """Generate the specs and return them as a data object."""
+    
     gen = _run_generator(manifest_path=manifest_path)
     return gen.specData
 
 
-def to_path(specs: core.SpecData, path: str):
+def to_path(path: str, specs: core.SpecData):
+    """Write the specs to a JSON file."""
+    
     util.write_json(
         path,
         {
@@ -38,6 +44,8 @@ def to_path(specs: core.SpecData, path: str):
 
 
 def from_path(path: str) -> core.SpecData:
+    """Load the specs from a JSON file."""
+    
     d = util.read_json(path)
     s = core.SpecData()
     s.meta = d['meta']
@@ -46,6 +54,8 @@ def from_path(path: str) -> core.SpecData:
     s.strings = d['strings']
     return s
 
+
+##
 
 def _run_generator(root_dir='', out_dir='', manifest_path='', debug=False):
     gen = base.Generator()
