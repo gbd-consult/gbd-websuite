@@ -1,3 +1,9 @@
+## Version 8.3.14
+
+- ALKIS export correctly handles the personal data access control
+- ALKIS error messages on failed export are now properly displayed in the client
+- the client now properly handles binary error responses
+
 ## Version 8.3.13
 
 - update SSL configuration to the Mozilla intermediate profile
