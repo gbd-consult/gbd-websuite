@@ -51,11 +51,11 @@ def handle_request(root: gws.Root, environ) -> gws.WebResponder:
     except Exception as exc:
         return handle_error(req, exc)
 
-    gws.log.if_debug(_debug_repr, f'REQUEST_BEGIN {req.command()}', req.params() or req.struct())
-    gws.debug.time_start(f'REQUEST {req.command()}')
+    gws.log.if_debug(_debug_repr, f'REQUEST_BEGIN <{req.method}> {req.command()}', req.params() or req.struct())
+    gws.debug.time_start(f'REQUEST <{req.method}> {req.command()}')
     res = apply_middleware(root, req)
     gws.debug.time_end()
-    gws.log.if_debug(_debug_repr, f'REQUEST_END {req.command()}', res)
+    gws.log.if_debug(_debug_repr, f'REQUEST_END <{req.method}> {req.command()}', res)
 
     return res
 

@@ -50,14 +50,7 @@ class Object:
     caps: caps_mod.Caps
     ops_by_model: dict[str, list[Operation]]
 
-    def prepare(self, args: Args):
-        self.args = args
-        self.qfcProject = self.args.qfcProject
-        self.project = self.args.project
-        self.user = self.args.user
-        self.caps = args.caps
-
-    def apply_changes(self, root: gws.Root, args: Args):
+    def apply_changes(self, root: gws.Root, args: Args) -> bool:
         self.root = root
         self.prepare(args)
 
@@ -67,10 +60,19 @@ class Object:
             self.prepare_change(cc)
 
         if not self.ops_by_model:
-            return
+            return False
 
         for gpName, ops in self.ops_by_model.items():
             self.commit_operations_for_model(self.caps.modelMap[gpName], ops)
+
+        return True
+
+    def prepare(self, args: Args):
+        self.args = args
+        self.qfcProject = self.args.qfcProject
+        self.project = self.args.project
+        self.user = self.args.user
+        self.caps = args.caps
 
     def commit_operations_for_model(self, me: caps_mod.ModelEntry, ops: list[Operation]):
         with me.model.db.connect() as conn:
@@ -87,16 +89,17 @@ class Object:
                     me.model.delete_feature(op.feature, mc)
             conn.commit()
 
-    def apply_upload(self, root: gws.Root, args: Args):
+    def apply_upload(self, root: gws.Root, args: Args) -> bool:
         self.root = root
         self.prepare(args)
-        self.commit_upload(args.filePath, args.fileContent)
+        return self.commit_upload(args.filePath, args.fileContent)
 
-    def commit_upload(self, path: str, content: bytes):
+    def commit_upload(self, path: str, content: bytes) -> bool:
         for me in self.caps.modelMap.values():
             if self.commit_upload_for_model(me, path, content):
-                return
+                return True
         gws.log.warning(f'commit_upload: feature not found: {path=}')
+        return False
 
     def commit_upload_for_model(self, me: caps_mod.ModelEntry, path: str, content: bytes) -> bool:
         mc = gws.ModelContext(op=gws.ModelOperation.update, user=self.user, project=self.project)
@@ -147,11 +150,11 @@ class Object:
         pk_name = me.model.uidName
 
         atts = dict(cc.newAtts)
-        
+
         # see notes in packager.py about fid/fid_gws
         if 'fid_gws' in atts:
             atts['fid'] = atts.pop('fid_gws')
-        
+
         if cc.wkt:
             geom = me.model.geometryName
             if not geom:
