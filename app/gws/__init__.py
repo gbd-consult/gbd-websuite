@@ -669,11 +669,8 @@ class SpecRuntime:
             A tuple ``(class object, class name, extension name)``.
         """
 
-    def get_types(self) -> list[dict]:
-        """Get a list of spec types as dictionaries."""
-
-    def get_strings(self, lang: str) -> dict[str, str]:
-        """Get a dictionary of spec strings for a specified language."""
+    def get_config_types(self, lang: str) -> list[dict]:
+        """Get a list of config-related spec types as dictionaries."""
 ################################################################################
 
 
