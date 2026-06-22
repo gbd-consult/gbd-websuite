@@ -195,7 +195,7 @@ def root_create_application(self, config, **kwargs):
     config = to_config(config, kwargs)
 
     node = alloc_node(self, 'gws.base.application.core.Object')
-    node.uid = '1'
+    node.uid = c.APPLICATION_UID
     node.parent = self
     node.children = []
 
@@ -350,7 +350,11 @@ def make_props2(obj, user):
 
 
 def register_config_error(self, exc):
-    cei = Data(message=repr(exc), stack=[])
+    try:
+        msg = getattr(exc, 'message', None) or str(exc.args[0])
+    except:
+        msg = repr(exc)
+    cei = Data(message=msg, stack=[])
     for node in reversed(self.configStack):
         cei.stack.append(
             # @TODO actually this is a ConfigLocation object
