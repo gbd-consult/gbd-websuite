@@ -1428,7 +1428,10 @@ class Controller extends gc.Controller {
 
         let res = await this.app.server.call('alkisExportFlurstueck', q, {binaryResponse: true});
         if (res.error) {
-            return;
+            this.update({
+                alkisFsError: this.__('alkisErrorExport'),
+            });
+            return this.goTo('error');
         }
 
         gc.lib.downloadContent(res.content, res.mime, EXPORT_PATH)
