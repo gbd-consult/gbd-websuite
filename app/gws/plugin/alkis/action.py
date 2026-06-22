@@ -587,9 +587,9 @@ class Object(gws.base.action.Object):
             raise gws.NotFoundError()
 
         if exp.withEigentuemer:
-            self._check_eigentuemer_access(req, p.eigentuemerControlInput or '')
+            self._check_eigentuemer_access(req, p.findRequest.eigentuemerControlInput or '')
         if exp.withBuchung:
-            self._check_buchung_access(req, p.eigentuemerControlInput or '')
+            self._check_buchung_access(req, p.findRequest.eigentuemerControlInput or '')
 
         find_request = p.findRequest
         find_request.projectUid = p.projectUid
