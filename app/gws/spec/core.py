@@ -146,6 +146,9 @@ class Type:
     literalValues: list = []
     """Literal values for the c.LITERAL type."""
 
+    isConfig: bool = False
+    """True if this type is a configuration type."""
+
 
 def make_type(args: dict):
     typ = Type()

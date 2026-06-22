@@ -287,7 +287,7 @@ def _make_props(gen: base.Generator):
         if typ.name in own_props_by_name:
             _merge(typ, props, own_props_by_name[typ.name])
 
-        typ.tProperties = {k: v.name for k, v in props.items()}
+        typ.tProperties = {k: v.name for k, v in sorted(props.items())}
 
         done[typ.name] = props
         return props

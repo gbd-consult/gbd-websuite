@@ -239,8 +239,21 @@ class Object(gws.SpecRuntime):
 
         raise Error(f'invalid class reference {classref!r}')
 
-    def get_types(self):
-        return [vars(t) for t in self.serverTypes]
-
-    def get_strings(self, lang):
-        return self.strings.get(lang) or {}
+    def get_config_types(self, lang):
+        strs = self.strings.get(lang) or self.strings['en']
+        ts = []
+        
+        for typ in self.serverTypes:
+            if not typ.isConfig:
+                continue
+            d = dict(vars(typ))
+            if typ.uid in strs:
+                d['doc'] = strs[typ.uid]
+            if 'enumDocs' in d:
+                for k in d['enumDocs']:
+                    key = typ.uid + '.' + k
+                    if key in strs:
+                        d['enumDocs'][k] = strs[key]
+            ts.append(d)
+        
+        return ts

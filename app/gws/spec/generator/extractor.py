@@ -13,97 +13,118 @@ def extract(gen: base.Generator):
         - their args and rets, recursively
     """
 
+    p = _Extractor(gen)
+    p.run()
+
+
+class _Extractor:
     out: dict[str, Type] = {}
-    _extract(gen, out)
-    gen.serverTypes = [out[uid] for uid in sorted(out)]
+    queue: list[str] = []
 
+    def __init__(self, gen: base.Generator):
+        self.gen = gen
 
-def _extract(gen: base.Generator, out: dict[str, Type]):
-    queue = []
+    def run(self):
+        self.out = {}
+        self.queue = []
+        self.extract()
+        self.gen.serverTypes = [self.out[uid] for uid in sorted(self.out)]
 
-    def _add(typ: Type, **kwargs):
-        mod = gen.get_type(typ.tModule)
+    def add(self, typ: Type, **kwargs):
+        kwargs.setdefault('isConfig', False)
+
+        mod = self.gen.get_type(typ.tModule)
         if mod:
             kwargs['modName'] = mod.name
             kwargs['modPath'] = mod.modPath
+
         vars(typ).update(kwargs)
-        out[typ.uid] = typ
+        self.out[typ.uid] = typ
 
-    typ = gen.require_type('gws.base.application.core.Config')
-    _add(typ)
-    queue.extend(typ.tProperties.values())
+    def extract(self):
+        # config-related types
+        self.queue = ['gws.base.application.core.Config']
+        self.extract_all(isConfig=True)
 
-    typ = gen.require_type('gws.base.application.core.Object')
-    _add(typ)
+        # application objects, including methods and their args/rets
+        self.queue = ['gws.base.application.core.Object']
+        self.extract_all()
 
-    queue.extend(set(typ.uid for typ in gen.typeDict.values() if typ.extName))
+        # ext objects
+        self.queue = list(set(typ.uid for typ in self.gen.typeDict.values() if typ.extName))
+        self.extract_all()
 
-    while queue:
-        typ = gen.require_type(queue.pop(0))
-        if typ.uid in out or typ.c == base.c.ATOM:
-            continue
+    def extract_all(self, **kwargs):
+        while self.queue:
+            self.extract_one(**kwargs)
+
+    def extract_one(self, **kwargs):
+        typ = self.gen.require_type(self.queue.pop(0))
+
+        if typ.uid in self.out or typ.c == base.c.ATOM:
+            return
 
         if typ.c == base.c.METHOD and typ.extName.startswith(base.v.EXT_COMMAND_PREFIX):
-            _add(typ)
-            queue.append(typ.tOwner)
-            queue.append(typ.tArg)
-            continue
+            self.add(typ, **kwargs)
+            self.queue.append(typ.tOwner)
+            self.queue.append(typ.tArg)
+            return
 
         if typ.c == base.c.CLASS and typ.extName.startswith(base.v.EXT_OBJECT_PREFIX):
-            _add(typ)
-            continue
+            self.add(typ, **kwargs)
+            return
 
         if typ.c == base.c.CLASS:
-            _add(typ)
-            queue.extend(typ.tProperties.values())
-            continue
+            self.add(typ, **kwargs)
+            self.queue.extend(typ.tProperties.values())
+            return
 
         if typ.c == base.c.DICT:
-            _add(typ)
-            queue.append(typ.tKey)
-            queue.append(typ.tValue)
-            continue
+            self.add(typ, **kwargs)
+            self.queue.append(typ.tKey)
+            self.queue.append(typ.tValue)
+            return
 
         if typ.c in {base.c.LIST, base.c.SET}:
-            _add(typ)
-            queue.append(typ.tItem)
-            continue
+            self.add(typ, **kwargs)
+            self.queue.append(typ.tItem)
+            return
 
         if typ.c in {base.c.OPTIONAL, base.c.TYPE}:
-            _add(typ)
-            queue.append(typ.tTarget)
-            continue
+            self.add(typ, **kwargs)
+            self.queue.append(typ.tTarget)
+            return
 
         if typ.c in {base.c.TUPLE, base.c.UNION}:
-            _add(typ)
-            queue.extend(typ.tItems)
-            continue
+            self.add(typ, **kwargs)
+            self.queue.extend(typ.tItems)
+            return
 
         if typ.c == base.c.VARIANT:
-            _add(typ)
-            queue.extend(typ.tMembers.values())
-            continue
+            self.add(typ, **kwargs)
+            self.queue.extend(typ.tMembers.values())
+            return
 
         if typ.c == base.c.PROPERTY:
-            _add(typ)
-            queue.append(typ.tValue)
-            queue.append(typ.tOwner)
-            continue
+            self.add(typ, **kwargs)
+            self.queue.append(typ.tValue)
+            self.queue.append(typ.tOwner)
+            return
 
         if typ.c == base.c.CLASS:
-            _add(typ)
-            queue.extend(typ.tProperties.values())
-            continue
+            self.add(typ, **kwargs)
+            self.queue.extend(typ.tProperties.values())
+            return
 
         if typ.c == base.c.ENUM:
-            _add(typ)
-            continue
+            self.add(typ, **kwargs)
+            return
 
         if typ.c == base.c.LITERAL:
-            _add(typ)
-            continue
+            self.add(typ, **kwargs)
+            return
 
         if typ.c == base.c.EXT:
-            continue
+            return
 
         raise base.GeneratorError(f'unbound object {typ.c}: {typ.uid!r} in {typ.pos}')
