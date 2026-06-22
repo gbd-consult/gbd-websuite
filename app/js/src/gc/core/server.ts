@@ -148,6 +148,8 @@ export class Server extends BaseServer {
                 data = msgpack.deserialize(new Uint8Array(data));
             return data;
         } catch (err) {
+            if (binaryResponse)
+                return errorResponse(err);
             if (err && err.response && err.response.data)
                 return err.response.data;
             return errorResponse(err);
