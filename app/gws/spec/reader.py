@@ -242,7 +242,10 @@ def _read_object(r: Reader, val, typ: core.Type):
 
     for k in val:
         if k not in typ.tProperties:
-            if r.accept_extra_props:
+            # accept 'uid' for all objects
+            if k == 'uid':
+                res[k] = val[k]
+            elif r.accept_extra_props:
                 res[k] = val[k]
             elif r.ignore_extra_props:
                 continue
@@ -323,7 +326,7 @@ def _read_datetime(r: Reader, val, typ: core.Type):
 def _read_dirpath(r: Reader, val, typ: core.Type):
     path = gws.lib.osx.abs_path(val, r.path)
     if not gws.u.is_dir(path):
-        raise core.ReadError(f'directory not found: {path!r}, base {r.path!r}', val)
+        raise core.ReadError(f'directory not found: {path!r}', val)
     return path
 
 
@@ -339,7 +342,7 @@ def _read_filepath(r: Reader, val, typ: core.Type):
     if not gws.lib.osx.is_abs_path(val):
         gws.log.warning(f'relative path, assuming {path!r} for {val!r}')
     if not gws.u.is_file(path):
-        raise core.ReadError(f'file not found: {path!r}, base {r.path!r}', val)
+        raise core.ReadError(f'file not found: {path!r}', val)
     return path
 
 

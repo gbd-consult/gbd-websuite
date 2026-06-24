@@ -22,7 +22,7 @@ class ListItem(gws.Data):
     """Optional level for hierarchical items, used for indentation."""
 
 
-class ListItemConfig(gws.Data):
+class ListItemConfig(gws.Config):
     """Configuration for a list item in the select widget."""
 
     value: Any

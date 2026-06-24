@@ -13,7 +13,7 @@ from . import core
 gws.ext.new.helper('account')
 
 
-class MfaConfig:
+class MfaConfig(gws.Config):
     """Multi-factor authentication configuration."""
 
     mfaUid: str

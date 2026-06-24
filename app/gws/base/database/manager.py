@@ -18,7 +18,10 @@ class Object(gws.DatabaseManager):
         self.providers = []
 
         for cfg in self.cfg('providers', default=[]):
-            self.create_provider(cfg)
+            try:
+                self.create_provider(cfg)
+            except Exception as exc:
+                gws.log.error(f'failed to create database provider {cfg}: {exc}')
 
         self.root.app.middlewareMgr.register(self, 'db')
 

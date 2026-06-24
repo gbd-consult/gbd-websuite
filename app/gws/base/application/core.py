@@ -125,6 +125,8 @@ class Config(gws.ConfigWithAccess):
     """Custom variables."""
     web: Optional[gws.base.web.manager.Config]
     """Web server options."""
+    lastUid: int = 1
+    """Last used uid for auto-generated uids."""
 
 
 class Object(gws.Application):
@@ -156,7 +158,6 @@ class Object(gws.Application):
         self.config.server = self.serverMgr.config
 
         gws.log.set_level(self.cfg('server.log.level'))
-
 
         self._developerOptions = self.cfg('developer') or {}
         if self._developerOptions:
