@@ -102,7 +102,7 @@ actions+ {
             uid "ALKIS_EXPORT_BUCHUNGSBLATT"
             title "Buchungsblatt"
             fields [
-                { type "text" name "fs_buchungList_buchungsblatt_recs_buchungsart" title "Buchungsart" }
+                { type "text" name "fs_buchungList_buchungsblatt_buchungsstelleList_recs_buchungsart_text" title "Buchungsart" }
                 { type "text" name "fs_buchungList_buchungsblatt_recs_blattart_text" title "Blattart" }
                 { type "text" name "fs_buchungList_buchungsblatt_recs_buchungsblattkennzeichen" title "Blattkennzeichen" }
                 { type "text" name "fs_buchungList_buchungsblatt_recs_buchungsblattnummerMitBuchstabenerweiterung" title "Blattnummer" }
