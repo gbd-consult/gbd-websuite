@@ -79,6 +79,7 @@ interface ViewProps extends gc.types.ViewProps {
     alkisFsError: string;
 
     alkisFsExporterUid: string;
+    alkisFsExporterModelUids: { [key: string]: Array<string> };
     alkisFsExportFeatures: Array<gc.types.IFeature>;
 
     alkisFsFormValues: FormValues;
@@ -113,6 +114,7 @@ const StoreKeys = [
     'alkisFsLoading',
     'alkisFsError',
     'alkisFsExporterUid',
+    'alkisFsExporterModelUids',
     'alkisFsExportFeatures',
     'alkisFsFormValues',
     'alkisFsStrasseListItems',
@@ -750,8 +752,74 @@ class DetailsTab extends gc.View<ViewProps> {
 }
 
 class ExportTab extends gc.View<ViewProps> {
+    exporterSelector(exporter) {
+        let cc = _master(this);
+
+        if (cc.setup.exporters.length < 2) {
+            return null;
+        }
+
+        return <Row>
+            <Cell flex>
+                <gc.ui.Select
+                    items={cc.setup.exporters.map(e => ({ value: e.uid, text: e.title }))}
+                    value={this.props.alkisFsExporterUid}
+                    whenChanged={v => cc.update({ alkisFsExporterUid: v })}
+                />
+            </Cell>
+        </Row>
+
+    }
+
+    modelSelector(exporter, modelUids) {
+        let cc = _master(this);
+
+
+        if (!exporter || exporter.models.length < 2) {
+            return null;
+        }
+
+        let update = (on, modelUid) => {
+
+            if (on) {
+                modelUids.add(modelUid);
+            } else {
+                modelUids.delete(modelUid);
+            }
+            cc.update({
+                alkisFsExporterModelUids: {
+                    ...this.props.alkisFsExporterModelUids,
+                    [this.props.alkisFsExporterUid]: Array.from(modelUids)
+                }
+            });
+        }
+
+        return <div>
+            {exporter.models.map(m => <Row key={m.uid}>
+                <Cell flex>
+                    <gc.ui.Toggle
+                        key={m.uid}
+                        type="checkbox"
+                        inline
+                        label={m.title}
+                        value={modelUids.has(m.uid)}
+                        whenChanged={v => update(v, m.uid)}
+                    />
+                </Cell>
+            </Row>)}
+        </div>
+
+    }
+
+
+
     render() {
         let cc = _master(this);
+        
+        let exporter = cc.setup.exporters.find(e => e.uid === this.props.alkisFsExporterUid);
+        let modelUids = new Set(this.props.alkisFsExporterModelUids?.[this.props.alkisFsExporterUid] || []);
+
+        let enabled = exporter && (exporter.models.length < 2 || modelUids.size > 0);
 
         return <sidebar.Tab>
             <sidebar.TabHeader>
@@ -760,21 +828,14 @@ class ExportTab extends gc.View<ViewProps> {
             <sidebar.TabBody>
                 <div className="alkisFsDetailsTabContent">
                     <Form>
-                        {cc.setup.exporters.length > 1 && <Row>
-                            <Cell flex>
-                                <gc.ui.Select
-                                    items={cc.setup.exporters.map(e => ({value: e[0], text: e[1]}))}
-                                    value={this.props.alkisFsExporterUid}
-                                    whenChanged={v => cc.update({alkisFsExporterUid: v})}
-                                />
-                            </Cell>
-                        </Row>}
+                        {this.exporterSelector(exporter)}
+                        {this.modelSelector(exporter, modelUids)}
                         <Row>
                             <Cell flex/>
                             <Cell width={120}>
                                 <gc.ui.Button
                                     primary
-                                    disabled={gc.lib.isEmpty(this.props.alkisFsExporterUid)}
+                                    disabled={!enabled}
                                     whenTouched={() => cc.submitExport()}
                                     label={cc.__('alkisExportButton')}
                                 />
@@ -902,7 +963,8 @@ class Controller extends gc.Controller {
             alkisFsLoading: false,
 
             alkisFsFormValues: {},
-            alkisFsExporterUid: this.setup.exporters.length > 0 ? this.setup.exporters[0][0] : '',
+            alkisFsExporterUid: this.setup.exporters.length > 0 ? this.setup.exporters[0].uid : '',
+            alkisFsExporterModelUids: {},
 
             alkisFsGemarkungListItems: this.gemarkungListItems(),
             alkisFsStrasseListItems: this.strasseListItems(this.toponyms.strassen),
@@ -1420,10 +1482,13 @@ class Controller extends gc.Controller {
 
     async submitExport() {
         let fs: Array<gc.types.IFeature> = this.getValue('alkisFsExportFeatures');
+        let exporterUid = this.getValue('alkisFsExporterUid');
+        let modelUids = this.getValue('alkisFsExporterModelUids')?.[exporterUid] || [];
 
         let q = {
             findRequest: this.fsDetailsRequest(fs),
-            exporterUid: this.getValue('alkisFsExporterUid'),
+            exporterUid,
+            modelUids,
         };
 
         let res = await this.app.server.call('alkisExportFlurstueck', q, {binaryResponse: true});
