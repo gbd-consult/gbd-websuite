@@ -12,8 +12,11 @@ wobei die Schlüssel den Pfad zu den ursprünglichen Werten repräsentieren.
 
 Eine Liste von möglichen Schlüsseln kann mit dem Befehl `gws alkis keys` im Terminal angezeigt werden.
 
-In der Export-Konfiguration können mehrere `exporter` Konfigurationen definiert werden, die jeweils eine Liste von Feldern enthalten.
-In der Web-Oberfläche kann der Nutzer die Konfiguration auswählen, die angwendet werden soll.
+In der Export-Konfiguration können mehrere `exporter` Konfigurationen definiert werden, für jede Export-Konfiguration können mehrere Modelle definiert werden. 
+Die Modelle definieren die Felder, die im Export enthalten sein sollen.
+
+In der Web-Oberfläche kann der Nutzer die Konfiguration auswählen, die angwendet werden soll. Falls die Konfiguration mehrere Modelle enthält, 
+kann der Nutzer auch die Modelle auswählen, die im Export enthalten sein sollen.
 
 Die Felder sind herkömmliche Modellfelder, die auf die "flachen" Schlüssel verweisen.
 Mit "value" Objekten vom Typ "format" bzw. "expression" können mehrere Schlüssel-Werte einem Feld zusammengefasst werden.
@@ -33,10 +36,12 @@ actions+ {
         useExport true
     }
 
+    @# einfache Export-Konfiguration
+    
     exporters+ {
         type "geojson"
         title "Basisinformationen (JSON)"
-        model {
+        models+ {
             fields [
                 { type "text"  name "fs_flurstueckskennzeichen" title "Flurstückskennzeichen" }
                 { type "text"  name "fs_recs_gemeinde_text" title "Gemeinde" }
@@ -49,21 +54,87 @@ actions+ {
         }
     }
     
+    @# Export-Konfiguration mit mehreren Export-Modellen
+    @# Beachte, dass  Modelle mit Eigentümerinformationen nur berechtigten Nutzern zur Verfügung stehen
+
     exporters+ {
+        uid "ALKIS_EXPORT_CSV"
+        title "flexible Ausgabe (CSV)"
         type "csv"
-        title "Basisinformationen (CSV)"
-        model {
+
+        models+ {
+            uid "ALKIS_EXPORT_BASISDATEN"
+            title "Basisdaten"
             fields [
                 { type "text"  name "fs_flurstueckskennzeichen" title "Flurstückskennzeichen" }
-                { type "text"  name "fs_recs_gemeinde_text" title "Gemeinde" }
-                { type "text"  name "fs_recs_gemarkung_text" title "Gemarkung" }
-                { type 'text' name 'fs_recs_flurnummer' title 'Flur' }
-                { type 'text' name 'fs_recs_zaehler' title 'Zähler' } 
-                { type 'text' name 'fs_recs_nenner' title 'Nenner' } 
-                { type 'float' name 'fs_recs_amtlicheFlaeche' title 'Fläche' }
+                { type "text" name "fs_recs_gemeinde_text" title "Gemeinde" }
+                { type "integer" name "fs_recs_gemarkung_code" title "Gemarkung ID" }
+                { type "text" name "fs_recs_gemarkung_text" title "Gemarkung" }
+                { type "text" name "fs_recs_flurnummer" title "Flurnummer" }
+                { type "text" name "fs_recs_zaehler" title "Zähler" }
+                { type "text" name "fs_recs_nenner" title "Nenner" }
+                { type "text" name "fs_recs_flurstuecksfolge" title "Folge" }
+                { type "float" name "fs_recs_amtlicheFlaeche" title "Fläche" }
+                { type "float" name "fs_recs_x" title "X" }
+                { type "float" name "fs_recs_y" title "Y" }
+            ]
+        }
+
+        models+ {
+            uid "ALKIS_EXPORT_LAGE"
+            title "Lage"
+            fields [
+                { type "text" name "fs_lageList_recs_strasse" title "FS Strasse" }
+                { type "text" name "fs_lageList_recs_hausnummer" title "FS Hnr" }
+            ]
+        }
+
+        models+ {
+            uid "ALKIS_EXPORT_GEBAEUDE"
+            title "Gebäude"
+            fields [
+                { type "float" name "fs_gebaeudeAmtlicheFlaeche" title "Gebäude Fläche" }
+                { type "text" name "fs_gebaeudeList_recs_props_gebaeudefunktion_text" title "Gebäude Funktion" }
+            ]
+        }
+
+        models+ {
+            uid "ALKIS_EXPORT_BUCHUNGSBLATT"
+            title "Buchungsblatt"
+            fields [
+                { type "text" name "fs_buchungList_buchungsblatt_buchungsstelleList_recs_buchungsart_text" title "Buchungsart" }
+                { type "text" name "fs_buchungList_buchungsblatt_recs_blattart_text" title "Blattart" }
+                { type "text" name "fs_buchungList_buchungsblatt_recs_buchungsblattkennzeichen" title "Blattkennzeichen" }
+                { type "text" name "fs_buchungList_buchungsblatt_recs_buchungsblattnummerMitBuchstabenerweiterung" title "Blattnummer" }
+                { type "text" name "fs_buchungList_recs_buchungsstelle_laufendeNummer" title "Laufende Nummer" }
+            ]
+        }
+
+        models+ {
+            uid "ALKIS_EXPORT_EIGENTUEMER"
+            title "Eigentümer"
+            fields [
+                { type "text" name "fs_buchungList_buchungsblatt_namensnummerList_personList_recs_vorname" title "Vorname" }
+                { type "text" name "fs_buchungList_buchungsblatt_namensnummerList_personList_recs_nachnameOderFirma" title "Name" }
+                { type "text" name "fs_buchungList_buchungsblatt_namensnummerList_personList_recs_geburtsdatum" title "Geburtsdatum" }
+                { type "text" name "fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_strasse" title "Strasse" }
+                { type "text" name "fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_hausnummer" title "Hnr" }
+                { type "text" name "fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_plz" title "PLZ" }
+                { type "text" name "fs_buchungList_buchungsblatt_namensnummerList_personList_anschriftList_recs_ort" title "Ort" }
+            ]
+        }
+
+        models+ {
+            uid "ALKIS_EXPORT_NUTZUNG"
+            title "Nutzung"
+            fields [
+                { type "float" name "fs_nutzungList_amtlicheFlaeche" title "Nutzung Fläche" }
+                { type "text" name "fs_nutzungList_name_text" title "Nutzung Typ" }
             ]
         }
     }
+
+    @# Export-Konfiguration mit dynamischen Feldern, die aus mehreren Schlüssel-Werten zusammengesetzt werden
     
     exporters+ {
         type "geojson"

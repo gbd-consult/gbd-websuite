@@ -154,7 +154,7 @@ class Config(gws.ConfigWithAccess):
 
 
 class Props(gws.base.action.Props):
-    exporters: list[list[str]]
+    exporters: list[exporter.Props]
     limit: int
     printer: Optional[gws.base.printer.Props]
     ui: Ui
@@ -276,6 +276,7 @@ class PrintFlurstueckRequest(gws.Request):
 class ExportFlurstueckRequest(gws.Request):
     findRequest: FindFlurstueckRequest
     exporterUid: str
+    modelUids: Optional[list[str]]
     eigentuemerControlInput: Optional[str]
 
 
@@ -457,13 +458,9 @@ class Object(gws.base.action.Object):
 
         ps.exporters = []
         for exp in self.exporters:
-            if not user.can_use(exp):
-                continue
-            if exp.withEigentuemer and not ps.withEigentuemer:
-                continue
-            if exp.withBuchung and not ps.withBuchung:
-                continue
-            ps.exporters.append([exp.uid, exp.title])
+            p = exp.props_with_flags(user, withEigentuemer=ps.withEigentuemer, withBuchung=ps.withBuchung)
+            if p:
+                ps.exporters.append(p)
 
         ps.strasseSearchOptions = self.strasseSearchOptions
         if ps.withBuchung:
@@ -586,10 +583,14 @@ class Object(gws.base.action.Object):
         if not exp:
             raise gws.NotFoundError()
 
-        if exp.withEigentuemer:
-            self._check_eigentuemer_access(req, p.eigentuemerControlInput or '')
-        if exp.withBuchung:
-            self._check_buchung_access(req, p.eigentuemerControlInput or '')
+        models = exp.get_models(req.user, p.modelUids)
+        if not models:
+            raise gws.NotFoundError()
+
+        if any(m.withEigentuemer for m in models):
+            self._check_eigentuemer_access(req, p.findRequest.eigentuemerControlInput or '')
+        if any(m.withBuchung for m in models):
+            self._check_buchung_access(req, p.findRequest.eigentuemerControlInput or '')
 
         find_request = p.findRequest
         find_request.projectUid = p.projectUid
@@ -601,8 +602,10 @@ class Object(gws.base.action.Object):
         args = exporter.Args(
             fsList=fs_list,
             user=req.user,
+            models=models,
             path = gws.u.ephemeral_path('alkis_export'),
         )
+
         exp.run(args)
 
         return ExportFlurstueckResponse(

@@ -47,6 +47,8 @@ class ExportParams(gws.CliParams):
     """Project uid."""
     exporterUid: Optional[str]
     """Export uid."""
+    modelUids: Optional[str]
+    """List of model uids."""
     path: str
     """Path to save the export."""
 
@@ -107,6 +109,11 @@ class Object(gws.Node):
             gws.log.error(f'ALKIS exporter not found')
             exit(3)
 
+        models = exp.get_models(sys_user, gws.u.to_list(p.modelUids))
+        if not models:
+            gws.log.error(f'no models found for ALKIS exporter')
+            exit(4)
+
         qo = dt.FlurstueckQueryOptions(
             withEigentuemer=True,
             withBuchung=True,
@@ -128,7 +135,15 @@ class Object(gws.Node):
         fs = self.act.ix.iter_all(qo)
 
         with ProgressIndicator('export', total) as progress:
-            exp.run(exporter.Args(fsList=fs, user=sys_user, progress=progress, path=p.path))
+            exp.run(
+                exporter.Args(
+                    fsList=fs,
+                    user=sys_user,
+                    models=models,
+                    path=p.path,
+                    progress=progress,
+                )
+            )
 
     @gws.ext.command.cli('alkisKeys')
     def do_keys(self, p: gws.CliParams):

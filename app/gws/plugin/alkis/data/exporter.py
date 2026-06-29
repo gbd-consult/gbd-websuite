@@ -27,6 +27,8 @@ class Config(gws.ConfigWithAccess):
     """Title to display in the ui."""
     model: Optional[gws.ext.config.model]
     """Export model."""
+    models: Optional[list[gws.ext.config.model]]
+    """Export models."""
 
 
 class Args(gws.Data):
@@ -40,6 +42,8 @@ class Args(gws.Data):
     """Progress indicator to update during export."""
     path: str
     """Path to save the export."""
+    models: list['Model']
+    """List of models to export."""
 
 
 _DEFAULT_FIELDS = [
@@ -58,18 +62,31 @@ _DEFAULT_FIELDS = [
 
 
 class Model(gws.base.model.Object):
+    withEigentuemer: bool
+    withBuchung: bool
+
     def configure(self):
         self.configure_model()
 
 
+class ModelProps(gws.Props):
+    title: str
+
+
+class Props(gws.Props):
+    title: str
+    models: list[ModelProps]
+
+
+_READ_WRITE_PERMISSIONS = gws.Config(read='allow all', write='allow all')
+
+
 class Object(gws.Node):
-    model: Model
+    models: list[Model]
     title: str
     type: str
     mimeType: str
     usedKeys: set[str]
-    withEigentuemer: bool
-    withBuchung: bool
 
     def configure(self):
         self.type = self.cfg('type') or 'csv'
@@ -82,19 +99,57 @@ class Object(gws.Node):
 
         self.title = self.cfg('title') or self.type
 
-        p = self.cfg('model') or gws.Config(fields=_DEFAULT_FIELDS)
-        self.model = cast(
-            Model,
-            self.create_child(
-                Model,
-                p,
-                # NB need write permissions for `feature.to_record`
-                permissions=gws.Config(read='allow all', write='allow all'),
-            ),
-        )
+        p = self.cfg('models')
+        if not p:
+            p = [self.cfg('model') or gws.Config(fields=_DEFAULT_FIELDS)]
 
-        self.withEigentuemer = any('namensnummer' in fld.name for fld in self.model.fields)
-        self.withBuchung = any('buchung' in fld.name for fld in self.model.fields)
+        self.models = []
+        for m in p:
+            mod = cast(
+                Model,
+                self.create_child(
+                    Model,
+                    m,
+                    # NB need write permissions for `feature.to_record`
+                    permissions=_READ_WRITE_PERMISSIONS,
+                ),
+            )
+            mod.withEigentuemer = any('eigentuemer' in fld.name for fld in mod.fields)
+            mod.withBuchung = any('buchung' in fld.name for fld in mod.fields)
+            self.models.append(mod)
+
+    def props_with_flags(self, user: gws.User, withEigentuemer: bool, withBuchung: bool) -> Optional[Props]:
+        if not user.can_use(self):
+            return
+
+        models = []
+        for mod in self.get_models(user):
+            if not user.can_use(mod):
+                continue
+            if mod.withEigentuemer and not withEigentuemer:
+                continue
+            if mod.withBuchung and not withBuchung:
+                continue
+            models.append(ModelProps(uid=mod.uid, title=mod.title))
+        if not models:
+            return
+
+        return Props(uid=self.uid, title=self.title, models=models)
+
+    def get_models(self, user: gws.User, uids: Optional[list[str]] = None) -> list[Model]:
+        if not uids:
+            ms = self.models
+        else:
+            s = set(uids)
+            ms = []
+            for m in self.models:
+                if m.uid in s:
+                    ms.append(m)
+                    s.remove(m.uid)
+            if s:
+                gws.log.warning(f'Unknown model uids: {s}')
+
+        return [m for m in ms if user.can_use(m)]
 
     def run(self, args: Args):
         """Export a Flurstueck list to a file."""
@@ -148,8 +203,26 @@ class Object(gws.Node):
         @TODO: with certain combinations of keys this can explode very quickly
         """
 
-        all_keys = set(fld.name for fld in self.model.fields)
-        mc = gws.ModelContext(op=gws.ModelOperation.read, target=gws.ModelReadTarget.searchResults, user=args.user)
+        if len(args.models) == 1:
+            export_model = args.models[0]
+        else:
+            export_model = cast(
+                Model,
+                self.root.create_temporary(
+                    Model,
+                    gws.Config(fields=[]),
+                    permissions=_READ_WRITE_PERMISSIONS,
+                ),
+            )
+            for mod in args.models:
+                export_model.fields.extend(mod.fields)
+
+        all_keys = set(fld.name for fld in export_model.fields)
+        mc = gws.ModelContext(
+            op=gws.ModelOperation.read,
+            target=gws.ModelReadTarget.searchResults,
+            user=args.user,
+        )
         row_hashes = set()
 
         for fs in args.fsList:
@@ -160,14 +233,14 @@ class Object(gws.Node):
                 # create a 'raw' feature from attributes and convert it to a record
                 # so that dynamic fields can be computed
 
-                feature = gws.base.feature.new(model=self.model, attributes=atts)
-                for fld in self.model.fields:
+                feature = gws.base.feature.new(model=export_model, attributes=atts)
+                for fld in export_model.fields:
                     fld.to_record(feature, mc)
 
                 # fmt: off
                 row = {
                     fld.title: feature.record.attributes.get(fld.name, '') 
-                    for fld in self.model.fields 
+                    for fld in export_model.fields 
                     if not fld.isHidden
                 }
                 # fmt: on
