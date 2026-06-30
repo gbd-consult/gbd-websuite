@@ -439,6 +439,20 @@ def to_dict(x) -> dict:
         raise ValueError(f'cannot convert {x!r} to dict')
 
 
+def to_json_value(x) -> Union[dict, list, str, int, float, bool, None]:
+    """Recursively convert a value to a JSON serializable type."""
+
+    if is_atom(x):
+        return x
+    if is_dict(x):
+        return {k: to_json_value(v) for k, v in x.items()}
+    if is_list(x):
+        return [to_json_value(v) for v in x]
+    if is_data_object(x):
+        return {k: to_json_value(v) for k, v in vars(x).items()}
+    return str(x)
+
+
 def to_upper_dict(x) -> dict:
     x = to_dict(x)
     return {k.upper(): v for k, v in x.items()}
