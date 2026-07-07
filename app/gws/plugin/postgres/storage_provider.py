@@ -26,7 +26,7 @@ TABLE_DDL = """
 
 
 class Config(gws.Config):
-    """Postgres storage provider."""
+    """Postgres storage provider. (added in 8.4)"""
 
     dbUid: Optional[str]
     """Database provider uid."""

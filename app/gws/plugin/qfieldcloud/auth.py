@@ -7,7 +7,7 @@ gws.ext.new.authMethod('qfieldcloud')
 
 
 class Config(gws.base.auth.method.Config):
-    """QField Cloud authorisation options. (added in 8.3)"""
+    """QField Cloud authorisation options."""
 
 
 class Object(gws.base.auth.method.Object):
