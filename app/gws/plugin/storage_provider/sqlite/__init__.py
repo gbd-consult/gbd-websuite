@@ -1,7 +1,7 @@
 from typing import Optional
 
 import gws
-import gws.base.storage
+import gws.lib.datetimex as dtx
 import gws.lib.sqlitex
 
 gws.ext.new.storageProvider('sqlite')
@@ -28,6 +28,9 @@ class Object(gws.StorageProvider):
     def read(self, category, name):
         rs = self._db().select(f'SELECT * FROM {self.table} WHERE category=:category AND name=:name', category=category, name=name)
         for rec in rs:
+            rec = dict(rec)
+            rec['created'] = dtx.from_timestamp(rec['created'])
+            rec['updated'] = dtx.from_timestamp(rec['updated'])
             return gws.StorageRecord(**rec)
 
     def write(self, category, name, data, user_uid):
@@ -39,7 +42,7 @@ class Object(gws.StorageProvider):
             name=tmp if rec else name,
             user_uid=user_uid,
             data=data,
-            created=rec.created if rec else gws.u.stime(),
+            created=dtx.to_timestamp(rec.created) if rec else gws.u.stime(),
             updated=gws.u.stime()
         ))
 

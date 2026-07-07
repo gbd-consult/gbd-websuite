@@ -60,4 +60,79 @@ def test_error_rollback(db):
 
     assert cnt_1 == cnt_2
 
-# @TODO other connection methods
+
+def test_fetch_all(db):
+    with db.connect() as conn:
+        conn.exec_commit("truncate tab")
+        conn.exec_commit("insert into tab (id, a) values (1, 'X'), (2, 'Y')")
+
+    with db.connect() as conn:
+        rows = conn.fetch_all("select id, a from tab order by id")
+    assert rows == [{'id': 1, 'a': 'X'}, {'id': 2, 'a': 'Y'}]
+
+
+def test_fetch_first(db):
+    with db.connect() as conn:
+        conn.exec_commit("truncate tab")
+        conn.exec_commit("insert into tab (id, a) values (1, 'X'), (2, 'Y')")
+
+    with db.connect() as conn:
+        row = conn.fetch_first("select id, a from tab order by id")
+    assert row == {'id': 1, 'a': 'X'}
+
+
+def test_fetch_first_empty(db):
+    with db.connect() as conn:
+        conn.exec_commit("truncate tab")
+
+    with db.connect() as conn:
+        row = conn.fetch_first("select id, a from tab")
+    assert row is None
+
+
+def test_fetch_scalars(db):
+    with db.connect() as conn:
+        conn.exec_commit("truncate tab")
+        conn.exec_commit("insert into tab (id, a) values (10, 'A'), (20, 'B'), (30, 'C')")
+
+    with db.connect() as conn:
+        vals = conn.fetch_scalars("select id from tab order by id")
+    assert vals == [10, 20, 30]
+
+
+def test_fetch_ints(db):
+    with db.connect() as conn:
+        conn.exec_commit("truncate tab")
+        conn.exec_commit("insert into tab (id, a) values (7, 'A'), (8, 'B')")
+
+    with db.connect() as conn:
+        vals = conn.fetch_ints("select id from tab order by id")
+    assert vals == [7, 8]
+
+
+def test_fetch_strings(db):
+    with db.connect() as conn:
+        conn.exec_commit("truncate tab")
+        conn.exec_commit("insert into tab (id, a) values (1, 'hello'), (2, 'world')")
+
+    with db.connect() as conn:
+        vals = conn.fetch_strings("select a from tab order by id")
+    assert vals == ['hello', 'world']
+
+
+def test_fetch_scalar(db):
+    with db.connect() as conn:
+        val = conn.fetch_scalar("select 42")
+    assert val == 42
+
+
+def test_fetch_string(db):
+    with db.connect() as conn:
+        val = conn.fetch_string("select 'hello'")
+    assert val == 'hello'
+
+
+def test_fetch_int(db):
+    with db.connect() as conn:
+        val = conn.fetch_int("select 99")
+    assert val == 99

@@ -205,6 +205,9 @@ class DatabaseProvider(Node):
     def describe(self, table: DatabaseTableAlike) -> 'DataSetDescription':
         """Describe a table."""
 
+    def describe_column(self, table: DatabaseTableAlike, column_name: str) -> ColumnDescription:
+        """Describe a specific column in a table."""
+
     def table(self, table: 'DatabaseTableAlike', **kwargs) -> 'sqlalchemy.Table':
         """SQLAlchemy ``Table`` object for a specific table."""
 

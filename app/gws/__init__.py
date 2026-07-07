@@ -3692,6 +3692,9 @@ class DatabaseProvider(Node):
     def describe(self, table: DatabaseTableAlike) -> 'DataSetDescription':
         """Describe a table."""
 
+    def describe_column(self, table: DatabaseTableAlike, column_name: str) -> ColumnDescription:
+        """Describe a specific column in a table."""
+
     def table(self, table: 'DatabaseTableAlike', **kwargs) -> 'sqlalchemy.Table':
         """SQLAlchemy ``Table`` object for a specific table."""
 
@@ -4290,10 +4293,15 @@ class StorageRecord(Data):
     """Storage record."""
 
     name: str
+    """Record name."""
     userUid: str
+    """User uid."""
     data: str
-    created: int
-    updated: int
+    """Serialized record data."""
+    created: 'datetime.datetime'
+    """Record create time."""
+    updated: 'datetime.datetime'
+    """Record update time."""
 
 
 class StorageProvider(Node):

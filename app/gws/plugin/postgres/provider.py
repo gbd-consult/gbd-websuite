@@ -153,7 +153,7 @@ class Object(gws.base.database.provider.Object):
 
 ##
 
-def connection_url(cfg: gws.Config):
+def connection_url(cfg: gws.Config) -> Optional[str]:
     # https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING
     # https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PARAMKEYWORDS
 

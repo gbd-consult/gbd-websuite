@@ -1,4 +1,5 @@
 storage.providers+ {
     uid "common_storage"
-    type "sqlite"
+    type "postgres"
+    tableName "public.gws_storage"
 }

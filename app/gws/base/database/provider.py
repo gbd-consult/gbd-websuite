@@ -302,7 +302,7 @@ class Object(gws.DatabaseProvider):
 
         return desc
 
-    def describe_column(self, table, column_name) -> gws.ColumnDescription:
+    def describe_column(self, table, column_name):
         sa_col = self.column(table, column_name)
 
         col = gws.ColumnDescription(

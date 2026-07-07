@@ -52,27 +52,3 @@ class Object(gws.base.search.finder.Object):
             _defaultDb=self.db,
             _defaultTableName=self.tableName
         )
-
-    # def _filter_to_sql(self, f: gws.SearchFilter):
-    #     if not f:
-    #         return
-    #
-    #     if f.operator in ('and', 'or'):
-    #         w = []
-    #         p = []
-    #         for sub in f.sub:
-    #             where = self._filter_to_sql(sub)
-    #             w.append(where[0])
-    #             p.extend(where[1:])
-    #         wstr = '(' + f' {f.operator} '.join(w) + ')'
-    #         return [wstr, *p]
-    #
-    #     if f.operator == 'bbox':
-    #         return [
-    #             f'ST_Intersects(%s::geometry, "{self.table.geometry_column}")',
-    #             f.shape.ewkb_hex
-    #         ]
-    #
-    #     # @TODO must take editDataModel into account
-    #
-    #     return [f'{f.name} {f.operator} %s', f.value]

@@ -41,4 +41,44 @@ def test_count(db: gws.DatabaseProvider):
         conn.commit()
         assert db.count(tab) == 3
 
-# @TODO other provider methods
+
+def test_has_table(db):
+    assert db.has_table('s1.tab1') is True
+    assert db.has_table('s1.nonexistent') is False
+
+
+def test_has_schema(db):
+    assert db.has_schema('s1') is True
+    assert db.has_schema('s2') is True
+    assert db.has_schema('no_such_schema') is False
+
+
+def test_column(db):
+    col = db.column('s1.tab1', 'a')
+    assert col is not None
+    with u.raises(sa.Error):
+        db.column('s1.tab1', 'no_such_column')
+
+
+def test_has_column(db):
+    assert db.has_column('s1.tab1', 'id') is True
+    assert db.has_column('s1.tab1', 'a') is True
+    assert db.has_column('s1.tab1', 'missing') is False
+
+
+def test_select_text(db):
+    with db.connect() as conn:
+        conn.exec_commit('truncate s1.tab1')
+        conn.exec_commit("insert into s1.tab1 (id, a) values (1, 'hello'), (2, 'world')")
+
+    rows = db.select_text('select id, a from s1.tab1 order by id')
+    assert rows == [{'id': 1, 'a': 'hello'}, {'id': 2, 'a': 'world'}]
+
+
+def test_execute_text(db):
+    with db.connect() as conn:
+        conn.exec_commit('truncate s1.tab1')
+
+    db.execute_text("insert into s1.tab1 (id, a) values (99, 'z')")
+    rows = db.select_text('select id, a from s1.tab1')
+    assert rows == [{'id': 99, 'a': 'z'}]

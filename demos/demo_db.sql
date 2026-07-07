@@ -4720,3 +4720,17 @@ CREATE TABLE poi_local.p_9_101 AS SELECT p.* FROM edit.poi p, edit.district d WH
 CREATE TABLE poi_local.p_9_102 AS SELECT p.* FROM edit.poi p, edit.district d WHERE p.category_id=9 and st_within(p.geom, d.geom) and d.sid = '102';
 
 CREATE TABLE poi_local.single_point AS SELECT p.* FROM edit.poi p WHERE p.id=691;
+
+--
+
+DROP TABLE IF EXISTS public.gws_storage;
+
+CREATE TABLE IF NOT EXISTS public.gws_storage (
+    category    TEXT NOT NULL,
+    name        TEXT NOT NULL,
+    user_uid    TEXT,
+    data        TEXT,
+    created     TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated     TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (category, name)
+);

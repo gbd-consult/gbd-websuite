@@ -149,3 +149,45 @@ def test_weird_names(root: gws.Root):
         (16, 'bb'),
         (17, 'cc'),
     ]
+
+
+##
+
+
+def test_update_feature(root: gws.Root):
+    mc = gws.ModelContext(
+        user=u.gws_system_user(),
+    )
+    mo = u.cast(gws.Model, root.get('PLAIN'))
+
+    u.pg.insert('plain', [
+        {'id': 1, 'a': 'original'},
+        {'id': 2, 'a': 'untouched'},
+    ])
+
+    mo.update_feature(u.feature(mo, id=1, a='updated'), mc)
+
+    assert u.pg.content('select id, a from plain order by id') == [
+        (1, 'updated'),
+        (2, 'untouched'),
+    ]
+
+
+def test_delete_feature(root: gws.Root):
+    mc = gws.ModelContext(
+        user=u.gws_system_user(),
+    )
+    mo = u.cast(gws.Model, root.get('PLAIN'))
+
+    u.pg.insert('plain', [
+        {'id': 1, 'a': 'keep'},
+        {'id': 2, 'a': 'delete_me'},
+        {'id': 3, 'a': 'keep'},
+    ])
+
+    mo.delete_feature(u.feature(mo, id=2), mc)
+
+    assert u.pg.content('select id, a from plain order by id') == [
+        (1, 'keep'),
+        (3, 'keep'),
+    ]

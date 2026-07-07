@@ -13,10 +13,15 @@ class StorageRecord(Data):
     """Storage record."""
 
     name: str
+    """Record name."""
     userUid: str
+    """User uid."""
     data: str
-    created: int
-    updated: int
+    """Serialized record data."""
+    created: 'datetime.datetime'
+    """Record create time."""
+    updated: 'datetime.datetime'
+    """Record update time."""
 
 
 class StorageProvider(Node):
