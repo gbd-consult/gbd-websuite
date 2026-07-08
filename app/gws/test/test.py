@@ -65,7 +65,7 @@ def main(args):
     if custom_ini:
         ini_paths.append(custom_ini)
     cli.info(f'using configs: {ini_paths}')
-    OPTIONS.update(inifile.from_paths(*ini_paths))
+    OPTIONS.update(inifile.from_paths_flat(*ini_paths))
 
     OPTIONS.update(
         dict(

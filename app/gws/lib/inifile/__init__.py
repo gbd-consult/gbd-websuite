@@ -11,20 +11,46 @@ def from_paths(*paths: str) -> dict:
         paths: Paths to `.ini` files.
 
     Returns:
-        Dictionary containing all the key-value pairs with the sections as prefixes.
+        Nested dictionary with sections as keys and options as sub-keys.
     """
-    opts = {}
+
+    res = {}
+    cc = _from_paths(paths)
+
+    for sec in cc.sections():
+        for opt in cc.options(sec):
+            res.setdefault(sec, {})[opt] = cc.get(sec, opt)
+
+    return res
+
+
+def from_paths_flat(*paths: str) -> dict:
+    """Merges the key-value pairs of `.ini` files into a flat dictionary.
+
+    Args:
+        paths: Paths to `.ini` files.
+
+    Returns:
+        Flat dictionary with the section names as prefixes.
+    """
+    res = {}
+    cc = _from_paths(paths)
+
+    for sec in cc.sections():
+        for opt in cc.options(sec):
+            res[f'{sec}.{opt}'] = cc.get(sec, opt)
+
+    return res
+
+
+def _from_paths(paths):
     cc = configparser.ConfigParser()
-    cc.optionxform = str
+    cc.optionxform = lambda optionstr: str(optionstr)
 
     for path in paths:
         cc.read(path)
 
-    for sec in cc.sections():
-        for opt in cc.options(sec):
-            opts[sec + '.' + opt] = cc.get(sec, opt)
-
-    return opts
+    return cc
 
 
 def to_string(d: dict) -> str:
@@ -36,6 +62,7 @@ def to_string(d: dict) -> str:
     Returns:
         String formatted like `.ini` files.
     """
+
     cc = configparser.ConfigParser()
 
     for k, v in d.items():
