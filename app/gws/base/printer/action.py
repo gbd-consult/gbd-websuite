@@ -54,7 +54,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.get('printerOutput')
     def printer_output(self, req: gws.WebRequester, p: gws.JobRequest) -> gws.ContentResponse:
-        pr = cast(gws.PrintResult, self.root.app.jobMgr.require_result(req, p))
+        pr = gws.PrintResult(self.root.app.jobMgr.require_result(req, p))
         return gws.ContentResponse(contentPath=pr.path, mime=pr.mime)
 
     @gws.ext.command.cli('printerPrint')
