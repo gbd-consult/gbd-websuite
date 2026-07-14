@@ -75,7 +75,7 @@ h6 {
 
 .custom_poi {
     --icon: url('/demos/pin.svg');
-    --with_label: all;
+    --with-label: all;
     --label-fill: #C74040;
     --label-font-size: 10px;
     --label-max-scale: 10000;
@@ -83,7 +83,7 @@ h6 {
 
 .custom_poi_bank {
     --icon: url('/demos/bank2.svg');
-    --with_label: all;
+    --with-label: all;
     --label-fill: #894a93;
     --label-font-size: 10px;
     --label-font-weight: bold;
@@ -94,7 +94,7 @@ h6 {
     fill: rgba(186, 104, 200, 0.3);
     stroke: rgba(186, 104, 200, 0.9);
     stroke-width: 1px;
-    --with_label: all;
+    --with-label: all;
     --label-fill: #7f418a;
     --label-font-size: 14px;
     --label-max-scale: 70000;
@@ -109,7 +109,7 @@ h6 {
     fill: rgb(125, 126, 63, 0.6);
     stroke: rgb(250, 252, 199);
     stroke-width: 1px;
-    --with_label: all;
+    --with-label: all;
     --label-fill: rgb(250, 252, 199);
     --label-font-size: 12px;
     --label-max-scale: 500000;
