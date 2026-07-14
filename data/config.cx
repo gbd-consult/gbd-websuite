@@ -8,8 +8,11 @@ actions+ { type "web" }
 locales ["de_DE"]
 
 web.sites+ {
-    root.dir "web"
-    rewrite [
+    rewriteRules [
+        {
+            pattern "^/$"
+            target "/index.html"
+        }
         {
             pattern "^/demo"
             target "/demo.html"
@@ -74,15 +77,6 @@ projects+ {
                 <li><a href="https://gbd-websuite.de" target="_blank">Besuchen Sie die Projekt Webseite</a></li>
             </ul>
         """
-    }
-
-    printers+ {
-        template {
-            type "html"
-            path "/data/web/simple.cx.html"
-            mapSize [ "200mm" "160mm" ]
-        }
-        qualityLevels+ { dpi 72  name "Screen" }
     }
 
     map {
