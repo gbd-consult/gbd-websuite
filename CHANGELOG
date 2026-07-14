@@ -1,3 +1,13 @@
+## Version 8.4.5
+
+- added default templates for application and project home pages
+- added default rewrite rules to route requests to the new home page templates
+- added new action `webPage` to serve the new templates
+- deprecated the `rewrite` config option in favor of `rewriteRules`
+- `assets` defaults to `/data/assets` if that directory exists, otherwise to null
+- deprecated the `index` and `project` assets in favor of the `application.home` and `project.home` templates
+- deprecated the `errorPage` option in favor of the `application.error` template
+
 ## Version 8.4.4
 
 - added Postgres storage provider
