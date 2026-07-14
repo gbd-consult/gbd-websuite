@@ -1,2 +1,21 @@
 permissions.read "allow all"
 locales [ "de_DE" "en_US" ]
+
+
+templates+ {
+    subject "application.home"
+    type "html"
+    path "/demos/templates/index.cx.html"
+}
+
+templates+ {
+    subject "project.home"
+    type "html"
+    path "/demos/templates/project.cx.html"
+}
+
+templates+ {
+    subject "application.error"
+    type "html"
+    path "/demos/templates/error.cx.html"
+}

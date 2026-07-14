@@ -1,35 +1,35 @@
-// GWS utilities
+// GWS home page utilities
 // Version __VERSION__
 
 window.addEventListener("load", function (evt) {
-    let frmLogin = document.getElementById('gwsLoginForm');
+    let frmLogin = document.getElementById('gwsHomeLoginForm');
     if (frmLogin) {
         frmLogin.addEventListener('submit', function (evt) {
-            gwsLogin();
+            gwsLogin(frmLogin.action);
             evt.preventDefault();
             return false;
         })
     }
 
-    let frmLogout = document.getElementById('gwsLogoutForm');
+    let frmLogout = document.getElementById('gwsHomeLogoutForm');
     if (frmLogout) {
         frmLogout.addEventListener('submit', function (evt) {
-            gwsLogout();
+            gwsLogout(frmLogout.action);
             evt.preventDefault();
             return false;
         })
     }
 });
 
-function gwsLogin(onSuccess, onFailure) {
+function gwsLogin(actionUrl, onSuccess, onFailure) {
     let cls = document.body.classList;
 
-    cls.remove('gwsLoginError');
-    cls.add('gwsLoginProgress');
+    cls.remove('gwsHomeLoginError');
+    cls.add('gwsHomeLoginProgress');
 
     let params = {
-        username: document.getElementById('gwsUsername').value,
-        password: document.getElementById('gwsPassword').value
+        username: document.getElementById('gwsHomeUsername').value,
+        password: document.getElementById('gwsHomePassword').value
     };
 
     let toParam = (new URLSearchParams(window.location.search).get('to') || '').trim();
@@ -42,32 +42,32 @@ function gwsLogin(onSuccess, onFailure) {
     onFailure = onFailure || (() => 0);
 
     _gwsPostRequest(
-        'authLogin',
+        actionUrl,
         params,
         () => {
-            cls.remove('gwsLoginProgress');
+            cls.remove('gwsHomeLoginProgress');
             onSuccess()
         },
         () => {
-            cls.remove('gwsLoginProgress');
-            cls.add('gwsLoginError');
+            cls.remove('gwsHomeLoginProgress');
+            cls.add('gwsHomeLoginError');
             onFailure()
         },
     );
 }
 
-function gwsLogout(onSuccess, onFailure) {
+function gwsLogout(actionUrl, onSuccess, onFailure) {
     onSuccess = onSuccess || (() => window.location.reload());
     onFailure = onFailure || (() => 0);
 
-    _gwsPostRequest('authLogout', {}, onSuccess, onFailure);
+    _gwsPostRequest(actionUrl, {}, onSuccess, onFailure);
 }
 
-function _gwsPostRequest(cmd, params, onSuccess, onFailure) {
+function _gwsPostRequest(actionUrl, params, onSuccess, onFailure) {
     let data = params || {};
 
     let xhr = new XMLHttpRequest()
-    xhr.open('POST', '/_/' + cmd, true)
+    xhr.open('POST', actionUrl, true)
     xhr.withCredentials = true;
     xhr.setRequestHeader('Content-type', 'application/json');
 

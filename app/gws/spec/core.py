@@ -87,10 +87,12 @@ class Type:
     extName: str = ''
     """Name of the extension that defines this, if any."""
 
+    title: str = ''
+    """Documentation title string for the type."""
     doc: str = ''
     """Documentation string for the type."""
     ident: str = ''
-    """Source code identifier for the, used in the documentation."""
+    """Source code identifier for the type, used in the documentation."""
     name: str = ''
     """Name of the type."""
     pos: str = ''

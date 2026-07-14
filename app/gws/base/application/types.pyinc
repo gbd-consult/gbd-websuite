@@ -8,6 +8,17 @@ class MiddlewareManager(Node):
         """Return a list of registered middleware objects."""
 
 
+class TemplateOptions(Data):
+    """Options for default templates."""
+
+    withLogin: bool = True
+    """Show login form in the application home page."""
+    homeResources: Optional[list[str]]
+    """List of additional resource URLs for the application home ('style.css' by default)."""
+    projectResources: Optional[list[str]]
+    """List of additional resource URLs for the project page ('style.css' by default)."""
+
+
 class Application(Node):
     """Main Application object."""
 
@@ -22,6 +33,12 @@ class Application(Node):
 
     monitor: 'ServerMonitor'
     """Server monitor object."""
+
+    templateOptions: TemplateOptions
+    """Options for default templates."""
+
+    title: str
+    """Application title."""
 
     vars: dict
     """Application variables."""

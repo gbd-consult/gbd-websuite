@@ -290,8 +290,6 @@ class WebSite(Node):
     """Root directory for assets."""
     corsOptions: WebCors
     """CORS options."""
-    errorPage: Optional['Template']
-    """Error page template."""
     host: str
     """Host name for this site."""
     rewriteRules: list[WebRewriteRule]

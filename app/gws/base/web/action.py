@@ -58,6 +58,10 @@ class AssetRequest(gws.Request):
     path: str
 
 
+class PageRequest(gws.Request):
+    name: str
+
+
 class AssetResponse(gws.Request):
     content: str
     mime: str
@@ -85,6 +89,21 @@ class Object(gws.base.action.Object):
     def http_asset(self, req: gws.WebRequester, p: AssetRequest) -> gws.ContentResponse:
         res = self._serve_path(req, p)
         return res
+
+    @gws.ext.command.get('webPage')
+    def get_page(self, req: gws.WebRequester, p: PageRequest) -> gws.ContentResponse:
+        tpl = None
+        project = None
+        
+        if p.name == 'home':
+            tpl = self.root.app.templateMgr.find_template('application.home', where=[], user=req.user)
+        if p.name == 'project':
+            project = req.user.require_project(p.projectUid)
+            tpl = self.root.app.templateMgr.find_template('project.home', where=[project], user=req.user)
+        if not tpl:
+            raise gws.NotFoundError('template not found for {p.name=}')
+        
+        return self._serve_template(req, p, tpl, project=project)
 
     @gws.ext.command.get('webDownload')
     def download(self, req: gws.WebRequester, p) -> gws.ContentResponse:
@@ -116,6 +135,7 @@ class Object(gws.base.action.Object):
     @gws.ext.command.get('webSystemAsset')
     def sys_asset(self, req: gws.WebRequester, p: AssetRequest) -> gws.ContentResponse:
         locale = gws.lib.intl.locale(p.localeUid, self.root.app.localeUids)
+        app_templates = f'{gws.c.APP_DIR}/gws/base/application/templates/'
 
         # only accept '8.0.0.vendor.js' etc or simply 'vendor.js'
         path = p.path
@@ -125,8 +145,14 @@ class Object(gws.base.action.Object):
         if path == 'vendor.js':
             return gws.ContentResponse(mime=gws.lib.mime.JS, content=gws.base.client.bundles.javascript(self.root, 'vendor', locale))
 
+        if path == 'home.js':
+            return gws.ContentResponse(mime=gws.lib.mime.JS, content=gws.u.read_file(f'{app_templates}/home.js'))
+        # deprecated
         if path == 'util.js':
-            return gws.ContentResponse(mime=gws.lib.mime.JS, content=gws.base.client.bundles.javascript(self.root, 'util', locale))
+            return gws.ContentResponse(mime=gws.lib.mime.JS, content=gws.u.read_file(f'{app_templates}/home.js'))
+
+        if path == 'home.css':
+            return gws.ContentResponse(mime=gws.lib.mime.CSS, content=gws.u.read_file(f'{app_templates}/home.css'))
 
         if path == 'app.js':
             return gws.ContentResponse(mime=gws.lib.mime.JS, content=gws.base.client.bundles.javascript(self.root, 'app', locale))
@@ -158,18 +184,26 @@ class Object(gws.base.action.Object):
             project_assets = project.assetsRoot
 
         real_path = None
+        tpl = None
 
         if project_assets:
             real_path = gws.lib.osx.abs_web_path(req_path, project_assets.dir)
         if not real_path and site_assets:
             real_path = gws.lib.osx.abs_web_path(req_path, site_assets.dir)
+
+        if real_path:
+            tpl = self.root.app.templateMgr.template_from_path(real_path)
+        # deprecated: support for index.cx.html and project.cx.html
+        elif req_path == 'index.cx.html':
+            tpl = self.root.app.templateMgr.find_template('application.home', where=[], user=req.user)
+        elif req_path == 'project.cx.html':
+            tpl = self.root.app.templateMgr.find_template('project.home', where=[project] if project else [], user=req.user)
+
+        if tpl:
+            return self._serve_template(req, p, tpl, project)
+
         if not real_path:
             raise gws.NotFoundError(f'no real path for {req_path=}')
-
-        tpl = self.root.app.templateMgr.template_from_path(real_path)
-        if tpl:
-            locale = gws.lib.intl.locale(p.localeUid, project.localeUids if project else self.root.app.localeUids)
-            return self._serve_template(req, tpl, project, locale)
 
         mime = gws.lib.mime.for_path(real_path)
 
@@ -180,7 +214,8 @@ class Object(gws.base.action.Object):
         gws.log.debug(f'serving {real_path!r} for {req_path!r}')
         return gws.ContentResponse(contentPath=real_path, mime=mime)
 
-    def _serve_template(self, req: gws.WebRequester, tpl: gws.Template, project: Optional[gws.Project], locale: gws.Locale):
+    def _serve_template(self, req: gws.WebRequester, p: gws.Request, tpl: gws.Template, project: Optional[gws.Project]):
+        locale = gws.lib.intl.locale(p.localeUid, project.localeUids if project else self.root.app.localeUids)
         projects = [p for p in self.root.app.projects if req.user.can_use(p)]
         projects.sort(key=lambda p: p.title.lower())
 

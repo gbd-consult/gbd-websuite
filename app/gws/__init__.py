@@ -4086,6 +4086,7 @@ class Project(Node):
     localeUids: list[str]
     map: 'Map'
     metadata: 'Metadata'
+    title: str
 
     actions: list['Action']
     finders: list['Finder']
@@ -4686,8 +4687,6 @@ class WebSite(Node):
     """Root directory for assets."""
     corsOptions: WebCors
     """CORS options."""
-    errorPage: Optional['Template']
-    """Error page template."""
     host: str
     """Host name for this site."""
     rewriteRules: list[WebRewriteRule]
@@ -4826,6 +4825,17 @@ class MiddlewareManager(Node):
         """Return a list of registered middleware objects."""
 
 
+class TemplateOptions(Data):
+    """Options for default templates."""
+
+    withLogin: bool = True
+    """Show login form in the application home page."""
+    homeResources: Optional[list[str]]
+    """List of additional resource URLs for the application home ('style.css' by default)."""
+    projectResources: Optional[list[str]]
+    """List of additional resource URLs for the project page ('style.css' by default)."""
+
+
 class Application(Node):
     """Main Application object."""
 
@@ -4840,6 +4850,12 @@ class Application(Node):
 
     monitor: 'ServerMonitor'
     """Server monitor object."""
+
+    templateOptions: TemplateOptions
+    """Options for default templates."""
+
+    title: str
+    """Application title."""
 
     vars: dict
     """Application variables."""

@@ -16,9 +16,6 @@ def javascript(root: gws.Root, category: str, locale: gws.Locale) -> str:
     if category == 'vendor':
         return gws.u.read_file(gws.c.APP_DIR + '/' + gws.c.JS_VENDOR_BUNDLE)
 
-    if category == 'util':
-        return gws.u.read_file(gws.c.APP_DIR + '/' + gws.c.JS_UTIL_BUNDLE)
-
     if category == 'app':
         return _make_app_js(root, locale)
 

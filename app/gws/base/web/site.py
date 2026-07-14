@@ -68,17 +68,29 @@ class Config(gws.Config):
     permissionsPolicy: str = 'geolocation=(self), camera=(), microphone=()'
     """Permissions Policy for this site."""
     errorPage: Optional[gws.ext.config.template]
-    """Error page template."""
+    """Error page template. (deprecated in 8.4)"""
     host: str = '*'
     """Host name this site responds to (asterisk for any)."""
     rewrite: Optional[list[RewriteRuleConfig]]
-    """Rewrite rules."""
+    """Rewrite rules. (deprecated in 8.4)"""
+    rewriteRules: Optional[list[RewriteRuleConfig]]
+    """Rewrite rules. (added in 8.4)"""
+    withDefaultRewriteRules: bool = True
+    """Whether to add default rewrite rules. (added in 8.4)"""
     canonicalHost: str = ''
     """Hostname for reversed URL rewriting."""
     useForwardedHost: bool = False
     """Use  X-Forwarded-Host for host matching."""
-    root: WebDirConfig
+    root: Optional[WebDirConfig]
     """Root directory for static documents."""
+
+
+DEFAULT_ASSETS_DIR = '/data/assets'
+DEFAULT_WEB_DIR = '/data/web'
+DEFAULT_REWRITE_RULES = [
+    gws.WebRewriteRule(pattern=r'^/$', target='/_/webPage/name/home'),
+    gws.WebRewriteRule(pattern=r'^/project/([a-z0-9_-]+)$', target='/_/webPage/name/project/projectUid/$1'),
+]
 
 
 class Object(gws.WebSite):
@@ -92,25 +104,51 @@ class Object(gws.WebSite):
         self.host = self.cfg('host', default='*')
         self.canonicalHost = self.cfg('canonicalHost')
         self.useForwardedHost = self.cfg('useForwardedHost')
+        self.ssl = self.cfg('ssl')
+        self.corsOptions = self.cfg('cors')
+        self.contentSecurityPolicy = self.cfg('contentSecurityPolicy')
+        self.permissionsPolicy = self.cfg('permissionsPolicy')
+        # deprecated
+        self.errorPage = self.create_child_if_configured(gws.ext.object.template, self.cfg('errorPage'))
 
-        self.staticRoot = gws.WebDocumentRoot(self.cfg('root'))
+        p = self.cfg('root')
+        if p:
+            self.staticRoot = gws.WebDocumentRoot(p)
+        elif gws.u.is_dir(DEFAULT_WEB_DIR):
+            self.staticRoot = gws.WebDocumentRoot(dir=DEFAULT_WEB_DIR)
+        else:
+            # note: web root must exist
+            gws.log.warning(f'web root {DEFAULT_WEB_DIR!r} does not exist, using temporary directory')
+            self.staticRoot = gws.WebDocumentRoot(dir=gws.u.ensure_dir(gws.c.TMP_DIR + '/web'))
 
         p = self.cfg('assets')
-        self.assetsRoot = gws.WebDocumentRoot(p) if p else None
+        if p:
+            self.assetsRoot = gws.WebDocumentRoot(p)
+        elif gws.u.is_dir(DEFAULT_ASSETS_DIR):
+            self.assetsRoot = gws.WebDocumentRoot(dir=DEFAULT_ASSETS_DIR)
+        else:
+            # note: assets root is optional
+            self.assetsRoot = None
 
-        self.ssl = self.cfg('ssl')
-
-        self.rewriteRules = self.cfg('rewrite', default=[])
-        for r in self.rewriteRules:
+        self.rewriteRules = []
+        p = self.cfg('rewriteRules')
+        if not p:
+            # deprecated
+            p = self.cfg('rewrite')
+        if not p:
+            p = []
+        for c in p:
+            r = gws.WebRewriteRule(c)
             if not gws.lib.net.is_abs_url(r.target):
                 # ensure rewriting from root
                 r.target = '/' + r.target.lstrip('/')
+            self.rewriteRules.append(r)
 
-        self.errorPage = self.create_child_if_configured(gws.ext.object.template, self.cfg('errorPage'))
-        self.corsOptions = self.cfg('cors')
-
-        self.contentSecurityPolicy = self.cfg('contentSecurityPolicy')
-        self.permissionsPolicy = self.cfg('permissionsPolicy')
+        if self.cfg('withDefaultRewriteRules'):
+            patterns = set(r.pattern for r in self.rewriteRules)
+            for c in DEFAULT_REWRITE_RULES:
+                if c.pattern not in patterns:
+                    self.rewriteRules.insert(0, c)
 
     def url_for(self, req, path, **params):
         if gws.lib.net.is_abs_url(path):

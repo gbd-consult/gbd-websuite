@@ -65,7 +65,6 @@ PUBLIC = 'allow all'
 
 JS_BUNDLE = "app.bundle.json"
 JS_VENDOR_BUNDLE = 'vendor.bundle.js'
-JS_UTIL_BUNDLE = 'util.bundle.js'
 
 # uid for the root.application 
 APPLICATION_UID = '1'

@@ -125,11 +125,14 @@ def handle_http_error(req: gws.WebRequester, exc: gws.base.web.error.HTTPExcepti
             )
         )
 
-    if not req.site.errorPage:
+    error_template = getattr(req.site, 'errorPage', None)
+    if not error_template:
+        error_template = req.root.app.templateMgr.find_template('application.error', where=[])
+    if not error_template:
         return req.error_responder(exc)
 
-    args = gws.TemplateArgs(req=req, user=req.user, error=exc.code)
-    res = req.site.errorPage.render(gws.TemplateRenderInput(args=args))
+    args = gws.TemplateArgs(req=req, user=req.user, error=exc.code, status=exc.code or 500)
+    res = error_template.render(gws.TemplateRenderInput(args=args))
     res.status = exc.code or 500
     return req.content_responder(res)
 

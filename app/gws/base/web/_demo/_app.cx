@@ -4,18 +4,10 @@ web.sites+ {
     assets.dir "/demos/assets"
     root.dir "/data/web"
     host "*"
-    rewrite [
-        {
-            pattern "^/$"
-            target "/_/webAsset/path/index.cx.html"
-        }
+    rewriteRules [
         {
             pattern "^/project/([a-z0-9_.-]+)/([a-z][a-z])"
-            target "/_/webAsset/path/project.cx.html/projectUid/$1/localeUid/$2"
-        }
-        {
-            pattern "^/project/([a-z0-9_.-]+)"
-            target "/_/webAsset/path/project.cx.html/projectUid/$1"
+            target "/_/webPage/name/project/projectUid/$1/localeUid/$2"
         }
         {
             pattern "^/asset/([a-z0-9_.-]+)"
@@ -38,8 +30,4 @@ web.sites+ {
             target "/_/qfieldcloudApi/projectUid/qfield_demo/$1"
         }
     ]
-    errorPage {
-        type "html"
-        text "Error {{error}}"
-    }
 }

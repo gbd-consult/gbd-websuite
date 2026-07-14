@@ -1,10 +1,8 @@
 from typing import Optional
 
-import os
 
 import gws
-import gws.base.model
-import gws.config.util
+import gws.lib.inifile
 import gws.lib.intl
 import gws.lib.mime
 
@@ -60,6 +58,12 @@ class Object(gws.Template):
             uid=self.uid,
         )
 
+    def _defaultStrings(self):
+        def get():
+            return gws.lib.inifile.from_paths(f'{gws.c.APP_DIR}/gws/base/application/templates/strings.ini')
+
+        return gws.u.get_app_global('gws.base.application.default_strings', get)
+
     def prepare_args(self, tri: gws.TemplateRenderInput) -> gws.TemplateArgs:
         args = gws.u.merge({}, tri.args)
         args.setdefault('app', self.root.app)
@@ -71,7 +75,7 @@ class Object(gws.Template):
             if ls:
                 locale = gws.lib.intl.locale(ls[0], fallback=True)
         if not locale:
-            locale =  gws.lib.intl.default_locale()
+            locale = gws.lib.intl.default_locale()
 
         f = gws.lib.intl.formatters(locale)
 
@@ -79,6 +83,11 @@ class Object(gws.Template):
         args.setdefault('date', f[0])
         args.setdefault('time', f[1])
         args.setdefault('number', f[2])
+
+        s = self._defaultStrings()
+        s = s.get(locale.language) or s['en']
+        s.update(args.get('STRINGS', {}))
+        args['STRINGS'] = s
 
         # obsolete
         args.setdefault('gwsVersion', self.root.app.version)

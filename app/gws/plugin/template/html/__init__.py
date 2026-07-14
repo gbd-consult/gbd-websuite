@@ -213,7 +213,7 @@ class Object(gws.base.template.Object):
             mime = gws.lib.mime.HTML
 
         if mime == gws.lib.mime.HTML:
-            return gws.ContentResponse(mime=mime, content=html)
+            return gws.ContentResponse(mime=mime, content=html.lstrip())
 
         if mime == gws.lib.mime.PDF:
             res_path = self.finalize_pdf(tri, html, args, main_engine)

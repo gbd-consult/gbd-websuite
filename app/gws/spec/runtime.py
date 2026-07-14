@@ -247,8 +247,8 @@ class Object(gws.SpecRuntime):
             if not typ.isConfig:
                 continue
             d = dict(vars(typ))
-            if typ.uid in strs:
-                d['doc'] = strs[typ.uid]
+            d['doc'] = strs.get(typ.uid) or ''
+            d['title'] = strs.get(typ.uid + '._title') or ''
             if 'enumDocs' in d:
                 for k in d['enumDocs']:
                     key = typ.uid + '.' + k

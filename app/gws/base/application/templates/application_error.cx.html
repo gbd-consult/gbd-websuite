@@ -1,0 +1,37 @@
+@include "parts.cx.html"
+
+<!doctype html>
+<html id="gwsHomeError">
+    <head>
+        @HOME_HEAD
+        @with app.title
+            <title>{app.title | html}</title>
+        @end
+    </head>
+    <body>
+        @with app.title
+            <h1>{app.title | html}</h1>
+        @end
+        <div id="gwsHomeErrorContent">
+                @if status == 404
+                    <h2>{STRINGS.appHomeErrorTitle404}</h2>
+                    <p>{STRINGS.appHomeErrorMessage404}</p>
+                @elif status == 403
+                    <h2>{STRINGS.appHomeErrorTitle403}</h2>
+                    <p>{STRINGS.appHomeErrorMessage403}</p>
+                @elif status == 500
+                    <h2>{STRINGS.appHomeErrorTitle500}</h2>
+                    <p>{STRINGS.appHomeErrorMessage500}</p>
+                @elif status >= 400 and status < 500
+                    <h2>{STRINGS.appHomeErrorTitle4xx} ({status})</h2>
+                    <p>{STRINGS.appHomeErrorMessage4xx}</p>
+                @else
+                    <h2>{STRINGS.appHomeErrorTitle} ({status})</h2>
+                    <p>{STRINGS.appHomeErrorMessage}</p>
+                @end
+        </div>
+    </body>
+</html>
+
+
+

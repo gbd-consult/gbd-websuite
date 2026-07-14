@@ -1,0 +1,72 @@
+
+@# Login form on the home page
+@def LOGIN_FORM
+    <form id="gwsHomeLoginForm" action="/_/authLogin" method="post" aria-label="{STRINGS.appHomeLoginTitle}">
+        <h2>{STRINGS.appHomeLoginTitle}</h2>
+        <div>
+            <div>
+                <label for="gwsHomeUsername">{STRINGS.appHomeUsername}</label>
+                <input id="gwsHomeUsername" name="username" type="text" autocomplete="username">
+            </div>
+            <div>
+                <label for="gwsHomePassword">{STRINGS.appHomePassword}</label>
+                <input id="gwsHomePassword" name="password" type="password" autocomplete="current-password">
+            </div>
+        </div>
+        <button type="submit">{STRINGS.appHomeLoginButton}</button>
+        <p id="gwsHomeLoginProgressText" aria-live="polite">{STRINGS.appHomeLoginProgress}</p>
+        <p id="gwsHomeLoginErrorText" role="alert">{STRINGS.appHomeLoginError}</p>
+    </form>
+@end
+
+@# Username and logout form on the home page
+@def LOGOUT_FORM
+    <form id="gwsHomeLogoutForm" action="/_/authLogout" method="post" aria-label="{STRINGS.appHomeLogoutTitle}">
+        <h2>{user.displayName | html}</h2>
+        <button type="submit">{STRINGS.appHomeLogout}</button>
+    </form>
+@end
+
+@# List of projects on the home page
+@def PROJECT_LIST
+    <div id="gwsHomeProjectList" role="region" aria-label="{STRINGS.appHomeProjects}">
+        <h2>{STRINGS.appHomeProjects}</h2>
+        <ul>
+            @for prj in projects
+                <li><a href="/project/{prj.uid}">{prj.title | html}</a></li>
+            @end
+        </ul>
+    </div>
+@end
+
+@# HTML head for the home page
+@def HOME_HEAD
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/_/webSystemAsset/path/{app.version}.home.css"/>
+    <link rel="stylesheet" href="/_/webSystemAsset/path/{app.version}.light.css"/>
+    <script src="/_/webSystemAsset/path/{app.version}.home.js"></script>
+    @for r in app.templateOptions.homeResources
+        @if r.endswith('.css')
+            <link rel="stylesheet" href="{r}"/>
+        @elif r.endswith('.js')
+            <script src="{r}"></script>
+        @end    
+    @end
+@end
+
+@# HTML head for the project page
+@def PROJECT_HEAD
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+    <link rel="stylesheet" href="/_/webSystemAsset/path/{app.version}.light.css"/>
+    <script src="/_/webSystemAsset/path/{app.version}.vendor.js"></script>
+    <script src="/_/webSystemAsset/localeUid/{locale.uid}/path/{app.version}.app.js"></script>
+    @for r in app.templateOptions.projectResources
+        @if r.endswith('.css')
+            <link rel="stylesheet" href="{r}"/>
+        @elif r.endswith('.js')
+            <script src="{r}"></script>
+        @end    
+    @end
+@end

@@ -24,57 +24,42 @@ import gws.lib.font
 import gws.server.manager
 import gws.server.monitor
 
-_DEFAULT_LOCALE = ['en_CA']
+DEFAULT_LOCALE = ['en_CA']
 
-_DEFAULT_TEMPLATES = [
-    gws.Config(
-        type='html',
-        path=gws.u.dirname(__file__) + '/templates/project_description.cx.html',
-        subject='project.description',
-        access=gws.c.PUBLIC,
-        uid='default_template.project_description',
-    ),
-    gws.Config(
-        type='html',
-        path=gws.u.dirname(__file__) + '/templates/layer_description.cx.html',
-        subject='layer.description',
-        access=gws.c.PUBLIC,
-        uid='default_template.layer_description',
-    ),
-    gws.Config(
-        type='html',
-        path=gws.u.dirname(__file__) + '/templates/feature_description.cx.html',
-        subject='feature.description',
-        access=gws.c.PUBLIC,
-        uid='default_template.feature_description',
-    ),
-    gws.Config(
-        type='html',
-        path=gws.u.dirname(__file__) + '/templates/feature_title.cx.html',
-        subject='feature.title',
-        access=gws.c.PUBLIC,
-        uid='default_template.feature_title',
-    ),
-    gws.Config(
-        type='html',
-        path=gws.u.dirname(__file__) + '/templates/feature_label.cx.html',
-        subject='feature.label',
-        access=gws.c.PUBLIC,
-        uid='default_template.feature_label',
-    ),
+DEFAULT_TEMPLATE_SUBJECTS = [
+    'application.home',
+    'application.error',
+    'project.home',
+    'project.description',
+    'layer.description',
+    'feature.description',
+    'feature.title',
+    'feature.label',
 ]
 
-_DEFAULT_PRINTER = gws.Config(
+DEFAULT_TEMPLATES = [
+    gws.Config(
+        type='html',
+        path=f'{gws.c.APP_DIR}/gws/base/application/templates/{_s.replace(".", "_")}.cx.html',
+        subject=_s,
+        access=gws.c.PUBLIC,
+        uid=f'gws.base.application.default_template.{_s}',
+    )
+    for _s in DEFAULT_TEMPLATE_SUBJECTS
+]
+
+DEFAULT_PRINTER = gws.Config(
     uid='gws.base.application.default_printer',
     access=gws.c.PUBLIC,
     template=gws.Config(
         type='html',
-        path=gws.u.dirname(__file__) + '/templates/project_print.cx.html',
+        path=f'{gws.c.APP_DIR}/gws/base/application/templates/project_print.cx.html',
         mapSize=(200, 180, gws.Uom.mm),
     ),
     qualityLevels=[{'dpi': 72}],
 )
 
+DEFAULT_CSS_FILENAME = 'style.css'
 
 class Config(gws.ConfigWithAccess):
     """Main application configuration"""
@@ -121,6 +106,10 @@ class Config(gws.ConfigWithAccess):
     """Database configuration."""
     templates: Optional[list[gws.ext.config.template]]
     """Default templates."""
+    templateOptions: Optional[gws.TemplateOptions]
+    """Options for default templates."""
+    title: Optional[str]
+    """Application title."""
     vars: Optional[dict]
     """Custom variables."""
     web: Optional[gws.base.web.manager.Config]
@@ -153,6 +142,8 @@ class Object(gws.Application):
 
         self.vars = self.cfg('vars') or {}
 
+        self.title = self.cfg('title') or ''
+
         self.serverMgr = self.create_child(gws.server.manager.Object, self.cfg('server'))
         # NB need defaults from the server
         self.config.server = self.serverMgr.config
@@ -165,7 +156,7 @@ class Object(gws.Application):
 
         self.monitor = self.create_child(gws.server.monitor.Object, self.serverMgr.cfg('monitor'))
 
-        self.localeUids = self.cfg('locales') or _DEFAULT_LOCALE
+        self.localeUids = self.cfg('locales') or DEFAULT_LOCALE
         self.metadata = gws.base.metadata.from_config(self.cfg('metadata'))
 
         self.middlewareMgr = self.create_child(gws.base.application.middleware.Object)
@@ -203,8 +194,20 @@ class Object(gws.Application):
 
         self.templateMgr = self.create_child(gws.base.template.manager.Object)
         self.templates = self.create_children(gws.ext.object.template, self.cfg('templates'))
-        for cfg in _DEFAULT_TEMPLATES:
+        for cfg in DEFAULT_TEMPLATES:
             self.templates.append(self.root.create_shared(gws.ext.object.template, cfg))
+        
+        p = self.cfg('templateOptions')
+        defaults = gws.TemplateOptions(
+            withLogin = any(m.extType == 'web' for m in self.authMgr.methods),
+            homeResources = [],
+            projectResources = [],
+        )
+        if gws.u.is_file(self.webMgr.sites[0].staticRoot.dir + f'/{DEFAULT_CSS_FILENAME}'):
+            defaults.homeResources = [f'/{DEFAULT_CSS_FILENAME}']
+            defaults.projectResources = [f'/{DEFAULT_CSS_FILENAME}']
+        
+        self.templateOptions = gws.u.merge(defaults, self.cfg('templateOptions'))
 
         self.exporterMgr = self.create_child(gws.base.exporter.manager.Object)
         self.exporters = self.create_children(gws.ext.object.exporter, self.cfg('exporters'))
@@ -213,7 +216,7 @@ class Object(gws.Application):
 
         self.printerMgr = self.create_child(gws.base.printer.manager.Object)
         self.printers = self.create_children(gws.ext.object.printer, self.cfg('printers'))
-        self.defaultPrinter = self.root.create_shared(gws.ext.object.printer, _DEFAULT_PRINTER)
+        self.defaultPrinter = self.root.create_shared(gws.ext.object.printer, DEFAULT_PRINTER)
 
         self.owsServices = self.create_children(gws.ext.object.owsService, self.cfg('owsServices'))
 

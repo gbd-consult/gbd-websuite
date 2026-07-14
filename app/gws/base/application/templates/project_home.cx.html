@@ -1,0 +1,17 @@
+@include "parts.cx.html"
+
+<!doctype html>
+<html id="gwsProjectHtml">
+<head>
+    @PROJECT_HEAD
+    <title>{project.title | html}</title>
+    <script id="gwsOptions" type="application/json">
+        {
+            "projectUid": "{project.uid}",
+            "localeUid": "{locale.uid}"
+        }
+    </script>
+</head>
+<body>
+</body>
+</html>

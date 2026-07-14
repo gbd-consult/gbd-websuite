@@ -1,0 +1,26 @@
+@include "parts.cx.html"
+
+<!doctype html>
+<html id="gwsHome">
+    <head>
+        @HOME_HEAD
+        @with app.title
+            <title>{app.title | html}</title>
+        @end
+    </head>
+    <body>
+        @with app.title
+            <h1>{app.title | html}</h1>
+        @end
+        @if app.templateOptions.withLogin
+            @if user.isGuest
+                @LOGIN_FORM
+            @else
+                @LOGOUT_FORM
+            @end
+        @end
+        @with projects
+            @PROJECT_LIST
+        @end
+    </body>
+</html>

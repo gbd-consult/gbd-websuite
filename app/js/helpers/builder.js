@@ -40,7 +40,6 @@ Options:
 // must match gws/core/const.py
 const JS_BUNDLE = "app.bundle.json"
 const JS_VENDOR_BUNDLE = 'vendor.bundle.js'
-const JS_UTIL_BUNDLE = 'util.bundle.js'
 
 const BUILD_DIRNAME = '__build';
 const APP_DIR = path.resolve(__dirname, '../..');
@@ -206,9 +205,6 @@ module.exports.Builder = class {
             this.fail();
 
         if (!await writeVendors(this))
-            this.fail();
-
-        if (!await writeUtil(this))
             this.fail();
 
         let bundles = await createBundles(this);
@@ -627,22 +623,6 @@ function writeVendors(bb) {
         }
         let p = APP_DIR + '/' + JS_VENDOR_BUNDLE;
         writeFileIfChanged(p, sources.join('\n;;\n'));
-        logInfo(`created ${p}`);
-        return true;
-    } catch (e) {
-        logError(`Bundler error:`);
-        logException(e);
-    }
-}
-
-// JS util bundler
-
-function writeUtil(bb) {
-    try {
-        let source = readFile(JS_DIR + '/src/util.js');
-        source = source.replace('__VERSION__', bb.specs.meta.version);
-        let p = APP_DIR + '/' + JS_UTIL_BUNDLE;
-        writeFileIfChanged(p, source);
         logInfo(`created ${p}`);
         return true;
     } catch (e) {
