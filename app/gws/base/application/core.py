@@ -199,7 +199,7 @@ class Object(gws.Application):
         
         p = self.cfg('templateOptions')
         defaults = gws.TemplateOptions(
-            withLogin = any(m.extType == 'web' for m in self.authMgr.methods),
+            withLogin = any(a.extType == 'auth' for a in self.actions),
             homeResources = [],
             projectResources = [],
         )

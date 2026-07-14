@@ -144,7 +144,7 @@ class Object(gws.WebSite):
                 r.target = '/' + r.target.lstrip('/')
             self.rewriteRules.append(r)
 
-        if self.cfg('withDefaultRewriteRules'):
+        if self.cfg('withDefaultRewriteRules', default=True):
             patterns = set(r.pattern for r in self.rewriteRules)
             for c in DEFAULT_REWRITE_RULES:
                 if c.pattern not in patterns:

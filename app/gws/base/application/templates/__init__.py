@@ -105,8 +105,7 @@ available to every template as ``app.templateOptions``:
 
 ``withLogin`` (``bool``)
     Render the sign-in / sign-out form on the application home page.
-    If ``templateOptions`` is not configured at all, this defaults to ``true``
-    when a web-based authentication method is configured.
+    Defaults to ``true`` if the `auth` action is configured.
 
 ``homeResources`` (list of ``str``)
     Additional resource URLs injected into the ``<head>`` of the application
@@ -114,8 +113,9 @@ available to every template as ``app.templateOptions``:
 
 ``projectResources`` (list of ``str``)
     Additional resource URLs injected into the ``<head>`` of the project home
-    page.
-
-If ``templateOptions`` is not configured and the file ``style.css`` exists 
-in the static root of the first web site, it is used as the default resource.
+    page. 
+    
+If  resources are not configured and the file ``style.css`` exists 
+in the static root of the first configured web site, 
+``/style.css`` is used as the default resource.
 """

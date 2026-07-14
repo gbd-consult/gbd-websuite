@@ -4,11 +4,6 @@ import gws
 
 from . import site
 
-_FALLBACK_SITE = gws.Config(
-    host='*',
-    root=site.WebDirConfig(dir='/data/web'))
-
-
 class Config(gws.Config):
     """Web server configuration"""
 
@@ -20,9 +15,9 @@ class Config(gws.Config):
 
 class Object(gws.WebManager):
     def configure(self):
-        cfgs = self.cfg('sites', default=[])
-        if all(c.host != '*' for c in cfgs):
-            cfgs.append(_FALLBACK_SITE)
+        cfgs = self.cfg('sites') or []
+        if not cfgs:
+            cfgs.append(gws.Config())
         if self.cfg('ssl'):
             cfgs = [gws.u.merge(c, ssl=True) for c in cfgs]
         self.sites = self.create_children(site.Object, cfgs)
