@@ -1,9 +1,73 @@
+@def STYLE_OVERRIDES
+
+    @# defaults defined in `gws/base/application/templates/home.css`
+    @# override in config.cx with `vars { fontFamily "Lato" }`
+    @# or in project config `vars { color "#123123" }`
+
+    <style>
+    :root {
+        @with app.vars.fontFamily
+            /* defaults to Lato, Helvetica, Arial, sans-serif */
+            --font-family: "{app.vars.fontFamily}"; 
+        @end
+        @with app.vars.textColor
+            --text-color: {app.vars.textColor};
+        @end
+        @with app.vars.titleColor
+            --title-color: {app.vars.titleColor};
+        @end
+        @with app.vars.logoUrl
+            --logo-url: url("{app.vars.logoUrl}");
+        @end
+        @with app.vars.backgroundImageUrl
+            --background-image-url: url("{app.vars.backgroundImageUrl}");
+        @end
+        @with app.vars.projectsIconUrl
+            --projects-icon-url: url("{app.vars.projectsIconUrl}");
+        @end
+        @with app.vars.backgroundColorPrimary
+            --background-color-primary: {app.vars.backgroundColorPrimary}; 
+        @end
+        @with app.vars.backgroundColorSecondary
+            --background-color-secondary: {app.vars.backgroundColorSecondary};
+        @end
+        @with app.vars.borderColor
+            --border-color: {app.vars.borderColor};
+        @end
+        @with app.vars.highlightColor
+            --highlight-color: {app.vars.highlightColor};
+        @end
+        @with app.vars.buttonColor
+            --button-color: {app.vars.buttonColor};
+        @end
+        @with app.vars.buttonGradientColor
+            --button-gradient-color: {app.vars.buttonGradientColor};
+        @end
+    }
+
+    @# /* allow setting custom colors for projects */
+    @for p in projects index n length l
+        #gwsHomeProjectList li:nth-child({l}n + {n}) a::before {
+            @with p.vars.color
+                background-color: {p.vars.color};
+            @end
+            @with p.metadata.image
+                background-image: url("{p.metadata.image}");
+            @end
+        }
+    @end
+
+    </style>
+@end
 
 @# Login form on the home page
 @def LOGIN_FORM
     <form id="gwsHomeLoginForm" action="/_/authLogin" method="post" aria-label="{STRINGS.appHomeLoginTitle}">
-        <h2>{STRINGS.appHomeLoginTitle}</h2>
-        <div>
+        <div class="header">
+            <h2>{STRINGS.appHomeLoginTitle}</h2>
+            <div class="kunden-logo"></div>
+        </div>
+        <div class="input-group">
             <div>
                 <label for="gwsHomeUsername">{STRINGS.appHomeUsername}</label>
                 <input id="gwsHomeUsername" name="username" type="text" autocomplete="username">
@@ -12,10 +76,10 @@
                 <label for="gwsHomePassword">{STRINGS.appHomePassword}</label>
                 <input id="gwsHomePassword" name="password" type="password" autocomplete="current-password">
             </div>
+            <button type="submit">{STRINGS.appHomeLoginButton}</button>
         </div>
-        <button type="submit">{STRINGS.appHomeLoginButton}</button>
-        <p id="gwsHomeLoginProgressText" aria-live="polite">{STRINGS.appHomeLoginProgress}</p>
-        <p id="gwsHomeLoginErrorText" role="alert">{STRINGS.appHomeLoginError}</p>
+        <span id="gwsHomeLoginProgressText" aria-live="polite">{STRINGS.appHomeLoginProgress}</span>
+        <span id="gwsHomeLoginErrorText" role="alert">{STRINGS.appHomeLoginError}</span>
     </form>
 @end
 
@@ -42,9 +106,8 @@
 @# HTML head for the home page
 @def HOME_HEAD
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
     <link rel="stylesheet" href="/_/webSystemAsset/path/{app.version}.home.css"/>
-    <link rel="stylesheet" href="/_/webSystemAsset/path/{app.version}.light.css"/>
     <script src="/_/webSystemAsset/path/{app.version}.home.js"></script>
     @for r in app.templateOptions.homeResources
         @if r.endswith('.css')
@@ -53,6 +116,7 @@
             <script src="{r}"></script>
         @end    
     @end
+    @STYLE_OVERRIDES
 @end
 
 @# HTML head for the project page

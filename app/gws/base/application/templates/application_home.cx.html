@@ -13,11 +13,13 @@
             <h1>{app.title | html}</h1>
         @end
         @if app.templateOptions.withLogin
+            <div id="gwsHomeUserBlock">
             @if user.isGuest
                 @LOGIN_FORM
             @else
                 @LOGOUT_FORM
             @end
+            </div>
         @end
         @with projects
             @PROJECT_LIST
