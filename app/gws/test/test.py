@@ -42,6 +42,7 @@ Options:
     --ini <path>          - path to the local 'ini' file (can also be passed in the GWS_TEST_INI env var)
     --manifest <manifest> - path to MANIFEST.json
     
+    -b, --batch           - run tests in batch mode (no interactive prompts)
     -c, --coverage        - produce a coverage report
     -d, --detach          - run docker compose in the background
     -l, --local           - mount the local copy of the application in the test container   
@@ -71,6 +72,7 @@ def main(args):
         dict(
             arg_ini=custom_ini,
             arg_pytest=args.get('_rest'),
+            arg_batch=args.get('b') or args.get('batch'),
             arg_coverage=args.get('c') or args.get('coverage'),
             arg_detach=args.get('d') or args.get('detach'),
             arg_local=args.get('l') or args.get('local'),
@@ -465,16 +467,17 @@ def docker_compose_stop():
 
 
 def docker_exec(container, cmd):
-    opts = OPTIONS.get('runner.docker_exec_options', '')
     uid = OPTIONS.get('runner.uid')
     gid = OPTIONS.get('runner.gid')
+
+    it = '' if OPTIONS['arg_batch'] else '-it'
 
     cli.run(f"""
         docker exec 
         --user {uid}:{gid}
         --env PYTHONPYCACHEPREFIX=/tmp
         --env PYTHONDONTWRITEBYTECODE=1
-        {opts} 
+        {it} 
         {container} 
         {cmd}
     """)
