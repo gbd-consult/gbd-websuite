@@ -579,6 +579,7 @@ function itemMatches(it: ListItem, text: string, mode?: SearchMode): boolean {
                 return textMatches(it.text, text, mode);
             }
     }
+    return textMatches(it.text, text, mode);
 }
 
 function textMatches(src: string, text: string, mode?: SearchMode): boolean {

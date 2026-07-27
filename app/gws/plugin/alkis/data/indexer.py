@@ -159,7 +159,7 @@ class _PlaceIndexer(_Indexer):
     empty2 = dt.EnumPair(code='00', text='')
 
     def add(self, kind, ax, key_obj, **kwargs):
-        if ax.endet:
+        if ax.lebenszeitintervall.endet is not None:
             return
 
         code = self.code(kind, key_obj)
