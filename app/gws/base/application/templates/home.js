@@ -2,7 +2,7 @@
 // Version __VERSION__
 
 window.addEventListener("load", function (evt) {
-    let frmLogin = document.getElementById('gwsHomeLoginForm');
+    let frmLogin = document.getElementById('gws-home-login-form');
     if (frmLogin) {
         frmLogin.addEventListener('submit', function (evt) {
             gwsLogin(frmLogin.action);
@@ -11,7 +11,7 @@ window.addEventListener("load", function (evt) {
         })
     }
 
-    let frmLogout = document.getElementById('gwsHomeLogoutForm');
+    let frmLogout = document.getElementById('gws-home-logout-form');
     if (frmLogout) {
         frmLogout.addEventListener('submit', function (evt) {
             gwsLogout(frmLogout.action);
@@ -24,12 +24,12 @@ window.addEventListener("load", function (evt) {
 function gwsLogin(actionUrl, onSuccess, onFailure) {
     let cls = document.body.classList;
 
-    cls.remove('gwsHomeLoginError');
-    cls.add('gwsHomeLoginProgress');
+    cls.remove('gws-home-login-error');
+    cls.add('gws-home-login-progress');
 
     let params = {
-        username: document.getElementById('gwsHomeUsername').value,
-        password: document.getElementById('gwsHomePassword').value
+        username: document.getElementById('gws-home-username').value,
+        password: document.getElementById('gws-home-password').value
     };
 
     let toParam = (new URLSearchParams(window.location.search).get('to') || '').trim();
@@ -45,12 +45,12 @@ function gwsLogin(actionUrl, onSuccess, onFailure) {
         actionUrl,
         params,
         () => {
-            cls.remove('gwsHomeLoginProgress');
+            cls.remove('gws-home-login-progress');
             onSuccess()
         },
         () => {
-            cls.remove('gwsHomeLoginProgress');
-            cls.add('gwsHomeLoginError');
+            cls.remove('gws-home-login-progress');
+            cls.add('gws-home-login-error');
             onFailure()
         },
     );

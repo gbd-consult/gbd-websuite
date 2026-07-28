@@ -1,7 +1,7 @@
 @include "parts.cx.html"
 
 <!doctype html>
-<html id="gwsHomeError">
+<html id="gws-home-error">
     <head>
         @HOME_HEAD
         @with app.title
@@ -12,7 +12,7 @@
         @with app.title
             <h1>{app.title | html}</h1>
         @end
-        <div id="gwsHomeErrorContent">
+        <div id="gws-home-error-content">
                 @if status == 404
                     <h2>{STRINGS.appHomeErrorTitle404}</h2>
                     <p>{STRINGS.appHomeErrorMessage404}</p>

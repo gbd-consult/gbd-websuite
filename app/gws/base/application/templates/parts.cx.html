@@ -1,91 +1,29 @@
-@def STYLE_OVERRIDES
-
-    @# defaults defined in `gws/base/application/templates/home.css`
-    @# override in config.cx with `vars { fontFamily "Lato" }`
-    @# or in project config `vars { color "#123123" }`
-
-    <style>
-    :root {
-        @with app.vars.fontFamily
-            /* defaults to Lato, Helvetica, Arial, sans-serif */
-            --font-family: "{app.vars.fontFamily}"; 
-        @end
-        @with app.vars.textColor
-            --text-color: {app.vars.textColor};
-        @end
-        @with app.vars.titleColor
-            --title-color: {app.vars.titleColor};
-        @end
-        @with app.vars.logoUrl
-            --logo-url: url("{app.vars.logoUrl}");
-        @end
-        @with app.vars.backgroundImageUrl
-            --background-image-url: url("{app.vars.backgroundImageUrl}");
-        @end
-        @with app.vars.projectsIconUrl
-            --projects-icon-url: url("{app.vars.projectsIconUrl}");
-        @end
-        @with app.vars.backgroundColorPrimary
-            --background-color-primary: {app.vars.backgroundColorPrimary}; 
-        @end
-        @with app.vars.backgroundColorSecondary
-            --background-color-secondary: {app.vars.backgroundColorSecondary};
-        @end
-        @with app.vars.borderColor
-            --border-color: {app.vars.borderColor};
-        @end
-        @with app.vars.highlightColor
-            --highlight-color: {app.vars.highlightColor};
-        @end
-        @with app.vars.buttonColor
-            --button-color: {app.vars.buttonColor};
-        @end
-        @with app.vars.buttonGradientColor
-            --button-gradient-color: {app.vars.buttonGradientColor};
-        @end
-    }
-
-    @# /* allow setting custom colors for projects */
-    @for p in projects index n length l
-        #gwsHomeProjectList li:nth-child({l}n + {n}) a::before {
-            @with p.vars.color
-                background-color: {p.vars.color};
-            @end
-            @with p.metadata.image
-                background-image: url("{p.metadata.image}");
-            @end
-        }
-    @end
-
-    </style>
-@end
-
 @# Login form on the home page
 @def LOGIN_FORM
-    <form id="gwsHomeLoginForm" action="/_/authLogin" method="post" aria-label="{STRINGS.appHomeLoginTitle}">
+    <form id="gws-home-login-form" action="/_/authLogin" method="post" aria-label="{STRINGS.appHomeLoginTitle}">
         <div class="header">
             <h2>{STRINGS.appHomeLoginTitle}</h2>
-            <div class="kunden-logo"></div>
+            <div class="logo"></div>
         </div>
         <div class="input-group">
             <div>
-                <label for="gwsHomeUsername">{STRINGS.appHomeUsername}</label>
-                <input id="gwsHomeUsername" name="username" type="text" autocomplete="username">
+                <label for="gws-home-username">{STRINGS.appHomeUsername}</label>
+                <input id="gws-home-username" name="username" type="text" autocomplete="username">
             </div>
             <div>
-                <label for="gwsHomePassword">{STRINGS.appHomePassword}</label>
-                <input id="gwsHomePassword" name="password" type="password" autocomplete="current-password">
+                <label for="gws-home-password">{STRINGS.appHomePassword}</label>
+                <input id="gws-home-password" name="password" type="password" autocomplete="current-password">
             </div>
             <button type="submit">{STRINGS.appHomeLoginButton}</button>
         </div>
-        <span id="gwsHomeLoginProgressText" aria-live="polite">{STRINGS.appHomeLoginProgress}</span>
-        <span id="gwsHomeLoginErrorText" role="alert">{STRINGS.appHomeLoginError}</span>
+        <span id="gws-home-login-progress-text" aria-live="polite">{STRINGS.appHomeLoginProgress}</span>
+        <span id="gws-home-login-error-text" role="alert">{STRINGS.appHomeLoginError}</span>
     </form>
 @end
 
 @# Username and logout form on the home page
 @def LOGOUT_FORM
-    <form id="gwsHomeLogoutForm" action="/_/authLogout" method="post" aria-label="{STRINGS.appHomeLogoutTitle}">
+    <form id="gws-home-logout-form" action="/_/authLogout" method="post" aria-label="{STRINGS.appHomeLogoutTitle}">
         <h2>{user.displayName | html}</h2>
         <button type="submit">{STRINGS.appHomeLogout}</button>
     </form>
@@ -93,7 +31,7 @@
 
 @# List of projects on the home page
 @def PROJECT_LIST
-    <div id="gwsHomeProjectList" role="region" aria-label="{STRINGS.appHomeProjects}">
+    <div id="gws-home-project-list" role="region" aria-label="{STRINGS.appHomeProjects}">
         <h2>{STRINGS.appHomeProjects}</h2>
         <ul>
             @for prj in projects
@@ -116,7 +54,6 @@
             <script src="{r}"></script>
         @end    
     @end
-    @STYLE_OVERRIDES
 @end
 
 @# HTML head for the project page

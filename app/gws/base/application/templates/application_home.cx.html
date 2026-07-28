@@ -1,7 +1,7 @@
 @include "parts.cx.html"
 
 <!doctype html>
-<html id="gwsHome">
+<html id="gws-home">
     <head>
         @HOME_HEAD
         @with app.title
@@ -13,7 +13,7 @@
             <h1>{app.title | html}</h1>
         @end
         @if app.templateOptions.withLogin
-            <div id="gwsHomeUserBlock">
+            <div id="gws-home-user-block">
             @if user.isGuest
                 @LOGIN_FORM
             @else
