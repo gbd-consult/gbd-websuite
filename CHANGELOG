@@ -1,3 +1,7 @@
+## Version 8.3.18
+
+- "Delete" button is now only enabled for features that can be deleted
+
 ## Version 8.3.17
 
 - ALKIS correctly removes expired "place" objects from the index
