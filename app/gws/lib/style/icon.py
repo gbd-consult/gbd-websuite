@@ -128,7 +128,7 @@ def _parse_svg(val):
     except Exception as exc:
         raise Error('parse error', val) from exc
 
-    el_clean = gws.lib.svg.sanitize_element(el)
+    el_clean = gws.lib.svg.normalize_element(el)
 
     w = el_clean.get('width')
     h = el_clean.get('height')

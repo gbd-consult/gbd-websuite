@@ -133,7 +133,7 @@ def from_svg(xmlstr: str, size: gws.Size, mime=None) -> 'Image':
         An image object.
     """
     # @TODO rasterize svg
-    raise NotImplemented
+    raise NotImplementedError
 
 
 def qr_code(
