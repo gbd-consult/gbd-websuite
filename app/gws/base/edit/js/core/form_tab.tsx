@@ -52,7 +52,7 @@ export class FormButtons extends gc.View<types.ViewProps> {
         let sf = es.sidebarSelectedFeature;
 
         let canSave = sf.isNew || sf.isDirty;
-        let canDelete = !sf.isNew;
+        let canDelete = !sf.isNew && sf.model.canDelete;
 
         return [
             <Cell key={1} spaced>
