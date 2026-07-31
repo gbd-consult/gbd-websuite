@@ -1,0 +1,40 @@
+uid "qfield_simple"
+
+title "QField (minimale Konfiguration)"
+
+metadata.keywords [ "qgis" "postgres" "qfield" ]
+
+metadata.abstract """
+Minimale QField-Konfiguration: angegeben wird nur der Pfad zum QGIS-Projekt.
+
+Für jeden Postgres-Layer, der in QFieldSync als "offline editing" markiert ist,
+erzeugt GWS automatisch ein Modell mit allen Spalten der Tabelle.
+Modelle müssen erst dann konfiguriert werden, wenn die Feldauswahl,
+die Filterung oder die Berechtigungen angepasst werden sollen,
+siehe die Demo "Editieren mit QField".
+
+Das Projekt heißt in der QField App "qfield_simple".
+"""
+
+actions+ {
+    type "qfieldcloud"
+    access "allow all"
+    projects+ {
+        uid "qfield_simple"
+        provider.path "/demos/qfield.qgs"
+    }
+}
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+    zoom.maxScale  1000000
+}
+
+map.layers+ {
+    title "QGIS Project"
+    type "qgis"
+    provider.path "/demos/qfield.qgs"
+}
+
+{demo_osm_background}
