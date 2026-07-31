@@ -129,6 +129,7 @@ class Object:
         gws.log.debug(f'{self.uid}: {self.qfcProject.uid}::{me.gpName!r} BEGIN write_features')
 
         columns = {}
+        field_names = {}
         for f in me.model.fields:
             if f.attributeType not in self._SUPPORTED_ATTRIBUTE_TYPES:
                 continue
@@ -137,6 +138,7 @@ class Object:
             if f.name.lower() == 'fid':
                 name = 'fid_gws'
             columns[name] = f.attributeType
+            field_names[name] = f.name
 
         gp_layer = ds.create_layer(
             me.gpName,
@@ -149,13 +151,10 @@ class Object:
         records = []
         for feat in features:
             rec = gws.FeatureRecord(
-                attributes={name: feat.get(name) for name in columns},
+                attributes={name: feat.get(field_name) for name, field_name in field_names.items()},
                 shape=feat.shape(),
                 meta={},
             )
-            # see above
-            if 'fid' in rec.attributes:
-                rec.attributes['fid_gws'] = rec.attributes.pop('fid')
             records.append(rec)
 
         with ds.transaction():

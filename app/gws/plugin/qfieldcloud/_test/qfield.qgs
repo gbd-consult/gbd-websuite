@@ -1,0 +1,325 @@
+<qgis projectname="qfield_test" version="3.40.0-Bratislava">
+  <homePath path=""/>
+  <title>qfield_test</title>
+
+  <projectCrs>
+    <spatialrefsys>
+      <authid>EPSG:3857</authid>
+      <srid>3857</srid>
+    </spatialrefsys>
+  </projectCrs>
+
+  <layer-tree-group>
+    <layer-tree-layer id="poi_L1" name="Points of interest" source="" providerKey="postgres" checked="Qt::Checked" expanded="1"/>
+    <layer-tree-layer id="district_L2" name="Districts" source="" providerKey="postgres" checked="Qt::Checked" expanded="1"/>
+    <layer-tree-layer id="note_L3" name="Notes" source="" providerKey="postgres" checked="Qt::Checked" expanded="1"/>
+    <layer-tree-layer id="query_L4" name="Query layer" source="" providerKey="postgres" checked="Qt::Checked" expanded="1"/>
+    <layer-tree-layer id="geojson_L5" name="Geojson layer" source="" providerKey="ogr" checked="Qt::Checked" expanded="1"/>
+    <layer-tree-layer id="missing_L8" name="Missing table" source="" providerKey="postgres" checked="Qt::Checked" expanded="1"/>
+    <layer-tree-group name="EmptyGroup" checked="Qt::Checked" expanded="1">
+      <layer-tree-layer id="removed_L7" name="Removed layer" source="" providerKey="postgres" checked="Qt::Checked" expanded="1"/>
+    </layer-tree-group>
+    <layer-tree-group name="MixedGroup" checked="Qt::Checked" expanded="1">
+      <layer-tree-layer id="wms_L6" name="Tiles" source="" providerKey="wms" checked="Qt::Checked" expanded="1"/>
+      <layer-tree-layer id="basemap_L9" name="Base map" source="" providerKey="postgres" checked="Qt::Checked" expanded="1"/>
+    </layer-tree-group>
+    <custom-order enabled="0"/>
+  </layer-tree-group>
+
+  <relations>
+    <relation id="poi_district_rel" name="poi_district" strength="Association"
+              referencingLayer="poi_L1" referencedLayer="district_L2">
+      <fieldRef referencingField="district_id" referencedField="id"/>
+    </relation>
+  </relations>
+
+  <mapcanvas name="theMapCanvas">
+    <extent>
+      <xmin>740000</xmin>
+      <ymin>6640000</ymin>
+      <xmax>760000</xmax>
+      <ymax>6660000</ymax>
+    </extent>
+  </mapcanvas>
+
+  <projectlayers>
+
+    <maplayer type="vector" geometry="Point">
+      <id>poi_L1</id>
+      <datasource>service='{PG_SERVICE}' sslmode=disable key='id' srid=3857 type=Point checkPrimaryKeyUnicity='1' table="qfc"."poi" (geom)</datasource>
+      <provider encoding="UTF-8">postgres</provider>
+      <layername>Points of interest</layername>
+      <srs>
+        <spatialrefsys>
+          <authid>EPSG:3857</authid>
+          <srid>3857</srid>
+        </spatialrefsys>
+      </srs>
+      <wgs84extent>
+        <xmin>6.64</xmin>
+        <ymin>50.85</ymin>
+        <xmax>6.83</xmax>
+        <ymax>50.98</ymax>
+      </wgs84extent>
+      <flags>
+        <Identifiable>1</Identifiable>
+      </flags>
+      <customproperties>
+        <Option type="Map">
+          <Option value="offline" type="QString" name="QFieldSync/action"/>
+          <Option value="{}" type="QString" name="QFieldSync/attachment_naming"/>
+          <Option value="offline" type="QString" name="QFieldSync/cloud_action"/>
+          <Option value="{}" type="QString" name="QFieldSync/photo_naming"/>
+          <Option value="{}" type="QString" name="QFieldSync/relationship_maximum_visible"/>
+          <Option value="0" type="int" name="QFieldSync/value_map_button_interface_threshold"/>
+        </Option>
+      </customproperties>
+      <referencedLayers>
+        <relation strength="Association"
+                  referencingLayer="poi_L1"
+                  layerId="district_L2"
+                  referencedLayer="district_L2"
+                  providerKey="postgres"
+                  dataSource="REPLACE_ME"/>
+      </referencedLayers>
+      <fieldConfiguration>
+        <field name="district_id">
+          <editWidget type="RelationReference">
+            <config>
+              <Option type="Map">
+                <Option value="poi_district_rel" type="QString" name="Relation"/>
+                <Option value="district_L2" type="QString" name="ReferencedLayerId"/>
+                <Option value="REPLACE_ME" type="QString" name="ReferencedLayerDataSource"/>
+                <Option value="postgres" type="QString" name="ReferencedLayerProviderKey"/>
+              </Option>
+            </config>
+          </editWidget>
+        </field>
+        <field name="name">
+          <editWidget type="TextEdit">
+            <config>
+              <Option type="Map">
+                <Option value="district_L2" type="QString" name="ReferencedLayerId"/>
+                <Option value="REPLACE_ME" type="QString" name="ReferencedLayerDataSource"/>
+              </Option>
+            </config>
+          </editWidget>
+        </field>
+      </fieldConfiguration>
+    </maplayer>
+
+    <maplayer type="vector" geometry="Polygon">
+      <id>district_L2</id>
+      <datasource>service='{PG_SERVICE}' sslmode=disable key='id' srid=3857 type=MultiPolygon checkPrimaryKeyUnicity='1' table="qfc"."district" (geom)</datasource>
+      <provider encoding="UTF-8">postgres</provider>
+      <layername>Districts</layername>
+      <srs>
+        <spatialrefsys>
+          <authid>EPSG:3857</authid>
+          <srid>3857</srid>
+        </spatialrefsys>
+      </srs>
+      <wgs84extent>
+        <xmin>6.64</xmin>
+        <ymin>50.85</ymin>
+        <xmax>6.83</xmax>
+        <ymax>50.98</ymax>
+      </wgs84extent>
+      <customproperties>
+        <Option type="Map">
+          <Option value="offline" type="QString" name="QFieldSync/action"/>
+          <Option value="offline" type="QString" name="QFieldSync/cloud_action"/>
+          <Option value="true" type="bool" name="QFieldSync/is_attribute_editing_locked"/>
+          <Option value="true" type="bool" name="QFieldSync/is_feature_addition_locked"/>
+          <Option value="true" type="bool" name="QFieldSync/is_feature_deletion_locked"/>
+          <Option value="true" type="bool" name="QFieldSync/is_geometry_editing_locked"/>
+        </Option>
+      </customproperties>
+    </maplayer>
+
+    <maplayer type="vector" geometry="Point">
+      <id>note_L3</id>
+      <datasource>service='{PG_SERVICE}' sslmode=disable key='id' srid=3857 type=Point checkPrimaryKeyUnicity='1' table="qfc"."note" (geom) sql="kind" = 'a'</datasource>
+      <provider encoding="UTF-8">postgres</provider>
+      <layername>Notes</layername>
+      <srs>
+        <spatialrefsys>
+          <authid>EPSG:3857</authid>
+          <srid>3857</srid>
+        </spatialrefsys>
+      </srs>
+      <wgs84extent>
+        <xmin>6.64</xmin>
+        <ymin>50.85</ymin>
+        <xmax>6.83</xmax>
+        <ymax>50.98</ymax>
+      </wgs84extent>
+      <customproperties>
+        <Option type="Map">
+          <Option value="offline" type="QString" name="QFieldSync/cloud_action"/>
+        </Option>
+      </customproperties>
+    </maplayer>
+
+    <maplayer type="vector" geometry="Point">
+      <id>query_L4</id>
+      <datasource>service='{PG_SERVICE}' sslmode=disable key='id' srid=3857 type=Point table="(SELECT * FROM qfc.poi)" (geom)</datasource>
+      <provider encoding="UTF-8">postgres</provider>
+      <layername>Query layer</layername>
+      <srs>
+        <spatialrefsys>
+          <authid>EPSG:3857</authid>
+          <srid>3857</srid>
+        </spatialrefsys>
+      </srs>
+      <customproperties>
+        <Option type="Map">
+          <Option value="offline" type="QString" name="QFieldSync/cloud_action"/>
+        </Option>
+      </customproperties>
+    </maplayer>
+
+    <maplayer type="vector" geometry="Point">
+      <id>geojson_L5</id>
+      <datasource>./no_such_file.geojson</datasource>
+      <provider encoding="UTF-8">ogr</provider>
+      <layername>Geojson layer</layername>
+      <srs>
+        <spatialrefsys>
+          <authid>EPSG:3857</authid>
+          <srid>3857</srid>
+        </spatialrefsys>
+      </srs>
+      <customproperties>
+        <Option type="Map">
+          <Option value="offline" type="QString" name="QFieldSync/cloud_action"/>
+        </Option>
+      </customproperties>
+    </maplayer>
+
+    <maplayer type="raster">
+      <id>wms_L6</id>
+      <datasource>crs=EPSG:3857&amp;format&amp;type=xyz&amp;url=https://tile.openstreetmap.org/%7Bz%7D/%7Bx%7D/%7By%7D.png&amp;zmax=19&amp;zmin=0</datasource>
+      <provider>wms</provider>
+      <layername>Base map</layername>
+      <srs>
+        <spatialrefsys>
+          <authid>EPSG:3857</authid>
+          <srid>3857</srid>
+        </spatialrefsys>
+      </srs>
+      <wgs84extent>
+        <xmin>6.64</xmin>
+        <ymin>50.85</ymin>
+        <xmax>6.83</xmax>
+        <ymax>50.98</ymax>
+      </wgs84extent>
+      <customproperties>
+        <Option type="Map">
+          <Option value="no_action" type="QString" name="QFieldSync/cloud_action"/>
+        </Option>
+      </customproperties>
+    </maplayer>
+
+    <maplayer type="vector" geometry="Point">
+      <id>removed_L7</id>
+      <datasource>service='{PG_SERVICE}' sslmode=disable key='id' srid=3857 type=Point table="qfc"."poi" (geom)</datasource>
+      <provider encoding="UTF-8">postgres</provider>
+      <layername>Removed layer</layername>
+      <srs>
+        <spatialrefsys>
+          <authid>EPSG:3857</authid>
+          <srid>3857</srid>
+        </spatialrefsys>
+      </srs>
+      <customproperties>
+        <Option type="Map">
+          <Option value="remove" type="QString" name="QFieldSync/cloud_action"/>
+        </Option>
+      </customproperties>
+    </maplayer>
+
+    <maplayer type="vector" geometry="Polygon">
+      <id>basemap_L9</id>
+      <datasource>service='{PG_SERVICE}' sslmode=disable key='id' srid=3857 type=MultiPolygon table="qfc"."district" (geom)</datasource>
+      <provider encoding="UTF-8">postgres</provider>
+      <layername>Base map</layername>
+      <srs>
+        <spatialrefsys>
+          <authid>EPSG:3857</authid>
+          <srid>3857</srid>
+        </spatialrefsys>
+      </srs>
+      <wgs84extent>
+        <xmin>6.64</xmin>
+        <ymin>50.85</ymin>
+        <xmax>6.83</xmax>
+        <ymax>50.98</ymax>
+      </wgs84extent>
+      <customproperties>
+        <Option type="Map">
+          <Option value="no_action" type="QString" name="QFieldSync/cloud_action"/>
+        </Option>
+      </customproperties>
+    </maplayer>
+
+    <maplayer type="vector" geometry="Point">
+      <id>missing_L8</id>
+      <datasource>service='{PG_SERVICE}' sslmode=disable key='id' srid=3857 type=Point table="qfc"."no_such_table" (geom)</datasource>
+      <provider encoding="UTF-8">postgres</provider>
+      <layername>Missing table</layername>
+      <srs>
+        <spatialrefsys>
+          <authid>EPSG:3857</authid>
+          <srid>3857</srid>
+        </spatialrefsys>
+      </srs>
+      <customproperties>
+        <Option type="Map">
+          <Option value="offline" type="QString" name="QFieldSync/cloud_action"/>
+        </Option>
+      </customproperties>
+    </maplayer>
+
+  </projectlayers>
+
+  <visibility-presets>
+    <visibility-preset name="BaseMapTheme">
+      <layer id="wms_L6" visible="1" style=""/>
+      <layer id="poi_L1" visible="0" style=""/>
+    </visibility-preset>
+  </visibility-presets>
+
+  <properties>
+    <WMSExtent type="QStringList">
+      <value>740000</value>
+      <value>6640000</value>
+      <value>760000</value>
+      <value>6660000</value>
+    </WMSExtent>
+    <Paths>
+      <Absolute type="bool">true</Absolute>
+    </Paths>
+    <qfieldsync>
+      <areaOfInterest type="QString">Polygon ((744000 6644000, 754000 6644000, 754000 6654000, 744000 6654000, 744000 6644000))</areaOfInterest>
+      <areaOfInterestCrs type="QString">EPSG:3857</areaOfInterestCrs>
+      <baseMapLayer type="QString">basemap_L9</baseMapLayer>
+      <baseMapTheme type="QString">BaseMapTheme</baseMapTheme>
+      <baseMapTileSize type="int">1024</baseMapTileSize>
+      <baseMapTilesMaxZoomLevel type="int">12</baseMapTilesMaxZoomLevel>
+      <baseMapTilesMinZoomLevel type="int">12</baseMapTilesMinZoomLevel>
+      <baseMapType type="QString">singleLayer</baseMapType>
+      <createBaseMap type="int">1</createBaseMap>
+      <maximumImageWidthHeight type="int">0</maximumImageWidthHeight>
+      <offlineCopyOnlyAoi type="int">0</offlineCopyOnlyAoi>
+    </qfieldsync>
+    <QFieldSync>
+      <attachmentDirs type="QStringList">
+        <value>DCIM</value>
+      </attachmentDirs>
+      <dataDirs type="QStringList"/>
+      <dirsToCopy type="QString">{"DCIM": true, "DCIM/sub": true, "skipped": false, "/tmp/qfc_abs": true}</dirsToCopy>
+    </QFieldSync>
+  </properties>
+
+</qgis>

@@ -36,7 +36,7 @@ For each incoming "delta" package from QField, the plugin extracts the modified 
 
 ## File uploads
 
-If a Model supports file uploads, it should contain a virtual file field with `pathColumn` and `contentColumn`:
+If a Model supports file uploads, it should contain a virtual file field with `nameColumn` and `contentColumn`:
 
 ```
 actions+ {
@@ -53,14 +53,14 @@ actions+ {
                 type "file"
                 name "virtual_file_field"
                 contentColumn "file_content"
-                pathColumn "file_path"
+                nameColumn "file_name"
             }
         }
     }
 }
 ```
 
-QField sends uploads in two steps: first, the file path is included along with the feature changes in the delta package. Later, the actual file content is uploaded in a separate request. The plugin matches the file content to the respective features based on the `pathColumn` value.
+QField sends uploads in two steps: first, the file path is included along with the feature changes in the delta package. Later, the actual file content is uploaded in a separate request. The plugin matches the file content to the respective features based on the `nameColumn` value.
 
 ## Extending
 

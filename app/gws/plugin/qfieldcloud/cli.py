@@ -30,7 +30,13 @@ class Object(gws.Node):
         act = cast(action.Object, gws.base.action.get_action_for_cli(root, act_name, p.projectUid))
         if not act:
             return
-        
+
+        own_project = cast(gws.Project, act.find_closest(gws.ext.object.project))
+        if own_project and own_project.uid != project.uid:
+            gws.log.error(f'action {act_name!r} does not belong to project {p.projectUid!r}')
+            return
+
+
         sys_user = act.root.app.authMgr.systemUser
         act.create_package_from_cli(p.qfcProjectUid, p.dir, project, sys_user)
         

@@ -215,7 +215,7 @@ class Object(gws.base.action.Object):
     def on_get_projects(self, rx: Request) -> list[api.Project]:
         limit = int(rx.qs.get('limit', 100))
         offset = int(rx.qs.get('offset', 0))
-        qps = self.get_qfc_projects(rx.project, rx.user)
+        qps = self.get_qfc_projects(rx.user)
         return [_format_project(qp, rx) for qp in qps[offset : offset + limit]]
 
     @route('GET api/v1/projects/(?P<project_id>[^/]+)')
@@ -426,7 +426,7 @@ class Object(gws.base.action.Object):
     ##
 
     def set_qfc_project(self, uid: str, rx: Request):
-        qp = self.get_qfc_project(uid, rx.project, rx.user)
+        qp = self.get_qfc_project(uid, rx.user)
         if not qp:
             raise gws.NotFoundError(f'project {uid!r} not found')
         rx.qfcProject = qp
@@ -437,11 +437,11 @@ class Object(gws.base.action.Object):
 
     ##
 
-    def get_qfc_projects(self, project: gws.Project, user: gws.User) -> list[core.QfcProject]:
+    def get_qfc_projects(self, user: gws.User) -> list[core.QfcProject]:
         return [p for p in self.qfcProjects if user.can_use(p)]
 
-    def get_qfc_project(self, qfc_project_uid: str, project: gws.Project, user: gws.User) -> Optional[core.QfcProject]:
-        for qp in self.get_qfc_projects(project, user):
+    def get_qfc_project(self, qfc_project_uid: str, user: gws.User) -> Optional[core.QfcProject]:
+        for qp in self.get_qfc_projects(user):
             if qp.uid == qfc_project_uid:
                 return qp
 
@@ -464,7 +464,7 @@ class Object(gws.base.action.Object):
 
     def create_package_from_worker(self, worker: 'PackageWorker', pa: WorkerPayload):
         project = worker.user.require_project(pa.projectUid)
-        qfc_project = gws.u.require(self.get_qfc_project(pa.qfcProjectUid, project, worker.user))
+        qfc_project = gws.u.require(self.get_qfc_project(pa.qfcProjectUid, worker.user))
 
         self.fs_cleanup_old_packages(qfc_project)
 
@@ -486,7 +486,7 @@ class Object(gws.base.action.Object):
         self.get_packager().create_package(self.root, args)
 
     def create_package_from_cli(self, qfc_project_uid: str, target_dir: str, project: gws.Project, user: gws.User):
-        qfc_project = self.get_qfc_project(qfc_project_uid, project, user)
+        qfc_project = self.get_qfc_project(qfc_project_uid, user)
         if not qfc_project:
             raise gws.NotFoundError(f'project {qfc_project_uid!r} not found')
 
@@ -693,10 +693,10 @@ def _format_job(job: gws.Job, rx: Request) -> api.Job:
 
     return api.Job(
         id=job.uid,
-        type=job.payload.get('job_type', ''),
+        type=job.payload.get('jobType', ''),
         created_at=dtx.to_iso_string(job.timeCreated),
         created_by=1,
-        project_id=job.payload.get('project_uid', ''),
+        project_id=job.payload.get('qfcProjectUid', ''),
         status=status_map.get(job.state, api.JobStatusEnum.pending),
         updated_at=dtx.to_iso_string(job.timeUpdated),
         started_at=dtx.to_iso_string(job.timeUpdated) if job.state == gws.JobState.running else None,

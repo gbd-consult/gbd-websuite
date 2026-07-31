@@ -383,7 +383,8 @@ def _dict_to_data(d: dict, t: gws.Data):
             continue
         try:
             if typ is bool:
-                v = str(v) == '1'
+                # QFieldSync writes flags both as `int` (1/0) and as `bool` (true/false)
+                v = v is True or str(v).lower() in ('1', 'true')
             elif typ is int:
                 v = int(v)
             elif typ is float:
