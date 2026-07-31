@@ -264,6 +264,8 @@ def make_coverage_ini():
 
 
 def make_std_env():
+    base = OPTIONS['BASE_DIR']
+
     env = {
         'PYTHONPATH': '/gws-app',
         'PYTHONPYCACHEPREFIX': '/tmp',
@@ -271,6 +273,7 @@ def make_std_env():
         'GWS_UID': OPTIONS.get('runner.uid'),
         'GWS_GID': OPTIONS.get('runner.gid'),
         'GWS_TIMEZONE': OPTIONS.get('service.gws.time_zone', 'Etc/UTC'),
+        'PGSERVICEFILE': f'{base}/config/pg_service.conf',
     }
 
     for k, v in OPTIONS.items():
