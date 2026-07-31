@@ -118,9 +118,10 @@ class Object(gws.JobManager):
 
     def _write(self, job_uid, rec):
         rec['updated'] = gws.u.stime()
-
-        rec['payload'] = gws.lib.jsonx.to_string(rec.get('payload') or  {})
-        rec['result'] = gws.lib.jsonx.to_string(rec.get('result') or  {})
+        if 'payload' in rec:
+            rec['payload'] = gws.lib.jsonx.to_string(rec['payload'] or {})
+        if 'result' in rec:
+            rec['result'] = gws.lib.jsonx.to_string(rec['result'] or {})
 
         gws.log.debug(f'JOB {job_uid}: save {rec=}')
         self._db().update(self.TABLE, rec, job_uid)
