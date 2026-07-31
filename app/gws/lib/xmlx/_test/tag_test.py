@@ -24,7 +24,7 @@ def test_nested():
     )
 
     xml = el.to_string()
-    assert u.fxml(xml) == u.fxml("""
+    u.check.xml(xml, """
         <root a1="A1" a2="A2">
         text
             <nested>
@@ -44,11 +44,11 @@ def test_with_namespaces():
     )
 
     xml = el.to_string()
-    assert u.fxml(xml) == u.fxml('<root><wms:foo/><wfs:bar/></root>')
+    u.check.xml(xml, '<root><wms:foo/><wfs:bar/></root>')
 
     xml = el.to_string(gws.XmlOptions(withNamespaceDeclarations=True))
 
-    assert u.fxml(xml) == u.fxml("""
+    u.check.xml(xml, """
         <root 
             xmlns:wfs="http://www.opengis.net/wfs/2.0" 
             xmlns:wms="http://www.opengis.net/wms">
@@ -72,7 +72,7 @@ def test_with_default_namespace():
         )
     )
 
-    assert u.fxml(xml) == u.fxml("""
+    u.check.xml(xml, """
         <root 
             xmlns="http://www.opengis.net/wms" 
             xmlns:wfs="http://www.opengis.net/wfs/2.0">
@@ -84,7 +84,7 @@ def test_with_default_namespace():
 
 def test_with_space():
     el = xmlx.tag('1 / 2 / 3')
-    assert u.fxml(el.to_string()) == u.fxml("""
+    u.check.xml(el.to_string(), """
         <1>
             <2>
                 <3/>
@@ -95,17 +95,17 @@ def test_with_space():
 
 def test_text_str():
     el = xmlx.tag('root', 'text')
-    assert u.fxml(el.to_string()) == u.fxml('<root>text</root>')
+    u.check.xml(el.to_string(), '<root>text</root>')
 
 
 def test_text_int():
     el = xmlx.tag('root', 2)
-    assert u.fxml(el.to_string()) == u.fxml('<root>2</root>')
+    u.check.xml(el.to_string(), '<root>2</root>')
 
 
 def test_append_tuple2():
     el = xmlx.tag('root/nested', ('foo', 2))
-    assert u.fxml(el.to_string()) == u.fxml("""
+    u.check.xml(el.to_string(), """
         <root>
             <nested>
                 <foo>
@@ -118,7 +118,7 @@ def test_append_tuple2():
 
 def test_append_tuple():
     el = xmlx.tag('root/nested', ('foo', 'bar'))
-    assert u.fxml(el.to_string()) == u.fxml("""
+    u.check.xml(el.to_string(), """
         <root>
             <nested>
                 <foo>
@@ -132,7 +132,7 @@ def test_append_tuple():
 def test_child():
     child = xmlx.tag('child')
     el = xmlx.tag('root', child)
-    assert u.fxml(el.to_string()) == u.fxml("""
+    u.check.xml(el.to_string(), """
         <root>
             <child/>
         </root>
@@ -142,13 +142,13 @@ def test_child():
 def test_dict_attr():
     attr = {'foo': 1, 'bar': 2}
     el = xmlx.tag('root', attr)
-    assert u.fxml(el.to_string()) == u.fxml('<root foo="1" bar="2"/>')
+    u.check.xml(el.to_string(), '<root foo="1" bar="2"/>')
 
 
 def test_list():
     list = ['foo', 'bar', 'foo2', 'bar2']
     el = xmlx.tag('root', list)
-    assert u.fxml(el.to_string()) == u.fxml("""
+    u.check.xml(el.to_string(), """
         <root>
             <foo>
                 barfoo2bar2
@@ -159,7 +159,7 @@ def test_list():
 
 def test_keywords():
     el = xmlx.tag('root', foo='bar')
-    assert u.fxml(el.to_string()) == u.fxml('<root foo="bar"/>')
+    u.check.xml(el.to_string(), '<root foo="bar"/>')
 
 
 def test_tag():
@@ -169,7 +169,7 @@ def test_tag():
         ['gml:coordinates', '12.345,56.789'],
         srsName=3857,
     )
-    assert u.fxml(el.to_string()) == u.fxml("""
+    u.check.xml(el.to_string(), """
         <geometry>
             <gml:Point gml:id="xy" srsName="3857">
                 <gml:coordinates>12.345,56.789</gml:coordinates>
@@ -185,7 +185,7 @@ def test_tag_uri():
         ['gml:coordinates', '12.345,56.789'],
         srsName=3857,
     )
-    assert u.fxml(el.to_string()) == u.fxml("""
+    u.check.xml(el.to_string(), """
         <csw:foo>
             <nested gml:id="xy" srsName="3857">
                 <gml:coordinates>12.345,56.789</gml:coordinates>

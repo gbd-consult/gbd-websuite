@@ -37,7 +37,7 @@ def test_to_string_with_namespaces():
         withNamespaceDeclarations=True,
     )
     xml = el.to_string(opts)
-    assert u.fxml(xml) == u.fxml("""
+    u.check.xml(xml, """
         <aaa:a xmlns:aaa="http://aaa" xmlns:bbb="http://bbb">
             <bbb:b a1="A1" aaa:a2="A2">
                 <bbb:sub/>
@@ -76,7 +76,7 @@ def test_to_string_with_default_namespace():
         withNamespaceDeclarations=True,
     )
     xml = el.to_string(opts)
-    assert u.fxml(xml) == u.fxml("""
+    u.check.xml(xml, """
         <a xmlns="http://aaa" xmlns:bbb="http://bbb">
             <bbb:b a1="A1" a2="A2">
                 <bbb:sub/>

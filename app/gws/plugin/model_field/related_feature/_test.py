@@ -47,7 +47,7 @@ def root():
 
 
 def test_find_no_depth(root: gws.Root):
-    mc = u.model_context(maxDepth=0)
+    mc = u.model.context(maxDepth=0)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -68,7 +68,7 @@ def test_find_no_depth(root: gws.Root):
 
 
 def test_find_depth(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -92,7 +92,7 @@ def test_find_depth(root: gws.Root):
 
 
 def test_update(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -109,19 +109,19 @@ def test_update(root: gws.Root):
     parent = u.cast(gws.Model, root.get('PARENT'))
     child = u.cast(gws.Model, root.get('CHILD'))
 
-    f = u.feature(child, id=2, parent=u.feature(parent, id=3))
+    f = u.model.feature(child, id=2, parent=u.model.feature(parent, id=3))
     child.update_feature(f, mc)
 
     rows = u.pg.rows('SELECT id, parent_k FROM child ORDER BY id')
     assert rows == [(1, 11), (2, 33), (3, 11), (4, 11)]
 
-    f = u.feature(child, id=3, parent=u.feature(parent, id=99))
+    f = u.model.feature(child, id=3, parent=u.model.feature(parent, id=99))
     child.update_feature(f, mc)
 
     rows = u.pg.rows('SELECT id, parent_k FROM child ORDER BY id')
     assert rows == [(1, 11), (2, 33), (3, None), (4, 11)]
 
-    f = u.feature(child, id=4)
+    f = u.model.feature(child, id=4)
     child.update_feature(f, mc)
 
     rows = u.pg.rows('SELECT id, parent_k FROM child ORDER BY id')
@@ -129,7 +129,7 @@ def test_update(root: gws.Root):
 
 
 def test_create(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -143,13 +143,13 @@ def test_create(root: gws.Root):
     parent = u.cast(gws.Model, root.get('PARENT'))
     child = u.cast(gws.Model, root.get('CHILD'))
 
-    f = u.feature(child, id=101, parent=u.feature(parent, id=1))
+    f = u.model.feature(child, id=101, parent=u.model.feature(parent, id=1))
     child.create_feature(f, mc)
 
     rows = u.pg.rows('SELECT id, parent_k FROM child ORDER BY id')
     assert rows == [(1, 11), (101, 11)]
 
-    f = u.feature(child, id=102)
+    f = u.model.feature(child, id=102)
     child.create_feature(f, mc)
 
     rows = u.pg.rows('SELECT id, parent_k FROM child ORDER BY id')
@@ -157,7 +157,7 @@ def test_create(root: gws.Root):
 
 
 def test_create_auto(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -168,13 +168,13 @@ def test_create_auto(root: gws.Root):
     parent = u.cast(gws.Model, root.get('PARENT'))
     child_auto = u.cast(gws.Model, root.get('CHILD_AUTO'))
 
-    f = u.feature(child_auto, parent=u.feature(parent, id=1))
+    f = u.model.feature(child_auto, parent=u.model.feature(parent, id=1))
     child_auto.create_feature(f, mc)
 
     rows = u.pg.rows('SELECT id, parent_k FROM child_auto ORDER BY id')
     assert rows == [(1, 11)]
 
-    f = u.feature(child_auto)
+    f = u.model.feature(child_auto)
     child_auto.create_feature(f, mc)
 
     rows = u.pg.rows('SELECT id, parent_k FROM child_auto ORDER BY id')
@@ -182,7 +182,7 @@ def test_create_auto(root: gws.Root):
 
 
 def test_create_related(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -195,8 +195,8 @@ def test_create_related(root: gws.Root):
     parent = u.cast(gws.Model, root.get('PARENT'))
     child = u.cast(gws.Model, root.get('CHILD'))
 
-    parent_f = u.feature(parent, id=9, k=99)
-    parent_f.createWithFeatures = [u.feature(child, id=2)]
+    parent_f = u.model.feature(parent, id=9, k=99)
+    parent_f.createWithFeatures = [u.model.feature(child, id=2)]
     parent.create_feature(parent_f, mc)
 
     rows = u.pg.rows('SELECT id, parent_k FROM child ORDER BY id')

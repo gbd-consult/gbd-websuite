@@ -38,7 +38,7 @@ def test_shape_to_fragment_linestring():
 
     frg = draw.shape_to_fragment(shape, view, style=style)
     assert len(frg) == 1
-    assert u.fxml(frg[0].to_string()) == u.fxml("""
+    u.check.xml(frg[0].to_string(), """
         <path d="M 377952.0 3401574.0 L 755905.0 3023622.0 L 1133858.0 3401574.0" fill="none" stroke="green" stroke-width="3px"/>
     """)
 
@@ -56,7 +56,7 @@ def test_shape_to_fragment_polygon():
     frg = draw.shape_to_fragment(shape, view, style=style)
     assert len(frg) == 1
     xml = frg[0].to_string()
-    assert u.fxml(xml) == u.fxml("""
+    u.check.xml(xml, """
         <path 
             fill-rule="evenodd" 
             d="M 377952.0 3401574.0 L 755905.0 3401574.0 L 755905.0 3023622.0 L 377952.0 3023622.0 L 377952.0 3401574.0 z" 
@@ -125,7 +125,7 @@ def test_shape_to_fragment_with_marker():
 
     xml = frg[0].to_string() + frg[1].to_string()
     xml = re.sub(r'_M\w+', '_MID', xml)
-    assert u.fxml(xml) == u.fxml("""
+    u.check.xml(xml, """
         <marker id="_MID" viewBox="0 0 16 16" refX="8" refY="8" markerUnits="userSpaceOnUse" markerWidth="16" markerHeight="16">
             <circle fill="blue" cx="8" cy="8" r="8"/>
         </marker>
@@ -148,7 +148,7 @@ def test_soup_to_fragment():
     frg = draw.soup_to_fragment(view, points, tags)
     assert len(frg) == 2
     xml = frg[0].to_string() + frg[1].to_string()
-    assert u.fxml(xml) == u.fxml("""
+    u.check.xml(xml, """
         <line x1="377952" y1="3401574" x2="755905" y2="3023622" stroke="black"/>
         <text x="1133858" y="3401574" transform="rotate(-45, 1133858, 3401574)">
             Test Text
@@ -215,7 +215,7 @@ def test_multigeometry():
     frg = draw.shape_to_fragment(shape, view, style=style)
     assert len(frg) == 1
     xml = frg[0].to_string()
-    assert u.fxml(xml) == u.fxml("""
+    u.check.xml(xml, """
         <g>
             <circle cx="377952" cy="3401574" fill="red" r="5"/>
             <circle cx="755905" cy="3023622" fill="red" r="5"/>

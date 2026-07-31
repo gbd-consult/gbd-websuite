@@ -1,20 +1,15 @@
-"""Mock objects for testing."""
+"""Mock authorization objects."""
 
 import gws
 import gws.base.auth
-import gws.base.web.wsgi
-import gws.lib.net
 import gws.lib.jsonx
-import gws.base.auth.user as user_api
 
+METHOD_1 = 'mockAuthMethod1'
+METHOD_2 = 'mockAuthMethod2'
+PROVIDER_1 = 'mockAuthProvider1'
+MFA_1 = 'mockAuthMfaAdapter1'
 
-class AuthMethod1(gws.base.auth.method.Object):
-    pass
-
-
-class AuthMethod2(gws.base.auth.method.Object):
-    pass
-
+MFA_VALID_CODE = 'yes'
 
 _USER_DATA = {}
 
@@ -33,7 +28,19 @@ def delete_user(name):
     _USER_DATA.pop(name, None)
 
 
-class AuthProvider1(gws.base.auth.provider.Object):
+def system_user():
+    return gws.base.auth.user.SystemUser(None, roles=[])
+
+
+class Method1(gws.base.auth.method.Object):
+    pass
+
+
+class Method2(gws.base.auth.method.Object):
+    pass
+
+
+class Provider1(gws.base.auth.provider.Object):
     def authenticate(self, method, credentials):
         for ud in _USER_DATA.values():
             if credentials.get('username', '') == ud['loginName'] and credentials.get('password', '') == ud['password']:
@@ -50,19 +57,18 @@ class AuthProvider1(gws.base.auth.provider.Object):
         return self.get_user(local_uid)
 
 
-class AuthMfaAdapter1(gws.base.auth.mfa.Object):
-    VALID_CODE = 'yes'
-
+class MfaAdapter1(gws.base.auth.mfa.Object):
     def verify(self, mfa, payload):
-        ok = payload['code'] == self.VALID_CODE
+        ok = payload['code'] == MFA_VALID_CODE
         return self.verify_attempt(mfa, ok)
 
 
 ##
 
+
 def register(specs: gws.SpecRuntime):
-    specs.register_object(gws.ext.object.authMethod, 'mockAuthMethod1', AuthMethod1)
-    specs.register_object(gws.ext.object.authMethod, 'mockAuthMethod2', AuthMethod2)
-    specs.register_object(gws.ext.object.authProvider, 'mockAuthProvider1', AuthProvider1)
-    specs.register_object(gws.ext.object.authMultiFactorAdapter, 'mockAuthMfaAdapter1', AuthMfaAdapter1)
+    specs.register_object(gws.ext.object.authMethod, METHOD_1, Method1)
+    specs.register_object(gws.ext.object.authMethod, METHOD_2, Method2)
+    specs.register_object(gws.ext.object.authProvider, PROVIDER_1, Provider1)
+    specs.register_object(gws.ext.object.authMultiFactorAdapter, MFA_1, MfaAdapter1)
     return specs

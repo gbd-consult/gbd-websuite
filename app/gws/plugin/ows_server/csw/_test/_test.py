@@ -44,7 +44,7 @@ def root():
         }
     """
 
-    yield u.gws_root(cfg, DEFAULT_METADATA=u.DEFAULT_METADATA)
+    yield u.gws_root(cfg, DEFAULT_METADATA=u.metadata.DEFAULT)
 
 
 def test_valid_GetCapabilities(root: gws.Root):

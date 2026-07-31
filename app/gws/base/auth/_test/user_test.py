@@ -5,15 +5,15 @@ import gws.base.auth
 
 @u.fixture(scope='module')
 def root():
-    cfg = '''
-        auth {
-            providers+ {
+    cfg = f'''
+        auth {{
+            providers+ {{
                 uid "AUTH_1"
-                type 'mockAuthProvider1'
-                allowedMethods ['mockAuthMethod1']
-            }
-            methods+ { type 'mockAuthMethod2' }
-        }
+                type "{u.auth.PROVIDER_1}"
+                allowedMethods [ "{u.auth.METHOD_1}" ]
+            }}
+            methods+ {{ type "{u.auth.METHOD_2}" }}
+        }}
     '''
 
     yield u.gws_root(cfg)

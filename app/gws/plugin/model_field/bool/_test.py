@@ -18,11 +18,11 @@ def root():
 
 
 def test_create_boolean(root: gws.Root):
-    mc = u.model_context()
+    mc = u.model.context()
 
     model = u.cast(gws.Model, root.get('TEST_MODEL'))
 
-    f = u.feature(model, id=1, bool_field=True)
+    f = u.model.feature(model, id=1, bool_field=True)
     model.create_feature(f, mc)
 
     rows = u.pg.rows('SELECT id, bool_field FROM test_table ORDER BY id')
@@ -30,7 +30,7 @@ def test_create_boolean(root: gws.Root):
 
 
 def test_read_boolean(root: gws.Root):
-    mc = u.model_context()
+    mc = u.model.context()
 
     u.pg.insert('test_table', [
         {'id': 1, 'bool_field': False},
@@ -45,7 +45,7 @@ def test_read_boolean(root: gws.Root):
 
 
 def test_update_boolean(root: gws.Root):
-    mc = u.model_context()
+    mc = u.model.context()
 
     u.pg.insert('test_table', [
         {'id': 1, 'bool_field': True},
@@ -54,7 +54,7 @@ def test_update_boolean(root: gws.Root):
 
     model = u.cast(gws.Model, root.get('TEST_MODEL'))
 
-    f = u.feature(model, id=1, bool_field=False)
+    f = u.model.feature(model, id=1, bool_field=False)
     model.update_feature(f, mc)
 
     rows = u.pg.rows('SELECT id, bool_field FROM test_table ORDER BY id')
@@ -64,7 +64,7 @@ def test_update_boolean(root: gws.Root):
 
 
 def test_delete_boolean(root: gws.Root):
-    mc = u.model_context()
+    mc = u.model.context()
 
     u.pg.insert('test_table', [
         {'id': 1, 'bool_field': True},
@@ -73,7 +73,7 @@ def test_delete_boolean(root: gws.Root):
 
     model = u.cast(gws.Model, root.get('TEST_MODEL'))
 
-    f = u.feature(model, id=1)
+    f = u.model.feature(model, id=1)
     model.delete_feature(f, mc)
 
     rows = u.pg.rows('SELECT id, bool_field FROM test_table ORDER BY id')

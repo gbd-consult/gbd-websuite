@@ -135,7 +135,7 @@ def test_export_poi(root: gws.Root, tmp_path):
     ], out_path)
 
     assert os.path.isfile(out_path)
-    xml = u.fxml(_read_kml(out_path), nl=False)
+    xml = u.check.norm_xml(_read_kml(out_path), nl=False)
 
     assert '<name>Restaurant Alpha</name>' in xml
     assert '<name>Museum Beta</name>' in xml
@@ -160,7 +160,7 @@ def test_export_district(root: gws.Root, tmp_path):
     ], out_path)
 
     assert os.path.isfile(out_path)
-    xml = u.fxml(_read_kml(out_path), nl=False)
+    xml = u.check.norm_xml(_read_kml(out_path), nl=False)
 
     assert '<name>North District</name>' in xml
     assert '<name>South District</name>' in xml
@@ -221,7 +221,7 @@ def test_no_geometry_included_by_exp2(root: gws.Root, tmp_path):
     ], out_path, exporter_uid='EXP_2')
 
     assert os.path.isfile(out_path)
-    xml = u.fxml(_read_kml(out_path), nl=False)
+    xml = u.check.norm_xml(_read_kml(out_path), nl=False)
 
     assert '<SimpleData name="title">Note One</SimpleData>' in xml
     assert '<SimpleData name="title">Note Two</SimpleData>' in xml

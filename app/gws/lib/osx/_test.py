@@ -4,8 +4,17 @@ import os
 import re
 import time
 
+import gws
 import gws.lib.osx as osx
 import gws.test.util as u
+
+
+def _executable(text):
+    # not using 'tmp_path', because the pytest temp dir might be non-executable
+    p = f"{u.option('BASE_DIR')}/tmp/{gws.u.random_string(16)}.sh"
+    gws.u.write_file(p, text)
+    os.chmod(p, 0o777)
+    return p
 
 
 def test_getenv():
@@ -18,11 +27,10 @@ def test_getenv_default():
 
 
 def test_nowait():
-    with u.temp_file_in_base_dir('#!/bin/bash\nsleep 100\n') as p:
-        os.chmod(p, 0o777)
-        assert p not in osx.run('ps -ax')
-        osx.run_nowait(p)
-        assert p in osx.run('ps -ax')
+    p = _executable('#!/bin/bash\nsleep 100\n')
+    assert p not in osx.run('ps -ax')
+    osx.run_nowait(p)
+    assert p in osx.run('ps -ax')
 
 
 def test_run():
@@ -42,10 +50,9 @@ def test_run_error():
 
 
 def test_run_timeout():
-    with u.temp_file_in_base_dir('#!/bin/bash\nsleep 100\n') as p:
-        with u.raises(osx.TimeoutError):
-            os.chmod(p, 0o777)
-            osx.run(p, timeout=1)
+    p = _executable('#!/bin/bash\nsleep 100\n')
+    with u.raises(osx.TimeoutError):
+        osx.run(p, timeout=1)
 
 
 def test_unlink(tmp_path):
@@ -72,10 +79,10 @@ def test_rename(tmp_path):
 def test_chown():
     # @TODO must be root for that
     pass
-    # with u.temp_file_in_base_dir('...') as p:
-    #     osx.chown(p, user=333, group=444)
-    #     assert os.stat(p).st_uid == 333
-    #     assert os.stat(p).st_gid == 444
+    # p = _executable('...')
+    # osx.chown(p, user=333, group=444)
+    # assert os.stat(p).st_uid == 333
+    # assert os.stat(p).st_gid == 444
 
 
 def test_file_mtime(tmp_path):

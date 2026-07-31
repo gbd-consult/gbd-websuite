@@ -4,18 +4,18 @@ import gws
 import gws.lib.osx as osx
 import gws.test.util as u
 
-DB_PATH = u.path_in_base_dir('sess')
+DB_PATH = u.option('BASE_DIR') + '/sess'
 
 
 def root():
     cfg = f'''
         auth {{
             providers+ {{
-                type 'mockAuthProvider1'
-                allowedMethods ['mockAuthMethod1']
+                type "{u.auth.PROVIDER_1}"
+                allowedMethods [ "{u.auth.METHOD_1}" ]
             }}
-            methods+ {{ 
-                type 'mockAuthMethod1' 
+            methods+ {{
+                type "{u.auth.METHOD_1}"
             }}
             session {{
                 path {DB_PATH!r}
@@ -33,7 +33,7 @@ def root():
 def _prepare() -> tuple[gws.AuthManager, gws.AuthSessionManager, gws.User]:
     am = root().app.authMgr
     sm = am.sessionMgr
-    u.mock.add_user('me', 'foo')
+    u.auth.add_user('me', 'foo')
     usr = am.authenticate(am.methods[0], gws.Data(username='me', password='foo'))
     return am, sm, usr
 

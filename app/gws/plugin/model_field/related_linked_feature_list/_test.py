@@ -39,7 +39,7 @@ def root():
 
 
 def test_find_depth(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('a', [
         {'id': 1, 'ka': 11, 'sa': 'a1'},
@@ -70,7 +70,7 @@ def test_find_depth(root: gws.Root):
 
 
 def test_update(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('a', [
         {'id': 1, 'ka': 11, 'sa': 'a1'},
@@ -92,9 +92,9 @@ def test_update(root: gws.Root):
     ma = u.cast(gws.Model, root.get('A'))
     mb = u.cast(gws.Model, root.get('B'))
 
-    f = u.feature(ma, id=1, linked=[
-        u.feature(mb, id=4),
-        u.feature(mb, id=6),
+    f = u.model.feature(ma, id=1, linked=[
+        u.model.feature(mb, id=4),
+        u.model.feature(mb, id=6),
     ])
 
     ma.update_feature(f, mc)
@@ -108,7 +108,7 @@ def test_update(root: gws.Root):
 
 
 def test_create(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('a', [
         {'id': 1, 'ka': 11, 'sa': 'a1'},
@@ -128,9 +128,9 @@ def test_create(root: gws.Root):
     ma = u.cast(gws.Model, root.get('A'))
     mb = u.cast(gws.Model, root.get('B'))
 
-    f = u.feature(ma, id=9, ka=99, linked=[
-        u.feature(mb, id=4),
-        u.feature(mb, id=5),
+    f = u.model.feature(ma, id=9, ka=99, linked=[
+        u.model.feature(mb, id=4),
+        u.model.feature(mb, id=5),
     ])
 
     ma.create_feature(f, mc)
@@ -144,7 +144,7 @@ def test_create(root: gws.Root):
 
 
 def test_create_related(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('a', [
         {'id': 1, 'ka': 11, 'sa': 'a1'},
@@ -163,10 +163,10 @@ def test_create_related(root: gws.Root):
     ma = u.cast(gws.Model, root.get('A'))
     mb = u.cast(gws.Model, root.get('B'))
 
-    b_f = u.feature(mb, id=9, kb=999)
+    b_f = u.model.feature(mb, id=9, kb=999)
     b_f.createWithFeatures = [
-        u.feature(ma, id=1),
-        u.feature(ma, id=2),
+        u.model.feature(ma, id=1),
+        u.model.feature(ma, id=2),
     ]
 
     mb.create_feature(b_f, mc)

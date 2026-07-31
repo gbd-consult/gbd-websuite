@@ -5,7 +5,7 @@ import gws.test.util as u
 def db():
     u.pg.create('tab', {'id': 'int primary key', 'a': 'text'})
     root = u.gws_root()
-    yield u.get_db(root)
+    yield u.pg.provider(root)
 
 
 ##

@@ -126,7 +126,7 @@ def test_output_to_html_element():
     mv = gws.MapView(mmSize=(200, 200))
     mro = gws.MapRenderOutput(view=mv, planes=[p1, p2, p3])
     h = render.output_to_html_element(mro).to_string()
-    assert u.fxml(h) == u.fxml("""
+    u.check.xml(h, """
         <div style="position:relative;overflow:hidden;left:0;top:0;width:200mm;height:200mm">
         <img/>
         </div>
@@ -141,7 +141,7 @@ def test_output_to_html_string():
     mv = gws.MapView(mmSize=(200, 200))
     mro = gws.MapRenderOutput(view=mv, planes=[p1, p2, p3])
     h = render.output_to_html_string(mro)
-    assert  u.fxml(h)== u.fxml("""
+    u.check.xml(h, """
         <div style="position:relative;overflow:hidden;left:0;top:0;width:200mm;height:200mm">
         <img/>
         </div>

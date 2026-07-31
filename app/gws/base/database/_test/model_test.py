@@ -56,7 +56,7 @@ def root():
 
 def test_get_features(root: gws.Root):
     mc = gws.ModelContext(
-        user=u.gws_system_user(),
+        user=u.auth.system_user(),
         op=gws.ModelOperation.read,
     )
     mo = u.cast(gws.Model, root.get('PLAIN'))
@@ -76,15 +76,15 @@ def test_get_features(root: gws.Root):
 
 def test_create_with_explicit_pk(root: gws.Root):
     mc = gws.ModelContext(
-        user=u.gws_system_user(),
+        user=u.auth.system_user(),
     )
     mo = u.cast(gws.Model, root.get('PLAIN'))
 
     u.pg.clear('plain')
 
-    mo.create_feature(u.feature(mo, id=15, a='aa'), mc)
-    mo.create_feature(u.feature(mo, id=16, a='bb'), mc)
-    mo.create_feature(u.feature(mo, id=17, a='cc'), mc)
+    mo.create_feature(u.model.feature(mo, id=15, a='aa'), mc)
+    mo.create_feature(u.model.feature(mo, id=16, a='bb'), mc)
+    mo.create_feature(u.model.feature(mo, id=17, a='cc'), mc)
 
     assert u.pg.content('select id, a from plain') == [
         (15, 'aa'),
@@ -95,15 +95,15 @@ def test_create_with_explicit_pk(root: gws.Root):
 
 def test_create_with_auto_pk(root: gws.Root):
     mc = gws.ModelContext(
-        user=u.gws_system_user(),
+        user=u.auth.system_user(),
     )
     mo = u.cast(gws.Model, root.get('AUTO_PK'))
 
     u.pg.clear('auto_pk')
 
-    mo.create_feature(u.feature(mo, a='aa'), mc)
-    mo.create_feature(u.feature(mo, a='bb'), mc)
-    mo.create_feature(u.feature(mo, a='cc'), mc)
+    mo.create_feature(u.model.feature(mo, a='aa'), mc)
+    mo.create_feature(u.model.feature(mo, a='bb'), mc)
+    mo.create_feature(u.model.feature(mo, a='cc'), mc)
 
     assert u.pg.content('auto_pk') == [
         (1, 'aa'),
@@ -113,15 +113,15 @@ def test_create_with_auto_pk(root: gws.Root):
 
 def test_create_no_pk(root: gws.Root):
     mc = gws.ModelContext(
-        user=u.gws_system_user(),
+        user=u.auth.system_user(),
     )
     mo = u.cast(gws.Model, root.get('NO_PK'))
 
     u.pg.clear('no_pk')
 
-    mo.create_feature(u.feature(mo, id=11, a='aa'), mc)
-    mo.create_feature(u.feature(mo, id=22, a='bb'), mc)
-    mo.create_feature(u.feature(mo, id=33, a='cc'), mc)
+    mo.create_feature(u.model.feature(mo, id=11, a='aa'), mc)
+    mo.create_feature(u.model.feature(mo, id=22, a='bb'), mc)
+    mo.create_feature(u.model.feature(mo, id=33, a='cc'), mc)
 
     assert u.pg.content('no_pk') == [
         (11, 'aa'),
@@ -131,7 +131,7 @@ def test_create_no_pk(root: gws.Root):
 
 def test_weird_names(root: gws.Root):
     mc = gws.ModelContext(
-        user=u.gws_system_user(),
+        user=u.auth.system_user(),
     )
     mo = u.cast(gws.Model, root.get('WEIRD'))
 
@@ -140,9 +140,9 @@ def test_weird_names(root: gws.Root):
 
     u.pg.clear(f'"{ws}"."{wt}"')
 
-    mo.create_feature(u.feature_from_dict(mo, {'id': 15, wc_noquot: 'aa'}), mc)
-    mo.create_feature(u.feature_from_dict(mo, {'id': 16, wc_noquot: 'bb'}), mc)
-    mo.create_feature(u.feature_from_dict(mo, {'id': 17, wc_noquot: 'cc'}), mc)
+    mo.create_feature(u.model.feature_from_dict(mo, {'id': 15, wc_noquot: 'aa'}), mc)
+    mo.create_feature(u.model.feature_from_dict(mo, {'id': 16, wc_noquot: 'bb'}), mc)
+    mo.create_feature(u.model.feature_from_dict(mo, {'id': 17, wc_noquot: 'cc'}), mc)
 
     assert u.pg.content(f'select id, "{wc}" from "{ws}"."{wt}"') == [
         (15, 'aa'),
@@ -156,7 +156,7 @@ def test_weird_names(root: gws.Root):
 
 def test_update_feature(root: gws.Root):
     mc = gws.ModelContext(
-        user=u.gws_system_user(),
+        user=u.auth.system_user(),
     )
     mo = u.cast(gws.Model, root.get('PLAIN'))
 
@@ -165,7 +165,7 @@ def test_update_feature(root: gws.Root):
         {'id': 2, 'a': 'untouched'},
     ])
 
-    mo.update_feature(u.feature(mo, id=1, a='updated'), mc)
+    mo.update_feature(u.model.feature(mo, id=1, a='updated'), mc)
 
     assert u.pg.content('select id, a from plain order by id') == [
         (1, 'updated'),
@@ -175,7 +175,7 @@ def test_update_feature(root: gws.Root):
 
 def test_delete_feature(root: gws.Root):
     mc = gws.ModelContext(
-        user=u.gws_system_user(),
+        user=u.auth.system_user(),
     )
     mo = u.cast(gws.Model, root.get('PLAIN'))
 
@@ -185,7 +185,7 @@ def test_delete_feature(root: gws.Root):
         {'id': 3, 'a': 'keep'},
     ])
 
-    mo.delete_feature(u.feature(mo, id=2), mc)
+    mo.delete_feature(u.model.feature(mo, id=2), mc)
 
     assert u.pg.content('select id, a from plain order by id') == [
         (1, 'keep'),

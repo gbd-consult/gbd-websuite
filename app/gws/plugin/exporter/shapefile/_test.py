@@ -108,12 +108,12 @@ def _run_export(root, features, out_path, exporter_uid='EXP_1'):
 
 def _read_shapefile(zip_path, shp_name):
     """Unzip export archive and return all records from the named shapefile."""
-    with u.temp_dir_in_base_dir() as tmp_dir:
-        gws.lib.zipx.unzip_path(zip_path, tmp_dir, flat=True)
-        shp_path = os.path.join(tmp_dir, shp_name)
-        with gws.lib.gdalx.open_vector(shp_path) as ds:
-            la = ds.layer(0)
-            return la.get_all()
+    tmp_dir = gws.u.ensure_dir(os.path.dirname(zip_path) + '/unzip')
+    gws.lib.zipx.unzip_path(zip_path, tmp_dir, flat=True)
+    shp_path = os.path.join(tmp_dir, shp_name)
+    with gws.lib.gdalx.open_vector(shp_path) as ds:
+        la = ds.layer(0)
+        return la.get_all()
 
 
 def test_export_poi(root: gws.Root, tmp_path):

@@ -40,7 +40,7 @@ def root():
 ##
 
 def test_with_postgis(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     wkt_list = []
 
     for s in DATA.strip().split('--'):
@@ -72,7 +72,7 @@ def test_with_postgis(root: gws.Root):
                 our_xml = _remove_attr(our_xml, 'srsName')
                 postgis_xml = _remove_attr(postgis_xml, 'srsName')
                 
-                assert u.fxml(our_xml) == u.fxml(postgis_xml)
+                u.check.xml(our_xml, postgis_xml)
 
 
 def _remove_attr(xml, name):

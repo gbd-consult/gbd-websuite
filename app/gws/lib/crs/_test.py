@@ -164,7 +164,7 @@ def test_webmercator_extent():
 
 def test_webmercator_square():
     r = math.pi * crs.WEBMERCATOR_RADIUS
-    assert u.is_close(crs.WEBMERCATOR_SQUARE, (-r, -r, r, r))
+    u.check.close(crs.WEBMERCATOR_SQUARE, (-r, -r, r, r))
 
 
 # --- best_match ---
@@ -264,14 +264,14 @@ def test_to_geojson_wgs84():
 def test_transform_extent_wgs84_to_webmercator():
     got = crs.WGS84.transform_extent((0.0, 1.0, 1.0, 0.0), crs_to=crs.WEBMERCATOR)
     exp = (0.0, 0.0, 111319.49079327357, 111325.1428663851)
-    assert u.is_close(got, exp, abs_tol=1e-4)
+    u.check.close(got, exp, abs_tol=1e-4)
 
 
 def test_transform_extent_webmercator_to_wgs84():
     ext = (0.0, 0.0, 111319.49079327357, 111325.1428663851)
     got = crs.WEBMERCATOR.transform_extent(ext, crs_to=crs.WGS84)
     exp = (0.0, 0.0, 1.0, 1.0)
-    assert u.is_close(got, exp, abs_tol=1e-4)
+    u.check.close(got, exp, abs_tol=1e-4)
 
 
 def test_transform_extent_same_crs():
@@ -284,7 +284,7 @@ def test_transform_extent_normalizes():
     # Swapped min/max should be normalized
     got = crs.WGS84.transform_extent((1.0, 1.0, 0.0, 0.0), crs_to=crs.WEBMERCATOR)
     exp = (0.0, 0.0, 111319.49079327357, 111325.1428663851)
-    assert u.is_close(got, exp, abs_tol=1e-4)
+    u.check.close(got, exp, abs_tol=1e-4)
 
 
 def test_transform_extent_wgs84_to_utm():
@@ -586,8 +586,8 @@ def test_transformer():
     tr = crs.WGS84.transformer(crs.WEBMERCATOR)
     assert callable(tr)
     x, y = tr(1.0, 1.0)  # lon/lat -> meters (always_xy=True)
-    assert u.is_close(x, 111319.49079327357, abs_tol=1e-4)
-    assert u.is_close(y, 111325.1428663851, abs_tol=1e-4)
+    u.check.close(x, 111319.49079327357, abs_tol=1e-4)
+    u.check.close(y, 111325.1428663851, abs_tol=1e-4)
 
 
 def test_transformer_roundtrip():
@@ -595,8 +595,8 @@ def test_transformer_roundtrip():
     tr_inv = crs.WEBMERCATOR.transformer(crs.WGS84)
     x, y = tr_fwd(10.0, 50.0)
     lon, lat = tr_inv(x, y)
-    assert u.is_close(lon, 10.0, abs_tol=1e-6)
-    assert u.is_close(lat, 50.0, abs_tol=1e-6)
+    u.check.close(lon, 10.0, abs_tol=1e-6)
+    u.check.close(lat, 50.0, abs_tol=1e-6)
 
 
 def test_transformer_utm():
@@ -614,24 +614,24 @@ def test_extent_size_in_meters_projected():
     # 1000m x 2000m rectangle in WEBMERCATOR
     ext = (0, 0, 1000, 2000)
     w, h = crs.WEBMERCATOR.extent_size_in_meters(ext)
-    assert u.is_close(w, 1000, abs_tol=1e-6)
-    assert u.is_close(h, 2000, abs_tol=1e-6)
+    u.check.close(w, 1000, abs_tol=1e-6)
+    u.check.close(h, 2000, abs_tol=1e-6)
 
 
 def test_extent_size_in_meters_geographic():
     # 1 degree longitude at equator ≈ 111319.5m, 1 degree latitude ≈ 110574m
     ext = (0, 0, 1, 1)
     w, h = crs.WGS84.extent_size_in_meters(ext)
-    assert u.is_close(w, 111319.5, rel_tol=1e-3)
-    assert u.is_close(h, 110574, rel_tol=1e-3)
+    u.check.close(w, 111319.5, rel_tol=1e-3)
+    u.check.close(h, 110574, rel_tol=1e-3)
 
 
 def test_extent_size_in_meters_utm():
     c33 = crs.get('EPSG:25833')
     ext = (500_000, 5_500_000, 501_000, 5_502_000)
     w, h = c33.extent_size_in_meters(ext)
-    assert u.is_close(w, 1000, abs_tol=1e-6)
-    assert u.is_close(h, 2000, abs_tol=1e-6)
+    u.check.close(w, 1000, abs_tol=1e-6)
+    u.check.close(h, 2000, abs_tol=1e-6)
 
 
 # --- point_offset_in_meters ---
@@ -639,26 +639,26 @@ def test_extent_size_in_meters_utm():
 
 def test_point_offset_north():
     x, y = crs.WEBMERCATOR.point_offset_in_meters((500_000, 5_500_000), 1000, 0)
-    assert u.is_close(x, 500_000)
-    assert u.is_close(y, 5_501_000)
+    u.check.close(x, 500_000)
+    u.check.close(y, 5_501_000)
 
 
 def test_point_offset_east():
     x, y = crs.WEBMERCATOR.point_offset_in_meters((500_000, 5_500_000), 1000, 90)
-    assert u.is_close(x, 501_000)
-    assert u.is_close(y, 5_500_000)
+    u.check.close(x, 501_000)
+    u.check.close(y, 5_500_000)
 
 
 def test_point_offset_south():
     x, y = crs.WEBMERCATOR.point_offset_in_meters((500_000, 5_500_000), 1000, 180)
-    assert u.is_close(x, 500_000)
-    assert u.is_close(y, 5_499_000)
+    u.check.close(x, 500_000)
+    u.check.close(y, 5_499_000)
 
 
 def test_point_offset_west():
     x, y = crs.WEBMERCATOR.point_offset_in_meters((500_000, 5_500_000), 1000, 270)
-    assert u.is_close(x, 499_000)
-    assert u.is_close(y, 5_500_000)
+    u.check.close(x, 499_000)
+    u.check.close(y, 5_500_000)
 
 
 def test_point_offset_diagonal():
@@ -666,14 +666,14 @@ def test_point_offset_diagonal():
     assert x > 0
     assert y > 0
     dist = math.sqrt(x ** 2 + y ** 2)
-    assert u.is_close(dist, 1000, abs_tol=1e-6)
+    u.check.close(dist, 1000, abs_tol=1e-6)
 
 
 def test_point_offset_geographic():
     x, y = crs.WGS84.point_offset_in_meters((0, 0), 111319.5, 90)
     # 111319.5m east at equator ≈ 1 degree longitude
-    assert u.is_close(x, 1.0, abs_tol=0.01)
-    assert u.is_close(y, 0.0, abs_tol=0.01)
+    u.check.close(x, 1.0, abs_tol=0.01)
+    u.check.close(y, 0.0, abs_tol=0.01)
 
 
 # --- _normalize_extent ---

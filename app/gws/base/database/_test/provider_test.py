@@ -12,7 +12,7 @@ def db():
     u.pg.create('s2.tab2', {'id': 'int primary key', 'a': 'text'})
 
     root = u.gws_root()
-    yield u.get_db(root)
+    yield u.pg.provider(root)
 
 
 ##

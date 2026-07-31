@@ -155,7 +155,7 @@ def test_export_poi(root: gws.Root, tmp_path):
     ], out_path)
 
     assert os.path.isfile(out_path)
-    xml = u.fxml(_read_gml(out_path), nl=False)
+    xml = u.check.norm_xml(_read_gml(out_path), nl=False)
 
     assert 'Restaurant Alpha' in xml
     assert 'Museum Beta' in xml
@@ -180,7 +180,7 @@ def test_export_district(root: gws.Root, tmp_path):
     ], out_path)
 
     assert os.path.isfile(out_path)
-    xml = u.fxml(_read_gml(out_path), nl=False)
+    xml = u.check.norm_xml(_read_gml(out_path), nl=False)
 
     assert 'North District' in xml
     assert 'South District' in xml
@@ -232,7 +232,7 @@ def test_multi_layer_single_model(root: gws.Root, tmp_path):
     ], out_path, exporter_uid='EXP_3')
 
     assert os.path.isfile(out_path)
-    xml = u.fxml(_read_gml(out_path), nl=False)
+    xml = u.check.norm_xml(_read_gml(out_path), nl=False)
     assert 'ML POI' in xml
     assert 'Point' in xml
 
@@ -262,7 +262,7 @@ def test_multi_layer_both_models_single_file(root: gws.Root, tmp_path):
             gml_names = [n for n in zf.namelist() if n.endswith('.gml')]
         assert len(gml_names) == 1, f'expected 1 .gml in zip, got {gml_names}'
 
-    xml = u.fxml(_read_gml(out_path), nl=False)
+    xml = u.check.norm_xml(_read_gml(out_path), nl=False)
     assert 'ML POI Two' in xml
     assert 'ML District Two' in xml
     assert 'Point' in xml
@@ -296,7 +296,7 @@ def test_no_geometry_included_by_exp2(root: gws.Root, tmp_path):
     ], out_path, exporter_uid='EXP_2')
 
     assert os.path.isfile(out_path)
-    xml = u.fxml(_read_gml(out_path), nl=False)
+    xml = u.check.norm_xml(_read_gml(out_path), nl=False)
 
     assert 'Note One' in xml
     assert 'Note Two' in xml
@@ -317,7 +317,7 @@ def test_gml2_with_prefix(root: gws.Root, tmp_path):
     ], out_path, exporter_uid='EXP_4')
 
     assert os.path.isfile(out_path)
-    xml = u.fxml(_read_gml(out_path), nl=False)
+    xml = u.check.norm_xml(_read_gml(out_path), nl=False)
 
     assert 'Prefix POI' in xml
     assert 'zzz' in xml

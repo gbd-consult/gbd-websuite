@@ -86,7 +86,7 @@ def main(args):
 def enum_files_for_test(only_pattern):
     """Enumerate files to test, wrt --only option."""
 
-    regex = u.OPTIONS.get('pytest.python_files').replace('*', '.*')
+    regex = u.option('pytest.python_files').replace('*', '.*')
 
     files = list(gws.lib.osx.find_files(f'{gws.c.APP_DIR}/gws', regex))
     if only_pattern:
@@ -113,7 +113,7 @@ _HEALTH_CHECK_PAUSE = 3
 
 
 def health_check():
-    status = {s: False for s in u.OPTIONS['runner.services']}
+    status = {s: False for s in u.option('runner.services')}
 
     for _ in range(_HEALTH_CHECK_ATTEMPTS):
         for s, ok in status.items():
@@ -140,11 +140,11 @@ def health_check_service_postgres():
 
 
 def health_check_service_qgis():
-    return http_ping(u.OPTIONS['service.qgis.host'], u.OPTIONS['service.qgis.port'])
+    return http_ping(u.option('service.qgis.host'), u.option('service.qgis.port'))
 
 
 def health_check_service_mockserver():
-    return http_ping(u.OPTIONS['service.mockserver.host'], u.OPTIONS['service.mockserver.port'])
+    return http_ping(u.option('service.mockserver.host'), u.option('service.mockserver.port'))
 
 
 def http_ping(host, port):

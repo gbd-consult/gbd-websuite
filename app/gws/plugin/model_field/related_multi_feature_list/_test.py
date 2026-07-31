@@ -51,7 +51,7 @@ def root():
 
 
 def test_find_no_depth(root: gws.Root):
-    mc = u.model_context()
+    mc = u.model.context()
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -67,7 +67,7 @@ def test_find_no_depth(root: gws.Root):
 
 
 def test_find_depth(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -111,7 +111,7 @@ _SELECT_ALL = '''
 
 
 def test_update(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -137,10 +137,10 @@ def test_update(root: gws.Root):
     b = u.cast(gws.Model, root.get('B'))
     c = u.cast(gws.Model, root.get('C'))
 
-    f = u.feature(parent, id=1, children=[
-        u.feature(a, id=1),
-        u.feature(a, id=3),
-        u.feature(b, id=4),
+    f = u.model.feature(parent, id=1, children=[
+        u.model.feature(a, id=1),
+        u.model.feature(a, id=3),
+        u.model.feature(b, id=4),
     ])
 
     parent.update_feature(f, mc)
@@ -157,7 +157,7 @@ def test_update(root: gws.Root):
 
 
 def test_create(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -183,10 +183,10 @@ def test_create(root: gws.Root):
     b = u.cast(gws.Model, root.get('B'))
     c = u.cast(gws.Model, root.get('C'))
 
-    f = u.feature(parent, id=999, k=99, children=[
-        u.feature(a, id=1),
-        u.feature(a, id=3),
-        u.feature(b, id=4),
+    f = u.model.feature(parent, id=999, k=99, children=[
+        u.model.feature(a, id=1),
+        u.model.feature(a, id=3),
+        u.model.feature(b, id=4),
     ])
 
     parent.create_feature(f, mc)
@@ -203,7 +203,7 @@ def test_create(root: gws.Root):
 
 
 def test_create_auto(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -229,10 +229,10 @@ def test_create_auto(root: gws.Root):
     b = u.cast(gws.Model, root.get('B'))
     c = u.cast(gws.Model, root.get('C'))
 
-    f = u.feature(parent_auto, k=99, children=[
-        u.feature(a, id=1),
-        u.feature(a, id=3),
-        u.feature(b, id=4),
+    f = u.model.feature(parent_auto, k=99, children=[
+        u.model.feature(a, id=1),
+        u.model.feature(a, id=3),
+        u.model.feature(b, id=4),
     ])
 
     parent_auto.create_feature(f, mc)
@@ -249,7 +249,7 @@ def test_create_auto(root: gws.Root):
 
 
 def test_delete(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -271,7 +271,7 @@ def test_delete(root: gws.Root):
 
     parent = u.cast(gws.Model, root.get('PARENT'))
 
-    f = u.feature(parent, id=1)
+    f = u.model.feature(parent, id=1)
     parent.delete_feature(f, mc)
 
     assert u.pg.rows(_SELECT_ALL) == [
@@ -286,7 +286,7 @@ def test_delete(root: gws.Root):
 
 
 def test_create_related(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -306,16 +306,16 @@ def test_create_related(root: gws.Root):
     b = u.cast(gws.Model, root.get('B'))
     c = u.cast(gws.Model, root.get('C'))
 
-    a_f = u.feature(a, id=101)
-    a_f.createWithFeatures = [u.feature(parent, id=1)]
+    a_f = u.model.feature(a, id=101)
+    a_f.createWithFeatures = [u.model.feature(parent, id=1)]
     a.create_feature(a_f, mc)
 
-    b_f = u.feature(b, id=201)
-    b_f.createWithFeatures = [u.feature(parent, id=1)]
+    b_f = u.model.feature(b, id=201)
+    b_f.createWithFeatures = [u.model.feature(parent, id=1)]
     b.create_feature(b_f, mc)
 
-    c_f = u.feature(c, id=202)
-    c_f.createWithFeatures = [u.feature(parent, id=1)]
+    c_f = u.model.feature(c, id=202)
+    c_f.createWithFeatures = [u.model.feature(parent, id=1)]
     c.create_feature(c_f, mc)
 
     assert u.pg.rows(_SELECT_ALL) == [

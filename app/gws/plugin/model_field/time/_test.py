@@ -22,10 +22,10 @@ def model():
 ##
 
 def test_create(model: gws.Model):
-    mc = u.model_context()
+    mc = u.model.context()
     time = dtx.new(2000, 2, 3, 4, 5, 6)
 
-    f = u.feature(model, id=3, time=time)
+    f = u.model.feature(model, id=3, time=time)
     model.create_feature(f, mc)
     fs = model.get_features([3], mc)
 
@@ -33,7 +33,7 @@ def test_create(model: gws.Model):
 
 
 def test_read(model: gws.Model):
-    mc = u.model_context()
+    mc = u.model.context()
 
     ds = [
         dtx.new(2000, 2, 3, 4, 5, 6),
@@ -48,7 +48,7 @@ def test_read(model: gws.Model):
 
 
 def test_update(model: gws.Model):
-    mc = u.model_context()
+    mc = u.model.context()
 
     ds = [
         dtx.new(2000, 2, 3, 4, 5, 6),
@@ -57,7 +57,7 @@ def test_update(model: gws.Model):
     u.pg.insert('t', [{'id': 1, 'time': ds[0]}, {'id': 2, 'time': ds[1]}])
 
     new = dtx.new(2009, 9, 19, 11, 22, 33)
-    f = u.feature(model, id=1, time=new)
+    f = u.model.feature(model, id=1, time=new)
     model.update_feature(f, mc)
 
     fs = model.get_features([1, 2], mc)

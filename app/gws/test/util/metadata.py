@@ -1,0 +1,53 @@
+"""Default metadata for tests."""
+
+DEFAULT = {
+    'language': 'de',
+    #
+    'contactAddress': 'contactAddress 123',
+    'contactAddressType': 'postal',
+    'contactArea': 'contactArea1',
+    'contactCity': 'contactCity1',
+    'contactCountry': 'contactCountry1',
+    'contactEmail': 'contact@example.de',
+    'contactFax': '+49 (0)123-45',
+    'contactOrganization': 'contactOrganization1',
+    'contactPerson': 'contactPerson1',
+    'contactPhone': '+49 (0)123-45',
+    'contactPosition': 'contactPosition1',
+    'contactProviderName': 'contactProviderName1',
+    'contactProviderSite': 'contactProviderSite1',
+    'contactRole': 'pointOfContact',
+    'contactUrl': 'https://contact.@example.de',
+    'contactZip': '12345',
+    #
+    'catalogUid': 'catalogUid1',
+    'temporalBegin': '2021-01-02',
+    'temporalEnd': '2022-01-02',
+    'dateCreated': '2023-01-02',
+    'dateUpdated': '2024-01-02',
+    #
+    # 'inspireMandatoryKeyword': 'infoMapAccessService',
+    'inspireDegreeOfConformity': 'conformant',
+    'inspireResourceType': 'service',
+    # 'inspireSpatialDataServiceType': 'view',
+    'inspireSpatialScope': 'national',
+    'inspireSpatialScopeName': 'national',
+    'inspireTheme': 'administrativeUnits',
+    #
+    'isoMaintenanceFrequencyCode': 'annual',
+    'isoQualityConformanceExplanation': 'isoQualityConformanceExplanation1',
+    'isoQualityConformanceQualityPass': True,
+    'isoQualityConformanceSpecificationDate': '2020-01-02',
+    'isoQualityConformanceSpecificationTitle': 'isoQualityConformanceSpecificationTitle1',
+    'isoQualityLineageSource': 'isoQualityLineageSource1',
+    'isoQualityLineageSourceScale': 1000,
+    'isoQualityLineageStatement': 'isoQualityLineageStatement1',
+    'isoRestrictionCode': 'copyright',
+    'isoServiceFunction': 'information',
+    'isoScope': 'dataset',
+    'isoScopeName': 'isoScopeName1',
+    'isoSpatialRepresentationType': 'vector',
+    'isoTopicCategories': ['boundaries', 'farming'],
+    'isoSpatialResolution': 123,
+}
+

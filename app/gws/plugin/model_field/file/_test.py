@@ -130,8 +130,8 @@ def test_props_omit_an_unreadable_field(root: gws.Root):
 def test_create_stores_the_content(root: gws.Root):
     mm = u.cast(gws.Model, root.get('OPEN'))
 
-    f = u.feature(mm, id=3, file=FileValue(content=b'CCC', name='c.txt'))
-    mm.create_feature(f, u.model_context(op=gws.ModelOperation.create))
+    f = u.model.feature(mm, id=3, file=FileValue(content=b'CCC', name='c.txt'))
+    mm.create_feature(f, u.model.context(op=gws.ModelOperation.create))
 
     rows = u.pg.rows('SELECT id, filename, content FROM files WHERE id=3')
     assert [(r[0], r[1], bytes(r[2])) for r in rows] == [

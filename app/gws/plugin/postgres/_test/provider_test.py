@@ -42,7 +42,7 @@ def root():
 
 
 @u.fixture(autouse=True)
-def clear_tables():
+def clear_tables(root):
     yield
     u.pg.clear('test_types')
     u.pg.clear('test_geom_point')
@@ -155,22 +155,22 @@ def test_connection_url_no_host_no_service_returns_empty():
 
 
 def test_has_table_true(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     assert db.has_table('test_types') is True
 
 
 def test_has_table_false(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     assert db.has_table('no_such_table_xyz') is False
 
 
 def test_has_column_true(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     assert db.has_column('test_types', 'val_int') is True
 
 
 def test_has_column_false(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     assert db.has_column('test_types', 'no_such_col') is False
 
 
@@ -180,61 +180,61 @@ def test_has_column_false(root: gws.Root):
 
 
 def test_describe_column_int(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     col = db.describe_column('test_types', 'val_int')
     assert col.type == gws.AttributeType.int
 
 
 def test_describe_column_text(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     col = db.describe_column('test_types', 'val_text')
     assert col.type == gws.AttributeType.str
 
 
 def test_describe_column_float(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     col = db.describe_column('test_types', 'val_float')
     assert col.type == gws.AttributeType.float
 
 
 def test_describe_column_bool(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     col = db.describe_column('test_types', 'val_bool')
     assert col.type == gws.AttributeType.bool
 
 
 def test_describe_column_date(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     col = db.describe_column('test_types', 'val_date')
     assert col.type == gws.AttributeType.date
 
 
 def test_describe_column_time(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     col = db.describe_column('test_types', 'val_time')
     assert col.type == gws.AttributeType.time
 
 
 def test_describe_column_timestamp(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     col = db.describe_column('test_types', 'val_ts')
     assert col.type == gws.AttributeType.datetime
 
 
 def test_describe_column_bytea(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     col = db.describe_column('test_types', 'val_bytea')
     assert col.type == gws.AttributeType.bytes
 
 
 def test_describe_column_primary_key(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     col = db.describe_column('test_types', 'id')
     assert col.isPrimaryKey is True
 
 
 def test_describe_column_non_pk(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     col = db.describe_column('test_types', 'val_int')
     assert col.isPrimaryKey is False
 
@@ -245,13 +245,13 @@ def test_describe_column_non_pk(root: gws.Root):
 
 
 def test_describe_column_int_array(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     col = db.describe_column('test_types', 'val_intarr')
     assert col.type == gws.AttributeType.intlist
 
 
 def test_describe_column_text_array(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     col = db.describe_column('test_types', 'val_textarr')
     assert col.type == gws.AttributeType.strlist
 
@@ -262,7 +262,7 @@ def test_describe_column_text_array(root: gws.Root):
 
 
 def test_describe_column_geometry(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     col = db.describe_column('test_geom_point', 'geom')
     assert col.type == gws.AttributeType.geometry
     assert col.geometryType == gws.GeometryType.point
@@ -270,7 +270,7 @@ def test_describe_column_geometry(root: gws.Root):
 
 
 def test_describe_column_geometry_polygon(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     col = db.describe_column('test_geom_poly', 'geom')
     assert col.type == gws.AttributeType.geometry
     assert col.geometryType == gws.GeometryType.polygon
@@ -283,7 +283,7 @@ def test_describe_column_geometry_polygon(root: gws.Root):
 
 
 def test_describe_no_geometry(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     desc = db.describe('test_no_geom')
     assert desc.geometryName == ''
     assert len(desc.columns) == 2
@@ -292,7 +292,7 @@ def test_describe_no_geometry(root: gws.Root):
 
 
 def test_describe_with_geometry(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     desc = db.describe('test_geom_point')
     assert desc.geometryName == 'geom'
     assert desc.geometryType == gws.GeometryType.point
@@ -300,7 +300,7 @@ def test_describe_with_geometry(root: gws.Root):
 
 
 def test_describe_full_name(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     desc = db.describe('test_no_geom')
     assert desc.fullName == 'public.test_no_geom'
 
@@ -311,13 +311,13 @@ def test_describe_full_name(root: gws.Root):
 
 
 def test_table_bounds_no_geometry(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     result = db.table_bounds('test_no_geom')
     assert result is None
 
 
 def test_table_bounds_empty_table(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     # table exists and has geometry column but is empty
     result = db.table_bounds('test_geom_point')
     assert result is None
@@ -330,7 +330,7 @@ def test_table_bounds_with_data(root: gws.Root):
         "INSERT INTO test_geom_poly(id, geom) VALUES(1, "
         "ST_GeomFromText('POLYGON((400000 5700000, 401000 5700000, 401000 5701000, 400000 5700000))', 25832))"
     )
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     result = db.table_bounds('test_geom_poly')
     assert result is not None
     assert result.crs is not None
@@ -343,7 +343,7 @@ def test_table_bounds_single_point_is_none(root: gws.Root):
     u.pg.exec(
         "INSERT INTO test_geom_point(id, geom) VALUES(1, ST_GeomFromText('POINT(400000 5700000)', 25832))"
     )
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     result = db.table_bounds('test_geom_point')
     assert result is None
 
@@ -354,10 +354,10 @@ def test_table_bounds_single_point_is_none(root: gws.Root):
 
 
 def test_has_schema_public(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     assert db.has_schema('public') is True
 
 
 def test_has_schema_nonexistent(root: gws.Root):
-    db = u.get_db(root)
+    db = u.pg.provider(root)
     assert db.has_schema('no_such_schema_xyz') is False

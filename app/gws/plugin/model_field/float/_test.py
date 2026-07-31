@@ -18,11 +18,11 @@ def root():
 
 
 def test_create_float(root: gws.Root):
-    mc = u.model_context()
+    mc = u.model.context()
 
     model = u.cast(gws.Model, root.get('TEST_MODEL'))
 
-    f = u.feature(model, id=1, number=1.5)
+    f = u.model.feature(model, id=1, number=1.5)
     model.create_feature(f, mc)
 
     rows = u.pg.rows('SELECT id, number FROM test_table ORDER BY id')
@@ -30,7 +30,7 @@ def test_create_float(root: gws.Root):
 
 
 def test_read_float(root: gws.Root):
-    mc = u.model_context()
+    mc = u.model.context()
 
     u.pg.insert('test_table', [
         {'id': 1, 'number': 1.5},
@@ -46,7 +46,7 @@ def test_read_float(root: gws.Root):
 
 
 def test_update_float(root: gws.Root):
-    mc = u.model_context()
+    mc = u.model.context()
 
     u.pg.insert('test_table', [
         {'id': 1, 'number': 1.5},
@@ -55,7 +55,7 @@ def test_update_float(root: gws.Root):
 
     model = u.cast(gws.Model, root.get('TEST_MODEL'))
 
-    f = u.feature(model, id=1, number=3.5)
+    f = u.model.feature(model, id=1, number=3.5)
     model.update_feature(f, mc)
 
     rows = u.pg.rows('SELECT id, number FROM test_table ORDER BY id')
@@ -65,7 +65,7 @@ def test_update_float(root: gws.Root):
 
 
 def test_delete_number(root: gws.Root):
-    mc = u.model_context()
+    mc = u.model.context()
 
     u.pg.insert('test_table', [
         {'id': 1, 'number': 1.5},
@@ -74,7 +74,7 @@ def test_delete_number(root: gws.Root):
 
     model = u.cast(gws.Model, root.get('TEST_MODEL'))
 
-    f = u.feature(model, id=1)
+    f = u.model.feature(model, id=1)
     model.delete_feature(f, mc)
 
     rows = u.pg.rows('SELECT id, number FROM test_table ORDER BY id')

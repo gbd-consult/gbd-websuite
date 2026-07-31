@@ -6,9 +6,9 @@ import gws.test.util as u
 def root():
     u.pg.create('plain', {'id': 'int primary key', 'name': 'text', 'g': 'geometry(point,3857)'})
     u.pg.insert('plain', [
-        dict(id=1, name='a11', g=u.ewkb('POINT(10 100)')),
-        dict(id=2, name='a22', g=u.ewkb('POINT(20 200)')),
-        dict(id=3, name='a33', g=u.ewkb('POINT(30 300)')),
+        dict(id=1, name='a11', g=u.pg.ewkb('POINT(10 100)')),
+        dict(id=2, name='a22', g=u.pg.ewkb('POINT(20 200)')),
+        dict(id=3, name='a33', g=u.pg.ewkb('POINT(30 300)')),
     ])
 
     cfg = '''

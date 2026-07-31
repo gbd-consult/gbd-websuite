@@ -99,10 +99,10 @@ def _run_export(root, features, out_path, exporter_uid='EXP_1'):
 
 
 def _read_csv_from_zip(zip_path, csv_name):
-    with u.temp_dir_in_base_dir() as tmp_dir:
-        gws.lib.zipx.unzip_path(zip_path, tmp_dir, flat=True)
-        with open(os.path.join(tmp_dir, csv_name), newline='') as f:
-            return f.read()
+    tmp_dir = gws.u.ensure_dir(os.path.dirname(zip_path) + '/unzip')
+    gws.lib.zipx.unzip_path(zip_path, tmp_dir, flat=True)
+    with open(os.path.join(tmp_dir, csv_name), newline='') as f:
+        return f.read()
 
 
 def _read_csv(path, table_name=None):

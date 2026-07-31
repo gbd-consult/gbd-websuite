@@ -48,7 +48,7 @@ def root():
 
 
 def test_find_depth(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -74,7 +74,7 @@ def test_find_depth(root: gws.Root):
 
 
 def test_update(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -91,9 +91,9 @@ def test_update(root: gws.Root):
     parent = u.cast(gws.Model, root.get('PARENT'))
     child = u.cast(gws.Model, root.get('CHILD'))
 
-    f = u.feature(parent, id=1, children=[
-        u.feature(child, id=4),
-        u.feature(child, id=5),
+    f = u.model.feature(parent, id=1, children=[
+        u.model.feature(child, id=4),
+        u.model.feature(child, id=5),
     ])
 
     parent.update_feature(f, mc)
@@ -105,7 +105,7 @@ def test_update(root: gws.Root):
 
 
 def test_create(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -122,10 +122,10 @@ def test_create(root: gws.Root):
     parent = u.cast(gws.Model, root.get('PARENT'))
     child = u.cast(gws.Model, root.get('CHILD'))
 
-    f = u.feature(parent, id=999, k=99, children=[
-        u.feature(child, id=4),
-        u.feature(child, id=5),
-        u.feature(child, id=6),
+    f = u.model.feature(parent, id=999, k=99, children=[
+        u.model.feature(child, id=4),
+        u.model.feature(child, id=5),
+        u.model.feature(child, id=6),
     ])
 
     parent.create_feature(f, mc)
@@ -137,7 +137,7 @@ def test_create(root: gws.Root):
 
 
 def test_create_auto(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('child', [
         {'id': 4, 'cc': 'a4', 'parent_k': 11},
@@ -149,10 +149,10 @@ def test_create_auto(root: gws.Root):
     parent_auto = u.cast(gws.Model, root.get('PARENT_AUTO'))
     child = u.cast(gws.Model, root.get('CHILD'))
 
-    f = u.feature(parent_auto, k=99, children=[
-        u.feature(child, id=4),
-        u.feature(child, id=5),
-        u.feature(child, id=6),
+    f = u.model.feature(parent_auto, k=99, children=[
+        u.model.feature(child, id=4),
+        u.model.feature(child, id=5),
+        u.model.feature(child, id=6),
     ])
 
     parent_auto.create_feature(f, mc)
@@ -164,7 +164,7 @@ def test_create_auto(root: gws.Root):
 
 
 def test_delete(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -179,7 +179,7 @@ def test_delete(root: gws.Root):
 
     parent = u.cast(gws.Model, root.get('PARENT'))
 
-    f = u.feature(parent, id=1)
+    f = u.model.feature(parent, id=1)
     parent.delete_feature(f, mc)
 
     rows = u.pg.rows('SELECT id, parent_k FROM child ORDER BY id')
@@ -189,7 +189,7 @@ def test_delete(root: gws.Root):
 
 
 def test_create_related(root: gws.Root):
-    mc = u.model_context(maxDepth=1)
+    mc = u.model.context(maxDepth=1)
 
     u.pg.insert('parent', [
         {'id': 1, 'k': 11, 'pp': 'p1'},
@@ -202,8 +202,8 @@ def test_create_related(root: gws.Root):
     parent = u.cast(gws.Model, root.get('PARENT'))
     child = u.cast(gws.Model, root.get('CHILD'))
 
-    child_f = u.feature(child, id=101)
-    child_f.createWithFeatures = [u.feature(parent, id=1)]
+    child_f = u.model.feature(child, id=101)
+    child_f.createWithFeatures = [u.model.feature(parent, id=1)]
     child.create_feature(child_f, mc)
 
     rows = u.pg.rows('SELECT id, parent_k FROM child ORDER BY id')
