@@ -6,7 +6,6 @@ import gws
 import gws.base.database.model
 import gws.base.model.field
 import gws.lib.mime
-import gws.lib.osx
 import gws.lib.sa as sa
 
 gws.ext.new.modelField('file')
@@ -197,28 +196,26 @@ class Object(gws.base.model.field.Object):
         return gws.lib.mime.TXT
 
     def handle_web_file_request(self, feature_uid: str, preview: bool, mc: gws.ModelContext) -> Optional[gws.ContentResponse]:
-        model = cast(gws.DatabaseModel, self.model)
-
-        cols = self.select_columns(mc)
-        if self.contentColumn is not None:
-            cols.append(self.contentColumn)
-        
-        sql = sa.select(*cols).where(model.uid_column().__eq__(feature_uid))
-
-        with self.model.db.connect() as conn:
-            rs = list(conn.execute(sql))
-        if not rs:
+        if not mc.user.can_read(self):
             return
 
-        for row in rs:
-            fv = self.load_value(gws.u.to_dict(row), mc)
-            if not fv:
-                return
-            return gws.ContentResponse(
-                content=fv.content,
-                contentFilename=None if preview else fv.name,
-                mime=self.get_mime_type(fv),
-            )
+        search = gws.SearchQuery(uids=[feature_uid])
+        if self.contentColumn is not None:
+            search.extraColumns = [self.contentColumn]
+
+        features = self.model.find_features(search, mc)
+        if not features:
+            return
+
+        fv = cast(FileValue, features[0].get(self.name))
+        if not fv:
+            return
+
+        return gws.ContentResponse(
+            content=fv.content,
+            contentFilename=None if preview else fv.name,
+            mime=self.get_mime_type(fv),
+        )
 
     ##
 
