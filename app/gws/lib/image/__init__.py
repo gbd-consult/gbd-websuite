@@ -16,8 +16,10 @@ import gws
 import gws.lib.mime
 
 # https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.open
-# up to ~2 GB RGBA images
-PIL.Image.MAX_IMAGE_PIXELS = 500_000_000
+# up to ~4 GB RGBA images
+MAX_PIXELS = 1_000_000_000
+PIL.Image.MAX_IMAGE_PIXELS = MAX_PIXELS // 2
+
 
 class Error(gws.Error):
     pass
@@ -44,7 +46,10 @@ def from_size(size: gws.Size, color=None) -> 'Image':
     Returns:
         An image object.
     """
-    img = PIL.Image.new('RGBA', _int_size(size), color or (0, 0, 0, 0))
+    w, h = _int_size(size)
+    if w * h > MAX_PIXELS:
+        raise Error(f'image too large: {w}x{h}')
+    img = PIL.Image.new('RGBA', (w, h), color or (0, 0, 0, 0))
     return _new(img)
 
 
@@ -72,7 +77,11 @@ def from_raw_data(r: bytes, mode: str, size: gws.Size) -> 'Image':
     Returns:
         An image object.
     """
-    return _new(PIL.Image.frombytes(mode, _int_size(size), r))
+
+    w, h = _int_size(size)
+    if w * h > MAX_PIXELS:
+        raise Error(f'image too large: {w}x{h}')
+    return _new(PIL.Image.frombytes(mode, (w, h), r))
 
 
 def from_path(path: str) -> 'Image':

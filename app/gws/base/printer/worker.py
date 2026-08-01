@@ -70,9 +70,11 @@ class Object(gws.base.job.worker.Object):
         self.tri.dpi = int(min(gws.gis.render.MAX_DPI, max(self.request.dpi, gws.lib.uom.OGC_SCREEN_PPI)))
 
         if self.request.type == 'template':
-            # @TODO check dpi against configured qualityLevels
             self.printer = cast(gws.Printer, self.user.require(self.request.printerUid, gws.ext.object.printer))
             self.template = self.printer.template
+            dpis = [ql.dpi for ql in self.printer.qualityLevels if ql.dpi]
+            max_dpi = max(dpis) if dpis else gws.lib.uom.OGC_SCREEN_PPI
+            self.tri.dpi = int(max(gws.lib.uom.OGC_SCREEN_PPI, min(self.tri.dpi, max_dpi)))
         else:
             mm = gws.lib.uom.size_px_to_mm(self.request.outputSize, gws.lib.uom.OGC_SCREEN_PPI)
             px = gws.lib.uom.size_mm_to_px(mm, self.tri.dpi)

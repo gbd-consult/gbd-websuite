@@ -76,6 +76,7 @@ class GetFeaturesResponse(gws.Response):
 
 
 _GET_FEATURES_LIMIT = 10000
+_PIXEL_SIZE_LIMIT = 4096
 
 
 class Object(gws.base.action.Object):
@@ -146,6 +147,14 @@ class Object(gws.base.action.Object):
     ##
 
     def _get_box(self, req: gws.WebRequester, p: GetBoxRequest):
+        ok = (
+            0 < p.width <= _PIXEL_SIZE_LIMIT and
+            0 < p.height <= _PIXEL_SIZE_LIMIT and
+            p.width * p.height <= _PIXEL_SIZE_LIMIT * _PIXEL_SIZE_LIMIT
+        )  # fmt: skip
+        if not ok:
+            raise gws.BadRequestError(f'invalid image size')
+
         layer = req.user.require_layer(p.layerUid)
         lri = gws.LayerRenderInput(type=gws.LayerRenderInputType.box, user=req.user, extraParams={})
 
