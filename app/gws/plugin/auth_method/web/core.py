@@ -46,6 +46,7 @@ class LogoutResponse(gws.Response):
 class LoginRequest(gws.Request):
     username: str
     password: str
+    to: Optional[str]
 
 
 class LoginResponse(gws.Response):
@@ -53,10 +54,12 @@ class LoginResponse(gws.Response):
     mfaState: Optional[gws.AuthMultiFactorState]
     mfaMessage: str = ''
     mfaCanRestart: bool = False
+    redirectTo: str = ''
 
 
 class MfaVerifyRequest(gws.Request):
     payload: dict
+    to: Optional[str]
 
 
 ##
@@ -168,7 +171,7 @@ class Object(gws.base.auth.method.Object):
             return self._mfa_response(mfa)
 
         self._finalize_login(req, user)
-        return LoginResponse(user=gws.props_of(user, user))
+        return LoginResponse(user=gws.props_of(user, user), redirectTo=self._redirect_target(p.to))
 
     def handle_mfa_verify(self, req: gws.WebRequester, p: MfaVerifyRequest) -> LoginResponse:
         try:
@@ -179,7 +182,7 @@ class Object(gws.base.auth.method.Object):
 
         if mfa.state == gws.AuthMultiFactorState.ok:
             self._finalize_login(req, mfa.user)
-            return self._mfa_response(mfa)
+            return self._mfa_response(mfa, self._redirect_target(p.to))
 
         if mfa.state == gws.AuthMultiFactorState.retry:
             return self._mfa_response(mfa)
@@ -221,6 +224,16 @@ class Object(gws.base.auth.method.Object):
         am = self.root.app.authMgr
         req.set_session(am.sessionMgr.create(self, user))
         gws.log.info(f'LOGGED_IN: {user.uid=} {user.roles=}')
+
+    def _redirect_target(self, s: str | None) -> str:
+        """Convert a client-provided redirect target to a local url path."""
+
+        s = (s or '').strip()
+        if not s:
+            return ''
+        if '\\' in s or any(c < ' ' or c == '\x7f' for c in s):
+            return ''
+        return '/' + s.lstrip('/')
 
     ##
 
@@ -280,9 +293,10 @@ class Object(gws.base.auth.method.Object):
 
         return mfa
 
-    def _mfa_response(self, mfa: gws.AuthMultiFactorTransaction) -> LoginResponse:
+    def _mfa_response(self, mfa: gws.AuthMultiFactorTransaction, redirect_to: str = '') -> LoginResponse:
         return LoginResponse(
             mfaState=mfa.state,
             mfaMessage=mfa.message,
             mfaCanRestart=mfa.adapter.check_restart(mfa),
+            redirectTo=redirect_to,
         )
