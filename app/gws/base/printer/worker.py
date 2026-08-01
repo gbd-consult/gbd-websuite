@@ -122,7 +122,7 @@ class Object(gws.base.job.worker.Object):
         style_opts = gws.lib.style.parser.Options(
             trusted=False,
             strict=False,
-            imageDirs=[self.root.app.webMgr.sites[0].staticRoot.dir],
+            imageDirs=[self.root.app.webMgr.site.staticRoot.dir],
         )
         style_dct = {}
 

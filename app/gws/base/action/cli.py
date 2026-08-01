@@ -42,8 +42,7 @@ class Object(gws.Node):
     def _invoke(self, p: InvokeRequest):
         environ = {}
         root = gws.config.load()
-        site = root.app.webMgr.site_from_environ(environ)
-        req = gws.base.web.wsgi.Requester(root, environ, site)
+        req = gws.base.web.wsgi.Requester(root, environ, root.app.webMgr.site)
 
         fn, request = root.app.actionMgr.prepare_action(
             gws.CommandCategory.api,

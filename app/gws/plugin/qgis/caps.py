@@ -538,6 +538,7 @@ def _datasource_amp_delimited(text):
     # extract params from the url
 
     url, params = gws.lib.net.extract_params(ds['url'])
+    params = gws.u.to_lower_dict(params)
 
     if 'typename' in params:
         ds['typename'] = params.pop('typename')

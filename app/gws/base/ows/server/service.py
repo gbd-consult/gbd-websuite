@@ -139,6 +139,12 @@ class Object(gws.OwsService):
 
     def post_configure(self):
         self.post_configure_root_layer()
+        self.post_configure_host()
+
+    def post_configure_host(self):
+        site = self.root.app.webMgr.site
+        if not site.canonicalHost and not site.hostnames:
+            gws.log.warning(f'{self}: neither "web.site.canonicalHost" nor "web.site.hostnames" is set, service urls will reflect the request host')
 
     def post_configure_root_layer(self):
         self.rootLayer = None
@@ -238,8 +244,8 @@ class Object(gws.OwsService):
         args = request.TemplateArgs(
             sr=sr,
             service=self,
-            serviceUrl=sr.req.url_for(self.url_path(sr)),
-            url_for=sr.req.url_for,
+            serviceUrl=sr.req.canonical_url_for(self.url_path(sr)),
+            url_for=sr.req.canonical_url_for,
             version=sr.version,
             intVersion=int(sr.version.replace('.', '')),
             **kwargs,

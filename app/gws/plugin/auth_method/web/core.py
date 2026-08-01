@@ -95,7 +95,7 @@ class Object(gws.base.auth.method.Object):
             return
         if lr.pattern and not re.match(lr.pattern, request_uri):
             return
-        redir = req.url_for(lr.target, to=request_uri)
+        redir = req.relative_url_for(lr.target, to=request_uri)
         res.set_status(302)
         res.add_header('Location', redir)
         res.set_body(f'Redirecting to {redir}...')

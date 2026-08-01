@@ -69,8 +69,10 @@ class Config(gws.Config):
     """Permissions Policy for this site."""
     errorPage: Optional[gws.ext.config.template]
     """Error page template. (deprecated in 8.4)"""
-    host: str = '*'
-    """Host name this site responds to (asterisk for any)."""
+    hostnames: Optional[list[str]]
+    """Host names this site responds to, lowercase and without a port. (added in 8.4)"""
+    host: str = ''
+    """Host name this site responds to. (deprecated in 8.4)"""
     rewrite: Optional[list[RewriteRuleConfig]]
     """Rewrite rules. (deprecated in 8.4)"""
     rewriteRules: Optional[list[RewriteRuleConfig]]
@@ -79,8 +81,10 @@ class Config(gws.Config):
     """Whether to add default rewrite rules. (added in 8.4)"""
     canonicalHost: str = ''
     """Hostname for reversed URL rewriting."""
+    useForwardedHeaders: bool = False
+    """Use X-Forwarded-Host, X-Forwarded-Proto and X-Forwarded-Port. Only enable this if the server is not reachable except via a trusted proxy. (added in 8.4)"""
     useForwardedHost: bool = False
-    """Use  X-Forwarded-Host for host matching."""
+    """Use  X-Forwarded-Host for host matching. (deprecated in 8.4)"""
     root: Optional[WebDirConfig]
     """Root directory for static documents."""
 
@@ -94,16 +98,22 @@ DEFAULT_REWRITE_RULES = [
 
 
 class Object(gws.WebSite):
-    canonicalHost: str
     ssl: bool
     contentSecurityPolicy: str
     permissionsPolicy: str
-    useForwardedHost: bool
 
     def configure(self):
-        self.host = self.cfg('host', default='*')
-        self.canonicalHost = self.cfg('canonicalHost')
-        self.useForwardedHost = self.cfg('useForwardedHost')
+        self.hostnames = self.cfg('hostnames') or []
+        p = self.cfg('host')
+        if p and p != '*':
+            self.hostnames = [p]
+        
+        self.canonicalHost = self.cfg('canonicalHost') or ''
+        if not self.canonicalHost and self.hostnames:
+            self.canonicalHost = self.hostnames[0]
+
+        # deprecated
+        self.useForwardedHeaders = self.cfg('useForwardedHeaders') or self.cfg('useForwardedHost')
         self.ssl = self.cfg('ssl')
         self.corsOptions = self.cfg('cors')
         self.contentSecurityPolicy = self.cfg('contentSecurityPolicy')
@@ -150,45 +160,42 @@ class Object(gws.WebSite):
                 if c.pattern not in patterns:
                     self.rewriteRules.insert(0, c)
 
-    def url_for(self, req, path, **params):
+    def url_for(self, req, path, mode, **params):
         if gws.lib.net.is_abs_url(path):
             return gws.lib.net.add_params(path, params)
 
-        proto = 'https' if self.ssl else 'http'
-        if self.canonicalHost:
-            host = self.canonicalHost
-        elif self.host != '*':
-            host = self.host
-        else:
-            host, proto = self._host_proto_from_env(req.environ)
+        path = self._apply_reverse_rewrite_rules(path)
+        if gws.lib.net.is_abs_url(path):
+            return gws.lib.net.add_params(path, params)
 
-        base = proto + '://' + host
+        path = '/' + path.lstrip('/')
+        u = gws.lib.net.parse_url(path)
+        u.params.update(params)
+        
+        if mode == 'relative':
+            return gws.lib.net.make_relative_url(u.path, u.params)
 
-        for rule in self.rewriteRules:
-            if rule.reversed:
-                m = re.match(rule.pattern, path)
-                if m:
-                    # we use nginx syntax $1, need python's \1
-                    t = rule.target.replace('$', '\\')
-                    s = re.sub(rule.pattern, t, path)
-                    url = s if gws.lib.net.is_abs_url(s) else base + '/' + s.lstrip('/')
-                    return gws.lib.net.add_params(url, params)
+        u.scheme = req.scheme
+        
+        if mode == 'canonical':
+            u.hostname = self.canonicalHost
+        if not u.hostname:
+            u.hostname = req.host
+            u.port = req.port
+        if not u.hostname:
+            raise gws.BadRequestError('no host for an absolute url')
 
-        url = base + '/' + path.lstrip('/')
-        return gws.lib.net.add_params(url, params)
+        return gws.lib.net.make_url(u)
 
-    def match_host(self, environ):
-        if self.host == '*':
-            return True
-        host, _ = self._host_proto_from_env(environ)
-        lh = host.lower().split(':')[0].strip()
-        return lh == self.host.lower()
-
-    def _host_proto_from_env(self, environ):
-        host = environ.get('HTTP_HOST', '')
-        proto = 'https' if self.ssl else 'http'
-        if not self.useForwardedHost:
-            return host, proto
-        fh = environ.get('HTTP_X_FORWARDED_HOST', '').split(',')[0].strip()
-        fp = environ.get('HTTP_X_FORWARDED_PROTO', '').split(',')[0].strip().lower()
-        return fh or host, fp or proto
+    def _apply_reverse_rewrite_rules(self, path):
+        for r in self.rewriteRules:
+            if not r.reversed:
+                continue
+            m = re.search(r.pattern, path)
+            if not m:
+                continue
+            # we use nginx syntax $1, need python's \1
+            t = r.target.replace('$', '\\')
+            return re.sub(r.pattern, t, path)            
+        
+        return path

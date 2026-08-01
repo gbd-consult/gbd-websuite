@@ -7,7 +7,7 @@ actions+ { type "web" }
 
 locales ["de_DE"]
 
-web.sites+ {
+web.site {
     rewriteRules [
         {
             pattern "^/$"

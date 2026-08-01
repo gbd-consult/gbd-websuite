@@ -4439,6 +4439,13 @@ class WebRequester:
     isSecure: bool
     """The request is secure."""
 
+    scheme: str
+    """Request scheme, http or https."""
+    host: str
+    """Request host name, without the port, empty if the host is invalid."""
+    port: int
+    """Request port, 0 if not given."""
+
     def parse(self):
         """Parse the request data, raise an error if the request is invalid."""
 
@@ -4557,12 +4564,34 @@ class WebRequester:
             A Responder.
         """
 
-    def url_for(self, request_path: str, **kwargs) -> str:
-        """Return a canonical Url for the given request path.
+    def absolute_url_for(self, request_path: str, **params) -> str:
+        """Return an absolute Url, pointing to the requested host.
 
         Args:
             request_path: Request path.
-            **kwargs: Additional GET parameters.
+            **params: Additional GET parameters.
+
+        Returns:
+            An URL.
+        """
+
+    def relative_url_for(self, request_path: str, **params) -> str:
+        """Return a host-relative Url.
+
+        Args:
+            request_path: Request path.
+            **params: Additional GET parameters.
+
+        Returns:
+            An URL.
+        """
+
+    def canonical_url_for(self, request_path: str, **params) -> str:
+        """Return an absolute Url, pointing to the canonical host.
+
+        Args:
+            request_path: Request path.
+            **params: Additional GET parameters.
 
         Returns:
             An URL.
@@ -4666,18 +4695,8 @@ class WebCors(Data):
 class WebManager(Node):
     """Web manager."""
 
-    sites: list['WebSite']
-    """Configured web sites."""
-
-    def site_from_environ(self, environ: dict) -> 'WebSite':
-        """Returns a site object for the given request environment.
-
-        Args:
-            environ: WSGI environment.
-
-        Returns:
-            A Site object.
-        """
+    site: 'WebSite'
+    """Configured web site."""
 
 
 class WebSite(Node):
@@ -4685,34 +4704,32 @@ class WebSite(Node):
 
     assetsRoot: Optional[WebDocumentRoot]
     """Root directory for assets."""
+    canonicalHost: str
+    """Host name for absolute canonical URLs."""
     corsOptions: WebCors
     """CORS options."""
-    host: str
-    """Host name for this site."""
+    hostnames: list[str]
+    """Host names this site responds to."""
     rewriteRules: list[WebRewriteRule]
     """Rewrite rule."""
+    ssl: bool
+    """The site is served over https."""
     staticRoot: WebDocumentRoot
     """Root directory for static files."""
+    useForwardedHeaders: bool
+    """Use X-Forwarded-Host, X-Forwarded-Proto and X-Forwarded-Port."""
 
-    def url_for(self, req: 'WebRequester', path: str, **kwargs) -> str:
+    def url_for(self, req: 'WebRequester', path: str, mode: str, **params) -> str:
         """Rewrite a request path to an Url.
 
         Args:
             req: Web Requester.
             path: Raw request path.
-            **kwargs: Extra GET params.
+            mode: ``absolute``, ``relative`` or ``canonical``.
+            **params: Extra GET params.
 
         Returns:
             A rewritten URL.
-        """
-
-    def match_host(self, environ: dict) -> bool:
-        """Check if the site matches the request host.
-
-        Args:
-            environ: WSGI environment.
-        Returns:
-            True if the site matches the request host.
         """
 ################################################################################
 

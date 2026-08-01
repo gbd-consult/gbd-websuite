@@ -43,8 +43,7 @@ def reload():
 
 
 def handle_request(root: gws.Root, environ) -> gws.WebResponder:
-    site = root.app.webMgr.site_from_environ(environ)
-    req = gws.base.web.wsgi.Requester(root, environ, site)
+    req = gws.base.web.wsgi.Requester(root, environ, root.app.webMgr.site)
 
     try:
         req.parse()

@@ -7,21 +7,30 @@ from . import site
 class Config(gws.Config):
     """Web server configuration"""
 
+    site: Optional[site.Config]
+    """Site configuration. (added in 8.4)"""
     sites: Optional[list[site.Config]]
-    """Configured sites."""
+    """Sites configuration. (deprecated in 8.4)"""
     ssl: Optional[site.SSLConfig]
     """SSL configuration."""
 
 
 class Object(gws.WebManager):
     def configure(self):
-        cfgs = self.cfg('sites') or []
-        if not cfgs:
-            cfgs.append(gws.Config())
+        p = self.cfg('site')
+        if not p:
+            # deprecated
+            cfgs = self.cfg('sites') or []
+            if len(cfgs) > 1:
+                raise gws.ConfigurationError('multiple web sites are not supported')
+            p = cfgs[0] if cfgs else gws.Config()
         if self.cfg('ssl'):
-            cfgs = [gws.u.merge(c, ssl=True) for c in cfgs]
-        self.sites = self.create_children(site.Object, cfgs)
+            p = gws.u.merge(p, ssl=True)
+        self.site = self.create_child(site.Object, p)
 
+        # deprecated
+        self.sites = [self.site]
+        
         self.root.app.middlewareMgr.register(self, 'cors')
 
     ##
@@ -49,12 +58,3 @@ class Object(gws.WebManager):
             res.add_header('Access-Control-Allow-Methods', p)
         else:
             res.add_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-
-    ##
-
-    def site_from_environ(self, environ):
-        for s in self.sites:
-            if s.match_host(environ):
-                return s
-        # there must be a '*' site
-        raise gws.Error('unknown host')

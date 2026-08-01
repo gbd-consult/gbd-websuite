@@ -76,7 +76,11 @@ class Requester(gws.WebRequester):
 
         self.environ = self._wz.environ
         self.method = cast(gws.RequestMethod, self._wz.method.upper())
-        self.isSecure = self._wz.is_secure
+
+        self.scheme = 'http'
+        self.host = ''
+        self.port = 0
+        self.isSecure = False
 
         self.session = root.app.authMgr.guestSession
         self.user = root.app.authMgr.guestUser
@@ -292,8 +296,14 @@ class Requester(gws.WebRequester):
 
     ##
 
-    def url_for(self, path, **kwargs):
-        return self.site.url_for(self, path, **kwargs)
+    def absolute_url_for(self, path, **params):
+        return self.site.url_for(self, path, 'absolute', **params)
+
+    def relative_url_for(self, path, **params):
+        return self.site.url_for(self, path, 'relative', **params)
+
+    def canonical_url_for(self, path, **params):
+        return self.site.url_for(self, path, 'canonical', **params)
 
     ##
 
@@ -307,10 +317,12 @@ class Requester(gws.WebRequester):
 
     def _parse(self):
         if not self._parsed:
-            self._parse2()
             self._parsed = True
+            self._parse2()
 
     def _parse2(self):
+        self._parse_host()
+
         # the server only understands requests to /_ or /_/commandName
         # GET params can be given as query string or encoded in the path
         # like _/commandName/param1/value1/param2/value2 etc
@@ -344,6 +356,36 @@ class Requester(gws.WebRequester):
             self._parsed_params = d
             self._parsed_params_lc = {k.lower(): v for k, v in d.items()}
             self._parsed_query_params = dict(self._wz.args)
+
+    def _parse_host(self):
+        scheme = 'https' if self.site.ssl or self._wz.is_secure else 'http'
+        host = self.environ.get('HTTP_HOST', '')
+        fwd_port = ''
+
+        if self.site.useForwardedHeaders:
+            p = self.environ.get('HTTP_X_FORWARDED_HOST', '').split(',')[0].strip()
+            if p:
+                host = p
+            fwd_port = self.environ.get('HTTP_X_FORWARDED_PORT', '').split(',')[0].strip()
+            p = self.environ.get('HTTP_X_FORWARDED_PROTO', '').split(',')[0].strip().lower()
+            if not self.site.ssl and p in ('http', 'https'):
+                scheme = p
+
+        host, _, port = host.strip().lower().partition(':')
+        port = port or fwd_port
+
+        try:
+            port = int(port)
+        except ValueError:
+            port = 0
+
+        if self.site.hostnames and host not in self.site.hostnames:
+            raise error.BadRequest(f'invalid host {host!r}')
+
+        self.scheme = scheme
+        self.isSecure = scheme == 'https'
+        self.host = host
+        self.port = port
 
     def _struct_type(self, header):
         if header:

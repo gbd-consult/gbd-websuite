@@ -7,7 +7,7 @@
     @let LOG_LEVEL = 'debug'
 @end
 
-@let SITE = root.app.webMgr.sites[0]
+@let SITE = root.app.webMgr.site
 
 @let UWSGI_PARAMS
     uwsgi_param QUERY_STRING $query_string;
@@ -94,24 +94,20 @@
     client_body_buffer_size 4m;
     client_body_temp_path {gws.u.ensure_dir(gws.c.TMP_DIR + '/nginx')};
 
-    @for site in root.app.webMgr.sites
-        @for r in site.rewriteRules
-            @if not r.reversed
-                rewrite {r.pattern} {r.target} last;
-            @end
+    @for r in SITE.rewriteRules
+        @if not r.reversed
+            rewrite {r.pattern} {r.target} last;
         @end
     @end
 
-    @for site in root.app.webMgr.sites
-        location / {
-            root {site.staticRoot.dir};
-            try_files $uri $uri/ $uri/index.html @cache;
-        }
-        location = /favicon.ico {
-            root /;
-            try_files {site.staticRoot.dir}$uri {gws.c.APP_DIR}/gws/base/web/favicon.ico =404;
-        }
-    @end
+    location / {
+        root {SITE.staticRoot.dir};
+        try_files $uri $uri/ $uri/index.html @cache;
+    }
+    location = /favicon.ico {
+        root /;
+        try_files {SITE.staticRoot.dir}$uri {gws.c.APP_DIR}/gws/base/web/favicon.ico =404;
+    }
 
     location @cache {
         root {gws.c.FASTCACHE_DIR};

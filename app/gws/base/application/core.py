@@ -203,7 +203,7 @@ class Object(gws.Application):
             homeResources = [],
             projectResources = [],
         )
-        if gws.u.is_file(self.webMgr.sites[0].staticRoot.dir + f'/{DEFAULT_CSS_FILENAME}'):
+        if gws.u.is_file(self.webMgr.site.staticRoot.dir + f'/{DEFAULT_CSS_FILENAME}'):
             defaults.homeResources = [f'/{DEFAULT_CSS_FILENAME}']
             defaults.projectResources = [f'/{DEFAULT_CSS_FILENAME}']
         

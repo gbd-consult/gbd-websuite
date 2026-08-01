@@ -1,9 +1,8 @@
 actions+ { type "web" }
 
-web.sites+ {
+web.site {
     assets.dir "/demos/assets"
     root.dir "/data/web"
-    host "*"
     rewriteRules [
         {
             pattern "^/project/([a-z0-9_.-]+)/([a-z][a-z])"

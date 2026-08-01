@@ -16,13 +16,13 @@ def test_parse_url():
         stem='file',
         extension='ext',
     ))
-    assert pp.params == {'lower': 'AA/BB:CC', 'upper': 'DDD'}
+    assert pp.params == {'lower': 'AA/BB:CC', 'UPPER': 'DDD'}
     assert pp.qsl == [('lower', 'AA/BB:CC'), ('UPPER', 'DDD')]
     assert pp.fragment == 'hash'
     assert pp.hostname == 'foo.bar'
     assert pp.netloc == 'foo.bar:1234'
     assert pp.password == ''
-    assert pp.port == '1234'
+    assert pp.port == 1234
     assert pp.query == 'lower=AA%2FBB%3ACC&UPPER=DDD'
     assert pp.scheme == 'http'
     assert pp.username == ''

@@ -29,7 +29,7 @@ class Url(gws.Data):
     password: str
     path: str
     pathparts: gws.lib.osx.ParsePathResult
-    port: str
+    port: int
     qsl: list
     query: str
     scheme: str
@@ -44,6 +44,7 @@ def parse_url(url: str, **kwargs) -> Url:
         url = '//' + url
 
     us = urllib.parse.urlsplit(url)
+
     u = Url(
         fragment=us.fragment or '',
         hostname=us.hostname or '',
@@ -52,7 +53,7 @@ def parse_url(url: str, **kwargs) -> Url:
         password=us.password or '',
         path=us.path or '',
         pathparts=gws.lib.osx.ParsePathResult(),
-        port=str(us.port or ''),
+        port=0,
         qsl=[],
         query=us.query or '',
         scheme=us.scheme or '',
@@ -60,13 +61,19 @@ def parse_url(url: str, **kwargs) -> Url:
         username=us.username or '',
     )
 
+    if us.port:
+        try:
+            u.port = int(us.port)
+        except ValueError:
+            pass
+
     if u.path:
         u.pathparts = gws.lib.osx.parse_path(u.path)
 
     if u.query:
         u.qsl = urllib.parse.parse_qsl(u.query)
         for k, v in u.qsl:
-            u.params.setdefault(k.lower(), v)
+            u.params.setdefault(k, v)
 
     if u.username:
         u.username = unquote(u.username)
@@ -169,6 +176,17 @@ def add_params(url: str, params: dict = None, **kwargs) -> str:
         u.params.update(params)
     u.params.update(kwargs)
     return make_url(u)
+
+
+def make_relative_url(path: str, params: dict = None, **kwargs) -> str:
+    s = '/' + quote_path(path.lstrip('/'))
+    p = {}
+    if params:
+        p.update(params)
+    p.update(kwargs)
+    if p:
+        s += '?' + make_qs(p)
+    return s
 
 
 def extract_params(url: str) -> tuple[str, dict]:
