@@ -72,6 +72,30 @@ def test_get_features(root: gws.Root):
     assert [f.get('a') for f in fs] == ['22', '33']
 
 
+def test_find_features_with_limit(root: gws.Root):
+    mc = gws.ModelContext(
+        user=u.auth.system_user(),
+        op=gws.ModelOperation.read,
+    )
+    mo = u.cast(gws.Model, root.get('PLAIN'))
+
+    u.pg.clear('plain')
+    u.pg.insert('plain', [
+        dict(id=1, a='11'),
+        dict(id=2, a='22'),
+        dict(id=3, a='33'),
+        dict(id=4, a='44'),
+    ])
+
+    sort = [gws.SearchSort(fieldName='id', reverse=False)]
+
+    fs = mo.find_features(gws.SearchQuery(sort=sort), mc)
+    assert [f.get('a') for f in fs] == ['11', '22', '33', '44']
+
+    fs = mo.find_features(gws.SearchQuery(sort=sort, limit=2), mc)
+    assert [f.get('a') for f in fs] == ['11', '22']
+
+
 ##
 
 def test_create_with_explicit_pk(root: gws.Root):

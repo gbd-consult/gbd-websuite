@@ -149,6 +149,9 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
         if mc.dbSelect.order:
             sel = sel.order_by(*mc.dbSelect.order)
 
+        if mc.search.limit:
+            sel = sel.limit(mc.search.limit)
+
         return sel
 
     ##

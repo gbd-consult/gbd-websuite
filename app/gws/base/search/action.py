@@ -80,8 +80,8 @@ class Object(gws.base.action.Object):
             search.bounds = gws.Bounds(crs=p.crs or project.map.bounds.crs, extent=p.extent)
 
         search.limit = self.limit
-        if p.limit:
-            search.limit = min(int(p.limit), self.limit)
+        if p.limit and int(p.limit) > 0:
+            search.limit = min(int(p.limit), self.limit) if self.limit else int(p.limit)
 
         if p.shapes:
             shapes = [gws.base.shape.from_props(s) for s in p.shapes]

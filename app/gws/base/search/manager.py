@@ -13,18 +13,18 @@ class Object(gws.SearchManager):
             for layer in search.layers:
                 for finder in layer.finders:
                     self._run_search(search, user, finder, layer, results)
-                    if len(results) > search.limit:
+                    if search.limit and len(results) > search.limit:
                         return results[: search.limit]
 
         if search.project:
             for finder in search.project.finders:
                 self._run_search(search, user, finder, None, results)
-                if len(results) > search.limit:
+                if search.limit and len(results) > search.limit:
                     return results[: search.limit]
 
         for finder in self.root.app.finders:
             self._run_search(search, user, finder, None, results)
-            if len(results) > search.limit:
+            if search.limit and len(results) > search.limit:
                 return results[: search.limit]
 
         return results
@@ -65,7 +65,7 @@ class Object(gws.SearchManager):
                 feature.transform_to(search.bounds.crs)
 
             results.append(gws.SearchResult(feature=feature, layer=layer, finder=finder))
-            if len(results) > search.limit:
+            if search.limit and len(results) > search.limit:
                 break
 
         gws.log.debug(f'SEARCH_END, found={len(features)}')
