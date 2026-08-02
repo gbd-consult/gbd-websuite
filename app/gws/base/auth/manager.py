@@ -104,6 +104,7 @@ class Object(gws.AuthManager):
     ##
 
     def authenticate(self, method, credentials):
+        # @TODO no rate limiting, lockout or backoff on credential endpoints.
         for prov in self.providers:
             if prov.allowedMethods and method.extType not in prov.allowedMethods:
                 continue
