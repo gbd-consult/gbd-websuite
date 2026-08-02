@@ -48,21 +48,21 @@ def test_db_recreated_if_deleted():
 
     am, sm, usr = _prepare()
     s1 = sm.create(am.methods[0], usr, {'foo': 'bar'})
-    assert sm.get_valid(s1.uid).get('foo') == 'bar'
+    assert sm.get(s1.uid).get('foo') == 'bar'
 
     osx.unlink(DB_PATH)
 
     # should not raise
-    assert sm.get_valid(s1.uid) is None
+    assert sm.get(s1.uid) is None
 
     # 'save' has no effect, the session is gone
     s1.set('foo', 'bar2')
     sm.save(s1)
-    assert sm.get_valid(s1.uid) is None
+    assert sm.get(s1.uid) is None
 
     # 'create' is fine
     s2 = sm.create(am.methods[0], usr, {'foo': 'bar3'})
-    assert sm.get_valid(s2.uid).get('foo') == 'bar3'
+    assert sm.get(s2.uid).get('foo') == 'bar3'
 
 
 def test_create_session():
@@ -70,7 +70,7 @@ def test_create_session():
     am, sm, usr = _prepare()
 
     s1 = sm.create(am.methods[0], usr)
-    s2 = sm.get_valid(s1.uid)
+    s2 = sm.get(s1.uid)
 
     assert s1.user.uid == s2.user.uid
     assert s1.method.uid == s2.method.uid
@@ -85,7 +85,7 @@ def test_update_session():
     u1 = s1.updated
     gws.u.sleep(1)
     sm.save(s1)
-    s2 = sm.get_valid(s1.uid)
+    s2 = sm.get(s1.uid)
     u2 = s2.updated
     assert s2.get('foo') == 'bar'
     assert u2 > u1
@@ -118,8 +118,8 @@ def test_session_expiration():
 
     gws.u.sleep(1)
 
-    dead2 = sm.get_valid(dead.uid)
-    live2 = sm.get_valid(live.uid)
+    dead2 = sm.get(dead.uid)
+    live2 = sm.get(live.uid)
 
     assert dead2 is None
     assert live2.uid == live.uid
@@ -155,7 +155,7 @@ def test_concurrency():
     # ensure everything is written
 
     am, sm, usr = _prepare()
-    all_sess = sm.get_all()
+    all_sess = sm.list_all()
     assert len(all_sess) == num_processes
 
     v1 = set(f'{n}:{num_loops - 1}' for n in range(num_processes))

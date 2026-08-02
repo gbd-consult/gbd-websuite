@@ -53,7 +53,8 @@ class Object(gws.base.auth.method.Object):
             return am.sessionMgr.create(self, user)
 
     def close_session(self, req, res):
-        pass
+        am = self.root.app.authMgr
+        am.sessionMgr.delete(req.session)
 
     def _parse_header(self, req: gws.WebRequester):
         h = req.header(self.header)

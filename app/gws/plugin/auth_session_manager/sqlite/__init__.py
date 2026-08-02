@@ -8,6 +8,8 @@ import gws.lib.sqlitex
 
 gws.ext.new.authSessionManager('sqlite')
 
+_CLEANUP_INTERVAL = 600
+
 
 class Config(gws.base.auth.session_manager.Config):
     """Configuration for sqlite sessions"""
@@ -26,11 +28,17 @@ class Object(gws.base.auth.session_manager.Object):
 
     ##
 
+    _cleanupTime = 0
+
     def cleanup(self):
         last_time = gws.u.stime() - self.lifeTime
         self._db().execute(f'DELETE FROM {self.table} WHERE updated < :last_time', last_time=last_time)
+        self._cleanupTime = gws.u.stime()
 
     def create(self, method, user, data=None):
+        if gws.u.stime() > self._cleanupTime + _CLEANUP_INTERVAL:
+            self.cleanup()
+
         am = self.root.app.authMgr
         uid = gws.u.random_string(64)
 
@@ -53,19 +61,15 @@ class Object(gws.base.auth.session_manager.Object):
         self._db().execute(f'DELETE FROM {self.table}')
 
     def get(self, uid):
-        rs = self._db().select(f'SELECT * FROM {self.table} WHERE uid=:uid', uid=uid)
+        last_time = gws.u.stime() - self.lifeTime
+        rs = self._db().select(
+            f'SELECT * FROM {self.table} WHERE uid=:uid AND updated >= :last_time',
+            uid=uid, last_time=last_time
+        )
         if len(rs) == 1:
             return self._session(rs[0])
 
-    def get_valid(self, uid):
-        last_time = gws.u.stime() - self.lifeTime
-        rs = self._db().select(f'SELECT * FROM {self.table} WHERE uid=:uid', uid=uid)
-        if len(rs) == 1:
-            rec = gws.u.to_dict(rs[0])
-            if rec['updated'] >= last_time:
-                return self._session(rec)
-
-    def get_all(self):
+    def list_all(self):
         return [
             self._session(rec)
             for rec in self._db().select(f'SELECT * FROM {self.table}')

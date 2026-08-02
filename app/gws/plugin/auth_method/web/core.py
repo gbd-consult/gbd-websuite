@@ -119,7 +119,7 @@ class Object(gws.base.auth.method.Object):
         if not sid:
             return
 
-        sess = am.sessionMgr.get_valid(sid)
+        sess = am.sessionMgr.get(sid)
 
         if not sess:
             gws.log.debug(f'open_session: {sid=} not found or invalid')

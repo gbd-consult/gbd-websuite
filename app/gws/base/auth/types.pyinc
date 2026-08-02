@@ -426,26 +426,16 @@ class AuthSessionManager(Node):
         """
 
     def get(self, uid: str) -> Optional['AuthSession']:
-        """Get Session by its uid.
-
-        Args:
-            uid: Session uid.
-
-        Returns:
-            A Session or ``None``.
-        """
-
-    def get_valid(self, uid: str) -> Optional['AuthSession']:
         """Get a valid Session by its uid.
 
         Args:
             uid: Session uid.
 
         Returns:
-            A Session or ``None`` if uid does not exists or the Session is not valid.
+            A Session or ``None`` if uid does not exist or the Session is not valid.
         """
 
-    def get_all(self) -> list['AuthSession']:
+    def list_all(self) -> list['AuthSession']:
         """Get all sessions."""
 
     def save(self, sess: 'AuthSession'):

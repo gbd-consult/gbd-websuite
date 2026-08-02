@@ -414,7 +414,7 @@ class Object(gws.base.action.Object):
             raise gws.ForbiddenError('token_auth: missing or invalid Authorization header')
         token = m.group(1)
         am = self.root.app.authMgr
-        sess = am.sessionMgr.get_valid(token)
+        sess = am.sessionMgr.get(token)
         if not sess:
             raise gws.ForbiddenError(f'token_auth: invalid or expired {token=}')
         rx.sess = sess

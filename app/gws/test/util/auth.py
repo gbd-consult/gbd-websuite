@@ -14,18 +14,23 @@ MFA_VALID_CODE = 'yes'
 _USER_DATA = {}
 
 
-def add_user(name, password='', roles=None, **kwargs):
+def add_user(name, password='', roles=None, token='', **kwargs):
     _USER_DATA[name] = {
         'localUid': name,
         'loginName': name,
         'password': password or '',
         'roles': roles or [],
-        **kwargs
+        'token': token or '',
+        **kwargs,
     }
 
 
 def delete_user(name):
     _USER_DATA.pop(name, None)
+
+
+def drop_users():
+    _USER_DATA.clear()
 
 
 def system_user():
@@ -44,6 +49,8 @@ class Provider1(gws.base.auth.provider.Object):
     def authenticate(self, method, credentials):
         for ud in _USER_DATA.values():
             if credentials.get('username', '') == ud['loginName'] and credentials.get('password', '') == ud['password']:
+                return self.get_user(ud['localUid'])
+            if ud['token'] and credentials.get('token', '') == ud['token']:
                 return self.get_user(ud['localUid'])
 
     def get_user(self, local_uid):

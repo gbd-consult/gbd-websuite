@@ -32,7 +32,7 @@ class Object(gws.Node):
 
         rows = []
 
-        for s in sm.get_all():
+        for s in sm.list_all():
             dc = dtx.total_difference(s.created).seconds
             du = dtx.total_difference(s.updated).seconds
             dd = dtx.total_difference(s.created, s.updated).seconds
@@ -60,7 +60,7 @@ class Object(gws.Node):
 
         n = 0
 
-        for s in sm.get_all():
+        for s in sm.list_all():
             du = dtx.total_difference(s.updated).seconds
             if p.all:
                 sm.delete(s)
