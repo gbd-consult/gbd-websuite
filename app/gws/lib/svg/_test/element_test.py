@@ -75,7 +75,7 @@ def test_fragment_to_element_empty_fragment():
 #   gws.lib.image.from_svg(el.to_string(), size, mime)
 
 
-def test_sanitize_element_allowed_tags():
+def test_normalize_element_allowed_tags():
     """Test sanitization of allowed tags."""
     # Create an SVG with allowed tags                                                                                                                                                  
     svg = xmlx.tag('svg',
@@ -84,8 +84,8 @@ def test_sanitize_element_allowed_tags():
                    xmlx.tag('rect', {'x': '10', 'y': '10', 'width': '80', 'height': '80', 'fill': 'red'})
                    )
 
-    # Sanitize                                                                                                                                                                         
-    result = svg_element.sanitize_element(svg)
+    # normalize                                                                                                                                                                         
+    result = svg_element.normalize_element(svg)
 
     # Verify allowed tags are preserved                                                                                                                                                
     assert result is not None
@@ -94,7 +94,7 @@ def test_sanitize_element_allowed_tags():
     assert result.children()[1].name == 'rect'
 
 
-def test_sanitize_element_disallowed_tags():
+def test_normalize_element_disallowed_tags():
     """Test sanitization of disallowed tags."""
     # Create an SVG with a disallowed tag (script)                                                                                                                                     
     svg = xmlx.tag('svg',
@@ -103,8 +103,8 @@ def test_sanitize_element_disallowed_tags():
                    xmlx.tag('script', {}, "alert('XSS attack');")
                    )
 
-    # Sanitize                                                                                                                                                                         
-    result = svg_element.sanitize_element(svg)
+    # normalize                                                                                                                                                                         
+    result = svg_element.normalize_element(svg)
 
     # Verify disallowed tags are removed                                                                                                                                               
     assert result is not None
@@ -112,7 +112,7 @@ def test_sanitize_element_disallowed_tags():
     assert result.children()[0].name == 'circle'
 
 
-def test_sanitize_element_allowed_attributes():
+def test_normalize_element_allowed_attributes():
     """Test sanitization of allowed attributes."""
     # Create an element with allowed attributes                                                                                                                                        
     svg = xmlx.tag('svg', {'width': '100', 'height': '100'},
@@ -126,8 +126,8 @@ def test_sanitize_element_allowed_attributes():
                    })
                    )
 
-    # Sanitize                                                                                                                                                                         
-    result = svg_element.sanitize_element(svg)
+    # normalize                                                                                                                                                                         
+    result = svg_element.normalize_element(svg)
 
     # Verify allowed attributes are preserved                                                                                                                                          
     circle = result.children()[0]
@@ -136,7 +136,7 @@ def test_sanitize_element_allowed_attributes():
     assert circle.attr('stroke-width') == '2'
 
 
-def test_sanitize_element_disallowed_attributes():
+def test_normalize_element_disallowed_attributes():
     """Test sanitization of disallowed attributes."""
     # Create an element with disallowed attributes                                                                                                                                     
     svg = xmlx.tag('svg', {'width': '100', 'height': '100'},
@@ -152,8 +152,8 @@ def test_sanitize_element_disallowed_attributes():
                    })
                    )
 
-    # Sanitize                                                                                                                                                                         
-    result = svg_element.sanitize_element(svg)
+    # normalize                                                                                                                                                                         
+    result = svg_element.normalize_element(svg)
 
     # Verify disallowed attributes are removed                                                                                                                                         
     circle = result.children()[0]
@@ -162,7 +162,7 @@ def test_sanitize_element_disallowed_attributes():
     assert circle.attr('onclick') == ''
 
 
-def test_sanitize_element_url_attributes():
+def test_normalize_element_url_attributes():
     """Test sanitization of URL attributes."""
     # Create an element with URL attributes                                                                                                                                            
     svg = xmlx.tag('svg', {'width': '100', 'height': '100'},
@@ -176,8 +176,8 @@ def test_sanitize_element_url_attributes():
                    })
                    )
 
-    # Sanitize                                                                                                                                                                         
-    result = svg_element.sanitize_element(svg)
+    # normalize                                                                                                                                                                         
+    result = svg_element.normalize_element(svg)
 
     # Verify URL attributes are removed                                                                                                                                                
     circle = result.children()[0]
@@ -185,7 +185,7 @@ def test_sanitize_element_url_attributes():
     assert circle.attr('stroke') == 'black'
 
 
-def test_sanitize_element_nested_structure():
+def test_normalize_element_nested_structure():
     """Test sanitization of nested elements."""
     # Create a nested structure with allowed and disallowed elements                                                                                                                   
     svg = xmlx.tag('svg', {'width': '100', 'height': '100'},
@@ -198,8 +198,8 @@ def test_sanitize_element_nested_structure():
                    # Disallowed
                    )
 
-    # Sanitize                                                                                                                                                                         
-    result = svg_element.sanitize_element(svg)
+    # normalize                                                                                                                                                                         
+    result = svg_element.normalize_element(svg)
 
     # Verify structure is preserved but disallowed elements are removed                                                                                                                
     assert result is not None
@@ -211,7 +211,7 @@ def test_sanitize_element_nested_structure():
     assert g.children()[0].name == 'circle'
 
 
-def test_sanitize_element_empty_result():
+def test_normalize_element_empty_result():
     """Test sanitization that results in an empty SVG."""
     # Create an SVG with only disallowed tags                                                                                                                                          
     svg = xmlx.tag('svg', {'width': '100', 'height': '100'},
@@ -219,14 +219,15 @@ def test_sanitize_element_empty_result():
                    xmlx.tag('foreignObject', {}, "Some foreign content")
                    )
 
-    # Sanitize                                                                                                                                                                         
-    result = svg_element.sanitize_element(svg)
+    # normalize                                                                                                                                                                         
+    result = svg_element.normalize_element(svg)
 
     # Verify we get an empty SVG                                                                                                                                                       
-    assert not result
+    assert result.name == 'svg'
+    assert len(result.children()) == 0
 
 
-def test_sanitize_element_data_url():
+def test_normalize_element_data_url():
     """Test sanitization of data URLs."""
     # Create an element with a data URL                                                                                                                                                
     svg = xmlx.tag('svg', {'width': '100', 'height': '100'},
@@ -238,8 +239,8 @@ def test_sanitize_element_data_url():
                    })
                    )
 
-    # Sanitize                                                                                                                                                                         
-    result = svg_element.sanitize_element(svg)
+    # normalize                                                                                                                                                                         
+    result = svg_element.normalize_element(svg)
 
     # Verify data URL is removed                                                                                                                                                       
     circle = result.children()[0]

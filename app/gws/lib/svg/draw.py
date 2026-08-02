@@ -15,9 +15,14 @@ import gws.base.shape
 import gws.lib.uom
 import gws.lib.xmlx as xmlx
 
+from . import element
+
 DEFAULT_FONT_SIZE = 10
 DEFAULT_MARKER_SIZE = 10
 DEFAULT_POINT_SIZE = 10
+
+MAX_SOUP_POINTS = 5000
+MAX_SOUP_TAGS = 5000
 
 
 def shape_to_fragment(shape: gws.Shape, view: gws.MapView, label: str = None, style: gws.Style = None) -> list[gws.XmlElement]:
@@ -117,8 +122,17 @@ def soup_to_fragment(view: gws.MapView, points: list[gws.Point], tags: list) -> 
 
     """
 
+    if len(points) > MAX_SOUP_POINTS:
+        raise gws.Error(f'too many soup points: {len(points)}')
+    if len(tags) > MAX_SOUP_TAGS:
+        raise gws.Error(f'too many soup tags: {len(tags)}')
+
     trans = gws.gis.render.map_view_transformer(view)
-    px = [trans(*p) for p in points]
+
+    try:
+        px = [trans(*p) for p in points]
+    except Exception as exc:
+        raise gws.Error('invalid soup') from exc
 
     def eval_func(v):
         if v[0] == 'x':
@@ -130,23 +144,31 @@ def soup_to_fragment(view: gws.MapView, points: list[gws.Point], tags: list) -> 
             adeg = math.degrees(a)
             x, y = px[v[3]]
             return f'rotate({adeg:.0f}, {x:.0f}, {y:.0f})'
+        raise gws.Error(f'unknown soup function: {v[0]!r}')
 
-    def convert(tag):
+    def eval_funcs(tag):
+        res = []
         for arg in tag:
-            if isinstance(arg, (list, tuple)):
-                convert(arg)
-            elif isinstance(arg, dict):
+            if isinstance(arg, dict):
+                d = {}
                 for k, v in arg.items():
-                    if isinstance(v, (list, tuple)):
-                        arg[k] = eval_func(v)
+                    d[k] = eval_func(v) if isinstance(v, (list, tuple)) else v
+                res.append(d)
+            elif isinstance(arg, (list, tuple)):
+                res.append(eval_funcs(arg))
+            else:
+                res.append(arg)
+        return res
 
     els = []
 
-    for tag in tags:
-        convert(tag)
-        els.append(xmlx.tag(*tag))
+    try:
+        for tag in tags:
+            els.append(xmlx.tag(*eval_funcs(tag)))
+    except Exception as exc:
+        raise gws.Error('invalid soup') from exc
 
-    return els
+    return element.normalize_fragment(els)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
