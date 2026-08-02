@@ -84,6 +84,7 @@ def main(args):
     )
 
     OPTIONS['LOCAL_APP_DIR'] = LOCAL_APP_DIR
+    OPTIONS['HOST_OS'] = sys.platform
 
     p = OPTIONS.get('runner.base_dir') or gws.env.GWS_TEST_DIR
     if not p:

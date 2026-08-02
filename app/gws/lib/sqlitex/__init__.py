@@ -1,18 +1,37 @@
-"""Convenience wrapper for the SA SQLite engine.
+"""Convenience wrapper for the SQLite driver.
 
-This wrapper accepts a database path and optionally an "init" DDL statement.
+This wrapper accepts a database path and optionally an "init" DDL script.
 It executes queries given in a text form.
 
-Failed queries are repeated up to 3 times to work around transient errors, like the DB being locked.
+Each query runs on its own connection, which is closed immediately afterwards.
 
-If the error message is "no such table", the wrapper runs the  "init" DDL before repeating.
+If a query fails with "no such table", the wrapper runs the "init" script and repeats the query once.
+The script can contain multiple statements.
+
+A query that fails with a recoverable error is repeated on a new connection.
 
 """
 
-from typing import Optional
+import sqlite3
 
 import gws
-import gws.lib.sa as sa
+
+BUSY_TIMEOUT = 5.0
+"""Time in seconds to wait for a lock before giving up."""
+
+MAX_ATTEMPTS = 3
+"""How many times to repeat a query that failed with a recoverable error."""
+
+SLEEP_TIME = 0.1
+"""Time in seconds to wait between the attempts."""
+
+_RECOVERABLE_ERRORS = {
+    'SQLITE_BUSY',
+    'SQLITE_CANTOPEN',
+    'SQLITE_LOCKED',
+    'SQLITE_PROTOCOL',
+}
+"""Errors worth repeating, matched against the leading part of the sqlite error name."""
 
 
 class Error(gws.Error):
@@ -20,15 +39,13 @@ class Error(gws.Error):
 
 
 class Object:
-    saEngine: sa.Engine
-
-    def __init__(self, db_path: str, init_ddl: Optional[str] = '', connect_args: Optional[dict] = None):
+    def __init__(self, db_path: str, init_ddl: str = '', uid_column: str = 'uid'):
         self.dbPath = db_path
         self.initDDL = init_ddl
-        self.connectArgs = connect_args or {}
+        self.uidName = uid_column
 
     def execute(self, stmt: str, **params):
-        """Execute a text DML statement and commit."""
+        """Execute a text DML statement."""
 
         self._exec2(False, stmt, params)
 
@@ -49,65 +66,57 @@ class Object:
         """Update a record (dict) in a table."""
 
         vals = ','.join(f'{k}=:{k}' for k in rec)
-        self._exec2(False, f'UPDATE {table_name} SET {vals} WHERE uid=:uid', {'uid': uid, **rec})
+        self._exec2(
+            False,
+            f'UPDATE {table_name} SET {vals} WHERE {self.uidName}=:__uid',
+            {'__uid': uid, **rec},
+        )
 
     def delete(self, table_name: str, uid):
         """Delete a record by uid from a table."""
 
-        self._exec2(False, f'DELETE FROM {table_name} WHERE uid=:uid', {'uid': uid})
+        self._exec2(
+            False,
+            f'DELETE FROM {table_name} WHERE {self.uidName}=:__uid',
+            {'__uid': uid},
+        )
 
-        ##
-
-    _MAX_ERRORS = 3
-    _SLEEP_TIME = 0.1
+    ##
 
     def _exec2(self, is_select, stmt, params):
-        err_cnt = 0
+        attempt = 0
 
         while True:
-            sa_exc = None
-
+            attempt += 1
             try:
-                with self._engine().connect() as conn:
-                    if is_select:
-                        return [gws.u.to_dict(r) for r in conn.execute(sa.text(stmt), params)]
-                    conn.execute(sa.text(stmt), params)
-                    conn.commit()
-                    return []
-            except sa.Error as exc:
-                sa_exc = exc
+                return self._exec3(is_select, stmt, params)
+            except sqlite3.Error as exc:
+                gws.log.warning(f'sqlitex: {self.dbPath}: {exc}, sql={" ".join(stmt.split())}')
+                name = getattr(exc, 'sqlite_errorname', '')
+                if not any(name.startswith(e) for e in _RECOVERABLE_ERRORS) or attempt >= MAX_ATTEMPTS:
+                    raise Error(f'sqlitex: {self.dbPath}: {exc}') from exc
+                gws.u.sleep(SLEEP_TIME)
 
-            # @TODO using strings for error checking, is there a better way?
+    def _exec3(self, is_select, stmt, params):
+        conn = None
 
-            if 'no such table' in str(sa_exc) and self.initDDL:
-                gws.log.warning(f'sqlitex: {self.dbPath}: {sa_exc}, running init...')
-                try:
-                    with self._engine().connect() as conn:
-                        conn.execute(sa.text(self.initDDL))
-                        conn.commit()
-                    continue
-                except sa.Error as exc:
-                    sa_exc = exc
+        try:
+            conn = sqlite3.connect(self.dbPath, timeout=BUSY_TIMEOUT, isolation_level=None)
+            conn.row_factory = sqlite3.Row
+            try:
+                return self._exec4(conn, is_select, stmt, params)
+            except sqlite3.OperationalError as exc:
+                if not self.initDDL or 'no such table' not in str(exc):
+                    raise
+                gws.log.warning(f'sqlitex: {self.dbPath}: {exc}, running init...')
+                conn.executescript(self.initDDL)
+                return self._exec4(conn, is_select, stmt, params)
+        finally:
+            if conn:
+                conn.close()
 
-            if 'database is locked' in str(sa_exc):
-                gws.log.warning(f'sqlitex: {self.dbPath}: locked, waiting...')
-                gws.u.sleep(self._SLEEP_TIME)
-                continue
-
-            err_cnt += 1
-            if err_cnt < self._MAX_ERRORS:
-                gws.log.warning(f'sqlitex: {self.dbPath}: {sa_exc}, waiting...')
-                gws.u.sleep(self._SLEEP_TIME)
-                continue
-
-            raise gws.Error(f'sqlitex: {self.dbPath}: {sa_exc}') from sa_exc
-
-    def _engine(self):
-        if getattr(self, 'saEngine', None) is None:
-            self.saEngine = sa.create_engine(
-                f'sqlite:///{self.dbPath}',
-                poolclass=sa.NullPool,
-                echo=False,
-                connect_args=self.connectArgs,
-            )
-        return self.saEngine
+    def _exec4(self, conn, is_select, stmt, params):
+        cur = conn.execute(stmt, params)
+        if is_select:
+            return [dict(r) for r in cur]
+        return []

@@ -34,21 +34,18 @@ class Object(gws.StorageProvider):
             return gws.StorageRecord(**rec)
 
     def write(self, category, name, data, user_uid):
-        rec = self.read(category, name)
-        tmp = gws.u.random_string(64)
-
-        self._db().insert(self.table, dict(
-            category=category,
-            name=tmp if rec else name,
-            user_uid=user_uid,
-            data=data,
-            created=dtx.to_timestamp(rec.created) if rec else gws.u.stime(),
-            updated=gws.u.stime()
-        ))
-
-        if rec:
-            self.delete(category, name)
-            self._db().execute(f'UPDATE {self.table} SET name=:name WHERE name=:tmp', name=name, tmp=tmp)
+        self._db().execute(
+            f'''
+                INSERT INTO {self.table} (category, name, user_uid, data, created, updated)
+                VALUES (:category, :name, :user_uid, :data, :created, :updated)
+                ON CONFLICT (category, name) DO UPDATE SET
+                    user_uid=excluded.user_uid,
+                    data=excluded.data,
+                    updated=excluded.updated
+            ''',
+            category=category, name=name, user_uid=user_uid, data=data,
+            created=gws.u.stime(), updated=gws.u.stime()
+        )
 
     def delete(self, category, name):
         self._db().execute(

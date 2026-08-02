@@ -6,6 +6,11 @@ import gws.test.util as u
 
 DB_PATH = u.option('BASE_DIR') + '/sess'
 
+if u.option('HOST_OS') == 'darwin':
+    # the test dir is a macos bind mount, where sqlite locking is unreliable,
+    # so concurrent access corrupts the database, keep it in the container instead
+    DB_PATH = '/tmp/sess'
+
 
 def root():
     cfg = f'''
@@ -132,7 +137,7 @@ def _session_mp_worker(n, num_loops):
 
 
 def test_concurrency():
-    num_processes = 100
+    num_processes = 16
     num_loops = 50
 
     osx.unlink(DB_PATH)

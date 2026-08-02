@@ -47,7 +47,6 @@ class Object(gws.JobManager):
         self._write(
             job_uid,
             dict(
-                uid=job_uid,
                 userUid=user.uid,
                 userStr=self.root.app.authMgr.serialize_user(user),
                 worker=f'{mod_path}:{worker.__name__}',

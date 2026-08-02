@@ -1,7 +1,10 @@
 """Tests for the sqlitex module."""
 
 import multiprocessing
+import os
+
 import gws.lib.sqlitex as sqlitex
+import gws.test.util as u
 
 
 def test_basic_insert_and_select(tmp_path):
@@ -9,24 +12,24 @@ def test_basic_insert_and_select(tmp_path):
     db_path = tmp_path / 'test.db'
 
     init_ddl = """
-        CREATE TABLE users (
+        CREATE TABLE t1 (
             uid INTEGER PRIMARY KEY,
-            name TEXT,
-            email TEXT
+            aaa TEXT,
+            bbb TEXT
         )
     """
 
     db = sqlitex.Object(str(db_path), init_ddl)
 
     # Insert a record
-    db.insert('users', {'uid': 1, 'name': 'Alice', 'email': 'alice@example.com'})
+    db.insert('t1', {'uid': 111, 'aaa': '111', 'bbb': '222'})
 
     # Select and verify
-    results = db.select('SELECT * FROM users WHERE uid = :uid', uid=1)
+    results = db.select('SELECT * FROM t1 WHERE uid = :uid', uid=111)
     assert len(results) == 1
-    assert results[0]['uid'] == 1
-    assert results[0]['name'] == 'Alice'
-    assert results[0]['email'] == 'alice@example.com'
+    assert results[0]['uid'] == 111
+    assert results[0]['aaa'] == '111'
+    assert results[0]['bbb'] == '222'
 
 
 def test_update_operation(tmp_path):
@@ -34,26 +37,26 @@ def test_update_operation(tmp_path):
     db_path = tmp_path / 'test.db'
 
     init_ddl = """
-        CREATE TABLE users (
+        CREATE TABLE t1 (
             uid INTEGER PRIMARY KEY,
-            name TEXT,
-            email TEXT
+            aaa TEXT,
+            bbb TEXT
         )
     """
 
     db = sqlitex.Object(str(db_path), init_ddl)
 
     # Insert a record
-    db.insert('users', {'uid': 1, 'name': 'Bob', 'email': 'bob@example.com'})
+    db.insert('t1', {'uid': 111, 'aaa': '111', 'bbb': '222'})
 
     # Update the record
-    db.update('users', {'name': 'Robert', 'email': 'robert@example.com'}, uid=1)
+    db.update('t1', {'aaa': '333', 'bbb': '444'}, uid=111)
 
     # Verify update
-    results = db.select('SELECT * FROM users WHERE uid = :uid', uid=1)
+    results = db.select('SELECT * FROM t1 WHERE uid = :uid', uid=111)
     assert len(results) == 1
-    assert results[0]['name'] == 'Robert'
-    assert results[0]['email'] == 'robert@example.com'
+    assert results[0]['aaa'] == '333'
+    assert results[0]['bbb'] == '444'
 
 
 def test_delete_operation(tmp_path):
@@ -61,26 +64,26 @@ def test_delete_operation(tmp_path):
     db_path = tmp_path / 'test.db'
 
     init_ddl = """
-        CREATE TABLE users (
+        CREATE TABLE t1 (
             uid INTEGER PRIMARY KEY,
-            name TEXT
+            aaa TEXT
         )
     """
 
     db = sqlitex.Object(str(db_path), init_ddl)
 
     # Insert records
-    db.insert('users', {'uid': 1, 'name': 'Charlie'})
-    db.insert('users', {'uid': 2, 'name': 'Diana'})
+    db.insert('t1', {'uid': 111, 'aaa': '111'})
+    db.insert('t1', {'uid': 222, 'aaa': '222'})
 
     # Delete one record
-    db.delete('users', uid=1)
+    db.delete('t1', uid=111)
 
     # Verify deletion
-    results = db.select('SELECT * FROM users')
+    results = db.select('SELECT * FROM t1')
     assert len(results) == 1
-    assert results[0]['uid'] == 2
-    assert results[0]['name'] == 'Diana'
+    assert results[0]['uid'] == 222
+    assert results[0]['aaa'] == '222'
 
 
 def test_execute_statement(tmp_path):
@@ -88,23 +91,23 @@ def test_execute_statement(tmp_path):
     db_path = tmp_path / 'test.db'
 
     init_ddl = """
-        CREATE TABLE products (
+        CREATE TABLE t1 (
             uid INTEGER PRIMARY KEY,
-            name TEXT,
-            price REAL
+            aaa TEXT,
+            bbb REAL
         )
     """
 
     db = sqlitex.Object(str(db_path), init_ddl)
 
     # Use execute for insert
-    db.execute('INSERT INTO products (uid, name, price) VALUES (:uid, :name, :price)', uid=1, name='Widget', price=9.99)
+    db.execute('INSERT INTO t1 (uid, aaa, bbb) VALUES (:uid, :aaa, :bbb)', uid=111, aaa='111', bbb=1.5)
 
     # Verify
-    results = db.select('SELECT * FROM products WHERE uid = :uid', uid=1)
+    results = db.select('SELECT * FROM t1 WHERE uid = :uid', uid=111)
     assert len(results) == 1
-    assert results[0]['name'] == 'Widget'
-    assert results[0]['price'] == 9.99
+    assert results[0]['aaa'] == '111'
+    assert results[0]['bbb'] == 1.5
 
 
 def test_auto_init_on_missing_table(tmp_path):
@@ -112,21 +115,21 @@ def test_auto_init_on_missing_table(tmp_path):
     db_path = tmp_path / 'test.db'
 
     init_ddl = """
-        CREATE TABLE items (
+        CREATE TABLE t1 (
             uid INTEGER PRIMARY KEY,
-            description TEXT
+            aaa TEXT
         )
     """
 
     db = sqlitex.Object(str(db_path), init_ddl)
 
     # First query should trigger init_ddl
-    db.insert('items', {'uid': 1, 'description': 'Test item'})
+    db.insert('t1', {'uid': 111, 'aaa': '111'})
 
     # Verify it worked
-    results = db.select('SELECT * FROM items')
+    results = db.select('SELECT * FROM t1')
     assert len(results) == 1
-    assert results[0]['description'] == 'Test item'
+    assert results[0]['aaa'] == '111'
 
 
 def test_multiple_inserts(tmp_path):
@@ -134,9 +137,9 @@ def test_multiple_inserts(tmp_path):
     db_path = tmp_path / 'test.db'
 
     init_ddl = """
-        CREATE TABLE records (
+        CREATE TABLE t1 (
             uid INTEGER PRIMARY KEY,
-            value INTEGER
+            aaa INTEGER
         )
     """
 
@@ -144,14 +147,14 @@ def test_multiple_inserts(tmp_path):
 
     # Insert multiple records
     for i in range(1, 6):
-        db.insert('records', {'uid': i, 'value': i * 10})
+        db.insert('t1', {'uid': i, 'aaa': i * 10})
 
     # Verify all records
-    results = db.select('SELECT * FROM records ORDER BY uid')
+    results = db.select('SELECT * FROM t1 ORDER BY uid')
     assert len(results) == 5
     for i, record in enumerate(results, start=1):
         assert record['uid'] == i
-        assert record['value'] == i * 10
+        assert record['aaa'] == i * 10
 
 
 def test_select_with_parameters(tmp_path):
@@ -159,27 +162,26 @@ def test_select_with_parameters(tmp_path):
     db_path = tmp_path / 'test.db'
 
     init_ddl = """
-        CREATE TABLE employees (
+        CREATE TABLE t1 (
             uid INTEGER PRIMARY KEY,
-            name TEXT,
-            department TEXT,
-            salary REAL
+            aaa TEXT,
+            bbb REAL
         )
     """
 
     db = sqlitex.Object(str(db_path), init_ddl)
 
     # Insert test data
-    db.insert('employees', {'uid': 1, 'name': 'Alice', 'department': 'Engineering', 'salary': 75000})
-    db.insert('employees', {'uid': 2, 'name': 'Bob', 'department': 'Engineering', 'salary': 80000})
-    db.insert('employees', {'uid': 3, 'name': 'Charlie', 'department': 'Sales', 'salary': 65000})
+    db.insert('t1', {'uid': 111, 'aaa': '111', 'bbb': 111})
+    db.insert('t1', {'uid': 222, 'aaa': '111', 'bbb': 222})
+    db.insert('t1', {'uid': 333, 'aaa': '222', 'bbb': 333})
 
-    # Test filtering by department
-    results = db.select('SELECT * FROM employees WHERE department = :dept', dept='Engineering')
+    # Test filtering by a text column
+    results = db.select('SELECT * FROM t1 WHERE aaa = :aaa', aaa='111')
     assert len(results) == 2
 
-    # Test filtering by salary range
-    results = db.select('SELECT * FROM employees WHERE salary > :min_salary', min_salary=70000)
+    # Test filtering by a numeric range
+    results = db.select('SELECT * FROM t1 WHERE bbb > :bbb', bbb=111)
     assert len(results) == 2
 
 
@@ -188,16 +190,16 @@ def test_empty_select(tmp_path):
     db_path = tmp_path / 'test.db'
 
     init_ddl = """
-        CREATE TABLE data (
+        CREATE TABLE t1 (
             uid INTEGER PRIMARY KEY,
-            value TEXT
+            aaa TEXT
         )
     """
 
     db = sqlitex.Object(str(db_path), init_ddl)
 
     # Select from empty table
-    results = db.select('SELECT * FROM data')
+    results = db.select('SELECT * FROM t1')
     assert len(results) == 0
     assert isinstance(results, list)
 
@@ -207,19 +209,19 @@ def test_update_nonexistent_record(tmp_path):
     db_path = tmp_path / 'test.db'
 
     init_ddl = """
-        CREATE TABLE items (
+        CREATE TABLE t1 (
             uid INTEGER PRIMARY KEY,
-            name TEXT
+            aaa TEXT
         )
     """
 
     db = sqlitex.Object(str(db_path), init_ddl)
 
     # Try to update non-existent record (should not raise error)
-    db.update('items', {'name': 'Updated'}, uid=999)
+    db.update('t1', {'aaa': '111'}, uid=111)
 
     # Verify nothing was changed
-    results = db.select('SELECT * FROM items')
+    results = db.select('SELECT * FROM t1')
     assert len(results) == 0
 
 
@@ -228,19 +230,19 @@ def test_delete_nonexistent_record(tmp_path):
     db_path = tmp_path / 'test.db'
 
     init_ddl = """
-        CREATE TABLE items (
+        CREATE TABLE t1 (
             uid INTEGER PRIMARY KEY,
-            name TEXT
+            aaa TEXT
         )
     """
 
     db = sqlitex.Object(str(db_path), init_ddl)
 
     # Try to delete non-existent record (should not raise error)
-    db.delete('items', uid=999)
+    db.delete('t1', uid=111)
 
     # Verify table is still empty
-    results = db.select('SELECT * FROM items')
+    results = db.select('SELECT * FROM t1')
     assert len(results) == 0
 
 
@@ -253,15 +255,15 @@ def test_without_init_ddl(tmp_path):
 
     # Manually create table
     db.execute("""
-        CREATE TABLE IF NOT EXISTS simple (
+        CREATE TABLE IF NOT EXISTS t1 (
             uid INTEGER PRIMARY KEY,
-            data TEXT
+            aaa TEXT
         )
     """)
 
     # Insert and verify
-    db.insert('simple', {'uid': 1, 'data': 'test'})
-    results = db.select('SELECT * FROM simple')
+    db.insert('t1', {'uid': 111, 'aaa': '111'})
+    results = db.select('SELECT * FROM t1')
     assert len(results) == 1
 
 
@@ -270,37 +272,37 @@ def test_complex_query(tmp_path):
     db_path = tmp_path / 'test.db'
 
     init_ddl = """
-        CREATE TABLE orders (
+        CREATE TABLE t1 (
             uid INTEGER PRIMARY KEY,
-            customer TEXT,
-            amount REAL,
-            status TEXT
+            aaa TEXT,
+            bbb REAL,
+            ccc TEXT
         )
     """
 
     db = sqlitex.Object(str(db_path), init_ddl)
 
     # Insert test data
-    db.insert('orders', {'uid': 1, 'customer': 'John', 'amount': 100.50, 'status': 'completed'})
-    db.insert('orders', {'uid': 2, 'customer': 'Jane', 'amount': 250.75, 'status': 'pending'})
-    db.insert('orders', {'uid': 3, 'customer': 'John', 'amount': 75.25, 'status': 'completed'})
+    db.insert('t1', {'uid': 111, 'aaa': '111', 'bbb': 100.50, 'ccc': '111'})
+    db.insert('t1', {'uid': 222, 'aaa': '222', 'bbb': 250.75, 'ccc': '222'})
+    db.insert('t1', {'uid': 333, 'aaa': '111', 'bbb': 75.25, 'ccc': '111'})
 
     # Complex query with aggregation
     results = db.select(
         """
-        SELECT customer, SUM(amount) as total, COUNT(*) as order_count
-        FROM orders
-        WHERE status = :status
-        GROUP BY customer
-        ORDER BY total DESC
+        SELECT aaa, SUM(bbb) as ddd, COUNT(*) as eee
+        FROM t1
+        WHERE ccc = :ccc
+        GROUP BY aaa
+        ORDER BY ddd DESC
     """,
-        status='completed',
+        ccc='111',
     )
 
     assert len(results) == 1
-    assert results[0]['customer'] == 'John'
-    assert results[0]['total'] == 175.75
-    assert results[0]['order_count'] == 2
+    assert results[0]['aaa'] == '111'
+    assert results[0]['ddd'] == 175.75
+    assert results[0]['eee'] == 2
 
 
 def test_special_characters_in_data(tmp_path):
@@ -308,9 +310,9 @@ def test_special_characters_in_data(tmp_path):
     db_path = tmp_path / 'test.db'
 
     init_ddl = """
-        CREATE TABLE messages (
+        CREATE TABLE t1 (
             uid INTEGER PRIMARY KEY,
-            content TEXT
+            aaa TEXT
         )
     """
 
@@ -318,12 +320,12 @@ def test_special_characters_in_data(tmp_path):
 
     # Insert data with special characters
     special_text = 'Hello \'world\' with "quotes" and \n newlines \t tabs'
-    db.insert('messages', {'uid': 1, 'content': special_text})
+    db.insert('t1', {'uid': 111, 'aaa': special_text})
 
     # Verify
-    results = db.select('SELECT * FROM messages WHERE uid = :uid', uid=1)
+    results = db.select('SELECT * FROM t1 WHERE uid = :uid', uid=111)
     assert len(results) == 1
-    assert results[0]['content'] == special_text
+    assert results[0]['aaa'] == special_text
 
 
 def test_null_values(tmp_path):
@@ -331,23 +333,23 @@ def test_null_values(tmp_path):
     db_path = tmp_path / 'test.db'
 
     init_ddl = """
-        CREATE TABLE optional_data (
+        CREATE TABLE t1 (
             uid INTEGER PRIMARY KEY,
-            name TEXT,
-            optional_field TEXT
+            aaa TEXT,
+            bbb TEXT
         )
     """
 
     db = sqlitex.Object(str(db_path), init_ddl)
 
     # Insert record with NULL
-    db.execute('INSERT INTO optional_data (uid, name, optional_field) VALUES (:uid, :name, :opt)', uid=1, name='Test', opt=None)
+    db.execute('INSERT INTO t1 (uid, aaa, bbb) VALUES (:uid, :aaa, :bbb)', uid=111, aaa='111', bbb=None)
 
     # Verify
-    results = db.select('SELECT * FROM optional_data WHERE uid = :uid', uid=1)
+    results = db.select('SELECT * FROM t1 WHERE uid = :uid', uid=111)
     assert len(results) == 1
-    assert results[0]['name'] == 'Test'
-    assert results[0]['optional_field'] is None
+    assert results[0]['aaa'] == '111'
+    assert results[0]['bbb'] is None
 
 
 def test_reuse_database(tmp_path):
@@ -355,38 +357,135 @@ def test_reuse_database(tmp_path):
     db_path = tmp_path / 'test.db'
 
     init_ddl = """
-        CREATE TABLE IF NOT EXISTS persistent (
+        CREATE TABLE IF NOT EXISTS t1 (
             uid INTEGER PRIMARY KEY,
-            value TEXT
+            aaa TEXT
         )
     """
 
     # First connection
     db1 = sqlitex.Object(str(db_path), init_ddl)
-    db1.insert('persistent', {'uid': 1, 'value': 'data1'})
+    db1.insert('t1', {'uid': 111, 'aaa': '111'})
 
     # Second connection to same database
     db2 = sqlitex.Object(str(db_path), init_ddl)
-    results = db2.select('SELECT * FROM persistent')
+    results = db2.select('SELECT * FROM t1')
 
     assert len(results) == 1
-    assert results[0]['value'] == 'data1'
+    assert results[0]['aaa'] == '111'
+
+
+def test_multi_statement_ddl(tmp_path):
+    """Test an init script with several statements."""
+    db_path = tmp_path / 'test.db'
+
+    init_ddl = """
+        CREATE TABLE IF NOT EXISTS t1 (
+            uid INTEGER PRIMARY KEY,
+            aaa TEXT
+        );
+        CREATE INDEX IF NOT EXISTS t1_aaa ON t1(aaa);
+    """
+
+    db = sqlitex.Object(str(db_path), init_ddl)
+
+    db.insert('t1', {'uid': 111, 'aaa': '111'})
+
+    results = db.select("SELECT name FROM sqlite_master WHERE type = 'index' AND name = :name", name='t1_aaa')
+    assert len(results) == 1
+
+
+def test_reinit_after_delete(tmp_path):
+    """Test that the database is recreated if the file is removed."""
+    db_path = tmp_path / 'test.db'
+
+    init_ddl = """
+        CREATE TABLE IF NOT EXISTS t1 (
+            uid INTEGER PRIMARY KEY,
+            aaa TEXT
+        )
+    """
+
+    db = sqlitex.Object(str(db_path), init_ddl)
+    db.insert('t1', {'uid': 111, 'aaa': '111'})
+
+    os.unlink(str(db_path))
+
+    results = db.select('SELECT * FROM t1')
+    assert len(results) == 0
+
+    db.insert('t1', {'uid': 222, 'aaa': '222'})
+    results = db.select('SELECT * FROM t1')
+    assert len(results) == 1
+    assert results[0]['aaa'] == '222'
+
+
+def test_error_is_not_retried(tmp_path):
+    """Test that an invalid statement raises immediately."""
+    db_path = tmp_path / 'test.db'
+
+    init_ddl = """
+        CREATE TABLE IF NOT EXISTS t1 (
+            uid INTEGER PRIMARY KEY,
+            aaa TEXT
+        )
+    """
+
+    db = sqlitex.Object(str(db_path), init_ddl)
+    db.insert('t1', {'uid': 111, 'aaa': '111'})
+
+    with u.raises(sqlitex.Error):
+        db.select('SELECT zzz FROM t1')
+
+
+def test_busy_timeout_is_set(tmp_path):
+    """Test that the module busy timeout reaches the connection."""
+    db_path = tmp_path / 'test.db'
+
+    db = sqlitex.Object(str(db_path))
+    assert db.select('PRAGMA busy_timeout')[0]['timeout'] == int(sqlitex.BUSY_TIMEOUT * 1000)
+
+
+def test_custom_uid_column(tmp_path):
+    """Test update and delete with a non-default primary key name."""
+    db_path = tmp_path / 'test.db'
+
+    init_ddl = """
+        CREATE TABLE IF NOT EXISTS t1 (
+            zzz INTEGER PRIMARY KEY,
+            aaa TEXT
+        )
+    """
+
+    db = sqlitex.Object(str(db_path), init_ddl, uid_column='zzz')
+
+    db.insert('t1', {'zzz': 111, 'aaa': '111'})
+    db.insert('t1', {'zzz': 222, 'aaa': '222'})
+
+    db.update('t1', {'aaa': '333'}, uid=111)
+    results = db.select('SELECT * FROM t1 WHERE zzz = :zzz', zzz=111)
+    assert results[0]['aaa'] == '333'
+
+    db.delete('t1', uid=222)
+    results = db.select('SELECT * FROM t1')
+    assert len(results) == 1
+    assert results[0]['zzz'] == 111
 
 
 def _mp_worker(n, db_path, num_loops):
     """Worker function for multiprocessing concurrency test."""
 
-    db = sqlitex.Object(str(db_path), connect_args={'timeout': 0.0, 'isolation_level': None})
+    db = sqlitex.Object(str(db_path))
 
     for i in range(num_loops):
         db.execute(
             """
-            UPDATE counter SET 
-                value = value + 1, 
-                last_updated_by = :pid 
-            WHERE uid = 1
+            UPDATE t1 SET
+                aaa = aaa + 1,
+                bbb = :bbb
+            WHERE uid = 111
         """,
-            pid=n,
+            bbb=n,
         )
 
 
@@ -397,15 +496,15 @@ def test_concurrency(tmp_path):
     db_path = tmp_path / 'test.db'
 
     init_ddl = """
-        CREATE TABLE IF NOT EXISTS counter (
+        CREATE TABLE IF NOT EXISTS t1 (
             uid INTEGER PRIMARY KEY,
-            value INTEGER,
-            last_updated_by INTEGER
+            aaa INTEGER,
+            bbb INTEGER
         )
     """
 
     db = sqlitex.Object(str(db_path), init_ddl)
-    db.insert('counter', {'uid': 1, 'value': 0, 'last_updated_by': -1})
+    db.insert('t1', {'uid': 111, 'aaa': 0, 'bbb': -1})
 
     ps = []
 
@@ -417,8 +516,10 @@ def test_concurrency(tmp_path):
     for p in ps:
         p.join()
 
+    assert [p.exitcode for p in ps] == [0] * num_processes
+
     db = sqlitex.Object(str(db_path))
 
-    results = db.select('SELECT value FROM counter WHERE uid = 1')
+    results = db.select('SELECT aaa FROM t1 WHERE uid = 111')
     expected_value = num_processes * num_loops
-    assert results[0]['value'] == expected_value
+    assert results[0]['aaa'] == expected_value
