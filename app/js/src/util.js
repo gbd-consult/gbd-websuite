@@ -32,11 +32,7 @@ function gwsLogin(onSuccess, onFailure) {
         password: document.getElementById('gwsPassword').value
     };
 
-    let toParam = (new URLSearchParams(window.location.search).get('to') || '').trim();
-    let redirUrl = '';
-    if (toParam) {
-        redirUrl = '/' + toParam.replace(/^\/+/, '')
-    }
+    let redirUrl = _gwsValidRedirectUrl(new URLSearchParams(window.location.search).get('to'));
 
     onSuccess = onSuccess || (() => redirUrl ? window.location.href = redirUrl : window.location.reload());
     onFailure = onFailure || (() => 0);
@@ -54,6 +50,19 @@ function gwsLogin(onSuccess, onFailure) {
             onFailure()
         },
     );
+}
+
+function _gwsValidRedirectUrl(s) {
+    s = (s || '').trim();
+    if (!s) {
+        return '';
+    }
+    try {
+        let u = new URL(s, window.location.origin);
+        return u.origin === window.location.origin ? u.pathname + u.search + u.hash : '';
+    } catch (exc) {
+        return '';
+    }
 }
 
 function gwsLogout(onSuccess, onFailure) {
