@@ -156,6 +156,92 @@ def test_soup_to_fragment():
     """)
 
 
+def test_soup_to_fragment_removes_unsafe_tags():
+    """Test that unsafe tags in a soup are removed."""
+    view = _soup_view()
+
+    tags = [
+        ('image', {'href': 'file:///etc/passwd', 'width': 10, 'height': 10}),
+        ('foreignObject', {'width': 10, 'height': 10}, ('iframe', {'src': 'file:///etc/passwd'})),
+        ('script', {}, 'alert(1)'),
+        ('use', {'href': 'file:///etc/passwd'}),
+        ('style', {}, '@import url(http://example.com/x.css);'),
+        ('animate', {'attributeName': 'x'}),
+        ('IMAGE', {'href': 'file:///etc/passwd'}),
+        ('g', {}, ('image', {'href': 'file:///etc/passwd'})),
+        ('rect', {'width': 10, 'height': 10}),
+    ]
+
+    frg = draw.soup_to_fragment(view, [(100, 100)], tags)
+    xml = ''.join(el.to_string() for el in frg)
+    u.check.xml(xml, """
+        <g/>
+        <rect width="10" height="10"/>
+    """)
+
+
+def test_soup_to_fragment_removes_unsafe_attributes():
+    """Test that unsafe attributes in a soup are removed."""
+    view = _soup_view()
+
+    tags = [
+        ('rect', {
+            'width': 10,
+            'height': 10,
+            'onload': 'alert(1)',
+            'style': 'background:url(file:///etc/passwd)',
+            'href': 'file:///etc/passwd',
+            'fill': 'url(http://example.com/x)',
+            'cursor': 'url(http://example.com/x), auto',
+            'stroke': 'url(#local)',
+        }),
+    ]
+
+    frg = draw.soup_to_fragment(view, [(100, 100)], tags)
+    xml = ''.join(el.to_string() for el in frg)
+    u.check.xml(xml, """
+        <rect width="10" height="10" stroke="url(#local)"/>
+    """)
+
+
+def test_soup_to_fragment_escapes_text():
+    """Test that text content in a soup is escaped."""
+    view = _soup_view()
+
+    tags = [
+        ('text', {'x': 1, 'y': 2}, '</text></svg><img src="file:///etc/passwd">'),
+    ]
+
+    frg = draw.soup_to_fragment(view, [(100, 100)], tags)
+    assert frg[0].to_string() == (
+        '<text x="1" y="2">&lt;/text&gt;&lt;/svg&gt;&lt;img src="file:///etc/passwd"&gt;</text>')
+
+
+def test_soup_to_fragment_size_limits():
+    """Test that oversized soups are rejected."""
+    view = _soup_view()
+
+    with u.raises(gws.Error):
+        draw.soup_to_fragment(view, [(100, 100)] * (draw.MAX_SOUP_POINTS + 1), [])
+
+    with u.raises(gws.Error):
+        draw.soup_to_fragment(view, [(100, 100)], [('rect', {})] * (draw.MAX_SOUP_TAGS + 1))
+
+
+def test_soup_to_fragment_invalid():
+    """Test that malformed soups are rejected."""
+    view = _soup_view()
+
+    with u.raises(gws.Error):
+        draw.soup_to_fragment(view, [(100, 100, 100)], [])
+
+    with u.raises(gws.Error):
+        draw.soup_to_fragment(view, [(100, 100)], [('line', {'x1': ['x', 99]})])
+
+    with u.raises(gws.Error):
+        draw.soup_to_fragment(view, [(100, 100)], [('line', {'x1': ['nope', 0]})])
+
+
 def test_empty_shape():
     """Test handling of empty shapes."""
     shape = gws.base.shape.from_wkt('SRID=3857;POLYGON EMPTY')
@@ -225,3 +311,8 @@ def test_multigeometry():
 
 def _style(**kwargs) -> gws.Style:
     return gws.lib.style.Object('', '', gws.StyleValues(**kwargs))
+
+
+def _soup_view() -> gws.MapView:
+    bounds = gws.Bounds(crs=crs.WGS84, extent=[0, 0, 1000, 1000])
+    return gws.MapView(bounds=bounds, size=[1000, 1000], rotation=0, scale=1, dpi=96)

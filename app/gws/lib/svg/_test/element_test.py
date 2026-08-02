@@ -8,6 +8,7 @@ import gws.lib.xmlx as xmlx
 import gws.lib.image
 import gws.lib.mime
 import gws.lib.svg.element as svg_element
+import gws.test.util as u
 
 
 def test_fragment_to_element_basic():
@@ -229,7 +230,7 @@ def test_normalize_element_empty_result():
 
 def test_normalize_element_data_url():
     """Test normalization of data URLs."""
-    # Create an element with a data URL                                                                                                                                                
+    # Create an element with a data URL
     svg = xmlx.tag('svg', {'width': '100', 'height': '100'},
                    xmlx.tag('circle', {
                        'cx': '50',
@@ -239,9 +240,146 @@ def test_normalize_element_data_url():
                    })
                    )
 
-    # Normalize                                                                                                                                                                         
+    # Normalize
     result = svg_element.normalize_element(svg)
 
-    # Verify data URL is removed                                                                                                                                                       
+    # Verify data URL is removed
     circle = result.children()[0]
     assert circle.attr('fill') == ''
+
+
+def test_normalize_element_canonical_names():
+    """Test that tag and attribute names are normalized."""
+    svg = xmlx.tag('SVG', {},
+                   xmlx.tag('CIRCLE', {'CX': '1', 'cy': '2', 'R': '3'}),
+                   xmlx.tag('clippath', {'id': 'c1'},
+                            xmlx.tag('RECT', {'WIDTH': '1', 'height': '1', 'VIEWBOX': '0 0 1 1'}))
+                   )
+
+    result = svg_element.normalize_element(svg)
+
+    u.check.xml(result.to_string(), """
+        <svg xmlns="http://www.w3.org/2000/svg">
+            <circle cx="1" cy="2" r="3"/>
+            <clipPath id="c1">
+                <rect width="1" height="1" viewBox="0 0 1 1"/>
+            </clipPath>
+        </svg>
+    """)
+
+
+def test_normalize_element_url_references():
+    """Test that only local url() references are preserved."""
+    svg = xmlx.tag('svg', {},
+                   xmlx.tag('rect', {
+                       'fill': 'url(#grad)',
+                       'clip-path': 'url(#clip)',
+                       'stroke': 'url(http://example.com/x)',
+                       'mask': 'url(a.png)',
+                       'marker-start': 'url(file:///etc/passwd)',
+                   })
+                   )
+
+    rect = svg_element.normalize_element(svg).children()[0]
+
+    assert rect.attr('fill') == 'url(#grad)'
+    assert rect.attr('clip-path') == 'url(#clip)'
+    assert rect.attr('stroke') == ''
+    assert rect.attr('mask') == ''
+    assert rect.attr('marker-start') == ''
+
+
+def test_normalize_element_gradient():
+    """Test that gradient definitions are preserved."""
+    svg = xmlx.tag('svg', {},
+                   xmlx.tag('defs', {},
+                            xmlx.tag('linearGradient',
+                                     {'id': 'g1', 'x1': '0', 'y1': '0', 'x2': '1', 'y2': '0',
+                                      'gradientUnits': 'objectBoundingBox', 'spreadMethod': 'pad'},
+                                     xmlx.tag('stop', {'offset': '0', 'stop-color': 'red'}),
+                                     xmlx.tag('stop', {'offset': '100%', 'stop-color': 'blue', 'stop-opacity': '0.5'}))),
+                   xmlx.tag('rect', {'width': '1', 'height': '1', 'fill': 'url(#g1)'})
+                   )
+
+    result = svg_element.normalize_element(svg)
+
+    u.check.xml(result.to_string(), """
+        <svg xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="g1" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox" spreadMethod="pad">
+                    <stop offset="0" stop-color="red"/>
+                    <stop offset="100%" stop-color="blue" stop-opacity="0.5"/>
+                </linearGradient>
+            </defs>
+            <rect width="1" height="1" fill="url(#g1)"/>
+        </svg>
+    """)
+
+
+def test_normalize_element_invalid_values():
+    """Test that syntactically invalid attribute values are removed."""
+    svg = xmlx.tag('svg', {},
+                   xmlx.tag('circle', {
+                       'cx': 'javascript:alert(1)',
+                       'cy': '2',
+                       'id': 'a b',
+                       'class': 'a.b',
+                       'transform': 'url(#x)',
+                       'font-family': '"a" onload=x',
+                   })
+                   )
+
+    circle = svg_element.normalize_element(svg).children()[0]
+
+    assert circle.attr('cy') == '2'
+    assert circle.attr('cx') == ''
+    assert circle.attr('id') == ''
+    assert circle.attr('class') == ''
+    assert circle.attr('transform') == ''
+    assert circle.attr('font-family') == ''
+
+
+def test_normalize_element_text_content():
+    """Test that text content is only preserved for text tags."""
+    svg = xmlx.tag('svg', {},
+                   xmlx.tag('text', {}, 'a text'),
+                   xmlx.tag('title', {}, 'a title'),
+                   xmlx.tag('g', {}, 'not rendered'),
+                   )
+
+    result = svg_element.normalize_element(svg)
+
+    u.check.xml(result.to_string(), """
+        <svg xmlns="http://www.w3.org/2000/svg">
+            <text>a text</text>
+            <title>a title</title>
+            <g/>
+        </svg>
+    """)
+
+
+def test_normalize_element_escapes_text():
+    """Test that text content is escaped."""
+    svg = xmlx.tag('svg', {}, xmlx.tag('text', {}, '</text><img src="x">'))
+
+    result = svg_element.normalize_element(svg)
+
+    assert result.children()[0].to_string() == '<text>&lt;/text&gt;&lt;img src="x"&gt;</text>'
+
+
+def test_normalize_fragment():
+    """Test normalization of a fragment."""
+    fragment = [
+        xmlx.tag('circle', {'cx': '1', 'cy': '2', 'r': '3'}),
+        xmlx.tag('script', {}, 'alert(1)'),
+        xmlx.tag('foreignObject', {}, xmlx.tag('rect', {'width': '1', 'height': '1'})),
+        xmlx.tag('g', {}, xmlx.tag('image', {'href': 'file:///etc/passwd'})),
+    ]
+
+    result = svg_element.normalize_fragment(fragment)
+
+    xml = ''.join(el.to_string() for el in result)
+    u.check.xml(xml, """
+        <circle cx="1" cy="2" r="3"/>
+        <g/>
+    """)

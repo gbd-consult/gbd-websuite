@@ -1,6 +1,6 @@
 # normalizer
 
-from typing import Optional, Dict, Pattern
+from typing import Optional
 
 import re
 
@@ -67,6 +67,7 @@ _ALLOWED_TAGS = {
     'radialGradient',
     'rect',
     'solidcolor',
+    'stop',
     'symbol',
     'text',
     'title',
@@ -83,109 +84,143 @@ _TEXT_TAGS = {
 
 _CANONICAL_TAGS = {s.lower(): s for s in _ALLOWED_TAGS}
 
-# Regex patterns for attribute validation
-_RE_COLOR = r'^(#[0-9A-Fa-f]{3,8}|(rgb|rgba|hsl|hsla)\([\d%,.\s]+\)|aliceblue|antiquewhite|aqua|aquamarine|azure|beige|bisque|black|blanchedalmond|blue|blueviolet|brown|burlywood|cadetblue|chartreuse|chocolate|coral|cornflowerblue|cornsilk|crimson|cyan|darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkgrey|darkkhaki|darkmagenta|darkolivegreen|darkorange|darkorchid|darkred|darksalmon|darkseagreen|darkslateblue|darkslategray|darkslategrey|darkturquoise|darkviolet|deeppink|deepskyblue|dimgray|dimgrey|dodgerblue|firebrick|floralwhite|forestgreen|fuchsia|gainsboro|ghostwhite|gold|goldenrod|gray|green|greenyellow|grey|honeydew|hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|lawngreen|lemonchiffon|lightblue|lightcoral|lightcyan|lightgoldenrodyellow|lightgray|lightgreen|lightgrey|lightpink|lightsalmon|lightseagreen|lightskyblue|lightslategray|lightslategrey|lightsteelblue|lightyellow|lime|limegreen|linen|magenta|maroon|mediumaquamarine|mediumblue|mediumorchid|mediumpurple|mediumseagreen|mediumslateblue|mediumspringgreen|mediumturquoise|mediumvioletred|midnightblue|mintcream|mistyrose|moccasin|navajowhite|navy|oldlace|olive|olivedrab|orange|orangered|orchid|palegoldenrod|palegreen|paleturquoise|palevioletred|papayawhip|peachpuff|peru|pink|plum|powderblue|purple|red|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|seashell|sienna|silver|skyblue|slateblue|slategray|slategrey|snow|springgreen|steelblue|tan|teal|thistle|tomato|turquoise|violet|wheat|white|whitesmoke|yellow|yellowgreen|transparent|currentColor)$'
-_RE_NUMBER = r'^[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?(px|em|ex|pt|pc|cm|mm|in|%)?$'
-_RE_OPACITY = r'^(0(\.\d+)?|1(\.0+)?)$'
-_RE_PATH = r'^[mMlLhHvVcCsSqQtTaAzZ0-9\s,.-]+$'
-_RE_TRANSFORM = r'^(matrix|translate|scale|rotate|skewX|skewY)\([\d\s,.-]+\)( (matrix|translate|scale|rotate|skewX|skewY)\([\d\s,.-]+\))*$'
-_RE_VIEWBOX = r'^[-+]?\d+(\.\d+)?([\s,]+[-+]?\d+(\.\d+)?){3}$'
-_RE_TEXT = r'^[^<>]*$'
-_RE_FONT_FAMILY = r'^[^<>"\']*$'
-_RE_NAME = r'^[A-Za-z0-9_-]+$'
-_RE_NAME_LIST = r'^[A-Za-z0-9_ -]*$'
-_RE_NUMBER_LIST = r'^[\d\s,.-]+$'
+# Regex patterns for attribute validation.
+# Only the syntax of a value is validated, not its semantics.
+
+_A = r'a-zA-Z'
+_N = r'a-zA-Z0-9'
+_P = r'+.,%'
+_W = rf'{_N}_'
+
+_ARGS = rf'[0-9{_P}\s-]+'
+_KW = rf'[{_A}-]+'
+_URL_REF = rf'url\(#[{_W}-]+\)'
+
+_RE_COLOR = rf'^(#[{_N}]+|{_URL_REF}|{_KW}\({_ARGS}\)|{_KW})$'
+_RE_FONT_FAMILY = rf'^[{_W}.,\s-]+$'
+_RE_KEYWORD = rf'^{_KW}$'
+_RE_NAME = rf'^[{_W}-]+$'
+_RE_NAME_LIST = rf'^[{_W}\s-]*$'
+_RE_NUMBER = rf'^[{_N}{_P}-]+$'
+_RE_NUMBER_LIST = rf'^[{_N}{_P}\s-]+$'
+_RE_PATH = rf'^[{_N},.\s-]+$'
+_RE_TRANSFORM = rf'^{_KW}\({_ARGS}\)(\s{_KW}\({_ARGS}\))*$'
+_RE_URL_REF = rf'^{_URL_REF}$'
 
 # Dictionary of allowed attributes with their validation patterns
-_ALLOWED_ATTRIBUTES: Dict[str, Pattern] = {
-    'alignment-baseline': re.compile(_RE_TEXT),
-    'baseline-shift': re.compile(_RE_TEXT),
-    'class': re.compile(_RE_NAME_LIST),
-    'clip': re.compile(_RE_TEXT),
-    'clip-path': re.compile(r'^url\(#[a-zA-Z0-9_-]+\)$'),
-    'clip-rule': re.compile(r'^(nonzero|evenodd)$'),
-    'color': re.compile(_RE_COLOR),
-    'color-interpolation': re.compile(r'^(auto|sRGB|linearRGB)$'),
-    'color-interpolation-filters': re.compile(r'^(auto|sRGB|linearRGB)$'),
-    'color-profile': re.compile(_RE_TEXT),
-    'color-rendering': re.compile(r'^(auto|optimizeSpeed|optimizeQuality)$'),
-    'cursor': re.compile(_RE_TEXT),
-    'cx': re.compile(_RE_NUMBER),
-    'cy': re.compile(_RE_NUMBER),
-    'd': re.compile(_RE_PATH),
-    'direction': re.compile(r'^(ltr|rtl)$'),
-    'display': re.compile(r'^(inline|block|list-item|run-in|compact|marker|table|inline-table|table-row-group|table-header-group|table-footer-group|table-row|table-column-group|table-column|table-cell|table-caption|none)$'),
-    'dominant-baseline': re.compile(_RE_TEXT),
-    'dx': re.compile(_RE_NUMBER),
-    'dy': re.compile(_RE_NUMBER),
-    'enable-background': re.compile(_RE_TEXT),
-    'fill': re.compile(_RE_COLOR),
-    'fill-opacity': re.compile(_RE_OPACITY),
-    'fill-rule': re.compile(r'^(nonzero|evenodd)$'),
-    'filter': re.compile(r'^url\(#[a-zA-Z0-9_-]+\)$'),
-    'flood-color': re.compile(_RE_COLOR),
-    'flood-opacity': re.compile(_RE_OPACITY),
-    'font-family': re.compile(_RE_FONT_FAMILY),
-    'font-size': re.compile(_RE_NUMBER),
-    'font-size-adjust': re.compile(_RE_NUMBER),
-    'font-stretch': re.compile(r'^(normal|wider|narrower|ultra-condensed|extra-condensed|condensed|semi-condensed|semi-expanded|expanded|extra-expanded|ultra-expanded)$'),
-    'font-style': re.compile(r'^(normal|italic|oblique)$'),
-    'font-variant': re.compile(r'^(normal|small-caps)$'),
-    'font-weight': re.compile(r'^(normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900)$'),
-    'glyph-orientation-horizontal': re.compile(_RE_NUMBER),
-    'glyph-orientation-vertical': re.compile(_RE_NUMBER),
-    'id': re.compile(_RE_NAME),
-    'image-rendering': re.compile(r'^(auto|optimizeSpeed|optimizeQuality)$'),
-    'kerning': re.compile(_RE_TEXT),
-    'letter-spacing': re.compile(_RE_NUMBER),
-    'lighting-color': re.compile(_RE_COLOR),
-    'marker-end': re.compile(r'^url\(#[a-zA-Z0-9_-]+\)$'),
-    'marker-mid': re.compile(r'^url\(#[a-zA-Z0-9_-]+\)$'),
-    'marker-start': re.compile(r'^url\(#[a-zA-Z0-9_-]+\)$'),
-    'markerHeight': re.compile(_RE_NUMBER),
-    'markerUnits': re.compile(r'^(strokeWidth|userSpaceOnUse)$'),
-    'markerWidth': re.compile(_RE_NUMBER),
-    'mask': re.compile(r'^url\(#[a-zA-Z0-9_-]+\)$'),
-    'opacity': re.compile(_RE_OPACITY),
-    'orient': re.compile(r'^(auto|auto-start-reverse|-?\d+(\.\d+)?)$'),
-    'overflow': re.compile(r'^(visible|hidden|scroll|auto)$'),
-    'pointer-events': re.compile(r'^(visiblePainted|visibleFill|visibleStroke|visible|painted|fill|stroke|all|none)$'),
-    'points': re.compile(_RE_NUMBER_LIST),
-    'r': re.compile(_RE_NUMBER),
-    'refX': re.compile(_RE_NUMBER),
-    'refY': re.compile(_RE_NUMBER),
-    'rx': re.compile(_RE_NUMBER),
-    'ry': re.compile(_RE_NUMBER),
-    'shape-rendering': re.compile(r'^(auto|optimizeSpeed|crispEdges|geometricPrecision)$'),
-    'stop-color': re.compile(_RE_COLOR),
-    'stop-opacity': re.compile(_RE_OPACITY),
-    'stroke': re.compile(_RE_COLOR),
-    'stroke-dasharray': re.compile(r'^(none|[\d\s,.]*)$'),
-    'stroke-dashoffset': re.compile(_RE_NUMBER),
-    'stroke-linecap': re.compile(r'^(butt|round|square)$'),
-    'stroke-linejoin': re.compile(r'^(miter|round|bevel)$'),
-    'stroke-miterlimit': re.compile(_RE_NUMBER),
-    'stroke-opacity': re.compile(_RE_OPACITY),
-    'stroke-width': re.compile(_RE_NUMBER),
-    'text-anchor': re.compile(r'^(start|middle|end)$'),
-    'text-decoration': re.compile(r'^(none|underline|overline|line-through|blink)$'),
-    'text-rendering': re.compile(r'^(auto|optimizeSpeed|optimizeLegibility|geometricPrecision)$'),
-    'transform': re.compile(_RE_TRANSFORM),
-    'transform-origin': re.compile(_RE_TEXT),
-    'unicode-bidi': re.compile(_RE_TEXT),
-    'vector-effect': re.compile(r'^(none|non-scaling-stroke)$'),
-    'visibility': re.compile(r'^(visible|hidden|collapse)$'),
-    'word-spacing': re.compile(_RE_NUMBER),
-    'writing-mode': re.compile(r'^(lr-tb|rl-tb|tb-rl|lr|rl|tb)$'),
-    'width': re.compile(_RE_NUMBER),
-    'height': re.compile(_RE_NUMBER),
-    'viewBox': re.compile(_RE_VIEWBOX),
-    'x': re.compile(_RE_NUMBER),
-    'x1': re.compile(_RE_NUMBER),
-    'x2': re.compile(_RE_NUMBER),
-    'y': re.compile(_RE_NUMBER),
-    'y1': re.compile(_RE_NUMBER),
-    'y2': re.compile(_RE_NUMBER),
+
+_ALLOWED_ATTRIBUTES: dict[str, str] = {
+    'alignment-baseline': _RE_KEYWORD,
+    'baseline-shift': _RE_NUMBER,
+    'class': _RE_NAME_LIST,
+    'clip': _RE_KEYWORD,
+    'clip-path': _RE_URL_REF,
+    'clip-rule': _RE_KEYWORD,
+    'clipPathUnits': _RE_KEYWORD,
+    'color': _RE_COLOR,
+    'color-interpolation': _RE_KEYWORD,
+    'color-interpolation-filters': _RE_KEYWORD,
+    'color-profile': _RE_KEYWORD,
+    'color-rendering': _RE_KEYWORD,
+    'cursor': _RE_KEYWORD,
+    'cx': _RE_NUMBER,
+    'cy': _RE_NUMBER,
+    'd': _RE_PATH,
+    'direction': _RE_KEYWORD,
+    'display': _RE_KEYWORD,
+    'dominant-baseline': _RE_KEYWORD,
+    'dx': _RE_NUMBER_LIST,
+    'dy': _RE_NUMBER_LIST,
+    'enable-background': _RE_KEYWORD,
+    'fill': _RE_COLOR,
+    'fill-opacity': _RE_NUMBER,
+    'fill-rule': _RE_KEYWORD,
+    'filter': _RE_URL_REF,
+    'flood-color': _RE_COLOR,
+    'flood-opacity': _RE_NUMBER,
+    'font-family': _RE_FONT_FAMILY,
+    'font-size': _RE_NUMBER,
+    'font-size-adjust': _RE_NUMBER,
+    'font-stretch': _RE_KEYWORD,
+    'font-style': _RE_KEYWORD,
+    'font-variant': _RE_KEYWORD,
+    'font-weight': _RE_NUMBER,
+    'fr': _RE_NUMBER,
+    'fx': _RE_NUMBER,
+    'fy': _RE_NUMBER,
+    'glyph-orientation-horizontal': _RE_NUMBER,
+    'glyph-orientation-vertical': _RE_NUMBER,
+    'gradientTransform': _RE_TRANSFORM,
+    'gradientUnits': _RE_KEYWORD,
+    'hatchContentUnits': _RE_KEYWORD,
+    'hatchUnits': _RE_KEYWORD,
+    'id': _RE_NAME,
+    'image-rendering': _RE_KEYWORD,
+    'kerning': _RE_NUMBER,
+    'lengthAdjust': _RE_KEYWORD,
+    'letter-spacing': _RE_NUMBER,
+    'lighting-color': _RE_COLOR,
+    'marker-end': _RE_URL_REF,
+    'marker-mid': _RE_URL_REF,
+    'marker-start': _RE_URL_REF,
+    'markerHeight': _RE_NUMBER,
+    'markerUnits': _RE_KEYWORD,
+    'markerWidth': _RE_NUMBER,
+    'mask': _RE_URL_REF,
+    'maskContentUnits': _RE_KEYWORD,
+    'maskUnits': _RE_KEYWORD,
+    'offset': _RE_NUMBER,
+    'opacity': _RE_NUMBER,
+    'orient': _RE_NUMBER,
+    'overflow': _RE_KEYWORD,
+    'pathLength': _RE_NUMBER,
+    'patternContentUnits': _RE_KEYWORD,
+    'patternTransform': _RE_TRANSFORM,
+    'patternUnits': _RE_KEYWORD,
+    'pitch': _RE_NUMBER,
+    'pointer-events': _RE_KEYWORD,
+    'points': _RE_NUMBER_LIST,
+    'preserveAspectRatio': _RE_NAME_LIST,
+    'r': _RE_NUMBER,
+    'refX': _RE_NUMBER,
+    'refY': _RE_NUMBER,
+    'rotate': _RE_NUMBER_LIST,
+    'rx': _RE_NUMBER,
+    'ry': _RE_NUMBER,
+    'shape-rendering': _RE_KEYWORD,
+    'solid-color': _RE_COLOR,
+    'solid-opacity': _RE_NUMBER,
+    'spreadMethod': _RE_KEYWORD,
+    'stop-color': _RE_COLOR,
+    'stop-opacity': _RE_NUMBER,
+    'stroke': _RE_COLOR,
+    'stroke-dasharray': _RE_NUMBER_LIST,
+    'stroke-dashoffset': _RE_NUMBER,
+    'stroke-linecap': _RE_KEYWORD,
+    'stroke-linejoin': _RE_KEYWORD,
+    'stroke-miterlimit': _RE_NUMBER,
+    'stroke-opacity': _RE_NUMBER,
+    'stroke-width': _RE_NUMBER,
+    'text-anchor': _RE_KEYWORD,
+    'text-decoration': _RE_KEYWORD,
+    'text-rendering': _RE_KEYWORD,
+    'textLength': _RE_NUMBER,
+    'transform': _RE_TRANSFORM,
+    'transform-origin': _RE_NUMBER_LIST,
+    'unicode-bidi': _RE_KEYWORD,
+    'vector-effect': _RE_KEYWORD,
+    'visibility': _RE_KEYWORD,
+    'word-spacing': _RE_NUMBER,
+    'writing-mode': _RE_KEYWORD,
+    'width': _RE_NUMBER,
+    'height': _RE_NUMBER,
+    'viewBox': _RE_NUMBER_LIST,
+    'x': _RE_NUMBER_LIST,
+    'x1': _RE_NUMBER,
+    'x2': _RE_NUMBER,
+    'y': _RE_NUMBER_LIST,
+    'y1': _RE_NUMBER,
+    'y2': _RE_NUMBER,
 }
 
 _CANONICAL_ATTRIBUTES = {s.lower(): s for s in _ALLOWED_ATTRIBUTES}
@@ -224,7 +259,7 @@ def _normalize_atts(atts: dict) -> dict:
             continue
 
         # Validate attribute value against its regex pattern
-        if _ALLOWED_ATTRIBUTES[key].match(val):
+        if re.match(_ALLOWED_ATTRIBUTES[key], val):
             res[key] = val
 
     return res

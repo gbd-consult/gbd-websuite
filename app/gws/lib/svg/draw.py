@@ -144,6 +144,7 @@ def soup_to_fragment(view: gws.MapView, points: list[gws.Point], tags: list) -> 
             adeg = math.degrees(a)
             x, y = px[v[3]]
             return f'rotate({adeg:.0f}, {x:.0f}, {y:.0f})'
+        raise gws.Error(f'unknown soup function: {v[0]!r}')
 
     def eval_funcs(tag):
         res = []
