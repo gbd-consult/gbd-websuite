@@ -502,6 +502,10 @@ def abs_web_path(path: str, basedir: str) -> Optional[str]:
         if s:
             dirs.append(s)
 
+    if not dirs:
+        gws.log.warning(f'abs_web_path: empty path={path!r}')
+        return
+
     fname = dirs.pop()
 
     if not all(re.match(_dir_re, p) for p in dirs):

@@ -108,8 +108,8 @@ class Object(gws.base.action.Object):
     @gws.ext.command.get('webDownload')
     def download(self, req: gws.WebRequester, p) -> gws.ContentResponse:
         res = self._serve_path(req, p)
-        pp = gws.lib.osx.parse_path(res.contentPath)
-        res.contentFilename = pp.filename
+        if res.contentPath:
+            res.contentFilename = gws.lib.osx.parse_path(res.contentPath).filename
         return res
 
     @gws.ext.command.get('webFile')

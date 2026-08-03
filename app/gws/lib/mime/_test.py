@@ -38,7 +38,7 @@ def test_extension_for():
 
 
 def test_extension_for_empty():
-    assert not mime.extension_for('')
+    assert mime.extension_for('') == 'bin'
 
 
 def test_extension_for_guessed():

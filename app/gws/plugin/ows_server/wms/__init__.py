@@ -275,9 +275,9 @@ class Object(server.service.Object):
         sr.bounds = b
 
         sr.pxSize = sr.int_param('WIDTH'), sr.int_param('HEIGHT')
-        if sr.pxSize[0] > self.maxPixelSize:
+        if not (1 <= sr.pxSize[0] <= self.maxPixelSize):
             raise server.error.InvalidParameterValue('WIDTH')
-        if sr.pxSize[1] > self.maxPixelSize:
+        if not (1 <= sr.pxSize[1] <= self.maxPixelSize):
             raise server.error.InvalidParameterValue('HEIGHT')
 
         wh = sr.bounds.crs.extent_size_in_meters(sr.bounds.extent)

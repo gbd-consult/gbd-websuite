@@ -32,7 +32,7 @@ class Object(gws.base.auth.mfa.Object):
         return mfa
 
     def verify(self, mfa, payload):
-        ok = self.check_totp(mfa, payload['code'])
+        ok = self.check_totp(mfa, payload.get('code'))
         return self.verify_attempt(mfa, ok)
 
     def key_uri(self, secret, issuer_name, account_name):
