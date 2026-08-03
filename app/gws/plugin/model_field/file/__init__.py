@@ -5,6 +5,7 @@ from typing import Optional, cast
 import gws
 import gws.base.database.model
 import gws.base.model.field
+import gws.lib.image
 import gws.lib.mime
 import gws.lib.sa as sa
 
@@ -51,11 +52,18 @@ class FileValue(gws.Data):
     size: int
 
 
+_PREVIEW_SIZE = 120, 120
+_PREVIEW_MIME = gws.lib.mime.PNG
+_PREVIEW_CACHE_LIFE_TIME = 24 * 3600
+_PREVIEW_MAX_PIXELS = 40_000_000
+_PREVIEW_BIG_FILE_SIZE = 1024 * 1024
+
+
 class Object(gws.base.model.field.Object):
     model: gws.DatabaseModel
 
     attributeType = gws.AttributeType.file
-    
+
     contentColumn: Optional[sa.Column] = None
     pathColumn: Optional[sa.Column] = None
     nameColumn: Optional[sa.Column] = None
@@ -71,7 +79,6 @@ class Object(gws.base.model.field.Object):
 
     def configure_columns(self):
         model = cast(gws.base.database.model.Object, self.model)
-
 
         p = self.cfg('contentColumn')
         self.contentColumn = model.column(p) if p else None
@@ -145,6 +152,9 @@ class Object(gws.base.model.field.Object):
 
     ##
 
+    def can_preview(self, mime) -> bool:
+        return mime.startswith('image/') and mime != gws.lib.mime.SVG
+
     def prop_to_python(self, feature, value, mc) -> FileValue:
         try:
             return FileValue(
@@ -178,7 +188,7 @@ class Object(gws.base.model.field.Object):
             featureUid=feature.uid(),
         )
 
-        if mime.startswith('image'):
+        if self.can_preview(mime):
             p.previewUrl = gws.u.action_url_path('webFile', preview=1, **url_args) + '/' + name
 
         p.downloadUrl = gws.u.action_url_path('webFile', **url_args) + '/' + name
@@ -193,28 +203,99 @@ class Object(gws.base.model.field.Object):
         if fv.name:
             return gws.lib.mime.for_path(fv.name)
         # @TODO guess mime from content?
-        return gws.lib.mime.TXT
+        return gws.lib.mime.BIN
 
     def handle_web_file_request(self, feature_uid: str, preview: bool, mc: gws.ModelContext) -> Optional[gws.ContentResponse]:
         if not mc.user.can_read(self):
             return
 
+        if self.contentColumn is None:
+            # @TODO serve files stored in the filesystem
+            return
+
         search = gws.SearchQuery(uids=[feature_uid])
-        if self.contentColumn is not None:
+        if preview:
+            # for small files, fetch content md5 and content, for big files only md5
+            search.extraColumns = [
+                sa.func.md5(self.contentColumn).label(f'{self.name}_preview_md5'),
+                sa.case(
+                    (sa.func.length(self.contentColumn) < _PREVIEW_BIG_FILE_SIZE, self.contentColumn),
+                    else_=sa.null(),
+                ).label(f'{self.name}_preview_content'),
+            ]
+        else:
             search.extraColumns = [self.contentColumn]
 
         features = self.model.find_features(search, mc)
         if not features:
             return
 
-        fv = cast(FileValue, features[0].get(self.name))
+        feature = features[0]
+
+        fv = cast(FileValue, feature.get(self.name))
         if not fv:
             return
 
+        if not preview:
+            # download complete file content
+            mime = self.get_mime_type(fv)
+            return gws.ContentResponse(
+                content=fv.content,
+                contentFilename=fv.name or f'gws.{gws.lib.mime.extension_for(mime)}',
+                mime=mime,
+            )
+
+        # preview
+
+        if not self.can_preview(self.get_mime_type(fv)):
+            return
+
+        md5 = feature.record.attributes.get(f'{self.name}_preview_md5')
+        if not md5:
+            return
+
+        cache_key = gws.u.sha256(
+            [
+                self.model.uid,
+                self.name,
+                feature.uid(),
+                md5,
+                _PREVIEW_SIZE,
+                _PREVIEW_MIME,
+            ]
+        )
+
+        def make_preview():
+            content = feature.record.attributes.get(f'{self.name}_preview_content')
+
+            if content is None:
+                # big file
+                search = gws.SearchQuery(uids=[feature.uid()])
+                search.extraColumns = [self.contentColumn]
+                features = self.model.find_features(search, mc)
+                if not features:
+                    raise gws.NotFoundError(f'file preview: no feature {feature.uid()!r}')
+                fv = cast(FileValue, features[0].get(self.name))
+                if not fv or fv.content is None:
+                    raise gws.NotFoundError(f'file preview: no content for {feature.uid()!r}')
+                content = fv.content
+
+            try:
+                return gws.lib.image.thumbnail(
+                    content,
+                    _PREVIEW_SIZE,
+                    max_pixels=_PREVIEW_MAX_PIXELS,
+                    mime=_PREVIEW_MIME,
+                )
+            except gws.lib.image.Error as exc:
+                raise gws.NotFoundError(f'file preview: {exc}') from exc
+
+        cache_dir = gws.u.ensure_dir(gws.c.CACHE_DIR + '/preview')
+        cache_path = cache_dir + f'/{cache_key}.{gws.lib.mime.extension_for(_PREVIEW_MIME)}'
+
         return gws.ContentResponse(
-            content=fv.content,
-            contentFilename=None if preview else fv.name,
-            mime=self.get_mime_type(fv),
+            contentPath=gws.u.get_cached_file(cache_path, _PREVIEW_CACHE_LIFE_TIME, make_preview),
+            mime=_PREVIEW_MIME,
         )
 
     ##

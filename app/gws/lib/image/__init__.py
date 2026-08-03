@@ -145,6 +145,41 @@ def from_svg(xmlstr: str, size: gws.Size, mime=None) -> 'Image':
     raise NotImplementedError
 
 
+def thumbnail(r: bytes, size: gws.Size, max_pixels=0, mime=None, options=None) -> bytes:
+    """Creates a thumbnail from image bytes.
+
+    The image is scaled to fit into ``size``, small images are not scaled up.
+
+    Args:
+        r: Bytes encoding an image.
+        size: Maximum thumbnail size `(width, height)`
+        max_pixels: Maximum number of source pixels.
+        mime: Mime type of the thumbnail.
+        options: Image options.
+
+    Returns:
+        Bytes encoding the thumbnail.
+    """
+
+    sz = _int_size(size)
+
+    try:
+        with io.BytesIO(r) as fp:
+            img = PIL.Image.open(fp)
+            w, h = img.size
+            if max_pixels and w * h > max_pixels:
+                raise Error(f'image too big: {w}x{h}')
+            img.draft(img.mode, sz)
+            img.thumbnail(sz, resample=PIL.Image.Resampling.BICUBIC)
+            if img.mode not in {'1', 'L', 'LA', 'P', 'RGB', 'RGBA'}:
+                img = img.convert('RGB')
+            return Image(img).to_bytes(mime, options)
+    except Error:
+        raise
+    except Exception as exc:
+        raise Error from exc
+
+
 def qr_code(
     data: str,
     level='M',
