@@ -905,6 +905,37 @@ def get_cached_object(name: str, life_time: int, init_fn):
         return obj
 
 
+def get_cached_file(path: str, life_time: int, init_fn) -> str:
+    uid = to_uid(path)
+
+    def _get():
+        if not os.path.isfile(path):
+            return
+        try:
+            age = int(time.time() - os.stat(path).st_mtime)
+        except OSError:
+            return
+        if age < life_time:
+            log.debug(f'get_cached_file {path!r} {life_time=} {age=} - loaded')
+            return path
+
+    p = _get()
+    if p:
+        return p
+
+    with server_lock(uid):
+        p = _get()
+        if p:
+            return p
+
+        tmp = path + random_string(64)
+        write_file_b(tmp, init_fn())
+        os.replace(tmp, path)
+        log.debug(f'get_cached_file {path!r} - stored')
+
+        return path
+
+
 def get_server_global(name: str, init_fn):
     uid = to_uid(name)
     path = const.GLOBALS_DIR + '/' + uid
