@@ -5,7 +5,7 @@ References:
     https://datatracker.ietf.org/doc/html/rfc6238
 """
 
-from typing import Optional
+from typing import Optional, cast
 
 import base64
 import hashlib
@@ -36,13 +36,14 @@ DEFAULTS = Options(
 def new_hotp(secret: str | bytes, counter: int, options: Optional[Options] = None) -> str:
     """Generate a new HOTP value as per rfc4226 section 5.3."""
 
-    return _raw_otp(_to_bytes(secret), counter, gws.u.merge(DEFAULTS, options))
+    options = cast(Options, gws.u.merge(DEFAULTS, options))
+    return _raw_otp(_to_bytes(secret), counter, options)
 
 
 def new_totp(secret: str | bytes, timestamp: int, options: Optional[Options] = None) -> str:
     """Generate a new TOTP value as per rfc6238 section 4.2."""
 
-    options = gws.u.merge(DEFAULTS, options)
+    options = cast(Options, gws.u.merge(DEFAULTS, options))
     counter = (timestamp - options.start) // options.step
     return _raw_otp(_to_bytes(secret), counter, options)
 
@@ -54,20 +55,21 @@ def check_totp(input: str, secret: str, timestamp: int, options: Optional[Option
     ``(timestamp-step*tolerance...timestamp+step*tolerance)``.
     """
 
-    options = gws.u.merge(DEFAULTS, options)
+    options = cast(Options, gws.u.merge(DEFAULTS, options))
 
     if len(input) != options.length:
         return False
+
+    ok = False
 
     for window in range(-options.tolerance, options.tolerance + 1):
         ts = timestamp + options.step * window
         counter = (ts - options.start) // options.step
         totp = _raw_otp(_to_bytes(secret), counter, options)
-        gws.log.debug(f'check_totp {timestamp=} {totp=} {input=} {window=}')
-        if input == totp:
-            return True
+        if hmac.compare_digest(_to_bytes(input), _to_bytes(totp)):
+            ok = True
 
-    return False
+    return ok
 
 
 def totp_key_uri(
@@ -83,10 +85,10 @@ def hotp_key_uri(
         secret: str | bytes,
         issuer_name: str,
         account_name: str,
-        counter: Optional[int] = None,
+        counter: int,
         options: Optional[Options] = None
 ) -> str:
-    return _key_uri('totp', secret, issuer_name, account_name, counter, options)
+    return _key_uri('hotp', secret, issuer_name, account_name, counter, options)
 
 
 def _key_uri(
@@ -103,21 +105,22 @@ def _key_uri(
         https://github.com/google/google-authenticator/wiki/Key-Uri-Format
     """
 
-    params = {
+    params: dict = {
         'secret': base32_encode(secret),
         'issuer': issuer_name,
     }
 
-    options = gws.u.merge(DEFAULTS, options)
+    options = cast(Options, gws.u.merge(DEFAULTS, options))
 
     if options.algo != DEFAULTS.algo:
         params['algorithm'] = options.algo
     if options.length != DEFAULTS.length:
         params['digits'] = options.length
-    if options.step != DEFAULTS.step:
-        params['period'] = options.step
-    if counter is not None:
+
+    if method == 'hotp':
         params['counter'] = counter
+    elif options.step != DEFAULTS.step:
+        params['period'] = options.step
 
     return 'otpauth://{}/{}:{}?{}'.format(
         method,

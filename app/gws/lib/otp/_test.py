@@ -1,4 +1,5 @@
 import base64
+import urllib.parse
 
 import gws
 import gws.lib.otp as otp
@@ -148,3 +149,113 @@ def test_totp():
         opts = otp.Options(start=0, step=30, length=8, algo='sha512')
         a = otp.new_totp(key, ts, opts)
         assert a == r.pop(0)
+
+
+def test_check_totp_in_tolerance_window():
+    secret_1 = 'secret_1'
+    ts = 1234567890
+
+    for window in [-1, 0, 1]:
+        assert otp.check_totp(otp.new_totp(secret_1, ts + 30 * window), secret_1, ts) is True
+
+    for window in [-2, 2, 100]:
+        assert otp.check_totp(otp.new_totp(secret_1, ts + 30 * window), secret_1, ts) is False
+
+
+def test_check_totp_zero_tolerance():
+    secret_1 = 'secret_1'
+    ts = 1234567890
+    opts = otp.Options(tolerance=0)
+
+    assert otp.check_totp(otp.new_totp(secret_1, ts, opts), secret_1, ts, opts) is True
+    assert otp.check_totp(otp.new_totp(secret_1, ts - 30, opts), secret_1, ts, opts) is False
+
+
+def test_check_totp_wrong_secret():
+    secret_1 = 'secret_1'
+    secret_2 = 'secret_2'
+    ts = 1234567890
+
+    assert otp.check_totp(otp.new_totp(secret_2, ts), secret_1, ts) is False
+
+
+def test_check_totp_malformed_input():
+    secret_1 = 'secret_1'
+    ts = 1234567890
+
+    for input in ['', '1', '12345', '1234567', 'abcdef', 'äöüßµ§']:
+        assert otp.check_totp(input, secret_1, ts) is False
+
+
+def test_totp_key_uri():
+    secret_1 = 'secret_1'
+
+    scheme, method, label, params = _parse_key_uri(
+        otp.totp_key_uri(secret_1, 'Issuer 1', 'user_1@example.com'))
+
+    assert scheme == 'otpauth'
+    assert method == 'totp'
+    assert label == '/Issuer 1:user_1@example.com'
+    assert otp.base32_decode(params['secret']) == b'secret_1'
+    assert params['issuer'] == 'Issuer 1'
+    assert 'counter' not in params
+    assert 'period' not in params
+    assert 'digits' not in params
+    assert 'algorithm' not in params
+
+
+def test_totp_key_uri_with_options():
+    secret_1 = 'secret_1'
+    opts = otp.Options(step=60, length=8, algo='sha256')
+
+    _, method, _, params = _parse_key_uri(
+        otp.totp_key_uri(secret_1, 'Issuer 1', 'user_1@example.com', opts))
+
+    assert method == 'totp'
+    assert params['period'] == '60'
+    assert params['digits'] == '8'
+    assert params['algorithm'] == 'sha256'
+    assert 'counter' not in params
+
+
+def test_hotp_key_uri():
+    secret_1 = 'secret_1'
+
+    _, method, _, params = _parse_key_uri(
+        otp.hotp_key_uri(secret_1, 'Issuer 1', 'user_1@example.com', 42))
+
+    assert method == 'hotp'
+    assert params['counter'] == '42'
+    assert 'period' not in params
+
+
+def test_hotp_key_uri_ignores_period():
+    secret_1 = 'secret_1'
+    opts = otp.Options(step=60)
+
+    _, _, _, params = _parse_key_uri(
+        otp.hotp_key_uri(secret_1, 'Issuer 1', 'user_1@example.com', 0, opts))
+
+    assert params['counter'] == '0'
+    assert 'period' not in params
+
+
+def test_base32():
+    assert otp.base32_encode('secret_1') == base64.b32encode(b'secret_1').decode('ascii')
+    assert otp.base32_encode(b'secret_1') == otp.base32_encode('secret_1')
+    assert otp.base32_decode(otp.base32_encode('secret_1')) == b'secret_1'
+
+
+def test_random_secret():
+    for length in [8, 16, 32, 64]:
+        assert len(otp.base32_encode(otp.random_secret(length))) == length
+
+    assert otp.random_secret() != otp.random_secret()
+
+    with u.raises(ValueError):
+        otp.random_secret(30)
+
+
+def _parse_key_uri(uri):
+    p = urllib.parse.urlsplit(uri)
+    return p.scheme, p.netloc, urllib.parse.unquote(p.path), dict(urllib.parse.parse_qsl(p.query))
