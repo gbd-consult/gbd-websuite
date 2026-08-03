@@ -132,7 +132,7 @@ def _parse_app_dict(dct: dict, path, pp: '_Parser'):
     app_cfg.set('projectDirs', project_dirs)
     app_cfg.set('projects', projects)
 
-    _save_debug(app_cfg, path, '.parsed.json')
+    gws.log.if_debug(_save_debug, app_cfg, path, '.parsed.json')
     return app_cfg
 
 
@@ -205,7 +205,7 @@ class _Parser:
 
         if r:
             r = _to_plain(r)
-            _save_debug(r, path, '.src.json')
+            gws.log.if_debug(_save_debug, r, path, '.src.json')
             return r
 
     def read2(self, path: str):
@@ -275,7 +275,7 @@ class _Parser:
         if err_cnt[0] > 0:
             return
 
-        _save_debug(slon, path, '.src.slon')
+        gws.log.if_debug(_save_debug, slon, path, '.src.slon')
 
         try:
             return gws.lib.vendor.slon.loads(slon, as_object=True)
@@ -322,7 +322,8 @@ def _register_syntax_error(ctx, path, src, message, line, context=10, cause=None
 def _save_debug(src, src_path, ext):
     if ext.endswith('.json') and not isinstance(src, str):
         src = gws.lib.jsonx.to_pretty_string(src)
-    gws.u.write_file(f'{gws.c.CONFIG_DIR}/{gws.u.to_uid(src_path)}{ext}', src)
+    path = gws.u.write_file(f'{gws.c.CONFIG_DIR}/{gws.u.to_uid(src_path)}{ext}', src)
+    return f'saved {path!r}'
 
 
 def _as_flat_list(ls):
