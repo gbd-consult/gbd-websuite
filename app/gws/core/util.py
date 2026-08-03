@@ -677,6 +677,9 @@ def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int
             raise ValueError(f'cannot use a relative path {dir_path!r} without a base dir')
         bpath = dir_path.encode('utf8')
 
+    if os.path.isdir(bpath):
+        return bpath.decode('utf8')
+
     parts = []
 
     for p in bpath.split(b'/'):
@@ -703,8 +706,8 @@ def chown_default(path, user=None, group=None):
 
 _ephemeral_state = dict(
     last_check_time=0,
-    check_interval=20 * 30,
-    max_age=20 * 30,
+    check_interval=2 * 3600,
+    max_age=2 * 3600,
 )
 
 
