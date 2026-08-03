@@ -161,11 +161,12 @@ def for_path(path: str) -> str:
     return t or BIN
 
 
-def extension_for(mt: str) -> Optional[str]:
+def extension_for(mt: str, default: str = 'bin') -> str:
     """Returns the extension of a given mime type.
 
     Args:
         mt: Mime type.
+        default: Default extension to return if mime type is unknown.
 
     Returns:
         The mime type extension.
@@ -177,3 +178,4 @@ def extension_for(mt: str) -> Optional[str]:
     s = mimetypes.guess_extension(mt)
     if s:
         return s[1:]
+    return default
