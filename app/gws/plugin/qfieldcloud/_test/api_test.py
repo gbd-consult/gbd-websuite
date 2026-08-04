@@ -15,6 +15,9 @@ from . import util as tu
 CONFIG = f"""
     auth.providers+ {{ type "{u.auth.PROVIDER_1}" }}
     auth.session {{ type "sqlite" }}
+    auth.methods+ {{ type web secure False cookieName AUTH_COOKIE }}
+
+    actions+ {{ type auth access "allow all" }}
 
     projects+ {{
         uid "PROJECT_1"
@@ -23,6 +26,7 @@ CONFIG = f"""
             type "qfieldcloud"
             uid "ACTION_1"
             access "allow all"
+            auth.secure False
             projects+ {{
                 uid "QFC_1"
                 title "QField Test"
@@ -155,6 +159,15 @@ def test_protected_route_without_a_token(root: gws.Root):
 def test_protected_route_with_a_malformed_header(root: gws.Root):
     res = u.http.get(root, _url('api/v1/auth/user'), headers={'Authorization': 'Bearer xyz'})
     assert res.status_code == 403
+
+
+def test_protected_route_with_a_web_session_cookie(root: gws.Root):
+    # a session created by the web method must not be usable as a qfieldcloud token
+    res = u.http.api(root, 'authLogin', {'username': 'user1', 'password': 'pass1'})
+    assert res.status_code == 200
+
+    sid = res.cookies['AUTH_COOKIE'].value
+    assert u.http.get(root, _url('api/v1/auth/user'), headers=_auth(sid)).status_code == 403
 
 
 def test_protected_route_with_an_invalid_token(root: gws.Root):

@@ -5,6 +5,7 @@ import os
 import hashlib
 
 import gws
+import gws.base.auth
 import gws.base.job
 import gws.base.shape
 import gws.base.action
@@ -20,9 +21,11 @@ gws.ext.new.action('qfieldcloud')
 
 class Config(gws.ConfigWithAccess):
     """QField Cloud action."""
-    
+
     projects: list[core.ProjectConfig]
     """QField Cloud projects."""
+    auth: Optional[gws.base.auth.method.Config]
+    """Options for the token authorization method. (added in 8.4)"""
 
 
 class Props(gws.base.action.Props):
@@ -75,7 +78,8 @@ class Object(gws.base.action.Object):
     method: gws.AuthMethod
 
     def configure(self):
-        self.method = cast(gws.AuthMethod, self.create_child(gws.ext.object.authMethod, type='qfieldcloud'))
+        self.method = cast(gws.AuthMethod, self.create_child(gws.ext.object.authMethod, self.cfg('auth'), type='qfieldcloud'))
+        self.root.app.authMgr.add_method(self.method)
         self.qfcProjects = []
         for p in self.cfg('projects') or []:
             qp = self.create_child(core.QfcProject, p)
@@ -414,9 +418,13 @@ class Object(gws.base.action.Object):
             raise gws.ForbiddenError('token_auth: missing or invalid Authorization header')
         token = m.group(1)
         am = self.root.app.authMgr
+        if not am.can_use_method(rx.req, self.method):
+            raise gws.ForbiddenError('token_auth: insecure_context')
         sess = am.sessionMgr.get(token)
         if not sess:
             raise gws.ForbiddenError(f'token_auth: invalid or expired {token=}')
+        if not sess.method or sess.method.uid != self.method.uid:
+            raise gws.ForbiddenError(f'token_auth: wrong method {sess.method=}')
         rx.sess = sess
         rx.user = sess.user
         rx.token = sess.uid

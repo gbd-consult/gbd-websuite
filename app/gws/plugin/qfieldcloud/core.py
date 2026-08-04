@@ -4,6 +4,8 @@ import gws.plugin.qgis.provider
 
 
 class ProjectConfig(gws.ConfigWithAccess):
+    """QField Cloud project."""
+
     title: str = ''
     """Project title."""
     provider: gws.plugin.qgis.provider.Config
