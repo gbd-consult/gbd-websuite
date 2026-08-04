@@ -6,7 +6,7 @@ import gws
 import gws.config
 import gws.lib.jsonx
 
-from . import session, system_provider
+from . import session, system_provider, throttle
 
 
 class Config(gws.Config):
@@ -20,6 +20,8 @@ class Config(gws.Config):
     """Authorization providers."""
     session: Optional[gws.ext.config.authSessionManager]
     """Session options."""
+    throttle: Optional[throttle.Config]
+    """Authentication throttle options. (added in 8.4)"""
 
 
 _DEFAULT_SESSION_TYPE = 'sqlite'
@@ -30,6 +32,11 @@ class Object(gws.AuthManager):
 
     def configure(self):
         self.sessionMgr = self.create_child(gws.ext.object.authSessionManager, self.cfg('session'), type=_DEFAULT_SESSION_TYPE)
+
+        self.throttle = None
+        p = self.cfg('throttle')
+        if p:
+            self.throttle = cast(throttle.Object, self.create_child(throttle.Object, p))
 
         self.providers = self.create_children(gws.ext.object.authProvider, self.cfg('providers'))
 
@@ -106,16 +113,34 @@ class Object(gws.AuthManager):
             return True
         if not meth.allowInsecureFrom:
             return False
-        ip = req.env('REMOTE_ADDR', '')
-        if ip not in meth.allowInsecureFrom:
+        if req.ip not in meth.allowInsecureFrom:
             return False
-        gws.log.warning(f'open_session: {meth=}: insecure_context allowed from {ip=}')
+        gws.log.warning(f'open_session: {meth=}: insecure_context allowed from {req.ip=}')
         return True
 
     ##
 
-    def authenticate(self, method, credentials):
-        # @TODO no rate limiting, lockout or backoff on credential endpoints.
+    def authenticate(self, method, credentials, req):
+        if not self.throttle:
+            return self._authenticate2(method, credentials)
+
+        sec = self.throttle.blocked_for(req, method, credentials)
+        if sec > 0:
+            gws.log.warning(f'authenticate: {method=}: throttled for {sec}s')
+            exc = gws.TooManyRequestsError('too many authentication attempts')
+            exc.retryAfter = sec
+            raise exc
+
+        try:
+            user = self._authenticate2(method, credentials)
+        except gws.ForbiddenError:
+            self.throttle.register(False, req, method, credentials)
+            raise
+
+        self.throttle.register(user is not None, req, method, credentials)
+        return user
+
+    def _authenticate2(self, method, credentials):
         for prov in self.providers:
             if prov.allowedMethods and method.extType not in prov.allowedMethods:
                 continue

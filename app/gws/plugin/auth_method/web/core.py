@@ -161,7 +161,7 @@ class Object(gws.base.auth.method.Object):
         if self.secure and not req.isSecure:
             raise gws.ForbiddenError('login: insecure_context, ignored')
 
-        user = self.root.app.authMgr.authenticate(self, p)
+        user = self.root.app.authMgr.authenticate(self, p, req)
         if not user:
             raise gws.ForbiddenError('login: user not found')
 

@@ -36,10 +36,11 @@ def root():
 ##
 
 def _prepare() -> tuple[gws.AuthManager, gws.AuthSessionManager, gws.User]:
-    am = root().app.authMgr
+    r = root()
+    am = r.app.authMgr
     sm = am.sessionMgr
     u.auth.add_user('me', 'foo')
-    usr = am.authenticate(am.methods[0], gws.Data(username='me', password='foo'))
+    usr = am.authenticate(am.methods[0], gws.Data(username='me', password='foo'), u.auth.requester(r))
     return am, sm, usr
 
 
@@ -165,7 +166,7 @@ def test_max_life_time_expires_an_active_session():
     am = root.app.authMgr
     sm = am.sessionMgr
     u.auth.add_user('me', 'foo')
-    usr = am.authenticate(am.methods[0], gws.Data(username='me', password='foo'))
+    usr = am.authenticate(am.methods[0], gws.Data(username='me', password='foo'), u.auth.requester(root))
 
     sess = sm.create(am.methods[0], usr)
 

@@ -40,7 +40,7 @@ class Object(gws.base.auth.method.Object):
         credentials = self._parse_header(req)
         if not credentials:
             return
-        user = am.authenticate(self, credentials)
+        user = am.authenticate(self, credentials, req)
         if user:
             return am.sessionMgr.create(self, user)
 

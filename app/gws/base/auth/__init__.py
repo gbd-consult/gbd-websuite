@@ -5,5 +5,6 @@ from . import (
     provider,
     session,
     session_manager,
+    throttle,
     user,
 )

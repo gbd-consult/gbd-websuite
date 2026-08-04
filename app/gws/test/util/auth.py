@@ -2,6 +2,7 @@
 
 import gws
 import gws.base.auth
+import gws.base.web.wsgi
 import gws.lib.jsonx
 
 METHOD_1 = 'mockAuthMethod1'
@@ -35,6 +36,10 @@ def drop_users():
 
 def system_user():
     return gws.base.auth.user.SystemUser(None, roles=[])
+
+
+def requester(root, ip='127.0.0.1'):
+    return gws.base.web.wsgi.Requester(root, {'REMOTE_ADDR': ip}, root.app.webMgr.site)
 
 
 class Method1(gws.base.auth.method.Object):

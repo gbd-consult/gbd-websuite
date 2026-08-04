@@ -404,7 +404,7 @@ class Object(gws.base.action.Object):
 
     def authorize_from_credentials(self, credentials: gws.Data, rx: Request):
         am = self.root.app.authMgr
-        user = am.authenticate(self.method, credentials)
+        user = am.authenticate(self.method, credentials, rx.req)
         if not user:
             raise gws.ForbiddenError('invalid username or password')
         rx.sess = am.sessionMgr.create(self.method, user)

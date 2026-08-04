@@ -142,7 +142,7 @@ class AuthManager(Node):
     sessionMgr: 'AuthSessionManager'
     """Session manager."""
 
-    def authenticate(self, method: 'AuthMethod', credentials: Data) -> Optional['User']:
+    def authenticate(self, method: 'AuthMethod', credentials: Data, req: 'WebRequester') -> Optional['User']:
         """Authenticate a user."""
 
     def get_user(self, user_uid: str) -> Optional['User']:

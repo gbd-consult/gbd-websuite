@@ -856,7 +856,7 @@ class Object(gws.base.action.Object):
         data = dict(
             app_name='gws',
             date_time=gws.lib.datetimex.now(),
-            ip=req.env('REMOTE_ADDR', ''),
+            ip=req.ip,
             login=req.user.uid,
             user_name=req.user.displayName,
             control_input=(control_input or '').strip(),
