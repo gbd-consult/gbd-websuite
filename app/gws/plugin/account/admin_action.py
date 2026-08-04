@@ -71,6 +71,9 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.api('accountadminReset')
     def api_reset(self, req: gws.WebRequester, p: ResetRequest) -> ResetResponse:
+        if not req.user.can_write(self.h.adminModel):
+            raise gws.ForbiddenError(f'account reset forbidden for {req.user.uid!r}')
+
         uid = p.featureUid
         account = self.h.get_account_by_id(uid)
         if not account:

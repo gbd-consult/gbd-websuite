@@ -99,6 +99,7 @@ def main(args):
     if cmd == 'go':
         OPTIONS['arg_coverage'] = True
         OPTIONS['arg_detach'] = True
+        OPTIONS['arg_batch'] = True
         docker_compose_stop()
         configure()
         docker_compose_start()

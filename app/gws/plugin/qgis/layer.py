@@ -104,12 +104,16 @@ class Object(gws.base.layer.group.Object):
         for la in self.descendants():
             if la.uid not in leaves:
                 continue
+            if not lri.user.can_read(la):
+                gws.log.debug(f'skipping {la.uid=} forbidden')
+                continue
             if la.extType != 'qgisflat':
                 gws.log.debug(f'skipping {la.uid=} {la.extType=}')
                 continue
             p = cast(flatlayer.Object, la).get_render_params(lri, self.sqlFilters)
             if not p:
                 gws.log.debug(f'skipping {la.uid=} no params')
+                continue
             layers.extend(reversed(p.get('LAYERS', [])))
             f = p.get('FILTER')
             if f:

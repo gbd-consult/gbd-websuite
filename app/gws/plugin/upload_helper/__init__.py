@@ -106,6 +106,9 @@ class Object(gws.Node):
         if p.chunkNumber < 0 or p.chunkNumber >= up.chunkCount:
             raise Error(f'upload: {up.uid!r} invalid chunk number')
 
+        if len(p.content) > up.totalSize:
+            raise Error(f'upload: {up.uid!r} invalid chunk size')
+
         with gws.u.server_lock(f'upload_{up.uid}'):
             gws.u.write_file_b(_base_path(up.uid, p.chunkNumber), p.content)
 

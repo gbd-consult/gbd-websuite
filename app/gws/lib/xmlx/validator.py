@@ -7,6 +7,8 @@ import requests
 
 import gws
 
+from . import util
+
 
 class Error(gws.Error):
     def __init__(self, *args, **kwargs):
@@ -17,7 +19,7 @@ class Error(gws.Error):
 
 def validate(xml: str | bytes):
     try:
-        parser = lxml.etree.XMLParser(resolve_entities=True)
+        parser = lxml.etree.XMLParser(resolve_entities=False, no_network=True)
         parser.resolvers.add(_CachingResolver())
 
         schema_locations = _extract_schema_locations(xml)
@@ -64,7 +66,7 @@ def _create_combined_xsd(schema_locations: dict) -> str:
     xml.append('<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">')
 
     for ns, loc in schema_locations.items():
-        xml.append(f'<xs:import namespace="{ns}" schemaLocation="{loc}"/>')
+        xml.append(f'<xs:import namespace="{util.escape_attribute(ns)}" schemaLocation="{util.escape_attribute(loc)}"/>')
 
     xml.append('</xs:schema>\n')
 

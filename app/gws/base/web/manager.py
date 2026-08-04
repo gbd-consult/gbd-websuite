@@ -30,31 +30,3 @@ class Object(gws.WebManager):
 
         # deprecated
         self.sites = [self.site]
-        
-        self.root.app.middlewareMgr.register(self, 'cors')
-
-    ##
-
-    def exit_middleware(self, req: gws.WebRequester, res: gws.WebResponder):
-        cors = req.site.corsOptions
-
-        if not cors:
-            return
-
-        p = cors.allowOrigin
-        if p:
-            res.add_header('Access-Control-Allow-Origin', p)
-
-        p = cors.allowCredentials
-        if p:
-            res.add_header('Access-Control-Allow-Credentials', 'true')
-
-        p = cors.allowHeaders
-        if p:
-            res.add_header('Access-Control-Allow-Headers', p)
-
-        p = cors.allowMethods
-        if p:
-            res.add_header('Access-Control-Allow-Methods', p)
-        else:
-            res.add_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
