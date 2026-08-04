@@ -26,6 +26,13 @@ class BadRequestError(Error):
     pass
 
 
+class TooManyRequestsError(Error):
+    """Generic 'too many requests' error."""
+
+    retryAfter: int = 0
+    """Time in seconds after which the request can be repeated."""
+
+
 class ResponseTooLargeError(Error):
     """Generic error when a response is too large."""
     pass
