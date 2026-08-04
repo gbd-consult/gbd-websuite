@@ -1,5 +1,7 @@
 """Base session manager."""
 
+from typing import Optional
+
 import gws
 import gws.lib.datetimex
 
@@ -9,8 +11,8 @@ class Config(gws.Config):
 
     lifeTime: gws.Duration = '20m'
     """Session life time, counted from the last request."""
-    maxLifeTime: gws.Duration = '1d'
-    """Absolute session life time, counted from the login. (added in 8.4)"""
+    maxLifeTime: Optional[gws.Duration]
+    """Absolute session life time. (added in 8.4)"""
 
 
 class Object(gws.AuthSessionManager):
@@ -18,6 +20,8 @@ class Object(gws.AuthSessionManager):
 
     def configure(self):
         self.lifeTime = self.cfg('lifeTime', default=gws.lib.datetimex.parse_duration(Config.lifeTime))
-        self.maxLifeTime = self.cfg('maxLifeTime', default=gws.lib.datetimex.parse_duration(Config.maxLifeTime))
-        if self.maxLifeTime < self.lifeTime:
-            raise gws.ConfigurationError(f'maxLifeTime={self.maxLifeTime} must not be less than lifeTime={self.lifeTime}')
+
+        p = self.cfg('maxLifeTime') or 0
+        if 0 < p < self.lifeTime:
+            raise gws.ConfigurationError(f'invalid maxLifeTime={p}, must not be less than lifeTime={self.lifeTime}')
+        self.maxLifeTime = p

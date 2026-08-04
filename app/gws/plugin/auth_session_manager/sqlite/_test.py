@@ -125,6 +125,58 @@ def test_session_expiration():
     assert live2.uid == live.uid
 
 
+def _root_with_session_config(extra):
+    cfg = f'''
+        auth {{
+            providers+ {{
+                type "{u.auth.PROVIDER_1}"
+                allowedMethods [ "{u.auth.METHOD_1}" ]
+            }}
+            methods+ {{
+                type "{u.auth.METHOD_1}"
+            }}
+            session {{
+                path {DB_PATH!r}
+                type "sqlite"
+                lifeTime 2
+                {extra}
+            }}
+        }}
+    '''
+    return u.gws_root(cfg)
+
+
+def test_max_life_time_omitted_means_no_limit():
+    assert _root_with_session_config('').app.authMgr.sessionMgr.maxLifeTime == 0
+
+
+def test_max_life_time_zero_means_no_limit():
+    assert _root_with_session_config('maxLifeTime 0').app.authMgr.sessionMgr.maxLifeTime == 0
+
+
+def test_max_life_time_below_life_time_is_an_error():
+    with u.raises(gws.ConfigurationError):
+        _root_with_session_config('maxLifeTime 1')
+
+
+def test_max_life_time_expires_an_active_session():
+    osx.unlink(DB_PATH)
+    root = _root_with_session_config('maxLifeTime 3')
+    am = root.app.authMgr
+    sm = am.sessionMgr
+    u.auth.add_user('me', 'foo')
+    usr = am.authenticate(am.methods[0], gws.Data(username='me', password='foo'))
+
+    sess = sm.create(am.methods[0], usr)
+
+    for _ in range(4):
+        gws.u.sleep(1)
+        sm.touch(sess)
+
+    # the session stayed active, but outlived maxLifeTime
+    assert sm.get(sess.uid) is None
+
+
 def _session_mp_worker(n, num_loops):
     am, sm, usr = _prepare()
     s1 = sm.create(am.methods[0], usr)

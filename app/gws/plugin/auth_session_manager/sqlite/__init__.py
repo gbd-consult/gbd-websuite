@@ -35,7 +35,7 @@ class Object(gws.base.auth.session_manager.Object):
         self._db().execute(
             f'DELETE FROM {self.table} WHERE updated < :last_time OR created < :max_time',
             last_time=gws.u.stime() - self.lifeTime,
-            max_time=gws.u.stime() - self.maxLifeTime,
+            max_time=(gws.u.stime() - self.maxLifeTime) if self.maxLifeTime > 0 else 0,
         )
         self._cleanupTime = gws.u.stime()
 
@@ -69,7 +69,7 @@ class Object(gws.base.auth.session_manager.Object):
             f'SELECT * FROM {self.table} WHERE uid=:uid AND updated >= :last_time AND created >= :max_time',
             uid=uid,
             last_time=gws.u.stime() - self.lifeTime,
-            max_time=gws.u.stime() - self.maxLifeTime,
+            max_time=(gws.u.stime() - self.maxLifeTime) if self.maxLifeTime > 0 else 0,
         )
         if len(rs) == 1:
             return self._session(rs[0])
