@@ -152,7 +152,7 @@ class Object(gws.base.auth.method.Object):
                 samesite=self.cookieSameSite,
                 httponly=True,
             )
-            am.sessionMgr.save(sess)
+            am.sessionMgr.touch(sess)
 
     def handle_login(self, req: gws.WebRequester, p: LoginRequest) -> LoginResponse:
         if not req.user.isGuest:

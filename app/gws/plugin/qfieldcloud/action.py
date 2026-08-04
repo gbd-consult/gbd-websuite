@@ -420,7 +420,7 @@ class Object(gws.base.action.Object):
         rx.sess = sess
         rx.user = sess.user
         rx.token = sess.uid
-        am.sessionMgr.save(sess)
+        am.sessionMgr.touch(sess)
         gws.log.debug(f'token_auth: ok: {rx.token=} {rx.user.uid=} {rx.user.loginName=}')
 
     ##

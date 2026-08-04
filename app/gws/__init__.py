@@ -3013,6 +3013,9 @@ class AuthSessionManager(Node):
     lifeTime: int
     """Session lifetime in seconds."""
 
+    maxLifeTime: int
+    """Absolute session lifetime in seconds, counted from the creation time."""
+
     def create(self, method: 'AuthMethod', user: 'User', data: Optional[dict] = None) -> 'AuthSession':
         """Create a new Session,
 

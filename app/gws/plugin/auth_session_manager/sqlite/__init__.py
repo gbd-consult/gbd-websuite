@@ -2,13 +2,14 @@ from typing import Optional
 
 import gws
 import gws.base.auth
-import gws.lib.datetimex
+import gws.lib.datetimex as dtx
 import gws.lib.jsonx
 import gws.lib.sqlitex
 
 gws.ext.new.authSessionManager('sqlite')
 
 _CLEANUP_INTERVAL = 600
+_TOUCH_INTERVAL = 60
 
 
 class Config(gws.base.auth.session_manager.Config):
@@ -31,8 +32,11 @@ class Object(gws.base.auth.session_manager.Object):
     _cleanupTime = 0
 
     def cleanup(self):
-        last_time = gws.u.stime() - self.lifeTime
-        self._db().execute(f'DELETE FROM {self.table} WHERE updated < :last_time', last_time=last_time)
+        self._db().execute(
+            f'DELETE FROM {self.table} WHERE updated < :last_time OR created < :max_time',
+            last_time=gws.u.stime() - self.lifeTime,
+            max_time=gws.u.stime() - self.maxLifeTime,
+        )
         self._cleanupTime = gws.u.stime()
 
     def create(self, method, user, data=None):
@@ -61,10 +65,11 @@ class Object(gws.base.auth.session_manager.Object):
         self._db().execute(f'DELETE FROM {self.table}')
 
     def get(self, uid):
-        last_time = gws.u.stime() - self.lifeTime
         rs = self._db().select(
-            f'SELECT * FROM {self.table} WHERE uid=:uid AND updated >= :last_time',
-            uid=uid, last_time=last_time
+            f'SELECT * FROM {self.table} WHERE uid=:uid AND updated >= :last_time AND created >= :max_time',
+            uid=uid,
+            last_time=gws.u.stime() - self.lifeTime,
+            max_time=gws.u.stime() - self.maxLifeTime,
         )
         if len(rs) == 1:
             return self._session(rs[0])
@@ -92,6 +97,10 @@ class Object(gws.base.auth.session_manager.Object):
         if sess.isChanged:
             return self.save(sess)
 
+        # throttle updates to avoid excessive writes on high-traffic sessions
+        if gws.u.stime() - dtx.to_timestamp(sess.updated) < _TOUCH_INTERVAL:
+            return
+
         self._db().execute(
             f'UPDATE {self.table} SET updated=:updated WHERE uid=:uid',
             updated=gws.u.stime(),
@@ -113,8 +122,8 @@ class Object(gws.base.auth.session_manager.Object):
             method=am.get_method(r['method_uid']),
             user=usr,
             data=gws.lib.jsonx.from_string(r['str_data']),
-            created=gws.lib.datetimex.from_timestamp(r['created']),
-            updated=gws.lib.datetimex.from_timestamp(r['updated']),
+            created=dtx.from_timestamp(r['created']),
+            updated=dtx.from_timestamp(r['updated']),
         )
 
     ##
