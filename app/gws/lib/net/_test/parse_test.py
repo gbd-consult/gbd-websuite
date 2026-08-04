@@ -44,6 +44,29 @@ def test_make_url():
     assert p == 'http://USER:PASS@foo.bar:1234/path/to/file.ext?p1=AA%20A&p2=BB%26B#hash'
 
 
+def test_make_url_omits_the_default_port():
+    assert net.make_url(scheme='http', hostname='foo.bar', port=80, path='/path') == 'http://foo.bar/path'
+    assert net.make_url(scheme='http', hostname='foo.bar', port='80', path='/path') == 'http://foo.bar/path'
+    assert net.make_url(scheme='https', hostname='foo.bar', port=443, path='/path') == 'https://foo.bar/path'
+
+    assert net.make_url(scheme='HTTPS', hostname='foo.bar', port=443, path='/path') == 'https://foo.bar/path'
+
+    assert net.make_url(scheme='http', hostname='foo.bar', port=443, path='/path') == 'http://foo.bar:443/path'
+    assert net.make_url(scheme='https', hostname='foo.bar', port=80, path='/path') == 'https://foo.bar:80/path'
+    assert net.make_url(hostname='foo.bar', port=80, path='/path') == '//foo.bar:80/path'
+
+
+def test_make_url_without_a_host():
+    assert net.make_url(path='/path/to/file') == '/path/to/file'
+    assert net.make_url(path='path/to/file') == '/path/to/file'
+    assert net.make_url(path='/path', params={'a': '1'}) == '/path?a=1'
+    assert net.make_url(params={'a': '1'}) == '?a=1'
+
+
+def test_add_params_to_a_relative_url():
+    assert net.add_params('/path/to/file', {'key': 'value'}) == '/path/to/file?key=value'
+
+
 def test_parse_qs():
     qs = 'a=1&b=2&c=3'
     result = net.parse_qs(qs)

@@ -83,36 +83,43 @@ def parse_url(url: str, **kwargs) -> Url:
     return u
 
 
+_DEFAULT_PORTS = {'http': '80', 'https': '443'}
+
+
 def make_url(u: Optional[Url | dict] = None, **kwargs) -> str:
     p = gws.u.merge({}, u, kwargs)
 
     s = ''
 
-    if p.get('scheme'):
-        s += p['scheme'] + ':'
+    scheme = p.get('scheme', '').lower()
+    if scheme:
+        s += scheme + ':'
 
-    s += '//'
+    host = p.get('hostname', '')
+    port = p.get('port', '')
+    path = p.get('path', '')
 
-    if p.get('username'):
-        s += quote_param(p['username']) + ':' + quote_param(p.get('password', '')) + '@'
+    if host:
+        s += '//'
 
-    if p.get('hostname'):
-        s += p['hostname']
-        if p.get('port'):
-            s += ':' + str(p['port'])
-        if p.get('path'):
-            s += '/'
-    else:
-        s += '/'
+        username = p.get('username', '')
+        if username:
+            s += quote_param(username) + ':' + quote_param(p.get('password', '')) + '@'
 
-    if p.get('path'):
-        s += quote_path(p['path'].lstrip('/'))
+        s += host
+        if port and str(port) != _DEFAULT_PORTS.get(scheme):
+            s += ':' + str(port)
 
-    if p.get('params'):
-        s += '?' + make_qs(p['params'])
+    if path:
+        s += '/' + quote_path(path.lstrip('/'))
 
-    if p.get('fragment'):
-        s += '#' + p['fragment'].lstrip('#')
+    params = p.get('params')
+    if params:
+        s += '?' + make_qs(params)
+
+    fragment = p.get('fragment', '')
+    if fragment:
+        s += '#' + fragment.lstrip('#')
 
     return s
 
