@@ -80,6 +80,7 @@ class Requester(gws.WebRequester):
         self.scheme = 'http'
         self.host = ''
         self.port = 0
+        self.ip = self.environ.get('REMOTE_ADDR', '')
         self.isSecure = False
 
         self.session = root.app.authMgr.guestSession
@@ -321,7 +322,7 @@ class Requester(gws.WebRequester):
             self._parse2()
 
     def _parse2(self):
-        self._parse_host()
+        self._parse_origin()
 
         # the server only understands requests to /_ or /_/commandName
         # GET params can be given as query string or encoded in the path
@@ -357,22 +358,25 @@ class Requester(gws.WebRequester):
             self._parsed_params_lc = {k.lower(): v for k, v in d.items()}
             self._parsed_query_params = dict(self._wz.args)
 
-    def _parse_host(self):
+    def _parse_origin(self):
         scheme = 'https' if self.site.ssl or self._wz.is_secure else 'http'
         host = self.environ.get('HTTP_HOST', '')
+        ip = self.environ.get('REMOTE_ADDR', '')
         fwd_port = ''
 
-        if self.site.useForwardedHeaders:
-            p = self.environ.get('HTTP_X_FORWARDED_HOST', '').split(',')[0].strip()
-            if p:
-                host = p
-            fwd_port = self.environ.get('HTTP_X_FORWARDED_PORT', '').split(',')[0].strip()
-            p = self.environ.get('HTTP_X_FORWARDED_PROTO', '').split(',')[0].strip().lower()
-            if not self.site.ssl and p in ('http', 'https'):
-                scheme = p
+        if self.site.proxyCount > 0:
+            fwd = self._parse_proxy_headers()
+            if fwd['host']:
+                host = fwd['host']
+            if fwd['port']:
+                fwd_port = fwd['port']
+            if fwd['scheme'] and not self.site.ssl:
+                scheme = fwd['scheme']
+            if fwd['ip']:
+                ip = fwd['ip']
 
         host, _, port = host.strip().lower().partition(':')
-        port = port or fwd_port
+        port = fwd_port or port
 
         try:
             port = int(port)
@@ -386,6 +390,48 @@ class Requester(gws.WebRequester):
         self.isSecure = scheme == 'https'
         self.host = host
         self.port = port
+        self.ip = ip
+
+    def _parse_proxy_headers(self):
+        # read the client's scheme, host, port and address from the X-Forwarded headers
+        # each value is returned as given, or as None if it cannot be trusted or is absent,
+        # the caller is expected to provide the fallbacks
+        #
+        # X-Forwarded-For is a list to which every proxy appends the address it sees,
+        # so with 'proxyCount' proxies in front of us, the client is the 'proxyCount'-th
+        # element from the right. everything to the left of it originates from the client
+        # and is not trustworthy, therefore a list which is too short yields no address at all
+        #
+        # X-Forwarded-Host, -Port and -Proto are normally set, not appended, by the outermost
+        # proxy, and their lists are therefore shorter than the number of proxies.
+        # for these, the leftmost element is used
+        #
+        # @TODO 'proxyCount' counts the proxies, it does not identify them. a request which
+        # arrives over a shorter path, e.g. a monitoring client which bypasses the proxies,
+        # is resolved against the wrong element. verifying the peer requires a list of
+        # trusted proxy addresses
+
+        d: dict = {'scheme': None, 'host': None, 'port': None, 'ip': None}
+
+        p = self.environ.get('HTTP_X_FORWARDED_HOST', '').split(',')[0].strip()
+        if p:
+            d['host'] = p
+
+        p = self.environ.get('HTTP_X_FORWARDED_PORT', '').split(',')[0].strip()
+        if p:
+            d['port'] = p
+
+        p = self.environ.get('HTTP_X_FORWARDED_PROTO', '').split(',')[0].strip().lower()
+        if p in ('http', 'https'):
+            d['scheme'] = p
+
+        lst = [s.strip() for s in self.environ.get('HTTP_X_FORWARDED_FOR', '').split(',')]
+        if len(lst) >= self.site.proxyCount:
+            p = lst[-self.site.proxyCount]
+            if p:
+                d['ip'] = p
+
+        return d
 
     def _struct_type(self, header):
         if header:

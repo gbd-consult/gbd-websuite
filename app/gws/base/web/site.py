@@ -81,10 +81,8 @@ class Config(gws.Config):
     """Whether to add default rewrite rules. (added in 8.4)"""
     canonicalHost: str = ''
     """Hostname for reversed URL rewriting."""
-    useForwardedHeaders: bool = False
-    """Use X-Forwarded-Host, X-Forwarded-Proto and X-Forwarded-Port. Only enable this if the server is not reachable except via a trusted proxy. (added in 8.4)"""
-    useForwardedHost: bool = False
-    """Use  X-Forwarded-Host for host matching. (deprecated in 8.4)"""
+    proxyCount: int = 0
+    """Number of proxies between the client and the server which append to X-Forwarded-For. Only set this if the server is not reachable except via these proxies. (added in 8.4)"""
     root: Optional[WebDirConfig]
     """Root directory for static documents."""
 
@@ -112,8 +110,7 @@ class Object(gws.WebSite):
         if not self.canonicalHost and self.hostnames:
             self.canonicalHost = self.hostnames[0]
 
-        # deprecated
-        self.useForwardedHeaders = self.cfg('useForwardedHeaders') or self.cfg('useForwardedHost')
+        self.proxyCount = self.cfg('proxyCount') or 0
         self.ssl = self.cfg('ssl')
         self.corsOptions = self.cfg('cors')
         self.contentSecurityPolicy = self.cfg('contentSecurityPolicy')

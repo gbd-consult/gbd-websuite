@@ -50,6 +50,8 @@ def from_exception(exc: Exception) -> HTTPException:
         e = Forbidden()
     elif isinstance(exc, gws.BadRequestError):
         e = BadRequest()
+    elif isinstance(exc, gws.TooManyRequestsError):
+        e = TooManyRequests(retry_after=exc.retryAfter or None)
     elif isinstance(exc, gws.ResponseTooLargeError):
         e = Conflict()
 

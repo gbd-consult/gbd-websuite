@@ -487,6 +487,13 @@ class BadRequestError(Error):
     pass
 
 
+class TooManyRequestsError(Error):
+    """Generic 'too many requests' error."""
+
+    retryAfter: int = 0
+    """Time in seconds after which the request can be repeated."""
+
+
 class ResponseTooLargeError(Error):
     """Generic error when a response is too large."""
     pass
@@ -2753,7 +2760,7 @@ class AuthManager(Node):
     sessionMgr: 'AuthSessionManager'
     """Session manager."""
 
-    def authenticate(self, method: 'AuthMethod', credentials: Data) -> Optional['User']:
+    def authenticate(self, method: 'AuthMethod', credentials: Data, req: 'WebRequester') -> Optional['User']:
         """Authenticate a user."""
 
     def get_user(self, user_uid: str) -> Optional['User']:
@@ -4403,6 +4410,8 @@ class WebRequester:
     """Request host name, without the port, empty if the host is invalid."""
     port: int
     """Request port, 0 if not given."""
+    ip: str
+    """Client address."""
 
     def parse(self):
         """Parse the request data, raise an error if the request is invalid."""
@@ -4670,12 +4679,12 @@ class WebSite(Node):
     """Host names this site responds to."""
     rewriteRules: list[WebRewriteRule]
     """Rewrite rule."""
+    proxyCount: int
+    """Number of proxies in front of the server."""
     ssl: bool
     """The site is served over https."""
     staticRoot: WebDocumentRoot
     """Root directory for static files."""
-    useForwardedHeaders: bool
-    """Use X-Forwarded-Host, X-Forwarded-Proto and X-Forwarded-Port."""
 
     def url_for(self, req: 'WebRequester', path: str, mode: str, **params) -> str:
         """Rewrite a request path to an Url.
