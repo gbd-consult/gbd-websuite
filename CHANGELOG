@@ -1,3 +1,8 @@
+## Version 8.3.19
+
+- improved SVG sanitization
+- stricter validation of redirect URLs in the client
+
 ## Version 8.3.18
 
 - "Delete" button is now only enabled for features that can be deleted
