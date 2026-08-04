@@ -28,36 +28,34 @@ class Config(gws.base.auth.provider.Config):
 class Object(gws.base.auth.provider.Object):
     path: str
     db: list[dict]
+    dummyPassword: str
 
     def configure(self):
         self.path = self.cfg('path')
         self.db = gws.lib.jsonx.from_path(self.path)
+        self.dummyPassword = gws.lib.password.encode(gws.u.random_string(32))
 
     def authenticate(self, method, credentials):
-        wrong_password = 0
-        found = []
-
         username = credentials.get('username')
         password = credentials.get('password')
         if not username or not password:
             return
 
-        for rec in self.db:
-            login_ok = gws.lib.password.compare(username, rec['login'])
-            password_ok = gws.lib.password.check(password, rec['password'])
-            if login_ok and password_ok:
-                found.append(rec)
-            if login_ok and not password_ok:
-                wrong_password += 1
-
-        if wrong_password:
-            raise gws.ForbiddenError(f'wrong password for {username!r}')
+        found = [rec for rec in self.db if gws.lib.password.compare(username, rec['login'])]
 
         if len(found) > 1:
             raise gws.ForbiddenError(f'multiple entries for {username!r}')
 
-        if len(found) == 1:
-            return self._make_user(found[0])
+        if not found:
+            # verify against a dummy hash, so that the time spent here
+            # does not reveal whether the login exists
+            gws.lib.password.check(password, self.dummyPassword)
+            return
+
+        if not gws.lib.password.check(password, found[0]['password']):
+            raise gws.ForbiddenError(f'wrong password for {username!r}')
+
+        return self._make_user(found[0])
 
     def get_user(self, local_uid):
         for rec in self.db:
