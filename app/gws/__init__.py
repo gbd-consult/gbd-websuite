@@ -2754,72 +2754,37 @@ class AuthManager(Node):
     """Session manager."""
 
     def authenticate(self, method: 'AuthMethod', credentials: Data) -> Optional['User']:
-        """Authenticate a user.
-
-        Args:
-            method: Authentication method.
-            credentials: Credentials object.
-
-        Returns:
-            An authenticated User or ``None`` if authentication failed.
-        """
+        """Authenticate a user."""
 
     def get_user(self, user_uid: str) -> Optional['User']:
-        """Get a User by its global uid.
+        """Get a User by its global uid."""
 
-        Args:
-            user_uid: Global user uid.
-        Returns:
-            A User or ``None``.
-        """
+    def add_provider(self, provider: 'AuthProvider'):
+        """Register an authentication Provider."""
+
+    def add_method(self, method: 'AuthMethod'):
+        """Register an authentication Method."""
+
+    def add_multi_factor_adapter(self, adapter: 'AuthMultiFactorAdapter'):
+        """Register a Multi-Factor Adapter."""
+
+    def can_use_method(self, req: 'WebRequester', method: 'AuthMethod') -> bool:
+        """Check if a Method may be used in the context of a Requester."""
 
     def get_provider(self, uid: str) -> Optional['AuthProvider']:
-        """Get an authentication Provider by its uid.
-
-        Args:
-            uid: Uid.
-        Returns:
-            A Provider or ``None``.
-        """
+        """Get an authentication Provider by its uid."""
 
     def get_method(self, uid: str) -> Optional['AuthMethod']:
-        """Get an authentication Method by its uid.
-
-        Args:
-            uid: Uid.
-        Returns:
-            A Method or ``None``.
-        """
+        """Get an authentication Method by its uid."""
 
     def get_multi_factor_adapter(self, uid: str) -> Optional['AuthMultiFactorAdapter']:
-        """Get a Multi-Factor Adapter by its uid.
-
-        Args:
-            uid: Adapter uid.
-        Returns:
-            A Multi-Factor Adapter or ``None`` if not found.
-        """
-        return None
+        """Get a Multi-Factor Adapter by its uid."""
 
     def serialize_user(self, user: 'User') -> str:
-        """Return a string representation of a User.
-
-        Args:
-            user: A User object.
-
-        Returns:
-            A json string.
-        """
+        """Return a string representation of a User."""
 
     def unserialize_user(self, ser: str) -> Optional['User']:
-        """Restore a User object from a serialized representation.
-
-        Args:
-            ser: A json string.
-
-        Returns:
-            A User object.
-        """
+        """Restore a User object from a serialized representation."""
 
     def is_public_object(self, obj: Object, *context) -> bool:
         """Check if an object is public."""

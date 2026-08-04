@@ -34,7 +34,7 @@ class Object(gws.AuthManager):
         self.providers = self.create_children(gws.ext.object.authProvider, self.cfg('providers'))
 
         sys_provider = self.create_child(system_provider.Object)
-        self.providers.append(sys_provider)
+        self.add_provider(sys_provider)
 
         self.guestUser = sys_provider.get_user('guest')
         self.systemUser = sys_provider.get_user('system')
@@ -42,13 +42,24 @@ class Object(gws.AuthManager):
         self.methods = self.create_children(gws.ext.object.authMethod, self.cfg('methods'))
         if not self.methods:
             # if no methods configured, enable the Web method
-            self.methods.append(self.create_child(gws.ext.object.authMethod, type='web'))
+            self.add_method(self.create_child(gws.ext.object.authMethod, type='web'))
 
         self.mfAdapters = self.create_children(gws.ext.object.authMultiFactorAdapter, self.cfg('mfa'))
 
         self.guestSession = session.Object(uid='guest_session', method=None, user=self.guestUser)
 
         self.root.app.middlewareMgr.register(self, 'auth', depends_on=['db'])
+
+    ##
+
+    def add_provider(self, provider):
+        self.providers.append(provider)
+
+    def add_method(self, method):
+        self.methods.append(method)
+
+    def add_multi_factor_adapter(self, adapter):
+        self.mfAdapters.append(adapter)
 
     ##
 
@@ -63,7 +74,7 @@ class Object(gws.AuthManager):
 
     def _try_open_session(self, req):
         for meth in self.methods:
-            if not self._can_use_in_context(req, meth):
+            if not self.can_use_method(req, meth):
                 gws.log.warning(f'open_session: {meth=}: insecure_context, ignore')
                 continue
 
@@ -84,7 +95,13 @@ class Object(gws.AuthManager):
             gws.log.debug(f'open_session: {meth=}: ok')
             return sess
 
-    def _can_use_in_context(self, req: gws.WebRequester, meth: gws.AuthMethod):
+    def exit_middleware(self, req: gws.WebRequester, res: gws.WebResponder):
+        sess = req.session
+        if sess.method:
+            sess.method.close_session(req, res)
+        req.set_session(self.guestSession)
+
+    def can_use_method(self, req, meth):
         if not meth.secure or req.isSecure:
             return True
         if not meth.allowInsecureFrom:
@@ -94,12 +111,6 @@ class Object(gws.AuthManager):
             return False
         gws.log.warning(f'open_session: {meth=}: insecure_context allowed from {ip=}')
         return True
-
-    def exit_middleware(self, req: gws.WebRequester, res: gws.WebResponder):
-        sess = req.session
-        if sess.method:
-            sess.method.close_session(req, res)
-        req.set_session(self.guestSession)
 
     ##
 
