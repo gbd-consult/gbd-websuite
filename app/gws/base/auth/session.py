@@ -16,6 +16,7 @@ class Object(gws.AuthSession):
             created: datetime.datetime = None,
             updated: datetime.datetime = None,
             is_changed=True,
+            is_transient=False,
     ):
         self.uid = uid
         self.method = method
@@ -24,6 +25,7 @@ class Object(gws.AuthSession):
         self.created = created or gws.lib.datetimex.now()
         self.updated = updated or gws.lib.datetimex.now()
         self.isChanged = is_changed
+        self.isTransient = is_transient
 
     def get(self, key, default=None):
         return self.data.get(key, default)

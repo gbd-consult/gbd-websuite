@@ -120,6 +120,18 @@ class Object(gws.AuthManager):
 
     ##
 
+    def create_transient_session(self, method, user, data=None):
+        return session.Object(
+            uid=gws.u.random_string(64),
+            method=method,
+            user=user,
+            data=data,
+            is_changed=False,
+            is_transient=True,
+        )
+
+    ##
+
     def authenticate(self, method, credentials, req):
         if not self.throttle:
             return self._authenticate2(method, credentials)

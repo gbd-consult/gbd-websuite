@@ -2763,6 +2763,18 @@ class AuthManager(Node):
     def authenticate(self, method: 'AuthMethod', credentials: Data, req: 'WebRequester') -> Optional['User']:
         """Authenticate a user."""
 
+    def create_transient_session(self, method: 'AuthMethod', user: 'User', data: Optional[dict] = None) -> 'AuthSession':
+        """Create a Session which only lives for the duration of the request. (added in 8.4)
+
+        Args:
+            method: Auth Method that creates the Session.
+            user: 'User' for which the Session is created.
+            data: Session data.
+
+        Returns:
+            A new Session.
+        """
+
     def get_user(self, user_uid: str) -> Optional['User']:
         """Get a User by its global uid."""
 
@@ -2958,6 +2970,8 @@ class AuthSession:
     """Session update time."""
     isChanged: bool
     """Session has changed since the last update.."""
+    isTransient: bool
+    """Session is not stored in the session manager."""
 
     def get(self, key: str, default=None):
         """Get a session data value.

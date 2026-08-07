@@ -50,11 +50,7 @@ class Object(gws.base.auth.method.Object):
         user = am.authenticate(self, credentials, req)
         if user:
             user.authToken = credentials.get('token')
-            return am.sessionMgr.create(self, user)
-
-    def close_session(self, req, res):
-        am = self.root.app.authMgr
-        am.sessionMgr.delete(req.session)
+            return am.create_transient_session(self, user)
 
     def _parse_header(self, req: gws.WebRequester):
         h = req.header(self.header)
