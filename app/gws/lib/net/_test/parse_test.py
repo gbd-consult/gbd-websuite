@@ -63,6 +63,14 @@ def test_make_url_without_a_host():
     assert net.make_url(params={'a': '1'}) == '?a=1'
 
 
+def test_make_url_with_a_scheme_but_without_a_host():
+    assert net.make_url(scheme='postgresql', params={'service': 'db1'}) == 'postgresql://?service=db1'
+    assert net.make_url(scheme='postgresql', hostname='', params={'service': 'db1'}) == 'postgresql://?service=db1'
+    assert net.make_url(scheme='postgresql', path='db1') == 'postgresql:///db1'
+    assert net.make_url(scheme='postgresql', path='/db1', params={'a': '1'}) == 'postgresql:///db1?a=1'
+    assert net.make_url(scheme='file', path='/path/to/file') == 'file:///path/to/file'
+
+
 def test_add_params_to_a_relative_url():
     assert net.add_params('/path/to/file', {'key': 'value'}) == '/path/to/file?key=value'
 

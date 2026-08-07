@@ -99,9 +99,10 @@ def make_url(u: Optional[Url | dict] = None, **kwargs) -> str:
     port = p.get('port', '')
     path = p.get('path', '')
 
-    if host:
+    if scheme or host:
         s += '//'
 
+    if host:
         username = p.get('username', '')
         if username:
             s += quote_param(username) + ':' + quote_param(p.get('password', '')) + '@'
