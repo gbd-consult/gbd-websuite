@@ -1,3 +1,16 @@
+## Version 8.4.6
+
+- improved SVG sanitization
+- stricter validation of redirect URLs in the client
+- added options for authentication throttling
+- hardened the file authentication provider against user-enumeration timing attacks
+- image and print requests are now validated against pixel size limits
+- added an absolute session lifetime option `maxLifeTime`
+- added `proxyCount` for reliable client-IP detection behind proxies
+- deprecated `web.sites` in favor of a single `web.site`
+- added `site.hostnames`, deprecated `site.host`
+- improved preview generation for file fields
+
 ## Version 8.4.5
 
 - added default templates for application and project home pages
