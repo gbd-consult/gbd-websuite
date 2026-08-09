@@ -584,11 +584,10 @@ class VectorLayer:
             fdef = gd_feature.GetGeomFieldRef(cnt - 1)
             if fdef:
                 srid = _srid_from_srs(fdef.GetSpatialReference()) or self.dso.defaultCrs.srid
-                wkt = fdef.ExportToWkt()
                 if self.dso.geometryAsText:
-                    rec.ewkt = f'SRID={srid};{wkt}'
+                    rec.ewkt = f'SRID={srid};{fdef.ExportToWkt()}'
                 else:
-                    rec.shape = gws.base.shape.from_wkt(wkt, gws.lib.crs.get(srid))
+                    rec.shape = gws.base.shape.from_wkb(bytes(fdef.ExportToIsoWkb()), gws.lib.crs.get(srid))
 
         return rec
 
