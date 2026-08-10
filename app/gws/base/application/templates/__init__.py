@@ -107,6 +107,15 @@ available to every template as ``app.templateOptions``:
     Render the sign-in / sign-out form on the application home page.
     Defaults to ``true`` if the `auth` action is configured.
 
+``footerText`` (``str``)
+    Text for the footer of the application home page. May contain HTML,
+    which is inserted as is. The footer is only rendered if this option is set.
+
+``withGws`` (``bool``)
+    Render the GWS logo, linking to the GBD WebSuite website, in the footer
+    of the application home page. Defaults to ``true``. Requires ``footerText``,
+    since the footer is not rendered without it.
+
 ``homeResources`` (list of ``str``)
     Additional resource URLs injected into the ``<head>`` of the application
     home page.

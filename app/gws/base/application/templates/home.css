@@ -1,159 +1,171 @@
 :root {
-/* https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Cascade/Introduction
-*
-* to override these values, repeat the :root {} block and
-* declaration of variables within a custom stylesheet
-* placed at /data/web/style.css
-*/
     --font-family: "Lato";
+
+    --page-bg-color: #edf4fa;
+    --block-bg-color: #ffffff;
+    --highlight-color: #0086c9;
+    --border-color: color-mix(in srgb, var(--highlight-color) 20%, #ffffff);
 
     --text-color: #2e4f66;
     --title-color: #123f5b;
 
-    --projects-icon-url: url("data:image/svg+xml;base64,PHN2ZyBzdHJva2U9IndoaXRlIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIwIiB2aWV3Qm94PSIwIDAgMjU2IDI1NiIgaGVpZ2h0PSIyMDBweCIgd2lkdGg9IjIwMHB4IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0yMjguOTIsNDkuNjlhOCw4LDAsMCwwLTYuODYtMS40NUwxNjAuOTMsNjMuNTIsOTkuNTgsMzIuODRhOCw4LDAsMCwwLTUuNTItLjZsLTY0LDE2QTgsOCwwLDAsMCwyNCw1NlYyMDBhOCw4LDAsMCwwLDkuOTQsNy43Nmw2MS4xMy0xNS4yOCw2MS4zNSwzMC42OEE4LjE1LDguMTUsMCwwLDAsMTYwLDIyNGE4LDgsMCwwLDAsMS45NC0uMjRsNjQtMTZBOCw4LDAsMCwwLDIzMiwyMDBWNTZBOCw4LDAsMCwwLDIyOC45Miw0OS42OVpNOTYsMTc2YTgsOCwwLDAsMC0xLjk0LjI0TDQwLDE4OS43NVY2Mi4yNUw5NS4wNyw0OC40OGwuOTMuNDZabTEyMCwxNy43NS01NS4wNywxMy43Ny0uOTMtLjQ2VjgwYTgsOCwwLDAsMCwxLjk0LS4yM0wyMTYsNjYuMjVaIj48L3BhdGg+PC9zdmc+");
-    --logo-url: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4bWw6c3BhY2U9InByZXNlcnZlIiBpZD0iRWJlbmVfMSIgeD0iMCIgeT0iMCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMTQxLjcgMTQxLjciIHZlcnNpb249IjEuMSIgdmlld0JveD0iMCAwIDE0MS43IDE0MS43Ij48c3R5bGU+LnN0M3tmaWxsOiM4NGFjMmJ9LnN0NHtjbGlwLXBhdGg6dXJsKCNTVkdJRF82Xyk7ZmlsbDpub25lO3N0cm9rZTojZmZmO3N0cm9rZS13aWR0aDo1LjU2NX08L3N0eWxlPjxkZWZzPjxwYXRoIGlkPSJTVkdJRF8xXyIgZD0iTTQuNiA0LjZoMTMyLjV2MTMyLjVINC42eiIvPjwvZGVmcz48Y2xpcFBhdGggaWQ9IlNWR0lEXzJfIj48dXNlIHhsaW5rOmhyZWY9IiNTVkdJRF8xXyIgc3R5bGU9Im92ZXJmbG93OnZpc2libGUiLz48L2NsaXBQYXRoPjxwYXRoIGQ9Ik00LjYgNC42Vjk1czAgNDIuMSA0Mi4xIDQyLjFoOTAuNFY0LjZINC42eiIgc3R5bGU9ImNsaXAtcGF0aDp1cmwoI1NWR0lEXzJfKTtmaWxsOiMwMDZmYjgiLz48ZGVmcz48cGF0aCBpZD0iU1ZHSURfM18iIGQ9Ik00LjYgNC42Vjk1czAgNDIuMSA0Mi4xIDQyLjFoOTAuNFY0LjZINC42eiIvPjwvZGVmcz48Y2xpcFBhdGggaWQ9IlNWR0lEXzRfIj48dXNlIHhsaW5rOmhyZWY9IiNTVkdJRF8zXyIgc3R5bGU9Im92ZXJmbG93OnZpc2libGUiLz48L2NsaXBQYXRoPjxwYXRoIGQ9Ik0xMTYuOCA5NC41YzQwLjUgMCA3My4zLTMyLjggNzMuMy03My4zcy0zMi44LTczLjMtNzMuMy03My4zLTczLjMgMzIuOC03My4zIDczLjJjMCA0MC41IDMyLjkgNzMuNCA3My4zIDczLjQiIHN0eWxlPSJjbGlwLXBhdGg6dXJsKCNTVkdJRF80Xyk7ZmlsbDojODRhYzJiIi8+PGNpcmNsZSBjeD0iMTE2LjgiIGN5PSIyMS4xIiByPSI3My4zIiBzdHlsZT0iY2xpcC1wYXRoOnVybCgjU1ZHSURfNF8pO2ZpbGw6bm9uZTtzdHJva2U6I2ZmZjtzdHJva2Utd2lkdGg6NS41NjUiLz48cGF0aCBkPSJNMzUuMyA0Ni4yIDczLjkgMjQgMTEyIDQ2LjV2NDUuOGwtMzguMyAyMS4yTDM1IDkxLjh6IiBjbGFzcz0ic3QzIi8+PHBhdGggZD0iTTM1LjIgNDYuNnYuNGwzOC4zIDIxLjhMMTEyIDQ2LjVsLS40LS4yeiIgY2xhc3M9InN0MyIvPjxkZWZzPjxwYXRoIGlkPSJTVkdJRF81XyIgZD0iTTM1LjMgNDYuMiAzNSA5MS44bDM4LjcgMjEuN0wxMTIgOTIuM1Y0Ni41TDczLjkgMjR6Ii8+PC9kZWZzPjxjbGlwUGF0aCBpZD0iU1ZHSURfNl8iPjx1c2UgeGxpbms6aHJlZj0iI1NWR0lEXzVfIiBzdHlsZT0ib3ZlcmZsb3c6dmlzaWJsZSIvPjwvY2xpcFBhdGg+PHBhdGggZD0ibTM0LjYgNDYuNiAzOC45IDIyLjIgMzguOS0yMi41TTczLjUgNjkuMlYxMTQiIGNsYXNzPSJzdDQiLz48cGF0aCBkPSJNMzUuMyA0Ni4yIDczLjkgMjQgMTEyIDQ2LjV2NDUuOGwtMzguMyAyMS4yTDM1IDkxLjh6IiBzdHlsZT0iZmlsbDpub25lO3N0cm9rZTojZmZmO3N0cm9rZS13aWR0aDo1LjU2NSIvPjwvc3ZnPg==");
+    --block-header-text-color: #123f5b;
+    --block-header-bg-color: #f3f9ff;
 
-    --background-color-primary: #ffffff;
-    --background-color-secondary: #edf4fa;
-    --border-color: #d8e5f1;
-    --highlight-color: #0086c9;
+    --button-text-color: #ffffff;
+    --button-bg-color: #0095e2;
+    --button-bg-gradient-color: #007ab7;
 
-    --button-color: #0095e2;
-    --button-gradient-color: #007ab7;
+    --error-color: #ff0000;
+    --error-bg-color: #fff0f0;
+    --error-border-color: #ffcece;
 
+    --footer-text-color: #7b8a99;
+    --footer-link-color: var(--button-bg-color);
+
+    --project-card-hover-border-color: #bcd4e8;
     --project-color1: #0a84c1;
     --project-color2: #83ac2b;
     --project-color3: #8868df;
     --project-color4: #0b5b7f;
     --project-color5: #0b9b67;
+
+    --shadow: 0 6px 16px rgb(0 0 0 / 0.08);
+    --hover-shadow: 0 10px 18px rgb(0 0 0 / 0.13);
+    --input-focus-ring: 0 0 0 3px rgb(from var(--highlight-color) r g b / 0.14);
+
+    --page-padding: 2rem;
+    --main-max-width: 1080px;
+    --border-width: 1px;
+    --control-radius: 10px;
+    --block-gap: 1.2rem;
+    --block-padding: 1.2rem;
+    --block-radius: 14px;
+    --block-top-border-width: 4px;
+    --user-block-width: 380px;
+    --input-height: 42px;
+    --button-height: 44px;
+    --project-block-max-width: 720px;
+    --project-card-min-width: 230px;
+    --project-card-height: 70px;
+    --project-card-gap: 0.75rem;
+    --project-card-padding: 0.75rem;
+    --project-icon-size: 27px;
+    --gws-logo-size: 24px;
+
+    --project-icon-url: url("data:image/svg+xml;base64,PHN2ZyBzdHJva2U9IndoaXRlIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIwIiB2aWV3Qm94PSIwIDAgMjU2IDI1NiIgaGVpZ2h0PSIyMDBweCIgd2lkdGg9IjIwMHB4IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0yMjguOTIsNDkuNjlhOCw4LDAsMCwwLTYuODYtMS40NUwxNjAuOTMsNjMuNTIsOTkuNTgsMzIuODRhOCw4LDAsMCwwLTUuNTItLjZsLTY0LDE2QTgsOCwwLDAsMCwyNCw1NlYyMDBhOCw4LDAsMCwwLDkuOTQsNy43Nmw2MS4xMy0xNS4yOCw2MS4zNSwzMC42OEE4LjE1LDguMTUsMCwwLDAsMTYwLDIyNGE4LDgsMCwwLDAsMS45NC0uMjRsNjQtMTZBOCw4LDAsMCwwLDIzMiwyMDBWNTZBOCw4LDAsMCwwLDIyOC45Miw0OS42OVpNOTYsMTc2YTgsOCwwLDAsMC0xLjk0LjI0TDQwLDE4OS43NVY2Mi4yNUw5NS4wNyw0OC40OGwuOTMuNDZabTEyMCwxNy43NS01NS4wNywxMy43Ny0uOTMtLjQ2VjgwYTgsOCwwLDAsMCwxLjk0LS4yM0wyMTYsNjYuMjVaIj48L3BhdGg+PC9zdmc+");
+    --gws-logo-url: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGlkPSJFYmVuZV8xIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAxNDEuNyAxNDEuNyI+PHBhdGggZD0iTTQuNiA0LjZWOTVzMCA0Mi4xIDQyLjEgNDIuMWg5MC40VjQuNkg0LjZ6IiBzdHlsZT0iZmlsbDojMDA2ZmI4Ii8+PHBhdGggZD0iTTQ1LjM4MSA0LjZBNzMuMyA3My4zIDAgMCAwIDEzNy4xIDkxLjUzM1Y0LjZ6IiBzdHlsZT0iZmlsbDojODRhYzJiIi8+PHBhdGggZD0iTTQyLjUyOCA0LjZBNzYuMDgzIDc2LjA4MyAwIDAgMCAxMzcuMSA5NC40MjR2LTUuNzkyQTcwLjUxOCA3MC41MTggMCAwIDEgNDguMjQgNC42eiIgc3R5bGU9ImZpbGw6I2ZmZiIvPjxwYXRoIGQ9Ik0zNS4zIDQ2LjIgNzMuOSAyNCAxMTIgNDYuNXY0NS44bC0zOC4zIDIxLjJMMzUgOTEuOHoiIHN0eWxlPSJmaWxsOiM4NGFjMmIiLz48cGF0aCBkPSJNMzUuMiA0Ni42di40bDM4LjMgMjEuOEwxMTIgNDYuNWwtLjQtLjJ6IiBzdHlsZT0iZmlsbDojODRhYzJiIi8+PHBhdGggZD0ibTM0LjYgNDYuNiAzOC45IDIyLjIgMzguOS0yMi41TTczLjUgNjkuMlYxMTQiIHN0eWxlPSJmaWxsOm5vbmU7c3Ryb2tlOiNmZmY7c3Ryb2tlLXdpZHRoOjUuNTY1Ii8+PHBhdGggZD0iTTM1LjMgNDYuMiA3My45IDI0IDExMiA0Ni41djQ1LjhsLTM4LjMgMjEuMkwzNSA5MS44eiIgc3R5bGU9ImZpbGw6bm9uZTtzdHJva2U6I2ZmZjtzdHJva2Utd2lkdGg6NS41NjUiLz48L3N2Zz4=");
 }
 
 * {
     box-sizing: border-box;
 }
 
-html,
 body {
     margin: 0;
-    min-height: 100%;
-}
-
-body {
-    font-family: var(--font-family, "Lato"), "Helvetica", "Arial", sans-serif;
-    color: var(--text-color, #2e4f66);
-    background-color: var(--background-color-secondary);
-    max-width: 1080px;
-    margin: 2rem auto;
-    padding: 0 1.2rem 2rem;
-    display: grid;
-    grid-template-columns: 380px 1fr;
-    gap: 1.2rem;
-    align-items: start;
-    height: 100vh;
-    align-content: center;
-}
-
-#gws-home-user-block,
-#gws-home-project-list {
-    background: var(--background-color-primary, #ffffff);
-    border: 1px solid var(--border-color, #d8e5f1);
-    border-top: 4px solid var(--highlight-color, #0086c9);
-    border-radius: 14px;
-    padding: 1.2rem;
-    box-shadow: 0 6px 16px rgba(15, 38, 69, 0.08);
-}
-
-#gws-home-login-form .header,
-#gws-home-logout-form .header {
+    min-height: 100vh;
+    padding: var(--page-padding);
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    padding-bottom: 0.8rem;
-    border-bottom: 1px solid #ebf0f6; /* grey underline under login form title, no need to customize */
+    justify-content: center;
+    align-items: safe center;
+    font-family: var(--font-family), "Helvetica", "Arial", sans-serif;
+    color: var(--text-color);
+    background-color: var(--page-bg-color);
 }
 
-body h1 {
-    margin: 0;
-    color: var(--title-color, #123f5b);
+#gws-home-title {
+    margin: 0 0 var(--block-gap);
+    color: var(--title-color);
     font-size: 1.6rem;
     font-weight: 700;
-    grid-column: span 2;
 }
 
-#gws-home-login-form .header .logo,
-#gws-home-logout-form .header .logo{
-    width: 45px;
-    height: 45px;
-    background: var(--logo-url) no-repeat center center;
-    background-size: cover;
+#gws-home-main {
+    width: 100%;
+    max-width: var(--main-max-width);
 }
 
-#gws-home-login-form h2,
-#gws-home-logout-form h2,
-#gws-home-project-list h2 {
-    margin: 0;
-    color: var(--title-color, #123f5b);
+#gws-home-blocks {
+    display: flex;
+    align-items: start;
+    gap: var(--block-gap);
+}
+
+#gws-home-blocks > div {
+    overflow: hidden;
+    padding: var(--block-padding);
+    border: var(--border-width) solid var(--border-color);
+    border-top: var(--block-top-border-width) solid var(--highlight-color);
+    border-radius: var(--block-radius);
+    background: var(--block-bg-color);
+    box-shadow: var(--shadow);
+}
+
+#gws-home-user-block {
+    flex: 0 0 var(--user-block-width);
+}
+
+#gws-home-project-block {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+#gws-home-blocks h2 {
+    margin: calc(-1 * var(--block-padding)) calc(-1 * var(--block-padding)) var(--block-padding);
+    padding: 0.8rem var(--block-padding);
+    color: var(--block-header-text-color);
+    background: var(--block-header-bg-color);
     font-size: 1.35rem;
 }
-#gws-home-project-list h2 {
-    margin: 0 0 2rem;
-}
 
-#gws-home-login-form .input-group,
-#gws-home-logout-form .input-group {
+#gws-home-user-block .gws-home-input-group {
     margin-top: 1.2rem;
     display: grid;
-    gap: 0.8rem;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.8rem 1rem;
 }
 
-#gws-home-login-form .input-group > div,
-#gws-home-logout-form .input-group > div {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
+#gws-home-user-block .gws-home-input-group > div {
+    display: contents;
 }
 
-#gws-home-login-form label,
-#gws-home-logout-form label {
-    color: var(--text-color, #2e4f66);
+#gws-home-user-block label {
+    color: var(--text-color);
     font-size: 0.93rem;
     font-weight: 700;
 }
 
-#gws-home-login-form input {
+#gws-home-user-block input {
     width: 100%;
-    height: 42px;
-    border: 1px solid #cbd8e5; /* grey input field border, no customization neccessary */
-    border-radius: 10px;
+    height: var(--input-height);
     padding: 0 0.75rem;
-    box-sizing: border-box;
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--control-radius);
     font: inherit;
-    background: #fcfdff; /* white-ish input field background, no customization neccessary at the moment */
+    background: var(--block-bg-color);
     transition:
         border-color 0.2s ease,
         box-shadow 0.2s ease;
 }
 
-#gws-home-login-form input:focus {
+#gws-home-user-block input:focus {
     outline: none;
-    border-color: var(--highlight-color, #0086c9);
-    box-shadow: 0 0 0 3px color(from var(--highlight-color, #0086c9) srgb r g b / 0.14); /* #0086c924 */
+    border-color: var(--highlight-color);
+    box-shadow: var(--input-focus-ring);
 }
 
-#gws-home-login-form button,
-#gws-home-logout-form button {
+#gws-home-user-block button {
+    grid-column: 2;
     margin-top: 0.3rem;
-    grid-column: span 2;
     width: 100%;
-    height: 44px;
+    height: var(--button-height);
     border: 0;
-    border-radius: 10px;
+    border-radius: var(--control-radius);
     font: inherit;
     font-weight: 600;
-    color: var(--background-color-primary, #ffffff);
-    background: linear-gradient(135deg, var(--button-color), var(--button-gradient-color));
+    color: var(--button-text-color);
+    background: linear-gradient(135deg, var(--button-bg-color), var(--button-bg-gradient-color));
     cursor: pointer;
     transition:
         transform 0.15s ease,
@@ -164,171 +176,179 @@ body h1 {
     margin-top: 1rem;
 }
 
-#gws-home-login-form button:hover,
-#gws-home-logout-form button:hover {
+#gws-home-user-block button:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 18px #005d8d33;
-    /* primary button drop shadow color, possibly derive from --primary-button-color 
-     * by darken()-ing it */
+    box-shadow: var(--hover-shadow);
 }
 
-#gws-home-login-form button:active,
-#gws-home-logout-form button:active {
+#gws-home-user-block button:active {
     transform: translateY(0);
 }
 
 #gws-home-login-progress-text,
 #gws-home-login-error-text {
     display: none;
+    width: 100%;
     margin-top: 0.8rem;
     padding: 0.65rem;
-    border-radius: 8px;
-    font-weight: 700;
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--control-radius);
     font-size: 13px;
+    font-weight: 700;
 }
 
 #gws-home-login-progress-text {
-    background: #eef8ff;
-    color: #0b5b7f;
-    border: 1px solid #c8e6fa;
-    width: 100%;
+    color: var(--title-color);
+    background: var(--block-header-bg-color);
     text-align: center;
 }
 
 #gws-home-login-error-text {
-    background: #fff0f0;
-    color: red;
-    border: 1px solid #ffcece;
-    width: 100%;
+    color: var(--error-color);
+    border-color: var(--error-border-color);
+    background: var(--error-bg-color);
 }
 
-.gws-home-login-error #gws-home-login-error-text {
+body.gws-home-login-progress #gws-home-login-progress-text,
+body.gws-home-login-error #gws-home-login-error-text {
     display: inline-block;
 }
 
-.gws-home-login-error #gws-home-user-block {
-    border-color: red;
+body.gws-home-login-error #gws-home-user-block {
+    border-color: var(--error-color);
 }
 
-.gws-home-login-progress #gws-home-login-progress-text {
-    display: inline-block;
-}
-
-#gws-home-project-list ul {
-    list-style: none;
+#gws-home-project-block ul {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(var(--project-card-min-width), 1fr));
+    gap: var(--project-card-gap);
+    margin: 0;
     padding-inline-start: 0;
-    margin: 0;
+    list-style: none;
 }
 
-#gws-home-project-list li {
-    margin: 0;
-    border-top: 0;
-    padding-right: 5px;
-}
-
-#gws-home-project-list li a {
+#gws-home-project-block a {
     display: flex;
     align-items: center;
-    gap: 0.65rem;
-    height: 70px;
-    border: 1px solid var(--border-color, #d8e5f1);
-    border-radius: 14px;
-    background: linear-gradient(180deg, #ffffff, #f7fbff); /* TODO: take background and darken() ? */
-    box-shadow: 0 6px 14px #0f26450d;   /* TODO: parametrize */
-    color: #174e6f; /* TODO: can this be derived from a different text color? */
+    gap: var(--project-card-padding);
+    padding-right: var(--project-card-padding);
+    height: var(--project-card-height);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--block-radius);
+    color: var(--title-color);
+    background: var(--block-bg-color);
+    box-shadow: var(--shadow);
     font-weight: 700;
+    text-decoration: none;
     transition:
         transform 0.16s ease,
         box-shadow 0.16s ease,
         border-color 0.16s ease;
-    text-decoration: none;
 }
 
-#gws-home-project-list li a::before {
+#gws-home-project-block a::before {
     content: "";
-    width: 70px;
+    flex: 0 0 var(--project-card-height);
     height: 100%;
-    flex: 0 0 70px;
-    border-bottom-left-radius: 11px;
-    border-top-left-radius: 11px;
-    /* default background color of the image left to the project link 
-    *  should never be visible, as it is overriden by the project image or project color? */
-    background-color: #198dca;
-    background-image: var(--projects-icon-url);
+    border-top-left-radius: calc(var(--block-radius) - var(--border-width));
+    border-bottom-left-radius: calc(var(--block-radius) - var(--border-width));
+    background-image: var(--project-icon-url);
     background-repeat: no-repeat;
     background-position: center;
-    background-size: 27px;
-    box-shadow:
-        inset 0 1px 0 #ffffff55,
-        0 4px 10px #0f264522;
+    background-size: var(--project-icon-size);
+    box-shadow: var(--shadow);
 }
 
-#gws-home-project-list li a:hover {
+#gws-home-project-block a:hover {
     transform: translateY(-2px);
-    border-color: #bcd4e8;
-    box-shadow: 0 10px 18px #0f264520;
+    border-color: var(--project-card-hover-border-color);
+    box-shadow: var(--hover-shadow);
 }
 
-#gws-home-project-list li a:active {
+#gws-home-project-block a:active {
     transform: translateY(0);
 }
 
-#gws-home-project-list li:nth-child(5n + 1) a::before {
-    background-color: var(--project-color1, #0a84c1);
+#gws-home-project-block li:nth-child(5n + 1) a::before {
+    background-color: var(--project-color1);
 }
 
-#gws-home-project-list li:nth-child(5n + 2) a::before {
-    background-color: var(--project-color2, #83ac2b);
+#gws-home-project-block li:nth-child(5n + 2) a::before {
+    background-color: var(--project-color2);
 }
 
-#gws-home-project-list li:nth-child(5n + 3) a::before {
-    background-color: var(--project-color3, #8868df);
+#gws-home-project-block li:nth-child(5n + 3) a::before {
+    background-color: var(--project-color3);
 }
 
-#gws-home-project-list li:nth-child(5n + 4) a::before {
-    background-color: var(--project-color4, #0b5b7f);
+#gws-home-project-block li:nth-child(5n + 4) a::before {
+    background-color: var(--project-color4);
 }
 
-#gws-home-project-list li:nth-child(5n + 5) a::before {
-    background-color: var(--project-color5, #0b9b67);
+#gws-home-project-block li:nth-child(5n + 5) a::before {
+    background-color: var(--project-color5);
 }
 
-@media (max-width: 900px) {
-    #gws-home-user-block {
-        min-width: 350px;
+#gws-home-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 2.4rem;
+    padding-top: 1rem;
+    border-top: var(--border-width) solid var(--border-color);
+    color: var(--footer-text-color);
+    font-size: 0.85rem;
+}
+
+#gws-home-footer .gws-home-footer-text {
+    min-width: 0;
+}
+
+#gws-home-footer a {
+    color: var(--footer-link-color);
+    text-decoration: none;
+}
+
+#gws-home-gws {
+    flex: 0 0 auto;
+    margin-left: auto;
+    width: var(--gws-logo-size);
+    height: var(--gws-logo-size);
+    background: var(--gws-logo-url) no-repeat center center;
+    background-size: contain;
+}
+
+@media (min-width: 948px) {
+    body:not(:has(#gws-home-project-block)) #gws-home-main {
+        max-width: var(--user-block-width);
     }
 
-    #gws-home-project-list {
-        width: 90%;
+    body:not(:has(#gws-home-user-block)) #gws-home-main {
+        max-width: var(--project-block-max-width);
     }
+}
+
+@media (max-width: 947px) {
+    :root {
+        --page-padding: 1.2rem;
+        --block-padding: 1rem;
+        --project-card-gap: 0.6rem;
+    }
+
     body {
-        display: flex;
+        align-items: start;
+    }
+
+    #gws-home-blocks {
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
-}
-
-@media (max-width: 699px) {
-    #gws-home-user-block,
-    #gws-home-project-list {
-        width: 90%;
-    }
-    body {
-        height: auto;
     }
 
-    #gws-home-user-block,
-    #gws-home-project-list {
-        padding: 1rem;
+    #gws-home-blocks > div {
+        flex: 0 0 auto;
+        width: 100%;
     }
 
-    #gws-home-project-list ul {
+    #gws-home-project-block ul {
         grid-template-columns: 1fr;
-        gap: 0.6rem;
-        padding: 0 1rem;
     }
 }

@@ -9,20 +9,37 @@
         @end
     </head>
     <body>
-        @with app.title
-            <h1>{app.title | html}</h1>
-        @end
-        @if app.templateOptions.withLogin
-            <div id="gws-home-user-block">
-            @if user.isGuest
-                @LOGIN_FORM
-            @else
-                @LOGOUT_FORM
+        <div id="gws-home-main">
+            @with app.title
+                <h1 id="gws-home-title">{app.title | html}</h1>
             @end
+            <div id="gws-home-blocks">
+                @if app.templateOptions.withLogin
+                    <div id="gws-home-user-block">
+                    @if user.isGuest
+                        <h2>{STRINGS.appHomeLoginTitle}</h2>
+                        @LOGIN_FORM
+                    @else
+                        <h2>{user.displayName | html}</h2>
+                        @LOGOUT_FORM
+                    @end
+                    </div>
+                @end
+                @with projects
+                    <div id="gws-home-project-block" role="region" aria-label="{STRINGS.appHomeProjects}">
+                        <h2>{STRINGS.appHomeProjects}</h2>
+                        @PROJECT_LIST
+                    </div>
+                @end
             </div>
-        @end
-        @with projects
-            @PROJECT_LIST
-        @end
+            @with app.templateOptions.footerText
+                <div id="gws-home-footer">
+                    <div class="gws-home-footer-text">{app.templateOptions.footerText}</div>
+                    @if app.templateOptions.withGws
+                        <a id="gws-home-gws" href="https://www.gbd-websuite.de" title="GBD WebSuite" target="_blank"></a>
+                    @end
+                </div>
+            @end
+        </div>
     </body>
 </html>

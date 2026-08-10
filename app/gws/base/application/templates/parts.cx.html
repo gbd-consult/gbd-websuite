@@ -1,11 +1,7 @@
 @# Login form on the home page
-@def LOGIN_FORM
-    <form id="gws-home-login-form" action="/_/authLogin" method="post" aria-label="{STRINGS.appHomeLoginTitle}">
-        <div class="header">
-            <h2>{STRINGS.appHomeLoginTitle}</h2>
-            <div class="logo"></div>
-        </div>
-        <div class="input-group">
+@def LOGIN_FORM(action="/_/authLogin")
+    <form id="gws-home-login-form" action="{action}" method="post" aria-label="{STRINGS.appHomeLoginTitle}">
+        <div class="gws-home-input-group">
             <div>
                 <label for="gws-home-username">{STRINGS.appHomeUsername}</label>
                 <input id="gws-home-username" name="username" type="text" autocomplete="username">
@@ -22,23 +18,19 @@
 @end
 
 @# Username and logout form on the home page
-@def LOGOUT_FORM
-    <form id="gws-home-logout-form" action="/_/authLogout" method="post" aria-label="{STRINGS.appHomeLogoutTitle}">
-        <h2>{user.displayName | html}</h2>
+@def LOGOUT_FORM(action="/_/authLogout")
+    <form id="gws-home-logout-form" action="{action}" method="post" aria-label="{STRINGS.appHomeLogoutTitle}">
         <button type="submit">{STRINGS.appHomeLogout}</button>
     </form>
 @end
 
 @# List of projects on the home page
 @def PROJECT_LIST
-    <div id="gws-home-project-list" role="region" aria-label="{STRINGS.appHomeProjects}">
-        <h2>{STRINGS.appHomeProjects}</h2>
-        <ul>
-            @for prj in projects
-                <li><a href="/project/{prj.uid}">{prj.title | html}</a></li>
-            @end
-        </ul>
-    </div>
+    <ul>
+        @for prj in projects
+            <li><a href="/project/{prj.uid}" data-project-id="{prj.uid}">{prj.title | html}</a></li>
+        @end
+    </ul>
 @end
 
 @# HTML head for the home page

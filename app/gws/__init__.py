@@ -4828,6 +4828,10 @@ class TemplateOptions(Data):
 
     withLogin: bool = True
     """Show login form in the application home page."""
+    footerText: Optional[str]
+    """Footer text for the application home page."""
+    withGws: bool = True
+    """Show GWS logo in the application home page."""
     homeResources: Optional[list[str]]
     """List of additional resource URLs for the application home ('style.css' by default)."""
     projectResources: Optional[list[str]]
