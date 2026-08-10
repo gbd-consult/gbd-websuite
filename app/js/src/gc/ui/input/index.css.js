@@ -30,6 +30,14 @@ module.exports = v => ({
             ...v.SVG('google:editor/attach_file'),
         },
 
+        '.uiFileInputPlaceholder': {
+            flex: 1,
+            padding: [v.UNIT2, v.UNIT2, v.UNIT2, 0],
+            overflow: 'auto',
+            fontSize: v.SMALL_FONT_SIZE,
+            fontStyle: 'italic',
+        },
+
         '.uiFileInputList': {
             flex: 1,
             padding: [v.UNIT2, v.UNIT2, v.UNIT2, 0],

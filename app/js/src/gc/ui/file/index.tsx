@@ -35,7 +35,7 @@ export class FileInput extends base.Control<FileInputProps> {
         }
 
         let hasFiles = this.props.value && this.props.value.length > 0;
-        let cls = util.className('uiFileInput', hasFiles && 'uiHasContent')
+        let cls = util.className('uiFileInput', (hasFiles || this.props.placeholder) && 'uiHasContent');
 
         let listFormat = this.props.listFormat || defaultListFormat;
 
@@ -48,7 +48,13 @@ export class FileInput extends base.Control<FileInputProps> {
                     ref={this.focusRef}
                     onClick={() => this.onClick()}
                 />
-                {listFormat(this.props.value)}
+                {hasFiles && listFormat(this.props.value)}
+                {!hasFiles && this.props.placeholder && 
+                    <div 
+                        className="uiFileInputPlaceholder"
+                        onClick={() => this.onClick()}
+                    >{this.props.placeholder}</div>
+                }
             </base.Box>
         </base.Content>
     }
