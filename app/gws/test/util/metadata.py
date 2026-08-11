@@ -32,7 +32,7 @@ DEFAULT = {
     # 'inspireSpatialDataServiceType': 'view',
     'inspireSpatialScope': 'national',
     'inspireSpatialScopeName': 'national',
-    'inspireTheme': 'administrativeUnits',
+    'inspireTheme': 'au',
     #
     'isoMaintenanceFrequencyCode': 'annual',
     'isoQualityConformanceExplanation': 'isoQualityConformanceExplanation1',
