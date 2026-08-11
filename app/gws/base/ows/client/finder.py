@@ -26,7 +26,7 @@ class Object(gws.base.search.finder.Object):
 
         self.configure_source_layers()
         if not self.sourceLayers:
-            raise gws.Error(f'no queryable layers found in {self.serviceProvider}')
+            raise gws.Error(f'no queryable layers in {self.serviceProvider}')
 
     def configure_source_layers(self):
         return gws.config.util.configure_source_layers_for(self, self.serviceProvider.sourceLayers, is_queryable=True)

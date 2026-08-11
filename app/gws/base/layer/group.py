@@ -27,7 +27,7 @@ class Object(core.Object):
     def configure(self):
         self.configure_group()
         if not self.layers:
-            raise gws.Error(f'group {self} is empty')
+            raise gws.Error(f'group is empty: {self}')
         self.configure_layer()
 
     def configure_group(self):

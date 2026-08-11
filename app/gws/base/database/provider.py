@@ -146,7 +146,7 @@ class Object(gws.DatabaseProvider):
     def table(self, table, **kwargs):
         tab = self._sa_table(table)
         if tab is None:
-            raise sa.Error(f'table {str(table)} not found')
+            raise sa.Error(f'table not found: {table!r}')
         return tab
 
     def count(self, table):
@@ -271,7 +271,7 @@ class Object(gws.DatabaseProvider):
     def describe(self, table):
         tab = self._sa_table(table)
         if tab is None:
-            raise sa.Error(f'table {table!r} not found')
+            raise sa.Error(f'table not found: {table!r}')
 
         schema = tab.schema
         name = tab.name

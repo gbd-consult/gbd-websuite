@@ -33,7 +33,7 @@ class Object(gws.base.layer.vector.Object):
         self.tableName = self.cfg('tableName') or self.cfg('_defaultTableName')
         desc = self.db.describe(self.tableName)
         if not desc:
-            raise gws.Error(f'table {self.tableName!r} not found or not readable')
+            raise gws.Error(f'table not found or not readable: {self.tableName!r}')
         self.geometryType = desc.geometryType
         self.geometryCrs = gws.lib.crs.get(desc.geometrySrid)
         return True
