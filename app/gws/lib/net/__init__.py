@@ -17,8 +17,21 @@ class HTTPError(Error):
     pass
 
 
-class Timeout(Error):
+class Timeout(HTTPError):
     pass
+
+
+class ConnectionError(HTTPError):
+    pass
+
+
+class GenericError(HTTPError):
+    pass
+
+
+_STATUS_CONNECTION_ERROR = 900
+_STATUS_TIMEOUT = 901
+_STATUS_GENERIC_ERROR = 999
 
 
 class Url(gws.Data):
@@ -238,8 +251,15 @@ class HTTPResponse:
         return getattr(self, '_text')
 
     def raise_if_failed(self):
-        if not self.ok:
-            raise HTTPError(self.status_code, self.text)
+        if self.ok:
+            return
+        if self.status_code == _STATUS_CONNECTION_ERROR:
+            raise ConnectionError(self.text)
+        if self.status_code == _STATUS_TIMEOUT:
+            raise Timeout(self.text)
+        if self.status_code == _STATUS_GENERIC_ERROR:
+            raise GenericError(self.text)
+        raise HTTPError(f'HTTP error: {self.status_code}')
 
 
 def _get_text(content, encoding) -> str:
@@ -375,13 +395,13 @@ def _http_request(method, url, kwargs) -> HTTPResponse:
         return HTTPResponse(ok=False, url=url, res=res)
     except requests.ConnectionError as exc:
         gws.log.error(f'HTTP_FAILED_{method}: (ConnectionError) url={url!r}')
-        return HTTPResponse(ok=False, url=url, text=repr(exc), status_code=900)
+        return HTTPResponse(ok=False, url=url, text=repr(exc), status_code=_STATUS_CONNECTION_ERROR)
     except requests.Timeout as exc:
         gws.log.error(f'HTTP_FAILED_{method}: (Timeout) url={url!r}')
-        return HTTPResponse(ok=False, url=url, text=repr(exc), status_code=901)
+        return HTTPResponse(ok=False, url=url, text=repr(exc), status_code=_STATUS_TIMEOUT)
     except requests.RequestException as exc:
         gws.log.error(f'HTTP_FAILED_{method}: (Generic: {exc!r}) url={url!r}')
-        return HTTPResponse(ok=False, url=url, text=repr(exc), status_code=999)
+        return HTTPResponse(ok=False, url=url, text=repr(exc), status_code=_STATUS_GENERIC_ERROR)
 
 
 def _cache_path(url):

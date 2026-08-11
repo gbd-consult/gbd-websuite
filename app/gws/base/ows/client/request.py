@@ -31,8 +31,8 @@ def get_url(url: str, **kwargs) -> gws.lib.net.HTTPResponse:
                 raise error.Error(text)
     try:
         res.raise_if_failed()
-    except Exception as exc:
-        raise error.Error(*exc.args) from exc
+    except gws.lib.net.HTTPError as exc:
+        raise error.Error(f'network error: {url!r} -> {exc}') from exc
     return res
 
 
