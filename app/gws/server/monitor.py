@@ -1,9 +1,6 @@
 import os
 
 import gws
-import gws.config
-import gws.lib.lock
-import gws.lib.osx
 import gws.lib.watcher
 import gws.server.uwsgi_module
 
@@ -57,7 +54,7 @@ class Object(gws.ServerMonitor):
 
     def schedule_reload(self, with_reconfigure=False):
         gws.log.info(f'MONITOR: reload scheduled {with_reconfigure=}')
-        os.open(_RECONFIGURE_FILE if with_reconfigure else _RELOAD_FILE, os.O_CREAT | os.O_WRONLY)
+        self._touch(_RECONFIGURE_FILE if with_reconfigure else _RELOAD_FILE)
 
     def start(self):
         self._check_unlink(_LOCK_FILE)
@@ -70,7 +67,7 @@ class Object(gws.ServerMonitor):
         if not self.cfg('disableWatch'):
 
             def notify(evt, path):
-                os.open(_RECONFIGURE_FILE, os.O_CREAT | os.O_WRONLY)
+                self._touch(_RECONFIGURE_FILE)
 
             self.watcher = gws.lib.watcher.new(notify)
 
@@ -97,10 +94,10 @@ class Object(gws.ServerMonitor):
             # gws.log.debug(f'MONITOR: tick skip')
             return
 
-        gws.log.debug(f'MONITOR: tick {do_reconfigure=} {do_reload=} tasks={[t.obj for t in tasks]}')
+        gws.log.debug(f'MONITOR: tick {do_reconfigure=} {do_reload=} tasks={len(tasks)}')
 
         try:
-            os.open(_LOCK_FILE, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            os.close(os.open(_LOCK_FILE, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
         except FileExistsError:
             gws.log.debug(f'MONITOR: locked')
             return
@@ -148,6 +145,9 @@ class Object(gws.ServerMonitor):
                 t.lastTime = gws.u.stime()
             except:
                 gws.log.exception(f'MONITOR: periodic task failed {t.obj}')
+
+    def _touch(self, path):
+        os.close(os.open(path, os.O_CREAT | os.O_WRONLY))
 
     def _check_unlink(self, path):
         try:
