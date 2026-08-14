@@ -1,6 +1,7 @@
 """Doc generator CLI tool"""
 
 import os
+import shutil
 import sys
 import json
 
@@ -77,7 +78,8 @@ def main(args):
             out_dir = opts['BUILD_DIR'] + '/apidoc/' + opts['VERSION2']
 
     opts['outputDir'] = out_dir
-    _mkdir(opts['outputDir'])
+    shutil.rmtree(opts['outputDir'], ignore_errors=True)
+    os.makedirs(opts['outputDir'], exist_ok=True)
 
     if cmd == 'build':
         dog.build_html(opts)
@@ -95,28 +97,37 @@ def main(args):
         return 0
 
     if cmd == 'api':
-        cache_dir = opts['BUILD_DIR'] + '/apidoc_cache/.doctrees'
-        if args.pop('no-cache', None):
-            _mkdir(cache_dir)
+        conf_dir = options.ROOT_DIR + '/doc/api'
+        temp_dir = opts['BUILD_DIR'] + '/apidoc_temp'
+        cache_dir = temp_dir + '/cache'
+        src_dir = temp_dir + '/src'
+        html_dir = temp_dir + '/html'
+
+        nc = args.pop('no-cache', None) or args.pop('nc', None)
+        if nc:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+        os.makedirs(cache_dir, exist_ok=True)
+        os.makedirs(src_dir, exist_ok=True)
+        os.makedirs(html_dir, exist_ok=True)
+        dog.util.write_file(src_dir + '/index.rst', dog.util.read_file(conf_dir + '/index.rst'))
+
         verbosity = '' if opts['debug'] else '-Q'
         cmd = f"""
             sphinx-build
-            -b html 
-            -j auto 
+            -b html
+            -j auto
+            -c {conf_dir}
             -d {cache_dir}
             {verbosity}
-            {options.ROOT_DIR}/doc/api 
-            {opts['outputDir']}
+            {src_dir}
+            {html_dir}
         """
         dog.util.run(cmd.strip().split())
+        shutil.copytree(html_dir, opts['outputDir'], dirs_exist_ok=True)
         return 0
 
     cli.fatal('invalid arguments, try doc.py -h for help')
-
-
-def _mkdir(d):
-    dog.util.run(['mkdir', '-p', d])
-    dog.util.run(['rm', '-fr', d + '/*'])
 
 
 def _add_opts(opts, path):

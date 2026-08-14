@@ -9,7 +9,11 @@ Python modules
 
   py/gws/index
 
+.. toctree::
+  :hidden:
+  :glob:
 
+  py/**
 
 
 Indices and tables

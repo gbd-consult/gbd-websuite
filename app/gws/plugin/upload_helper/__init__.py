@@ -1,6 +1,6 @@
 """Manage chunked uploads.
 
-In your action, declare an endpoint with ``p: ChunkRequest` as a parameter. This endpoint should invoke ``handle_chunk_request``::
+In your action, declare an endpoint with ``p: ChunkRequest`` as a parameter. This endpoint should invoke ``handle_chunk_request``::
 
     import gws.plugin.upload_helper as uh
 
@@ -14,8 +14,7 @@ In your action, declare an endpoint with ``p: ChunkRequest` as a parameter. This
 
 The client sends chunks to this endpoint, one by one. Each chunk contains the file name and total size. The first chunk has an empty ``uploadUid``, indicating a new upload. Subsequent chunks must provide a valid ``uploadUid``. The handler responds with an ``uploadUid``. Each chunk must have a serial number, starting from 0. Chunks can come in any order.
 
-Once the client decides that the upload is complete, it proceeds with invoking some other endpoint of your action, mentioning the ``uploadUid`` returned by the first chunk. The endpoint should invoke ``get_upload`` to retrieve the final file. The file is stored in a temporary location and should be moved to a permanent location if necessary.
-
+Once the client decides that the upload is complete, it proceeds with invoking some other endpoint of your action, mentioning the ``uploadUid`` returned by the first chunk. The endpoint should invoke ``get_upload`` to retrieve the final file. The file is stored in a temporary location and should be moved to a permanent location if necessary::
 
     @gws.ext.command.api('myProcessUploadedFile')
     def do_process(self, req, p: MyProcessRequest):

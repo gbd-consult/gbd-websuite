@@ -100,7 +100,7 @@ def center(e: gws.Extent) -> gws.Point:
 
 
 def size(e: gws.Extent) -> gws.Size:
-    """The size of the extent ``(width,height)"""
+    """The size of the extent ``(width,height)``."""
 
     return (
         e[2] - e[0],

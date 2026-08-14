@@ -10,7 +10,7 @@ at least the following columns:
 - ``validuser`` (bool) - mandatory, should be "true" if the user is allowed to log in
 - ``validpassword`` (bool) - mandatory, should be "true" if the password is valid
 - ``uid`` (str) - user id
-- ``roles``(str) - comma-separated list of roles
+- ``roles`` (str) - comma-separated list of roles
 
 Column names are case-insensitive.
 

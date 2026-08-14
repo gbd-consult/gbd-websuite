@@ -3,22 +3,20 @@
 This plugin emulates QField Cloud API to allow QField Mobile to synchronize with GWS.
 The plugin packages QGIS projects based on settings made with QFieldSync QGIS plugin.
 
-## Configuration
+.. rubric:: Configuration
 
-The plugin exposes an Action of type `qfieldcloud`. In the action config, you can define multiple `projects`, each representing a QField project.
+The plugin exposes an Action of type ``qfieldcloud``. In the action config, you can define multiple ``projects``, each representing a QField project::
 
-```
-actions+ {
-    type "qfieldcloud"
-    
-    projects+ {
-        title "My Project"
-        provider.path "/path/to/file.qgs"
+    actions+ {
+        type "qfieldcloud"
+
+        projects+ {
+            title "My Project"
+            provider.path "/path/to/file.qgs"
+        }
     }
-}
-```
 
-## Downloading data
+.. rubric:: Downloading data
 
 Data flow GWS -> QField, also called "packaging".
 
@@ -28,44 +26,42 @@ For each offline table, a Model can be configured to customize field selection a
 
 Background maps are rendered via QGIS Server WMS requests and included in the package as raster layers.
 
-## Uploading data
+.. rubric:: Uploading data
 
 Data flow QField -> GWS, also called "patching".
 
 For each incoming "delta" package from QField, the plugin extracts the modified features and passes them to the respective Model. The Model is responsible for applying the changes to the Postgres database.
 
-## File uploads
+.. rubric:: File uploads
 
-If a Model supports file uploads, it should contain a virtual file field with `nameColumn` and `contentColumn`:
+If a Model supports file uploads, it should contain a virtual file field with ``nameColumn`` and ``contentColumn``::
 
-```
-actions+ {
-    type "qfieldcloud"
+    actions+ {
+        type "qfieldcloud"
 
-    projects+ {
-        title "My Project"
-        provider.path "/path/to/file.qgs"
+        projects+ {
+            title "My Project"
+            provider.path "/path/to/file.qgs"
 
-        models+ {
-            type "postgres"
-            ...
-            fields+ {
-                type "file"
-                name "virtual_file_field"
-                contentColumn "file_content"
-                nameColumn "file_name"
+            models+ {
+                type "postgres"
+                ...
+                fields+ {
+                    type "file"
+                    name "virtual_file_field"
+                    contentColumn "file_content"
+                    nameColumn "file_name"
+                }
             }
         }
     }
-}
-```
 
-QField sends uploads in two steps: first, the file path is included along with the feature changes in the delta package. Later, the actual file content is uploaded in a separate request. The plugin matches the file content to the respective features based on the `nameColumn` value.
+QField sends uploads in two steps: first, the file path is included along with the feature changes in the delta package. Later, the actual file content is uploaded in a separate request. The plugin matches the file content to the respective features based on the ``nameColumn`` value.
 
-## Extending
+.. rubric:: Extending
 
 Override the packager and patcher classes to customize packaging and patching behavior.
-In your custom action class, override `get_packager()` and `get_patcher()` methods to return your custom classes.
+In your custom action class, override ``get_packager()`` and ``get_patcher()`` methods to return your custom classes.
 
 """
 
