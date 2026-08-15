@@ -50,7 +50,7 @@ def main(args):
     
     pytest_args = [
         f'--config-file={base}/config/pytest.ini',
-        f'--rootdir=/gws-app',
+        f'--rootdir=/',
         f'--ignore-glob=__build',
     ]
     kw = args.get('keyword') or args.get('k')
@@ -88,11 +88,10 @@ def enum_files_for_test(only_pattern):
 
     regex = u.option('pytest.python_files', '').replace('*', '.*')
 
-    dirs = [f'{gws.c.APP_DIR}/gws']
-    for d in u.option('runner.source_dirs') or []:
+    dirs = u.option('runner.sources') or [f'{gws.c.APP_DIR}/gws']
+    for d in dirs:
         if not os.path.isdir(d):
-            cli.fatal(f'test dir {d!r} not found')
-        dirs.append(d)
+            cli.fatal(f'source dir {d!r} not found')
 
     files = []
     for d in dirs:

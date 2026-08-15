@@ -59,6 +59,8 @@ Pytest options:
 OPTIONS = {}
 
 CONTAINER_DATA_DIR = '/data'
+DEFAULT_SOURCE_DIR = '/gws-app/gws'
+COVERAGE_OMIT = ['*/___*', '*/vendor/*', '*_test.py', '*/conftest.py', '*/test/*']
 
 
 def main(args):
@@ -69,7 +71,8 @@ def main(args):
     if custom_ini:
         ini_paths.append(custom_ini)
     cli.info(f'using configs: {ini_paths}')
-    OPTIONS.update(inifile.from_paths_flat(*ini_paths))
+    for path in ini_paths:
+        OPTIONS.update(load_ini(path))
 
     OPTIONS.update(
         dict(
@@ -89,26 +92,15 @@ def main(args):
     OPTIONS['LOCAL_APP_DIR'] = LOCAL_APP_DIR
     OPTIONS['HOST_OS'] = sys.platform
 
-    p = OPTIONS.get('runner.base_dir') or gws.env.GWS_TEST_DIR
+    p = OPTIONS.get('runner.base_dir') or abs_path(gws.env.GWS_TEST_DIR, LOCAL_APP_DIR)
     if not p:
         raise ValueError('GWS_TEST_DIR not set')
-    if not os.path.isabs(p):
-        p = os.path.realpath(os.path.join(LOCAL_APP_DIR, p))
     OPTIONS['BASE_DIR'] = p
 
     OPTIONS['runner.uid'] = int(OPTIONS.get('runner.uid') or os.getuid())
     OPTIONS['runner.gid'] = int(OPTIONS.get('runner.gid') or os.getgid())
 
-    p = OPTIONS.get('runner.data_dir')
-    if not p:
-        p = OPTIONS['BASE_DIR'] + CONTAINER_DATA_DIR
-    elif not os.path.isabs(p):
-        p = os.path.realpath(os.path.join(LOCAL_APP_DIR, p))
-    OPTIONS['runner.data_dir'] = p
-
-    OPTIONS['runner.services'] = split_list(OPTIONS.get('runner.services'))
-    OPTIONS['runner.source_dirs'] = split_list(OPTIONS.get('runner.source_dirs'))
-    OPTIONS['runner.extra_volumes'] = split_list(OPTIONS.get('runner.extra_volumes'))
+    OPTIONS['runner.data_dir'] = OPTIONS.get('runner.data_dir') or OPTIONS['BASE_DIR'] + CONTAINER_DATA_DIR
 
     if cmd == 'go':
         OPTIONS['arg_coverage'] = True
@@ -153,6 +145,12 @@ def configure():
         cli.fatal(f'data dir {data_dir!r} not found')
     ensure_dir(f'{base}/gws-var')
     ensure_dir(f'{base}/pytest_cache')
+
+    # extra volumes in the base dir are ours to create
+    for vol in OPTIONS['runner.extra_volumes']:
+        src = vol.split(':')[0]
+        if src.startswith(base + '/'):
+            ensure_dir(src)
 
     write_file(f'{base}/config/MANIFEST.json', make_manifest_text())
     write_file(f'{base}/config/docker-compose.yml', make_docker_compose_yml())
@@ -252,13 +250,6 @@ def make_docker_compose_yml():
 
 
 def make_manifest_text():
-    """Read the manifest and convert its paths to container paths.
-
-    Relative paths are resolved against the manifest directory. Paths located
-    in `runner.data_dir` become `/data/...`, others remain absolute host paths
-    and have to be mounted with `runner.extra_volumes`.
-    """
-
     path = OPTIONS['arg_manifest']
     if not path:
         return '{}'
@@ -318,7 +309,8 @@ def make_coverage_ini():
 
     base = OPTIONS['BASE_DIR']
     ini = {
-        'run.source': '/gws-app/gws',
+        'run.source': ','.join(OPTIONS['runner.sources'] or [DEFAULT_SOURCE_DIR]),
+        'run.omit': ','.join(COVERAGE_OMIT),
         'run.data_file': f'{base}/coverage.data',
         'html.directory': f'{base}/coverage',
     }
@@ -586,6 +578,35 @@ def ensure_dir(path, clear=False):
     os.makedirs(path, exist_ok=True)
     if clear:
         _clear(path)
+
+
+def load_ini(path):
+    ini_dir = os.path.dirname(os.path.abspath(path))
+    res = {}
+
+    for key, val in inifile.from_paths_flat(path).items():
+        if key.endswith('_dir'):
+            val = abs_path(val, ini_dir) if val else ''
+        elif key == 'runner.extra_volumes':
+            val = [abs_volume(s, ini_dir) for s in split_list(val)]
+        elif key in ('runner.services', 'runner.sources'):
+            val = split_list(val)
+        res[key] = val
+
+    return res
+
+
+def abs_path(path, base_dir):
+    if not path:
+        return ''
+    if not os.path.isabs(path):
+        path = os.path.join(base_dir, path)
+    return os.path.realpath(path)
+
+
+def abs_volume(vol, base_dir):
+    src, _, dst = vol.partition(':')
+    return abs_path(src, base_dir) + ':' + dst
 
 
 def split_list(val):
