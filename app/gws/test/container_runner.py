@@ -86,9 +86,18 @@ def main(args):
 def enum_files_for_test(only_pattern):
     """Enumerate files to test, wrt --only option."""
 
-    regex = u.option('pytest.python_files').replace('*', '.*')
+    regex = u.option('pytest.python_files', '').replace('*', '.*')
 
-    files = list(gws.lib.osx.find_files(f'{gws.c.APP_DIR}/gws', regex))
+    dirs = [f'{gws.c.APP_DIR}/gws']
+    for d in u.option('runner.source_dirs') or []:
+        if not os.path.isdir(d):
+            cli.fatal(f'test dir {d!r} not found')
+        dirs.append(d)
+
+    files = []
+    for d in dirs:
+        files.extend(gws.lib.osx.find_files(d, regex))
+
     if only_pattern:
         files = [f for f in files if re.search(only_pattern, f)]
 

@@ -7,6 +7,7 @@ and invoke the test runner inside the GWS container (via ``gws test``).
 """
 
 import os
+import re
 import sys
 import yaml
 import json
@@ -57,6 +58,8 @@ Pytest options:
 
 OPTIONS = {}
 
+CONTAINER_DATA_DIR = '/data'
+
 
 def main(args):
     cmd = args.get(1)
@@ -96,6 +99,16 @@ def main(args):
     OPTIONS['runner.uid'] = int(OPTIONS.get('runner.uid') or os.getuid())
     OPTIONS['runner.gid'] = int(OPTIONS.get('runner.gid') or os.getgid())
 
+    p = OPTIONS.get('runner.data_dir')
+    if not p:
+        p = OPTIONS['BASE_DIR'] + CONTAINER_DATA_DIR
+    elif not os.path.isabs(p):
+        p = os.path.realpath(os.path.join(LOCAL_APP_DIR, p))
+    OPTIONS['runner.data_dir'] = p
+
+    OPTIONS['runner.source_dirs'] = split_list(OPTIONS.get('runner.source_dirs'))
+    OPTIONS['runner.extra_volumes'] = split_list(OPTIONS.get('runner.extra_volumes'))
+
     if cmd == 'go':
         OPTIONS['arg_coverage'] = True
         OPTIONS['arg_detach'] = True
@@ -130,16 +143,17 @@ def main(args):
 def configure():
     base = OPTIONS['BASE_DIR']
 
+    data_dir = OPTIONS['runner.data_dir']
+
     ensure_dir(f'{base}/config', clear=True)
-    ensure_dir(f'{base}/data')
+    if data_dir.startswith(base + '/'):
+        ensure_dir(data_dir)
+    elif not os.path.isdir(data_dir):
+        cli.fatal(f'data dir {data_dir!r} not found')
     ensure_dir(f'{base}/gws-var')
     ensure_dir(f'{base}/pytest_cache')
 
-    manifest_text = '{}'
-    if OPTIONS['arg_manifest']:
-        manifest_text = read_file(OPTIONS['arg_manifest'])
-
-    write_file(f'{base}/config/MANIFEST.json', manifest_text)
+    write_file(f'{base}/config/MANIFEST.json', make_manifest_text())
     write_file(f'{base}/config/docker-compose.yml', make_docker_compose_yml())
     write_file(f'{base}/config/pg_service.conf', make_pg_service_conf())
     write_file(f'{base}/config/pytest.ini', make_pytest_ini())
@@ -204,11 +218,12 @@ def make_docker_compose_yml():
 
         std_vols = [
             f'{base}:{base}',
-            f'{base}/data:/data',
+            f'{OPTIONS["runner.data_dir"]}:{CONTAINER_DATA_DIR}',
             f'{base}/gws-var:/gws-var',
         ]
         if OPTIONS['arg_local']:
             std_vols.append(f'{LOCAL_APP_DIR}:/gws-app')
+        std_vols.extend(OPTIONS['runner.extra_volumes'])
 
         srv.setdefault('volumes', []).extend(std_vols)
 
@@ -227,6 +242,44 @@ def make_docker_compose_yml():
     }
 
     return yaml.dump(cfg)
+
+
+def make_manifest_text():
+    """Read the manifest and convert its paths to container paths.
+
+    Relative paths are resolved against the manifest directory. Paths located
+    in `runner.data_dir` become `/data/...`, others remain absolute host paths
+    and have to be mounted with `runner.extra_volumes`.
+    """
+
+    path = OPTIONS['arg_manifest']
+    if not path:
+        return '{}'
+
+    js = json.loads(read_file(path))
+    src_dir = os.path.dirname(os.path.abspath(path))
+
+    for p in js.get('plugins', []):
+        p['path'] = container_path(p['path'], src_dir)
+    if js.get('tsConfig'):
+        js['tsConfig'] = container_path(js['tsConfig'], src_dir)
+
+    return json.dumps(js, indent=4)
+
+
+def container_path(path, src_dir):
+    if os.path.isabs(path):
+        return path
+
+    abs_path = os.path.abspath(os.path.join(src_dir, path))
+    data_dir = OPTIONS['runner.data_dir']
+
+    if abs_path == data_dir:
+        return CONTAINER_DATA_DIR
+    if abs_path.startswith(data_dir + '/'):
+        return CONTAINER_DATA_DIR + abs_path[len(data_dir):]
+
+    return abs_path
 
 
 def make_pg_service_conf():
@@ -525,6 +578,14 @@ def ensure_dir(path, clear=False):
     os.makedirs(path, exist_ok=True)
     if clear:
         _clear(path)
+
+
+def split_list(val):
+    if not val:
+        return []
+    if isinstance(val, list):
+        return val
+    return [s.strip() for s in re.split(r'[,\n]', val) if s.strip()]
 
 
 def dedent(text):
