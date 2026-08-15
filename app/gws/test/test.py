@@ -106,6 +106,7 @@ def main(args):
         p = os.path.realpath(os.path.join(LOCAL_APP_DIR, p))
     OPTIONS['runner.data_dir'] = p
 
+    OPTIONS['runner.services'] = split_list(OPTIONS.get('runner.services'))
     OPTIONS['runner.source_dirs'] = split_list(OPTIONS.get('runner.source_dirs'))
     OPTIONS['runner.extra_volumes'] = split_list(OPTIONS.get('runner.extra_volumes'))
 
@@ -205,6 +206,12 @@ def make_docker_compose_yml():
     for k, v in globals().items():
         if k.startswith('service_'):
             service_funcs[k.split('_')[1]] = v
+
+    wanted = OPTIONS['runner.services'] or list(service_funcs)
+    for s in wanted:
+        if s not in service_funcs:
+            cli.fatal(f'unknown service {s!r}')
+    service_funcs = {s: service_funcs[s] for s in wanted}
 
     OPTIONS['runner.services'] = list(service_funcs)
 
@@ -449,7 +456,8 @@ def service_mockserver():
         # NB use the gws image
         container_name='c_mockserver',
         image=OPTIONS.get('service.gws.image'),
-        command=f'python3 /gws-app/gws/test/mockserver.py',
+        # NB 'entrypoint', not 'command', because the image can define its own entrypoint
+        entrypoint=f'python3 /gws-app/gws/test/mockserver.py',
         ports=[
             f'{OPTIONS.get("service.mockserver.expose_port")}:80',
         ],
