@@ -46,8 +46,9 @@ Options:
     -b, --batch           - run tests in batch mode (no interactive prompts)
     -c, --coverage        - produce a coverage report
     -d, --detach          - run docker compose in the background
-    -l, --local           - mount the local copy of the application in the test container   
-    -o, --only <regex>    - only run filenames matching the pattern 
+    -l, --local           - mount the local copy of the application in the test container
+    -nc, --no-cache       - wipe the base directory before configuring the test environment
+    -o, --only <regex>    - only run filenames matching the pattern
     -k, --keyword <expr>  - only run tests matching the pytest expression
     -v, --verbose         - enable debug logging
         
@@ -83,6 +84,7 @@ def main(args):
             arg_detach=args.get('d') or args.get('detach'),
             arg_local=args.get('l') or args.get('local'),
             arg_manifest=args.get('manifest'),
+            arg_no_cache=args.get('nc') or args.get('no-cache'),
             arg_only=args.get('o') or args.get('only'),
             arg_keyword=args.get('k') or args.get('keyword'),
             arg_verbose=args.get('v') or args.get('verbose'),
@@ -137,6 +139,10 @@ def configure():
     base = OPTIONS['BASE_DIR']
 
     data_dir = OPTIONS['runner.data_dir']
+
+    if OPTIONS['arg_no_cache']:
+        cli.info(f'wiping {base!r}')
+        ensure_dir(base, clear=True)
 
     ensure_dir(f'{base}/config', clear=True)
     if data_dir.startswith(base + '/'):
