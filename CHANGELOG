@@ -1,3 +1,11 @@
+## Version 8.4.7
+
+- added transient sessions for stateless authentication methods
+- specific error types and status codes for failed HTTP requests
+- improved application home page templates and styles
+- fixed resource leaks in the server monitor
+- fixed URL generation for URLs with a scheme but without a host
+
 ## Version 8.4.6
 
 - improved SVG sanitization
