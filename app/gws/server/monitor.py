@@ -97,7 +97,7 @@ class Object(gws.ServerMonitor):
         gws.log.debug(f'MONITOR: tick {do_reconfigure=} {do_reload=} tasks={len(tasks)}')
 
         try:
-            os.close(os.open(_LOCK_FILE, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+            self._touch(_LOCK_FILE, excl=True)
         except FileExistsError:
             gws.log.debug(f'MONITOR: locked')
             return
@@ -127,7 +127,7 @@ class Object(gws.ServerMonitor):
             try:
                 control.configure_and_store()
             except Exception as exc:
-                gws.log.exception(f'MONITOR: configuration error {exc!r}')
+                gws.log.exception(f'MONITOR: configuration error: {exc!r}')
                 return False
 
         try:
@@ -135,7 +135,7 @@ class Object(gws.ServerMonitor):
             control.reload_app('web')
             return True
         except Exception as exc:
-            gws.log.exception(f'MONITOR: reload error {exc!r}')
+            gws.log.exception(f'MONITOR: reload error: {exc!r}')
             return False
 
     def _run_periodic_tasks(self, tasks):
@@ -143,11 +143,14 @@ class Object(gws.ServerMonitor):
             try:
                 t.obj.periodic_task()
                 t.lastTime = gws.u.stime()
-            except:
-                gws.log.exception(f'MONITOR: periodic task failed {t.obj}')
+            except Exception as exc:
+                gws.log.exception(f'MONITOR: periodic task failed {t.obj}: {exc!r}')
 
-    def _touch(self, path):
-        os.close(os.open(path, os.O_CREAT | os.O_WRONLY))
+    def _touch(self, path, excl=False):
+        flags = os.O_CREAT | os.O_WRONLY
+        if excl:
+            flags |= os.O_EXCL
+        os.close(os.open(path, flags))
 
     def _check_unlink(self, path):
         try:
