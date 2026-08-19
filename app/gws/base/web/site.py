@@ -101,6 +101,7 @@ class Object(gws.WebSite):
     ssl: bool
     contentSecurityPolicy: str
     permissionsPolicy: str
+    xFrameOptions: str
 
     def configure(self):
         self.hostnames = self.cfg('hostnames') or []
@@ -117,6 +118,7 @@ class Object(gws.WebSite):
         self.corsOptions = self.cfg('cors')
         self.contentSecurityPolicy = self.cfg('contentSecurityPolicy')
         self.permissionsPolicy = self.cfg('permissionsPolicy')
+        self.xFrameOptions = self.cfg('xFrameOptions')
         # deprecated
         self.errorPage = self.create_child_if_configured(gws.ext.object.template, self.cfg('errorPage'))
 
