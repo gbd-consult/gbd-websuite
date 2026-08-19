@@ -1,3 +1,9 @@
+## Version 8.4.8
+
+- added the `xFrameOptions` site option to configure the `X-Frame-Options` header
+- config files with the `.yaml` extension are now recognized
+- improved error reporting for layer tree configuration
+
 ## Version 8.4.7
 
 - added transient sessions for stateless authentication methods
