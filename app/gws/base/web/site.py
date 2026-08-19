@@ -67,6 +67,8 @@ class Config(gws.Config):
     """Content Security Policy for this site."""
     permissionsPolicy: str = 'geolocation=(self), camera=(), microphone=()'
     """Permissions Policy for this site."""
+    xFrameOptions: str = 'SAMEORIGIN'
+    """X-Frame-Options header value. (added in 8.4)"""
     errorPage: Optional[gws.ext.config.template]
     """Error page template. (deprecated in 8.4)"""
     hostnames: Optional[list[str]]
