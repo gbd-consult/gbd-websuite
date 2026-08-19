@@ -18,7 +18,7 @@ import gws.lib.vendor.jump
 import gws.lib.vendor.slon
 import gws.spec.runtime
 
-CONFIG_PATH_PATTERN = r'\.(py|json|yaml|cx)$'
+CONFIG_PATH_PATTERN = r'\.(py|json|yaml|yml|cx)$'
 
 
 def parse_from_path(path: str, as_type: str, ctx: gws.ConfigContext) -> Optional[gws.Config]:
@@ -213,7 +213,7 @@ class _Parser:
             return self.read_py(path)
         if path.endswith('.json'):
             return self.read_json(path)
-        if path.endswith('.yml'):
+        if path.endswith('.yml') or path.endswith('.yaml'):
             return self.read_yaml(path)
         if path.endswith('.cx'):
             return self.read_cx(path)
