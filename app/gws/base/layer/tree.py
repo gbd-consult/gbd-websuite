@@ -85,8 +85,8 @@ def layer_configs_from_args(tca: TreeConfigArgs) -> list[gws.Config]:
             layer_configs.append(cfg)
 
     if ctx.errors:
-        raise ctx.errors[0]
-    
+        raise gws.ConfigurationError(ctx.errors[0].message)
+
     return layer_configs
 
 

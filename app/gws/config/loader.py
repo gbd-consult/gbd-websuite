@@ -299,7 +299,7 @@ def log_report(cr: gws.ConfigResult):
     gws.log.error(f'configured wth errors: errors: {err_cnt}, {cr.info}')
     gws.log.error(ln)
 
-    cr.errors.sort(key=lambda ce: ce.message)
+    # cr.errors.sort(key=lambda ce: ce.message)
 
     for n, cei in enumerate(cr.errors, 1):
         gws.log.error(f'{_ERROR_PREFIX}: {n} of {err_cnt}')
