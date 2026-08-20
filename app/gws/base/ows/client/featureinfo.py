@@ -215,6 +215,25 @@ def _parse_geobak(xml_el: gws.XmlElement, default_crs, always_xy):
     return recs
 
 
+def _parse_osiris(xml_el: gws.XmlElement, default_crs, always_xy):
+    # OSIRIS (https://www.gis-consult.de/produkte-und-loesungen/gc-osiris/)
+    #
+    # <OSIRIS_Objektmenge ...
+    #     <OSIRIS_Objekt fid="..."
+    #         <gml:description>...
+    #         <gml:name>...
+    #         <gml:boundedBy>...
+
+    recs = []
+
+    for obj_el in xml_el:
+        if obj_el.lcName == 'osiris_objekt':
+            rec = _record_from_gml(obj_el, default_crs, always_xy)
+            recs.append(rec)
+
+    return recs
+
+
 ##
 
 _DEEP_ATTRIBUTE_DELIMITER = '.'
@@ -279,4 +298,5 @@ _XML_FORMATS = {
     'getfeatureinforesponse': _parse_getfeatureinforesponse,
     'featureinforesponse': _parse_featureinforesponse,
     'sachdatenabfrage': _parse_geobak,
+    'osiris_objektmenge': _parse_osiris,
 }
