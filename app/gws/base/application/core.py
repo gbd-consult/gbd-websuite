@@ -56,7 +56,7 @@ DEFAULT_PRINTER = gws.Config(
         path=f'{gws.c.APP_DIR}/gws/base/application/templates/project_print.cx.html',
         mapSize=(200, 180, gws.Uom.mm),
     ),
-    qualityLevels=[{'dpi': 72}],
+    qualityLevels=[gws.TemplateQualityLevel(dpi=72)],
 )
 
 DEFAULT_CSS_FILENAME = 'style.css'

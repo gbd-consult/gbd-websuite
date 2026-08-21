@@ -334,7 +334,7 @@ _DEFAULT_PRINTER = gws.Config(
         type='html',
         path=f'{_dir}/templates/print.cx.html',
     ),
-    qualityLevels=[{'dpi': 72}],
+    qualityLevels=[gws.TemplateQualityLevel(dpi=72)],
 )
 
 
