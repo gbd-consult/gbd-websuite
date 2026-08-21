@@ -1,0 +1,22 @@
+@def flurstueck_label(fs)
+    @if fs.isHistoric
+        @return str(fs.fsnummer) + ' (h)'
+    @end
+    @return str(fs.fsnummer)
+@end
+
+@def adresse_label(strasse, hausnummer, gemeinde)
+    @let s = ''
+    @with strasse
+        @let s = str(strasse)
+    @end
+    @with hausnummer
+        @let s = (s + ' ' + str(hausnummer)).strip()
+    @end
+    @with gemeinde
+        @with gemeinde.text as g
+            @let s = (s + ', ' + str(g)).strip(' ,')
+        @end
+    @end
+    @return s
+@end

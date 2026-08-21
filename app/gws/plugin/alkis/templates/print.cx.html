@@ -16,13 +16,17 @@
 @end footer
 
 
+<html>
+<head>
 <style>
 @include print.css
 </style>
+</head>
+<body>
 
 @for fs in flurstueckList index n length total
     <h1>
-        Flurstück {fs_kennzeichen(fs.flurstueckskennzeichen)}
+        Flurstück {fs_kennzeichen(fs.flurstueckskennzeichen) | html}
     </h1>
 
     <div class="map">
@@ -39,3 +43,6 @@
         @pagebreak
     @end
 @end
+
+</body>
+</html>

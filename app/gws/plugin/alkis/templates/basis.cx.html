@@ -149,15 +149,28 @@
     @without arg
         @return default
     @end
-    @with arg.text
-        @return arg.text + ' (' + arg.code + ')'
+    @if isinstance(arg, list)
+        @let vs = []
+        @for v in arg
+            @let s = text(v)
+            @if s != None
+                @do vs.append(s)
+            @end
+        @end
+        @if not vs
+            @return default
+        @end
+        @return ', '.join(vs)
     @end
-    @return str(arg)
+    @with arg.text
+        @return html(arg.text) + ' (' + html(arg.code) + ')'
+    @end
+    @return html(arg)
 @end
 
 @def area arg
     @if arg
-        @return '{:.1f}&nbsp;m²'.format(arg)
+        @return '{:.1f} m²'.format(arg)
     @end
 @end
 
@@ -213,13 +226,13 @@
 
 @def row_value title, val
     @if title != None and val != None
-        <tr><th>{title}</th><td>{val}</th></tr>
+        <tr><th>{title | html}</th><td>{val | nl2br}</td></tr>
     @end
 @end
 
 @def row_value_historic title, val
     @if title != None and val != None
-        <tr class="alkisFsHistoric"><th>{title}</th><td>{val}</th></tr>
+        <tr class="alkisFsHistoric"><th>{title | html}</th><td>{val | nl2br}</td></tr>
     @end
 @end
 
@@ -229,11 +242,11 @@
             <th>{h('zeitraum')}</th>
             <td>
                 @if obj.endet == obj.beginnt
-                    ...&nbsp;&mdash;&nbsp;{obj.endet}
+                    ...&nbsp;&mdash;&nbsp;{obj.endet | html}
                 @elif obj.endet
-                    {obj.beginnt}&nbsp;&mdash;&nbsp;{obj.endet}
+                    {obj.beginnt | html}&nbsp;&mdash;&nbsp;{obj.endet | html}
                 @else
-                    {obj.beginnt}&nbsp;&mdash;&nbsp;...
+                    {obj.beginnt | html}&nbsp;&mdash;&nbsp;...
                 @end
             </td>
         </tr>
@@ -258,9 +271,7 @@
 @def row_props r
     @with r.props
         @for key, title in PROPS
-            @if hasattr(r.props, key)
-                @row_value title, text(getattr(r.props, key))
-            @end
+            @row_value title, text(getattr(r.props, key, None))
         @end
     @end
 @end

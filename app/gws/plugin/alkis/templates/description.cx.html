@@ -2,8 +2,8 @@
 
 <div class="alkisFs">
     <p class="alkisFsTitle">
-        {fs.fsnummer}
-        @if fs.endet
+        {fs.fsnummer | html}
+        @if fs.isHistoric
             (h)
         @end
     </p>

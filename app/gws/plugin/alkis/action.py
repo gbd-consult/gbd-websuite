@@ -294,17 +294,17 @@ _DEFAULT_TEMPLATES = [
     gws.Config(
         subject='flurstueck.title',
         type='html',
-        path=f'{_dir}/templates/title.cx.html',
+        path=f'{_dir}/templates/flurstueck_title.cx.html',
     ),
     gws.Config(
         subject='flurstueck.teaser',
         type='html',
-        path=f'{_dir}/templates/title.cx.html',
+        path=f'{_dir}/templates/flurstueck_title.cx.html',
     ),
     gws.Config(
         subject='flurstueck.label',
         type='html',
-        path=f'{_dir}/templates/title.cx.html',
+        path=f'{_dir}/templates/flurstueck_label.cx.html',
     ),
     gws.Config(
         subject='flurstueck.description',
@@ -324,7 +324,7 @@ _DEFAULT_TEMPLATES = [
     gws.Config(
         subject='adresse.label',
         type='html',
-        path=f'{_dir}/templates/adresse_title.cx.html',
+        path=f'{_dir}/templates/adresse_label.cx.html',
     ),
 ]
 

@@ -5,7 +5,15 @@
 
 @def fs_kennzeichen(k) = k.replace('_', '')
 
-@def fs_kennzeichen_list(ks) = ', '.join(ks).replace('_', '')
+@def fs_kennzeichen_list(ks)
+    @let vs = []
+    @for k in ks
+        @with k
+            @do vs.append(fs_kennzeichen(str(k)))
+        @end
+    @end
+    @return html(', '.join(vs))
+@end
 
 @def anschrift an
     @for r in records(an)
@@ -25,7 +33,7 @@
                 @table
                     @row_debug 'person.uid', r.uid
                     @row_value h('person.name'), space(r.anrede, r.akademischerGrad, r.vorname, r.nachnameOderFirma)
-                    @row_value h('person.geburtsdatum'), r.geburtsdatum
+                    @row_value h('person.geburtsdatum'), text(r.geburtsdatum)
                     @row_times r
                 @end
             @end
