@@ -20,8 +20,8 @@ const PLACEHOLDERS: { [key: string]: Placeholder } = {
     placeholder format: { property | unit | precision }, unit/precision are optional
     units
         coordinates = m (=proj units) | deg | dms
-        lengths = m | km
-        areas = m | km | ha
+        lengths = m | km | u (=auto m/km)
+        areas = m | km | ha | u (=auto m²/km²)
     if the unit is in uppercase, no suffix is added
 
  */
@@ -168,7 +168,9 @@ function formatLen(n: number, unit: string, prec: number) {
     if (!n)
         return '';
 
-    unit = unit || (n >= 1e3 ? 'km' : 'm');
+    if (!unit || unit === 'u') {
+        unit = n >= 1e3 ? 'km' : 'm';
+    }
 
     switch (unit) {
         case 'KM':
@@ -198,7 +200,9 @@ function formatArea(n: number, unit: string, prec: number) {
     if (!n)
         return '';
 
-    unit = unit || (n >= 1e6 ? 'km' : 'm');
+    if (!unit || unit === 'u') {
+        unit = n >= 1e6 ? 'km' : 'm';
+    }
 
     switch (unit) {
         case 'KM':
