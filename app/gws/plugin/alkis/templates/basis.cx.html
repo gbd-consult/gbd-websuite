@@ -145,11 +145,11 @@
 
 @def h(key) = HEADERS.get(key, key)
 
-@def text arg, default=None
+@def text arg, default=None, delim=', '
     @without arg
         @return default
     @end
-    @if isinstance(arg, list)
+    @if isinstance(arg, list) or isinstance(arg, tuple)
         @let vs = []
         @for v in arg
             @let s = text(v)
@@ -160,12 +160,12 @@
         @if not vs
             @return default
         @end
-        @return ', '.join(vs)
+        @return delim.join(vs)
     @end
     @with arg.text
-        @return html(arg.text) + ' (' + html(arg.code) + ')'
+        @return arg.text + ' (' + arg.code + ')'
     @end
-    @return html(arg)
+    @return str(arg)
 @end
 
 @def area arg
@@ -174,38 +174,24 @@
     @end
 @end
 
-@def join a, delim
-    @let vs = []
-    @for arg in a
-        @let v = text(arg)
-        @if v != None
-            @do vs.append(v)
-        @end
-    @end
-    @if not vs
-        @return None
-    @end
-    @return delim.join(vs)
-@end
-
-@def nl(*a)    = join(a, '<br>')
-@def space(*a) = join(a, ' ')
-@def dot(*a)   = join(a, '.')
+@def nl(*a)    = text(a, delim='\n')
+@def space(*a) = text(a, delim=' ')
+@def dot(*a)   = text(a, delim='.')
 
 @def h1 s
-    <p class="alkisFsH1">{s}</p>
+    <p class="alkisFsH1">{s | html}</p>
 @end
 
 @def h2 s
-    <p class="alkisFsH2">{s}</p>
+    <p class="alkisFsH2">{s | html}</p>
 @end
 
 @def h3 s
-    <p class="alkisFsH3">{s}</p>
+    <p class="alkisFsH3">{s | html}</p>
 @end
 
 @def h4 s
-    <p class="alkisFsH4">{s}</p>
+    <p class="alkisFsH4">{s | html}</p>
 @end
 
 @box section content, is_historic=False
@@ -226,20 +212,20 @@
 
 @def row_value title, val
     @if title != None and val != None
-        <tr><th>{title | html}</th><td>{val | nl2br}</td></tr>
+        <tr><th>{title | html}</th><td>{val | html | nl2br}</td></tr>
     @end
 @end
 
 @def row_value_historic title, val
     @if title != None and val != None
-        <tr class="alkisFsHistoric"><th>{title | html}</th><td>{val | nl2br}</td></tr>
+        <tr class="alkisFsHistoric"><th>{title | html}</th><td>{val | html | nl2br}</td></tr>
     @end
 @end
 
 @def row_times obj
     @if withHistory
         <tr>
-            <th>{h('zeitraum')}</th>
+            <th>{h('zeitraum') | html}</th>
             <td>
                 @if obj.endet == obj.beginnt
                     ...&nbsp;&mdash;&nbsp;{obj.endet | html}
@@ -252,8 +238,8 @@
         </tr>
         @with obj.anlass
             <tr>
-                <th>{h('anlass')}</th>
-                <td>{text(obj.anlass)}</td>
+                <th>{h('anlass') | html}</th>
+                <td>{text(obj.anlass) | html}</td>
             </tr>
         @end
     @end
@@ -262,8 +248,8 @@
 @def row_debug key, val
     @if withDebug
         <tr>
-            <th><span class="alkisFsDebug">{key}</span></th>
-            <td><span class="alkisFsDebug">{val}</span></td>
+            <th><span class="alkisFsDebug">{key | html}</span></th>
+            <td><span class="alkisFsDebug">{val | html}</span></td>
         </tr>
     @end
 @end

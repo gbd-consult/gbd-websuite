@@ -12,7 +12,7 @@
             @do vs.append(fs_kennzeichen(str(k)))
         @end
     @end
-    @return html(', '.join(vs))
+    @return text(vs)
 @end
 
 @def anschrift an
@@ -49,7 +49,7 @@
 
 @def namensnummer nn
     @section nn.isHistoric
-        @h3 space(h('namensnummer.title'), text(nn.laufendeNummer))
+        @h3 space(h('namensnummer.title'), nn.laufendeNummer)
         @for r in records(nn)
             @section r.isHistoric
                 @table
