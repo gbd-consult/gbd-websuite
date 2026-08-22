@@ -1,3 +1,10 @@
+## Version 8.4.9
+
+- added the auto unit `u` for lengths and areas in geometry format placeholders
+- added support for the OSIRIS format in the feature info parser
+- improved HTML escaping in ALKIS templates
+- the delete button in the edit sidebar respects the model delete permission
+
 ## Version 8.4.8
 
 - added the `xFrameOptions` site option to configure the `X-Frame-Options` header
