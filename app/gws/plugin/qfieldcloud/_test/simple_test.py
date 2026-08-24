@@ -9,8 +9,8 @@ import gws.lib.gdalx
 import gws.lib.jsonx
 import gws.test.util as u
 
-from .. import action as action_mod, caps, core, packager
-from . import util as tu
+from gws.plugin.qfieldcloud import action as action_mod, caps, core, packager
+from gws.plugin.qfieldcloud._test import util as tu
 
 CONFIG = f"""
     auth.providers+ {{ type "{u.auth.PROVIDER_1}" }}

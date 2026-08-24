@@ -10,8 +10,8 @@ import gws.lib.jsonx
 import gws.lib.xmlx
 import gws.test.util as u
 
-from .. import action as action_mod, packager
-from . import util as tu
+from gws.plugin.qfieldcloud import action as action_mod, packager
+from gws.plugin.qfieldcloud._test import util as tu
 
 CONFIG = """
     projects+ {

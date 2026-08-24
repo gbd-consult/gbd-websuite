@@ -8,7 +8,7 @@ import gws.lib.datetimex as dtx
 import gws.lib.xmlx
 import gws.test.util as u
 
-from .. import action, caps, packager
+from gws.plugin.qfieldcloud import action, caps, packager
 
 PART_SIZE = 8 * 1024 * 1024
 

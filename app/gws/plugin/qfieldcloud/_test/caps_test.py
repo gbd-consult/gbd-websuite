@@ -5,8 +5,8 @@ from typing import cast
 import gws
 import gws.test.util as u
 
-from .. import action as action_mod, caps
-from . import util as tu
+from gws.plugin.qfieldcloud import action as action_mod, caps
+from gws.plugin.qfieldcloud._test import util as tu
 
 CONFIG = """
     projects+ {
