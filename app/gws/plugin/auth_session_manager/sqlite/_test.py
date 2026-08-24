@@ -12,7 +12,7 @@ if u.option('HOST_OS') == 'darwin':
     DB_PATH = '/tmp/sess'
 
 
-def root():
+def root(life_time=2):
     cfg = f'''
         auth {{
             providers+ {{
@@ -25,7 +25,7 @@ def root():
             session {{
                 path {DB_PATH!r}
                 type "sqlite"
-                lifeTime 2
+                lifeTime {life_time}
             }}
         }}
     '''
@@ -35,8 +35,8 @@ def root():
 
 ##
 
-def _prepare() -> tuple[gws.AuthManager, gws.AuthSessionManager, gws.User]:
-    r = root()
+def _prepare(life_time=2) -> tuple[gws.AuthManager, gws.AuthSessionManager, gws.User]:
+    r = root(life_time)
     am = r.app.authMgr
     sm = am.sessionMgr
     u.auth.add_user('me', 'foo')
@@ -179,7 +179,7 @@ def test_max_life_time_expires_an_active_session():
 
 
 def _session_mp_worker(n, num_loops):
-    am, sm, usr = _prepare()
+    am, sm, usr = _prepare(life_time=300)
     s1 = sm.create(am.methods[0], usr)
 
     for k in range(num_loops):
@@ -207,7 +207,7 @@ def test_concurrency():
 
     # ensure everything is written
 
-    am, sm, usr = _prepare()
+    am, sm, usr = _prepare(life_time=300)
     all_sess = sm.list_all()
     assert len(all_sess) == num_processes
 
