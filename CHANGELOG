@@ -1,3 +1,7 @@
+## Version 8.4.10
+
+- minor bugs fixes and improvements
+
 ## Version 8.4.9
 
 - added the auto unit `u` for lengths and areas in geometry format placeholders
