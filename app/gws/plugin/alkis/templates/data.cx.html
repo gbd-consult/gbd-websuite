@@ -133,8 +133,7 @@
                 @row_value h('flurstueck.flurnummer'), text(r.flurnummer)
                 @row_value h('flurstueck.zaehler'), text(r.zaehler)
                 @row_value h('flurstueck.nenner'), text(r.nenner, '-')
-                @row_value h('flurstueck.amtlicheFlaeche'), area(r.amtlicheFlaeche)
-                @row_value h('flurstueck.geomFlaeche'), area(r.geomFlaeche)
+                @row_areas h('flurstueck.amtlicheFlaeche'), r.amtlicheFlaeche, h('flurstueck.geomFlaeche'), r.geomFlaeche
                 @with r.nachfolgerFlurstueckskennzeichen as lst
                     @row_value h('flurstueck.nachfolgerFlurstueckskennzeichen'), fs_kennzeichen_list(lst)
                 @end
@@ -173,8 +172,7 @@
     @h1 h('gebaeude.title')
 
     @table
-        @row_value h('flurstueck.gebaeudeAmtlicheFlaeche'), area(fs.gebaeudeAmtlicheFlaeche)
-        @row_value h('flurstueck.gebaeudeGeomFlaeche'), area(fs.gebaeudeGeomFlaeche)
+        @row_areas h('flurstueck.gebaeudeAmtlicheFlaeche'), fs.gebaeudeAmtlicheFlaeche, h('flurstueck.gebaeudeGeomFlaeche'), fs.gebaeudeGeomFlaeche
     @end
 
     @for r in records_from(fs.gebaeudeList)
@@ -182,8 +180,7 @@
             @table
                 @row_debug 'gebaeude.uid', r.uid
                 @row_value h('gebaeude.gebaeudekennzeichen'), text(r.gebaeudekennzeichen)
-                @row_value h('gebaeude.amtlicheFlaeche'), area(r.amtlicheFlaeche)
-                @row_value h('gebaeude.geomFlaeche'), area(r.geomFlaeche)
+                @row_areas h('gebaeude.amtlicheFlaeche'), r.amtlicheFlaeche, h('gebaeude.geomFlaeche'), r.geomFlaeche
                 @row_props r
                 @row_times r
             @end
@@ -204,8 +201,7 @@
                 @table
                     @row_debug 'part.uid', nu.uid
                     @row_value h('nutzung.name'), text(nu.name)
-                    @row_value h('nutzung.amtlicheFlaeche'), area(r.amtlicheFlaeche)
-                    @row_value h('nutzung.geomFlaeche'), area(r.geomFlaeche)
+                    @row_areas h('nutzung.amtlicheFlaeche'), r.amtlicheFlaeche, h('nutzung.geomFlaeche'), r.geomFlaeche
                     @row_props r
                     @row_times r
                 @end

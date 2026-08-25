@@ -30,7 +30,7 @@ TABLE_INDEXGEOM = 'indexgeom'
 
 
 class Object(gws.Node):
-    VERSION = '83'
+    VERSION = '84'
 
     TABLES_BASIC = [
         TABLE_PLACE,
