@@ -415,6 +415,13 @@ body.frontpage {
     margin-bottom: 1em
 }
 
+.frontpage h2 {
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 2em
+}
+
 .frontpage a {
     color: var(--gbdLogoBlue);
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
@@ -480,7 +487,6 @@ a:focus-visible {
     padding: 0 0 .6em 2.3em;
     break-inside: avoid;
     page-break-inside: avoid;
-    column-break-inside: avoid;
 }
 
 .frontpage li::before {

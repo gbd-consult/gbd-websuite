@@ -170,7 +170,7 @@
 
 @def area arg
     @if arg
-        @return '{:.1f} m²'.format(arg)
+        @return '{:.1f}\xa0m²'.format(arg)
     @end
 @end
 
@@ -220,6 +220,11 @@
     @if title != None and val != None
         <tr class="alkisFsHistoric"><th>{title | html}</th><td>{val | html | nl2br}</td></tr>
     @end
+@end
+
+@def row_areas headerAmt, amt, headerGeom, geom
+    @row_value headerAmt, area(amt)
+    @row_value headerGeom, area(geom)
 @end
 
 @def row_times obj
