@@ -1,0 +1,12 @@
+services:
+  mockmap:
+    image: ${GWS_IMAGE:-gbdconsult/gws-amd64:latest}
+    container_name: mockmap
+    command: "python3 -m gws.test.mockmap.server"
+    environment:
+      MOCKMAP_DELAY: "0"
+      PYTHONPATH: "/gws-app"
+    ports:
+      - "0.0.0.0:3334:80"
+    volumes:
+      - ../../..:/gws-app
