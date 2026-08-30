@@ -15,7 +15,7 @@
     @return text(vs)
 @end
 
-@def anschrift an
+@def anschrift(an)
     @for r in records(an)
         @section r.isHistoric
             @table
@@ -26,7 +26,7 @@
     @end
 @end
 
-@def person pe
+@def person(pe)
     @section pe.isHistoric
         @for r in records(pe)
             @section r.isHistoric
@@ -47,7 +47,7 @@
     @end
 @end
 
-@def namensnummer nn
+@def namensnummer(nn)
     @section nn.isHistoric
         @h3 space(h('namensnummer.title'), nn.laufendeNummer)
         @for r in records(nn)
@@ -71,7 +71,7 @@
 @end
 
 
-@def buchungsblatt bb
+@def buchungsblatt(bb)
     @for r in records(bb)
         @section r.isHistoric
             @table
@@ -87,7 +87,7 @@
     @end
 @end
 
-@def buchungsstelle bs
+@def buchungsstelle(bs)
     @for r in records(bs)
         @section r.isHistoric
             @table
@@ -179,9 +179,8 @@
         @section r.isHistoric
             @table
                 @row_debug 'gebaeude.uid', r.uid
-                @row_value h('gebaeude.gebaeudekennzeichen'), text(r.gebaeudekennzeichen)
                 @row_areas h('gebaeude.amtlicheFlaeche'), r.amtlicheFlaeche, h('gebaeude.geomFlaeche'), r.geomFlaeche
-                @row_props r
+                @row_props 'gebaeude', r
                 @row_times r
             @end
         @end
@@ -202,7 +201,7 @@
                     @row_debug 'part.uid', nu.uid
                     @row_value h('nutzung.name'), text(nu.name)
                     @row_areas h('nutzung.amtlicheFlaeche'), r.amtlicheFlaeche, h('nutzung.geomFlaeche'), r.geomFlaeche
-                    @row_props r
+                    @row_props 'nutzung', r
                     @row_times r
                 @end
             @end
@@ -218,4 +217,27 @@
         @fs_nutzung  fs
         @fs_buchung  fs
     @end
+@end
+
+@def flurstueck_label(fs)
+    @if fs.isHistoric
+        @return str(fs.fsnummer) + ' (h)'
+    @end
+    @return str(fs.fsnummer)
+@end
+
+@def adresse_label(strasse, hausnummer, gemeinde)
+    @let s = ''
+    @with strasse
+        @let s = str(strasse)
+    @end
+    @with hausnummer
+        @let s = (s + ' ' + str(hausnummer)).strip()
+    @end
+    @with gemeinde
+        @with gemeinde.text as g
+            @let s = (s + ', ' + str(g)).strip(' ,')
+        @end
+    @end
+    @return s
 @end

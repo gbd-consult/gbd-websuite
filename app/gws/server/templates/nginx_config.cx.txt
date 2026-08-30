@@ -44,21 +44,25 @@
 @let CORS
     @with SITE.corsOptions as c
         @with c.allowOrigin as h
-            add_header Access-Control-Allow-Origin "{h}";
+            add_header Access-Control-Allow-Origin "{h}" always;
         @end
 
         @with c.allowCredentials
-            add_header Access-Control-Allow-Credentials "true";
+            add_header Access-Control-Allow-Credentials "true" always;
         @end
 
         @with c.allowHeaders as h
-            add_header Access-Control-Allow-Headers "{h}";
+            add_header Access-Control-Allow-Headers "{h}" always;
         @end
 
         @with c.allowMethods as h
-            add_header Access-Control-Allow-Methods "{h}";
+            add_header Access-Control-Allow-Methods "{h}" always;
         @else
-            add_header Access-Control-Allow-Methods "POST, OPTIONS";
+            add_header Access-Control-Allow-Methods "POST, OPTIONS" always;
+        @end
+
+        @with c.maxAge as h
+            add_header Access-Control-Max-Age "{h}" always;
         @end
     @end
 @end
@@ -210,6 +214,7 @@ http {
 
             {GZIP}
             {SECURITY}
+            {CORS}
             {NO_TOKENS}
             {WEB}
         }
@@ -220,6 +225,7 @@ http {
 
             {GZIP}
             {SECURITY}
+            {CORS}
             {NO_TOKENS}
             {WEB}
         }

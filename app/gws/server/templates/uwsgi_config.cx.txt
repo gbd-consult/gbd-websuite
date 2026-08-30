@@ -48,7 +48,7 @@ buffer-size = 32768
 
 @if uwsgi == 'mapproxy'
     logger = syslog:MAPPROXY,local6
-    harakiri = {root.app.cfg('server.mapproxy.timeout')}
+    harakiri = {root.app.cfg('server.web.timeout')}
     processes = {root.app.cfg('server.mapproxy.workers')}
     pidfile = {mapproxyPid}
     uwsgi-socket = {mapproxySocket}
@@ -57,7 +57,7 @@ buffer-size = 32768
     @# see https://github.com/mapproxy/mapproxy/issues/282
     wsgi-disable-file-wrapper = true
 
-    http-timeout = {root.app.cfg('server.mapproxy.timeout')}
+    http-timeout = {root.app.cfg('server.web.timeout')}
     http = :{root.app.cfg('server.mapproxy.port')}
     http-to = {mapproxySocket}
 @end
