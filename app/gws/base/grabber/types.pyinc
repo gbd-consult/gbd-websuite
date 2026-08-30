@@ -1,0 +1,27 @@
+
+class Grabber(Node):
+    """Raster grabber.
+
+    Provides raster images for a layer: fetches them from a source, aligns them to a
+    tile grid, stores and reads them back.
+    """
+
+    def get_tile(self, tile: MapTile) -> bytes:
+        """Return a single tile, fetching and storing it if needed.
+
+        A tile outside the layer's range is a transparent image.
+        Raises on source failure.
+        """
+
+    def get_tiles(self, tr: MapTileRange) -> dict[MapTile, bytes]:
+        """Return a rectangular block of tiles, fetching and storing missing ones.
+
+        Sparse: contains entries only for tiles present in the grid.
+        Raises on source failure.
+        """
+
+    def get_box(self, extent: Extent, width: int, height: int) -> bytes:
+        """Return an image for arbitrary extent and pixel size.
+
+        A box overlapping no data is a transparent image. Raises on source failure.
+        """

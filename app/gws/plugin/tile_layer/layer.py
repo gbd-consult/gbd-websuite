@@ -1,12 +1,15 @@
 """Tile layer."""
 
+from typing import Optional
+
 import gws
 import gws.base.layer
 import gws.config.util
 import gws.lib.bounds
 import gws.lib.crs
+import gws.lib.grid
 import gws.gis.zoom
-from . import provider
+from . import grabber, provider
 
 gws.ext.new.layer('tile')
 
@@ -18,6 +21,8 @@ class Config(gws.base.layer.Config):
     """Tile service provider."""
     display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile
     """Layer display mode."""
+    devGrabber: bool = False
+    """Use the grabber instead of MapProxy."""
 
 
 _GRID_DEFAULTS = gws.TileGrid(
@@ -32,9 +37,36 @@ _GRID_DEFAULTS = gws.TileGrid(
 
 class Object(gws.base.layer.image.Object):
     serviceProvider: provider.Object
+    devGrabber: Optional[grabber.Object]
 
     def configure(self):
         self.configure_layer()
+        self.devGrabber = None
+        if self.cfg('devGrabber'):
+            self.devGrabber = self.create_grabber()
+
+    def create_grabber(self):
+        cache = self.cache or gws.LayerCache(maxAge=0, maxLevel=0)
+        uid = 'grabber_' + gws.u.sha256([
+            self.serviceProvider.uid,
+            self.mapCrs.srid,
+            vars(self.imageFormat),
+            list(self.bounds.extent),
+            cache.maxAge or 0,
+            cache.maxLevel or 0,
+            cache.requestTiles or 0,
+        ])
+        return self.root.create_shared(
+            grabber.Object,
+            crs=self.mapCrs.srid,
+            extent=self.bounds.extent,
+            imageFormat=self.imageFormat,
+            blockSize=cache.requestTiles or 1,
+            cacheMaxAge=cache.maxAge or 0,
+            cacheMaxLevel=cache.maxLevel or 0,
+            cacheUid=uid,
+            _defaultProvider=self.serviceProvider,
+        )
 
     def configure_provider(self):
         return gws.config.util.configure_service_provider_for(self, provider.Object)
@@ -59,8 +91,8 @@ class Object(gws.base.layer.image.Object):
 
         if p.extent:
             extent = p.extent
-        elif self.bounds.crs == self.serviceProvider.grid.bounds.crs:
-            extent = self.serviceProvider.grid.bounds.extent
+        elif self.bounds.crs == self.serviceProvider.grid.crs:
+            extent = self.serviceProvider.grid.extent
         else:
             extent = self.parentBounds.extent
         self.grid.bounds = gws.Bounds(crs=self.bounds.crs, extent=extent)
@@ -82,18 +114,11 @@ class Object(gws.base.layer.image.Object):
 
         sg = self.serviceProvider.grid
 
-        if sg.origin == gws.Origin.nw:
-            origin = 'nw'
-        elif sg.origin == gws.Origin.sw:
-            origin = 'sw'
-        else:
-            raise gws.Error(f'invalid grid origin {sg.origin!r}')
-
         back_grid_uid = mc.grid(gws.u.compact({
-            'origin': origin,
-            'srs': sg.bounds.crs.epsg,
-            'bbox': sg.bounds.extent,
-            'res': sg.resolutions,
+            'origin': 'nw',
+            'srs': sg.crs.epsg,
+            'bbox': sg.extent,
+            'res': [gws.lib.grid.resolution_for_level(sg, z) for z in range(self.serviceProvider.maxLevel + 1)],
             'tile_size': [sg.tileSize, sg.tileSize],
         }))
 
@@ -106,7 +131,29 @@ class Object(gws.base.layer.image.Object):
         p = super().props(user)
         if self.displayMode == gws.LayerDisplayMode.client:
             return gws.u.merge(p, type='xyz', url=self.serviceProvider.url)
+        if self.devGrabber:
+            g = self.devGrabber.grid
+            zmax = gws.lib.grid.level_for_resolution(g, min(self.resolutions))
+            p.grid = gws.base.layer.core.GridProps(
+                origin=gws.Origin.nw,
+                extent=g.extent,
+                resolutions=[gws.lib.grid.resolution_for_level(g, z) for z in range(zmax + 1)],
+                tileSize=g.tileSize,
+            )
         return p
 
     def render(self, lri):
+        if self.devGrabber:
+            return self.render_with_grabber(lri)
         return gws.base.layer.util.mpx_raster_render(self, lri)
+
+    def render_with_grabber(self, lri):
+
+        if lri.type == gws.LayerRenderInputType.xyz:
+            return gws.LayerRenderOutput(content=self.devGrabber.get_tile((lri.x, lri.y, lri.z)))
+        if lri.type == gws.LayerRenderInputType.box:
+            def get_box(bounds, width, height):
+                return self.devGrabber.get_box(bounds.extent, width, height)
+
+            content = gws.base.layer.util.generic_render_box(self, lri, get_box)
+            return gws.LayerRenderOutput(content=content)

@@ -72,3 +72,16 @@ class Object(gws.base.ows.client.provider.Object):
 
         # {} should not be encoded
         return url.replace('%7B', '{').replace('%7D', '}')
+
+    def get_tile(self, url_template: str, matrix_uid: str, col: int, row: int) -> bytes:
+        url = url_template
+        url = url.replace('{TileMatrix}', matrix_uid)
+        url = url.replace('{TileCol}', str(col))
+        url = url.replace('{TileRow}', str(row))
+
+        res = gws.lib.net.http_request(url)
+        if not res.ok:
+            raise gws.ExternalServiceError(f'tile request failed: status={res.status_code} url={url!r}')
+        if not res.content_type.startswith('image/'):
+            raise gws.ExternalServiceError(f'tile request failed: content type {res.content_type!r} url={url!r}')
+        return res.content

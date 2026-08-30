@@ -43,12 +43,18 @@ class Config(gws.base.ows.client.provider.Config):
 
     bottomFirst: bool = False
     """True if layers are listed from bottom to top."""
+    maxRequestPixels: int = 4096
+    """Max pixel size of a single map request."""
 
 
 class Object(gws.base.ows.client.provider.Object):
     protocol = gws.OwsProtocol.WMS
 
+    maxRequestPixels: int
+
     def configure(self):
+        self.maxRequestPixels = self.cfg('maxRequestPixels')
+
         cc = caps.parse(self.get_capabilities(), self.cfg('bottomFirst', default=False))
 
         self.metadata = cc.metadata
@@ -56,6 +62,38 @@ class Object(gws.base.ows.client.provider.Object):
         self.version = cc.version
 
         self.configure_operations(cc.operations)
+
+    def get_map(self, bounds: gws.Bounds, width: int, height: int, source_layers: list[gws.SourceLayer], mime: str) -> bytes:
+        v3 = self.version >= '1.3'
+
+        bbox = bounds.extent
+        always_xy = self.alwaysXY or not v3
+        if bounds.crs.isYX and not always_xy:
+            bbox = gws.lib.extent.swap_xy(bbox)
+
+        layer_names = list(reversed([sl.name for sl in source_layers]))
+
+        params = {
+            'BBOX': bbox,
+            'CRS' if v3 else 'SRS': bounds.crs.to_string(gws.CrsFormat.epsg),
+            'WIDTH': width,
+            'HEIGHT': height,
+            'LAYERS': layer_names,
+            'STYLES': [''] * len(layer_names),
+            'FORMAT': mime,
+            'TRANSPARENT': 'TRUE',
+            'VERSION': self.version,
+        }
+
+        op = self.get_operation(gws.OwsVerb.GetMap)
+        if not op:
+            raise gws.ExternalServiceError(f'no GetMap operation in {self.url!r}')
+
+        args = self.prepare_operation(op, params=params)
+        res = gws.base.ows.client.request.get(args)
+        if not res.content_type.startswith('image/'):
+            raise gws.ExternalServiceError(f'GetMap failed: content type {res.content_type!r} url={self.url!r}')
+        return res.content
 
     DEFAULT_GET_FEATURE_LIMIT = 100
 

@@ -69,6 +69,7 @@ u.to_data_object = to_data_object
 # @include lib/xmlx/types.pyinc
 
 # @include lib/crs/types.pyinc
+# @include lib/grid/types.pyinc
 # @include gis/render/types.pyinc
 # @include gis/source/types.pyinc
 
@@ -83,6 +84,7 @@ u.to_data_object = to_data_object
 # @include base/auth/types.pyinc
 
 # @include base/layer/types.pyinc
+# @include base/grabber/types.pyinc
 # @include base/legend/types.pyinc
 # @include base/map/types.pyinc
 

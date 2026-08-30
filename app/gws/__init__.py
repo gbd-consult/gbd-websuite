@@ -497,6 +497,11 @@ class TooManyRequestsError(Error):
 class ResponseTooLargeError(Error):
     """Generic error when a response is too large."""
     pass
+
+
+class ExternalServiceError(Error):
+    """Generic error when an external service fails."""
+    pass
 ################################################################################
 
 
@@ -1933,6 +1938,26 @@ class Crs:
 
 
 ################################################################################
+# /lib/grid/types.pyinc
+
+
+MapTile: TypeAlias = tuple[int, int, int]
+"""Grid tile: ``(x, y, z)``."""
+
+MapTileRange: TypeAlias = tuple[int, int, int, int, int]
+"""Rectangle of tiles at one level: ``(min_x, min_y, max_x, max_y, z)``."""
+
+class MapGrid(Data):
+    """Fixed tile grid over a CRS, origin north-west."""
+
+    crs: Crs
+    extent: Extent
+    baseResolution: float
+    tileSize: int
+################################################################################
+
+
+################################################################################
 # /gis/render/types.pyinc
 
 
@@ -3189,6 +3214,39 @@ class Layer(Node):
     def ancestors(self) -> list['Layer']: ...
 
     def descendants(self) -> list['Layer']: ...
+################################################################################
+
+
+################################################################################
+# /base/grabber/types.pyinc
+
+
+class Grabber(Node):
+    """Raster grabber.
+
+    Provides raster images for a layer: fetches them from a source, aligns them to a
+    tile grid, stores and reads them back.
+    """
+
+    def get_tile(self, tile: MapTile) -> bytes:
+        """Return a single tile, fetching and storing it if needed.
+
+        A tile outside the layer's range is a transparent image.
+        Raises on source failure.
+        """
+
+    def get_tiles(self, tr: MapTileRange) -> dict[MapTile, bytes]:
+        """Return a rectangular block of tiles, fetching and storing missing ones.
+
+        Sparse: contains entries only for tiles present in the grid.
+        Raises on source failure.
+        """
+
+    def get_box(self, extent: Extent, width: int, height: int) -> bytes:
+        """Return an image for arbitrary extent and pixel size.
+
+        A box overlapping no data is a transparent image. Raises on source failure.
+        """
 ################################################################################
 
 
