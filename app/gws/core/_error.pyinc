@@ -36,3 +36,8 @@ class TooManyRequestsError(Error):
 class ResponseTooLargeError(Error):
     """Generic error when a response is too large."""
     pass
+
+
+class ExternalServiceError(Error):
+    """Generic error when an external service fails."""
+    pass
