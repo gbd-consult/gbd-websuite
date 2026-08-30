@@ -282,6 +282,28 @@ class RasterDataSet(_DataSet):
 
         return gws.lib.image.from_array(arr)
 
+    def warp_to_image(self, options: dict) -> gws.Image:
+        """Warp a dataset and return the result as an Image.
+
+        Args:
+            options: GDAL WarpOptions
+
+        See:
+            https://gdal.org/en/stable/api/python/utilities.html#osgeo.gdal.WarpOptions
+            https://gdal.org/en/stable/programs/gdalwarp.html
+        """
+
+        gdal.UseExceptions()
+
+        options = dict(options)
+        options['format'] = 'MEM'
+
+        gd = gdal.Warp('', self.gdDataset, **options)
+        if gd is None:
+            raise Error(f'warp failed')
+
+        return RasterDataSet(_DataSetOptions(path=''), gd).to_image()
+
     def warp_to_path(self, path: str, options: dict):
         """Warp a dataset and store it at the given path.
 
@@ -666,8 +688,13 @@ _name_to_srid = {}
 
 
 def _srs_from_srid(srid):
+    # our geotransforms are always x=easting/longitude, so the SRS must use the
+    # traditional axis order, not the authority order (northing/latitude first
+    # for e.g. 4326, 3035, 31466-31469, 3044-3045).
+
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(srid)
+    srs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
     return srs
 
 
