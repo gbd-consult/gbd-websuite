@@ -121,7 +121,7 @@ def circumsquare(e: gws.Extent) -> gws.Extent:
     return from_center(center(e), (d, d))
 
 
-def buffer(e: gws.Extent, buf: int) -> gws.Extent:
+def buffer(e: gws.Extent, buf: float) -> gws.Extent:
     """Creates an extent with buffer to another extent.
 
     Args:

@@ -293,17 +293,17 @@ def _get_crs(crs_name):
 def _get_new_crs(srid):
     pp = _pyproj_crs_object(srid)
     if not pp:
-        gws.log.warning(f'CRS: unknown srid {srid!r}')
+        _warnings[srid] = f'CRS: unknown srid {srid!r}'
         return None
 
     au = _axis_and_unit(pp)
     if not au:
-        gws.log.warning(f'CRS: unsupported srid {srid!r}')
+        _warnings[srid] = f'CRS: unsupported srid {srid!r}'
         return None
 
     axis, uom = au
     if uom not in (gws.Uom.m, gws.Uom.deg):
-        gws.log.warning(f'CRS: unsupported unit {uom!r} for {srid!r}')
+        _warnings[srid] = f'CRS: unsupported unit {uom!r} for {srid!r}'
         return None
 
     return _make_crs(srid, pp, axis, uom)
@@ -509,7 +509,7 @@ def _make_crs(srid, pp, axis, uom):
 
     b = _bbox(d)
     if not b:
-        gws.log.error(f'CRS: no bbox for {crs.srid!r}')
+        _warnings[srid] = f'CRS: no bbox for {crs.srid!r}'
         return
 
     crs.wgsExtent = (
@@ -643,3 +643,5 @@ _obj_cache: dict = {
 _pyproj_cache: dict = {}
 
 _transformer_cache: dict = {}
+
+_warnings: dict = {}

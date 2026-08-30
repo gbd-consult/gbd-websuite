@@ -157,8 +157,11 @@ class Map:
             self.mapObj.setOutputFormat(mapscript.outputFormatObj('AGG/PNG'))
             self.mapObj.outputformat.transparent = mapscript.MS_TRUE
 
-            self.mapObj.setExtent(*bounds.extent)
+            # setSize re-derives the extent from the current cellsize, so it must
+            # come first, otherwise a reused map object overwrites the new extent.
+
             self.mapObj.setSize(int(size[0]), int(size[1]))
+            self.mapObj.setExtent(*bounds.extent)
             self.mapObj.setProjection(bounds.crs.epsg)
 
             res = self.mapObj.draw()

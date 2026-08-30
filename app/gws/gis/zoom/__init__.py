@@ -73,11 +73,21 @@ def resolutions_from_config(cfg, parent_resolutions: list[float] = None) -> list
     rmax = _res_or_scale(cfg, 'maxResolution', 'maxScale')
 
     res = _explicit_resolutions(cfg) or parent_resolutions or list(OSM_RESOLUTIONS)
-    if rmax and rmax < max(res):
-        res = [r for r in res if r < rmax]
+
+    if rmax:
+        if rmax < max(res):
+            res = [r for r in res if r < rmax]
+        else:
+            while max(res) * 2 < rmax:
+                res.append(max(res) * 2)
         res.append(rmax)
-    if rmin and rmin > min(res):
-        res = [r for r in res if r > rmin]
+
+    if rmin:
+        if rmin > min(res):
+            res = [r for r in res if r > rmin]
+        else:
+            while min(res) / 2 > rmin:
+                res.append(min(res) / 2)
         res.append(rmin)
 
     return sorted(set(res))

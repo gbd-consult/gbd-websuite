@@ -113,7 +113,7 @@ def wgs_extent(b: gws.Bounds) -> Optional[gws.Extent]:
     return ext if gws.lib.extent.is_valid(ext) else None
 
 
-def buffer(b: gws.Bounds, buf_size: int) -> gws.Bounds:
+def buffer(b: gws.Bounds, buf_size: float) -> gws.Bounds:
     """Creates a bounds object with buffer to another bounds object.
 
     Args:
