@@ -1,0 +1,13 @@
+MapTile: TypeAlias = tuple[int, int, int]
+"""Grid tile: ``(x, y, z)``."""
+
+MapTileRange: TypeAlias = tuple[int, int, int, int, int]
+"""Rectangle of tiles at one level: ``(min_x, min_y, max_x, max_y, z)``."""
+
+class MapGrid(Data):
+    """Fixed tile grid over a CRS, origin north-west."""
+
+    crs: Crs
+    extent: Extent
+    baseResolution: float
+    tileSize: int
