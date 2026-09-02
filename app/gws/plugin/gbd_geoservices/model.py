@@ -88,6 +88,23 @@ class Object(gws.base.model.default_model.Object):
             a['address'] = ' '.join(address.split())
             a['name'] = a.get('name') or ''
 
+            # @TODO
+            m = re.match(r'^\((\d+)\)\s+(.*)$', a['category'])
+            if m:
+                a['category_id'] = int(m.group(1))
+                a['category_name'] = m.group(2)
+            else:
+                a['category_id'] = 0
+                a['category_name'] = ''
+            m = re.match(r'^\((\d+)\)\s+(.*)$', a['subcategory'])
+            if m:
+                a['subcategory_id'] = int(m.group(1))
+                a['subcategory_name'] = m.group(2)
+            else:
+                a['subcategory_id'] = 0
+                a['subcategory_name'] = ''
+
+
             a['title'] = self._get_title(a)
             if a['title'] in titles:
                 continue

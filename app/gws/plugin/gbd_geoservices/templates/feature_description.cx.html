@@ -1,0 +1,20 @@
+<div class="geoservices_description">
+    <span class="geoservices_{category_id}">{category_name | html}</span>
+    <p class="head2">
+        @if name
+            {name | html}
+        @else
+            {address | html}
+        @end
+    </p>
+    @with subcategory_name
+        <p class="head3">{subcategory_name | html}</p>
+    @end
+    @with tags
+        <table>
+        @for k, v in tags
+            <tr><td>{k}</td><td>{v | html}</td></tr>
+        @end
+        </table>
+    @end
+</div>
