@@ -6,7 +6,6 @@ from typing import Optional
 import gws
 
 DEFAULT_TILE_SIZE = 256
-MAX_LEVEL = 24
 
 WEBMERCATOR_RADIUS = 6378137
 WEBMERCATOR_SQUARE = (
@@ -57,30 +56,32 @@ def resolution_for_level(mg: gws.MapGrid, z: int) -> float:
 
 
 def level_for_resolution(mg: gws.MapGrid, resolution: float) -> int:
-    if resolution >= mg.baseResolution:
-        return 0
-    z = math.ceil(math.log2(mg.baseResolution / resolution) - 1e-9)
-    return min(z, MAX_LEVEL)
+    if resolution <= 0:
+        raise ValueError(f'invalid resolution {resolution!r}')
+    for z in range(100):
+        r = resolution_for_level(mg, z)
+        if r <= resolution or math.isclose(r, resolution):
+            return z
+    raise ValueError(f'invalid resolution {resolution!r}')
 
 
 def tile_count_for_level(mg: gws.MapGrid, z: int) -> tuple[int, int]:
-    s = resolution_for_level(mg, z) * mg.tileSize
+    span = resolution_for_level(mg, z) * mg.tileSize
     return (
-        max(1, round((mg.extent[2] - mg.extent[0]) / s)),
-        max(1, round((mg.extent[3] - mg.extent[1]) / s)),
+        max(1, round((mg.extent[2] - mg.extent[0]) / span)),
+        max(1, round((mg.extent[3] - mg.extent[1]) / span)),
     )
 
 
 def range_for_extent(mg: gws.MapGrid, extent: gws.Extent, z: int) -> gws.MapTileRange | None:
-    f = mg.extent
-    s = resolution_for_level(mg, z) * mg.tileSize
+    span = resolution_for_level(mg, z) * mg.tileSize
     nx, ny = tile_count_for_level(mg, z)
-    eps = s * 1e-6
+    eps = span * 1e-6
 
-    x0 = math.floor((extent[0] - f[0] + eps) / s)
-    x1 = math.floor((extent[2] - f[0] - eps) / s)
-    y0 = math.floor((f[3] - extent[3] + eps) / s)
-    y1 = math.floor((f[3] - extent[1] - eps) / s)
+    x0 = math.floor((extent[0] - mg.extent[0] + eps) / span)
+    x1 = math.floor((extent[2] - mg.extent[0] - eps) / span)
+    y0 = math.floor((mg.extent[3] - extent[3] + eps) / span)
+    y1 = math.floor((mg.extent[3] - extent[1] - eps) / span)
 
     if x1 < x0 or y1 < y0 or x1 < 0 or y1 < 0 or x0 >= nx or y0 >= ny:
         return None
@@ -89,13 +90,12 @@ def range_for_extent(mg: gws.MapGrid, extent: gws.Extent, z: int) -> gws.MapTile
 
 def extent_for_range(mg: gws.MapGrid, tr: gws.MapTileRange) -> gws.Extent:
     x0, y0, x1, y1, z = tr
-    f = mg.extent
-    s = resolution_for_level(mg, z) * mg.tileSize
+    span = resolution_for_level(mg, z) * mg.tileSize
     return (
-        f[0] + x0 * s,
-        f[3] - (y1 + 1) * s,
-        f[0] + (x1 + 1) * s,
-        f[3] - y0 * s,
+        mg.extent[0] + x0 * span,
+        mg.extent[3] - (y1 + 1) * span,
+        mg.extent[0] + (x1 + 1) * span,
+        mg.extent[3] - y0 * span,
     )
 
 
