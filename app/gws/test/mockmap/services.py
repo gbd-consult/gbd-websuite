@@ -14,19 +14,46 @@ from . import scene
 METERS_PER_DEGREE = 111319.4907932736
 PIXEL_SIZE = 0.00028
 
+TILE_SIZE = 256
+MIN_RESOLUTION = 1.0
+
+PROBE_SIZE = 16
+PROBE_BLOCK = 4
+PROBE_STEP = 128
+WEBMERCATOR_SQUARE = 20037508.342789244
+
 _cache_lock = threading.Lock()
 _cache: dict[tuple, bytes] = {}
 
 
-
 class Tms:
-    def __init__(self, cfg: dict, crs: gws.Crs, origin: str):
+    """A metric tile grid for a CRS.
+
+    The frame is the CRS extent, level 0 is a single tile across its width and
+    levels run down to MIN_RESOLUTION. EPSG:3857 is the exception: XYZ carries no
+    grid metadata, so clients assume the de-facto slippy-map frame, a square.
+    That is a convention, not something derivable from the CRS, whose own extent
+    spans latitude +-85.06 degrees.
+    """
+
+    def __init__(self, crs: gws.Crs, origin: str):
         self.crs = crs
         self.uid = f'EPSG_{crs.srid}'
-        self.extent = tuple(cfg['tmsExtent'])
-        self.tileSize = cfg.get('tileSize') or 256
-        self.resolutions = [float(r) for r in cfg['resolutions']]
-        self.origin = cfg.get('origin') or origin
+        self.tileSize = TILE_SIZE
+        self.origin = origin
+
+        if crs.srid == 3857:
+            self.extent = (
+                -WEBMERCATOR_SQUARE, -WEBMERCATOR_SQUARE,
+                WEBMERCATOR_SQUARE, WEBMERCATOR_SQUARE)
+        else:
+            self.extent = tuple(crs.extent)
+
+        res = (self.extent[2] - self.extent[0]) / self.tileSize
+        self.resolutions = []
+        while res >= MIN_RESOLUTION:
+            self.resolutions.append(res)
+            res /= 2
 
         self.bbox = _bbox(self.extent)
         self.originX = self.extent[0]
@@ -85,8 +112,9 @@ class Service:
         self.version = str(cfg.get('version') or '')
         self.overlay = cfg.get('overlay', True)
         self.overlayTile = cfg.get('overlayTile', False)
+        self.probe = cfg.get('probe', True)
 
-        self.tms = Tms(cfg, self.crs, self.tmsOrigin) if cfg.get('resolutions') else None
+        self.tms = Tms(self.crs, self.tmsOrigin) if self.tmsOrigin else None
         self.extent = tuple(scn.crs.transform_extent(scn.extent, self.crs))
 
         self.wgs = _bbox(self.crs.transform_extent(self.extent, gws.lib.crs.require(4326)))
@@ -104,7 +132,7 @@ class Service:
     def image(self, extent, size, label=''):
         extent = tuple(extent)
         size = tuple(size)
-        key = (self.scene.key, self.crs.srid, extent, size, self.overlay, label)
+        key = (self.scene.key, self.crs.srid, extent, size, self.overlay, self.probe, label)
 
         with _cache_lock:
             blob = _cache.get(key)
@@ -118,6 +146,9 @@ class Service:
                 f'{self.crs.epsg} {size[0]}x{size[1]}',
                 ' '.join(f'{c:.{self.crs.coordinatePrecision}f}' for c in extent),
             ] if p))
+
+        if self.probe:
+            draw_probe(img)
 
         blob = img.to_bytes('image/png')
 
@@ -185,6 +216,7 @@ class WmtsRest(Service):
 
 class Wms(Service):
     type = 'wms'
+    tmsOrigin = ''
 
     def handle(self, rest, query, base):
         version = query.get('version') or self.version
@@ -199,9 +231,48 @@ class Wms(Service):
         return self.image(bbox, size)
 
 
+_probe_image = None
+
+
+def draw_probe(img: gws.Image):
+    """Stamp a pixel-aligned checkerboard on a fixed lattice.
+
+    The only mark in the image drawn in raster space rather than world space, so
+    it is exactly aligned to the output pixels and carries no antialiasing: at
+    1:1 it is two colors and nothing else. Any resampling downstream - a scale
+    off the ladder, an unwanted reprojection, a half-pixel shift - softens its
+    edges into intermediate grays. Repeated across the image so it survives
+    cropping into tiles.
+
+    Blocks are PROBE_BLOCK pixels, not single pixels. Single pixels sit at the
+    Nyquist frequency and detect the smallest possible resampling, but they also
+    collapse under the 2x device scaling of a HiDPI screen, so the mark cannot
+    be read by eye in a browser. Blocks trade some sensitivity for legibility.
+    """
+
+    global _probe_image
+
+    if _probe_image is None:
+        p = gws.lib.image.from_size((PROBE_SIZE, PROBE_SIZE), '#000000')
+        draw = gws.lib.image.get_draw(p)
+        for y in range(0, PROBE_SIZE, PROBE_BLOCK):
+            for x in range(0, PROBE_SIZE, PROBE_BLOCK):
+                if (x // PROBE_BLOCK + y // PROBE_BLOCK) % 2:
+                    draw.rectangle(
+                        (x, y, x + PROBE_BLOCK - 1, y + PROBE_BLOCK - 1),
+                        fill=(255, 255, 255, 255))
+        _probe_image = p
+
+    w, h = img.size()
+    for y in range(PROBE_STEP // 2, h, PROBE_STEP):
+        for x in range(PROBE_STEP // 2, w, PROBE_STEP):
+            img.paste(_probe_image, (x, y))
+
+
 def draw_overlay(img: gws.Image, text: str):
     img.add_box((60, 60, 60, 160))
     draw = gws.lib.image.get_draw(img)
+    draw.fontmode = '1'
     font = gws.lib.image.get_font(11, scene.FONT_PATH)
     draw.multiline_text(
         (5, 4), text,
