@@ -22,7 +22,6 @@ import gws
 import gws.base.web
 import gws.config
 import gws.config.util
-import gws.gis.mpx.config
 import gws.lib.osx
 
 from . import core
@@ -47,12 +46,6 @@ class TemplateArgs(gws.TemplateArgs):
     """User group name."""
     homeDir: str
     """User home directory."""
-    mapproxyConfig: str
-    """Mapproxy config path."""
-    mapproxyPid: str
-    """Mapproxy pid path."""
-    mapproxySocket: str
-    """Mapproxy socket path."""
     nginxConfig: str
     """nginx config path."""
     nginxPid: str
@@ -92,15 +85,12 @@ class Object(gws.ServerManager):
     def configure(self):
         self.config = self._add_defaults(self.config, 'gws.server.core.Config')
         self.config.log = self._add_defaults(self.config.log, 'gws.server.core.LogConfig')
-        self.config.mapproxy = self._add_defaults(self.config.mapproxy, 'gws.server.core.MapproxyConfig')
         self.config.monitor = self._add_defaults(self.config.monitor, 'gws.server.core.MonitorConfig')
         self.config.qgis = self._add_defaults(self.config.qgis, 'gws.server.core.QgisConfig')
         self.config.spool = self._add_defaults(self.config.spool, 'gws.server.core.SpoolConfig')
         self.config.web = self._add_defaults(self.config.web, 'gws.server.core.WebConfig')
 
         # deprecated 'enabled' keys
-        if self.config.mapproxy.enabled is False:
-            self.config.withMapproxy = False
         if self.config.spool.enabled is False:
             self.config.withSpool = False
         if self.config.web.enabled is False:
@@ -143,9 +133,6 @@ class Object(gws.ServerManager):
             userName=ui['pw_name'],
             groupName=ui['gr_name'],
             homeDir=ui['pw_dir'],
-            mapproxyConfig='',
-            mapproxyPid=pid_paths['mapproxy'],
-            mapproxySocket=f'{gws.c.TMP_DIR}/mapproxy.uwsgi.sock',
             nginxConfig='',
             nginxPid=pid_paths['nginx'],
             spoolConfig='',
@@ -165,10 +152,6 @@ class Object(gws.ServerManager):
         if self.cfg('withWeb'):
             args.uwsgi = 'web'
             args.webConfig = self._create_config('server.uwsgi_config', f'{target_dir}/uwsgi_web.ini', args)
-
-        if self.cfg('withMapproxy') and gws.u.is_file(gws.gis.mpx.config.CONFIG_PATH):
-            args.uwsgi = 'mapproxy'
-            args.mapproxyConfig = self._create_config('server.uwsgi_config', f'{target_dir}/uwsgi_mapproxy.ini', args)
 
         if self.cfg('withSpool'):
             args.uwsgi = 'spool'

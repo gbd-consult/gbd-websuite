@@ -31,21 +31,6 @@ class WebConfig(gws.Config):
     """Web server timeout."""
 
 
-class MapproxyConfig(gws.Config):
-    """Mapproxy server module"""
-
-    enabled: Optional[bool]
-    """The module is enabled. (deprecated in 8.2)"""
-    workers: int = 4
-    """Number of processes for this module."""
-    host: str = 'localhost'
-    """Host to run the module on."""
-    port: int = 5000
-    """Port number."""
-    forceStart: bool = False
-    """Start even if no configuration is defined."""
-
-
 class MonitorConfig(gws.Config):
     """Monitor module configuration."""
 
@@ -80,8 +65,8 @@ class LogConfig(gws.Config):
 class Config(gws.Config):
     """Server module configuration"""
 
-    mapproxy: Optional[MapproxyConfig]
-    """Bundled Mapproxy module."""
+    mapproxy: Optional[dict]
+    """Bundled Mapproxy module. (deprecated in 8.5)"""
     monitor: Optional[MonitorConfig]
     """Monitor configuration."""
     log: Optional[LogConfig]
@@ -97,8 +82,8 @@ class Config(gws.Config):
     """Enable the web server."""
     withSpool: bool = True
     """Enable the spool server."""
-    withMapproxy: bool = True
-    """Enable the mapproxy server."""
+    withMapproxy: Optional[bool]
+    """Enable the mapproxy server. (deprecated in 8.5)"""
     withMonitor: bool = True
     """Enable the monitor."""
 

@@ -131,7 +131,6 @@ class Object(gws.ServerMonitor):
                 return False
 
         try:
-            control.reload_app('mapproxy')
             control.reload_app('web')
             return True
         except Exception as exc:

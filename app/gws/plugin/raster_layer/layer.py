@@ -33,14 +33,11 @@ class Config(gws.base.layer.Config):
     """Path to SLD file for styling the layer."""
     sldName: Optional[str]
     """Name of an SLD NamedLayer to apply."""
-    devGrabber: bool = False
-    """Use the grabber instead of the direct render path."""
 
 
 class Object(gws.base.layer.image.Object):
     serviceProvider: provider.Object
     entries: list[provider.ImageEntry]
-    devGrabber: Optional[grabber.Object]
 
     def configure(self):
         self.msOptions = gws.MapServerLayerOptions(
@@ -51,9 +48,10 @@ class Object(gws.base.layer.image.Object):
             sldName=self.cfg('sldName'),
         )
         self.configure_layer()
-        self.devGrabber = None
-        if self.cfg('devGrabber'):
-            self.devGrabber = self.create_grabber()
+
+    def configure_grabber(self):
+        self.grabber = self.create_grabber()
+        return True
 
     def create_grabber(self):
         cache = self.cache or gws.LayerCache(maxAge=0, maxLevel=0)
@@ -121,31 +119,3 @@ class Object(gws.base.layer.image.Object):
             self.grid.resolutions = p.resolutions
         else:
             self.grid.resolutions = gws.gis.zoom.resolutions_from_bounds(self.grid.bounds, self.grid.tileSize)
-
-    def props(self, user):
-        p = super().props(user)
-        if self.devGrabber:
-            g = self.devGrabber.grid
-            zmax = gws.lib.grid.level_for_resolution(g, min(self.resolutions))
-            p.grid = gws.base.layer.core.GridProps(
-                origin=gws.Origin.nw,
-                extent=g.extent,
-                resolutions=[gws.lib.grid.resolution_for_level(g, z) for z in range(zmax + 1)],
-                tileSize=g.tileSize,
-            )
-        return p
-
-    def render(self, lri):
-        if self.devGrabber:
-            return self.render_with_grabber(lri)
-        return gws.lib.mapserver.util.raster_render(self, lri)
-
-    def render_with_grabber(self, lri):
-        if lri.type == gws.LayerRenderInputType.xyz:
-            return gws.LayerRenderOutput(content=self.devGrabber.get_tile((lri.x, lri.y, lri.z)))
-        if lri.type == gws.LayerRenderInputType.box:
-            def get_box(bounds, width, height):
-                return self.devGrabber.get_box(bounds.extent, width, height)
-
-            content = gws.base.layer.util.generic_render_box(self, lri, get_box)
-            return gws.LayerRenderOutput(content=content)

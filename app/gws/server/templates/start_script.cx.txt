@@ -6,9 +6,6 @@ export HOME={homeDir}
 @if webConfig
     uwsgi --ini {webConfig}
 @end
-@if mapproxyConfig
-    uwsgi --ini {mapproxyConfig}
-@end
 @if spoolConfig
     uwsgi --ini {spoolConfig}
 @end

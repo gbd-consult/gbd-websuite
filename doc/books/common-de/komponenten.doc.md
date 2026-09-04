@@ -5,7 +5,6 @@ Die GBD WebSuite integriert die Funktionalität verschiedener Open Source Softwa
 | Komponente					| Beschreibung							|
 |-----------------------------------------------|---------------------------------------------------------------|
 | [GDAL](https://gdal.org)			| Datenaustausch mit Raster- und Vektorformaten			|
-| [MapProxy](https://mapproxy.org)		| Cachen und Reprojizieren von Kartenbildern			|
 | [NGINX](https://www.nginx.com)		| Darstellen statischer Inhalte sowie URL-Rewriting		|
 | [SQLAlchemy](https://www.sqlalchemy.org/)	| Python-SQL-Toolkit für das Arbeiten mit Datenbanken		|
 | [uWSGI](https://github.com/unbit/uwsgi)	| Application Server für dynamische Anfragen 			|

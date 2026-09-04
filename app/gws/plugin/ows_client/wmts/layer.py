@@ -25,8 +25,6 @@ class Config(gws.base.layer.Config):
     """Source layer filter."""
     style: Optional[str]
     """WMTS style name."""
-    devGrabber: bool = False
-    """Use the grabber instead of MapProxy."""
 
 
 class Object(gws.base.layer.image.Object):
@@ -36,13 +34,13 @@ class Object(gws.base.layer.image.Object):
     activeLayer: gws.SourceLayer
     activeStyle: gws.SourceStyle
     activeTms: gws.TileMatrixSet
-    devGrabber: Optional[grabber.Object]
 
     def configure(self):
         self.configure_layer()
-        self.devGrabber = None
-        if self.cfg('devGrabber'):
-            self.devGrabber = self.create_grabber()
+
+    def configure_grabber(self):
+        self.grabber = self.create_grabber()
+        return True
 
     def create_grabber(self):
         cache = self.cache or gws.LayerCache(maxAge=0, maxLevel=0)
@@ -168,65 +166,4 @@ class Object(gws.base.layer.image.Object):
         self.metadata = self.serviceProvider.metadata
         return True
 
-    def mapproxy_config(self, mc):
-        url = self.serviceProvider.tile_url_template(self.activeLayer, self.activeTms, self.activeStyle)
-
-        # mapproxy encoding
-
-        url = url.replace('{TileMatrix}', '%(z)02d')
-        url = url.replace('{TileCol}', '%(x)d')
-        url = url.replace('{TileRow}', '%(y)d')
-
-        source_grid = self.serviceProvider.grid_for_tms(self.activeTms)
-
-        if source_grid.origin == gws.Origin.nw:
-            origin = 'nw'
-        elif source_grid.origin == gws.Origin.sw:
-            origin = 'sw'
-        else:
-            raise gws.Error(f'invalid grid origin {source_grid.origin!r}')
-
-        source_grid_uid = mc.grid(
-            gws.u.compact(
-                {
-                    'origin': origin,
-                    'srs': source_grid.bounds.crs.epsg,
-                    'bbox': source_grid.bounds.extent,
-                    'res': source_grid.resolutions,
-                    'tile_size': [source_grid.tileSize, source_grid.tileSize],
-                }
-            )
-        )
-
-        src_uid = gws.base.layer.util.mapproxy_back_cache_config(self, mc, url, source_grid_uid)
-        gws.base.layer.util.mapproxy_layer_config(self, mc, src_uid)
-
     ##
-
-    def props(self, user):
-        p = super().props(user)
-        if self.devGrabber:
-            g = self.devGrabber.grid
-            zmax = gws.lib.grid.level_for_resolution(g, min(self.resolutions))
-            p.grid = gws.base.layer.core.GridProps(
-                origin=gws.Origin.nw,
-                extent=g.extent,
-                resolutions=[gws.lib.grid.resolution_for_level(g, z) for z in range(zmax + 1)],
-                tileSize=g.tileSize,
-            )
-        return p
-
-    def render(self, lri):
-        if self.devGrabber:
-            return self.render_with_grabber(lri)
-        return gws.base.layer.util.mpx_raster_render(self, lri)
-
-    def render_with_grabber(self, lri):
-        if lri.type == gws.LayerRenderInputType.xyz:
-            return gws.LayerRenderOutput(content=self.devGrabber.get_tile((lri.x, lri.y, lri.z)))
-        if lri.type == gws.LayerRenderInputType.box:
-            def get_box(bounds, width, height):
-                return self.devGrabber.get_box(bounds.extent, width, height)
-
-            content = gws.base.layer.util.generic_render_box(self, lri, get_box)
-            return gws.LayerRenderOutput(content=content)

@@ -46,22 +46,6 @@ buffer-size = 32768
     spooler-frequency = {root.app.cfg('server.spool.jobFrequency')}
 @end
 
-@if uwsgi == 'mapproxy'
-    logger = syslog:MAPPROXY,local6
-    harakiri = {root.app.cfg('server.web.timeout')}
-    processes = {root.app.cfg('server.mapproxy.workers')}
-    pidfile = {mapproxyPid}
-    uwsgi-socket = {mapproxySocket}
-    wsgi-file = {gws.c.APP_DIR}/gws/gis/mpx/wsgi_main.py
-
-    @# see https://github.com/mapproxy/mapproxy/issues/282
-    wsgi-disable-file-wrapper = true
-
-    http-timeout = {root.app.cfg('server.web.timeout')}
-    http = :{root.app.cfg('server.mapproxy.port')}
-    http-to = {mapproxySocket}
-@end
-
 @for k, v in gwsEnv
     env = {k}={v}
 @end

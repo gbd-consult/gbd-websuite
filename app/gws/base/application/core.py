@@ -19,7 +19,6 @@ import gws.base.template
 import gws.base.web
 import gws.config
 import gws.gis.cache
-import gws.gis.mpx.config
 import gws.lib.font
 import gws.server.manager
 import gws.server.monitor
@@ -125,9 +124,6 @@ class Object(gws.Application):
 
     _developerOptions: dict
 
-    mpxUrl = ''
-    mpxConfig = ''
-
     def configure(self):
         self.version = self.root.specs.version
         self.versionString = f'GWS version {self.version}'
@@ -223,11 +219,6 @@ class Object(gws.Application):
         self.client = self.create_child(gws.base.client.Object, self.cfg('client'))
 
         self.projects = self.create_children(gws.ext.object.project, self.cfg('projects'))
-
-    def post_configure(self):
-        if not self.cfg('server.mapproxy.disabled'):
-            self.mpxUrl = f'http://{self.cfg("server.mapproxy.host")}:{self.cfg("server.mapproxy.port")}'
-            self.mpxConfig = gws.gis.mpx.config.create_and_save(self.root)
 
     def activate(self):
         gws.log.set_level(self.cfg('server.log.level'))

@@ -368,7 +368,6 @@ def service_gws():
         entrypoint=ep,
         ports=[
             f'{OPTIONS.get("service.gws.http_expose_port")}:80',
-            f'{OPTIONS.get("service.gws.mpx_expose_port")}:5000',
         ],
     )
 

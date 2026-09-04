@@ -94,7 +94,6 @@ services:
         container_name: gws
         ports:
             - "0.0.0.0:3333:80" # default http on 3333
-            - "0.0.0.0:5000:5000" # forward mpx port (optional)
             - "0.0.0.0:5678:5678" # debug adapter port
         volumes:
             - ${GWS_PROJECT_DIR}/gws-${GWS_PROJECT_NAME}/data:/data:ro
@@ -149,7 +148,6 @@ This will replace `/gws-var/server.sh`, as this is where uwsgi is started, and w
 ```sh
 rsyslogd -i /tmp/gws/pids/rsyslogd.pid -f /gws-var/server/syslog.conf
 uwsgi --ini /debug/uwsgi_web.ini
-uwsgi --ini /gws-var/server/uwsgi_mapproxy.ini
 uwsgi --ini /gws-var/server/uwsgi_spool.ini
 exec nginx -c /gws-var/server/nginx.conf
 ```

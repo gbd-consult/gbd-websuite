@@ -20,7 +20,6 @@ Für das Loggen sind folgende Stufen definiert:
 Die GBD WebSuite betreibt intern mehrere Servermodule:
 
 - das ``web``-Modul, das eingehende Anfragen entgegennimmt und versendet [Web Server](/admin-de/config/web)
-- das ``mapproxy`` Modul, das den gebündelten MapProxy ausführt und sich um externe Quellen, Caching und Umprojizieren kümmert
 - das ``qgis`` Modul, das den gebündelten QGIS Server betreibt und QGIS Projekte und Layer rendert [QGIS](/admin-de/intro/concepts)
 - das ``spool`` Modul, das den Druck und andere Hintergrundaufgaben übernimmt.
 - das ``monitor`` Modul, das das Dateisystem überwacht, und bei den Änderungen in Ihren Daten einen Hot-Reload des Servers durchführt

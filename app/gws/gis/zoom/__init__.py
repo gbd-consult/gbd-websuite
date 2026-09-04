@@ -65,8 +65,6 @@ def resolutions_from_config(cfg, parent_resolutions: list[float] = None) -> list
         A list of resolutions.
     """
 
-    # see also https://mapproxy.org/docs/1.11.0/configuration.html#res and below
-
     # @TODO deal with scales separately
 
     rmin = _res_or_scale(cfg, 'minResolution', 'minScale')

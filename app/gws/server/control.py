@@ -54,7 +54,6 @@ _SERVER_START_SCRIPT = f'{gws.c.VAR_DIR}/server.sh'
 _PID_PATHS = {
     'web': f'{gws.c.PIDS_DIR}/web.uwsgi.pid',
     'spool': f'{gws.c.PIDS_DIR}/spool.uwsgi.pid',
-    'mapproxy': f'{gws.c.PIDS_DIR}/mapproxy.uwsgi.pid',
     'nginx': f'{gws.c.PIDS_DIR}/nginx.pid',
 }
 
@@ -146,7 +145,6 @@ def reload_all():
     gws.u.ensure_system_dirs()
 
     reload_app('spool')
-    reload_app('mapproxy')
     reload_app('web')
 
     reload_nginx()
@@ -184,7 +182,6 @@ def app_is_running(srv):
 _FALLBACK_CONFIG = gws.Config(
     server=gws.Config(
         timeZone="Europe/Berlin",
-        mapproxy=gws.Config(disabled=True),
         monitor=gws.Config(disabled=True),
         log=gws.Config(level='INFO'),
         qgis=gws.Config(host='qgis', port=80),

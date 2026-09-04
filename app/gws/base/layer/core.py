@@ -7,6 +7,7 @@ import gws.base.model
 import gws.config.util
 import gws.lib.bounds
 import gws.lib.crs
+import gws.lib.grid
 import gws.lib.extent
 import gws.gis.source
 import gws.gis.zoom
@@ -206,6 +207,7 @@ class Object(gws.Layer):
 
         self.grid = None
         self.cache = None
+        self.grabber = None
         self.ows = gws.LayerOws()
 
         setattr(self, 'provider', None)
@@ -222,6 +224,7 @@ class Object(gws.Layer):
         self.configure_grid()
         self.configure_legend()
         self.configure_cache()
+        self.configure_grabber()
         self.configure_metadata()
         self.configure_templates()
         self.configure_search()
@@ -252,6 +255,9 @@ class Object(gws.Layer):
             return True
         self.cache = gws.LayerCache(self.cfg('cache'))
         return True
+
+    def configure_grabber(self):
+        pass
 
     def configure_grid(self):
         p = self.cfg('grid')
@@ -390,7 +396,16 @@ class Object(gws.Layer):
             uid=self.uid,
         )
 
-        if self.grid:
+        if self.grabber:
+            g = self.grabber.grid
+            zmax = gws.lib.grid.level_for_resolution(g, min(self.resolutions))
+            p.grid = GridProps(
+                origin=gws.Origin.nw,
+                extent=g.extent,
+                resolutions=[gws.lib.grid.resolution_for_level(g, z) for z in range(zmax + 1)],
+                tileSize=g.tileSize,
+            )
+        elif self.grid:
             p.grid = GridProps(
                 origin=self.grid.origin,
                 extent=self.grid.bounds.extent,
@@ -427,5 +442,3 @@ class Object(gws.Layer):
 
         return self.legend.render(args)
 
-    def mapproxy_config(self, mc):
-        pass

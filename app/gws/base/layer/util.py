@@ -7,7 +7,6 @@ import gws.base.model
 import gws.base.search
 import gws.lib.crs
 import gws.lib.extent
-import gws.gis.mpx
 import gws.gis.source
 import gws.gis.zoom
 import gws.lib.image
@@ -17,108 +16,12 @@ import gws.lib.svg
 
 
 
-def mapproxy_layer_config(layer: gws.Layer, mc, source_uid):
-    mc.layer({
-        'name': layer.uid + '_NOCACHE',
-        'sources': [source_uid]
-    })
-
-    tg = layer.grid
-
-    tg.uid = mc.grid(gws.u.compact({
-        'origin': tg.origin,
-        'tile_size': [tg.tileSize, tg.tileSize],
-        'res': tg.resolutions,
-        'srs': tg.bounds.crs.epsg,
-        'bbox': tg.bounds.extent,
-    }))
-
-    front_cache_config = {
-        'sources': [source_uid],
-        'grids': [tg.uid],
-        'cache': {
-            'type': 'file',
-            'directory_layout': 'mp'
-        },
-        'meta_size': [1, 1],
-        'meta_buffer': 0,
-        'disable_storage': True,
-        'minimize_meta_requests': True,
-        'format': layer.imageFormat.name or 'png8',
-    }
-
-    cache = getattr(layer, 'cache', None)
-    if cache:
-        front_cache_config['disable_storage'] = False
-        if cache.requestTiles:
-            front_cache_config['meta_size'] = [cache.requestTiles, cache.requestTiles]
-        if cache.requestBuffer:
-            front_cache_config['meta_buffer'] = cache.requestBuffer
-
-    layer.mpxCacheUid = mc.cache(front_cache_config)
-
-    mc.layer({
-        'name': layer.uid,
-        'sources': [layer.mpxCacheUid]
-    })
-
-
-def mapproxy_back_cache_config(layer: gws.Layer, mc, url, grid_uid):
-    source_uid = mc.source({
-        'type': 'tile',
-        'url': url,
-        'grid': grid_uid,
-        'concurrent_requests': layer.cfg('maxRequests', default=0)
-    })
-
-    return mc.cache(gws.u.compact({
-        'sources': [source_uid],
-        'grids': [grid_uid],
-        'cache': {
-            'type': 'file',
-            'directory_layout': 'mp'
-        },
-        'disable_storage': True,
-        'format': layer.imageFormat.name or 'png8',
-
-    }))
-
-
 ##
 
 _DEFAULT_BOX_SIZE = 1000
 _DEFAULT_BOX_BUFFER = 200
 
 _GetBoxFn = Callable[[gws.Bounds, float, float], bytes]
-
-
-def mpx_raster_render(layer: gws.Layer, lri: gws.LayerRenderInput):
-    if lri.type == gws.LayerRenderInputType.box:
-
-        uid = layer.uid
-        if not layer.cache:
-            uid += '_NOCACHE'
-
-        def get_box(bounds, width, height):
-            return gws.gis.mpx.wms_request(uid, bounds, width, height, forward=lri.extraParams)
-
-        content = generic_render_box(layer, lri, get_box)
-        return gws.LayerRenderOutput(content=content)
-
-    if lri.type == gws.LayerRenderInputType.xyz:
-        content = gws.gis.mpx.wmts_request(
-            layer.uid,
-            lri.x,
-            lri.y,
-            lri.z,
-            tile_matrix=layer.grid.uid,
-            tile_size=layer.grid.tileSize)
-
-        annotate = layer.root.app.developer_option('map.annotate_render')
-        if annotate:
-            content = _annotate(content, f'{lri.x} {lri.y} {lri.z}')
-
-        return gws.LayerRenderOutput(content=content)
 
 
 def generic_render_box(layer: gws.Layer, lri: gws.LayerRenderInput, get_box: _GetBoxFn, box_size: int = 0, box_buffer: int = 0) -> bytes:

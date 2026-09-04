@@ -23,9 +23,6 @@ lxml==6.*
 
 uWSGI==2.*
 
-# mapproxy
-MapProxy==1.*
-setuptools<70
 
 # need wheel for GDAL
 wheel

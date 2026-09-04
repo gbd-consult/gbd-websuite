@@ -3167,6 +3167,8 @@ class Layer(Node):
     canRenderSvg: bool
     canRenderXyz: bool
 
+    grabber: Optional['Grabber']
+
     isEnabledForOws: bool
     isGroup: bool
     isSearchable: bool

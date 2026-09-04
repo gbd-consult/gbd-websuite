@@ -48,7 +48,7 @@ Hier finden Sie Konfigurationsbeispiele und Erklärungen zu verschiedenen Funkti
   <!-- Erklärt Projektkonfiguration mit UIDs, Metadaten, Einbindungsmethoden (`projects`, `projectDirs`, `projectPaths`) und projektspezifischen Überschreibungen für Assets, Aktionen und Client-Einstellungen. -->
 
 - [**Server Konfiguration**](/admin-de/config/server)  
-  Beschreibt serverweite Einstellungen wie Logging-Level, Module (web, mapproxy, qgis, spool, monitor) mit Worker-Konfiguration sowie die Datenablage für benutzerdefinierte Objekte.
+  Beschreibt serverweite Einstellungen wie Logging-Level, Module (web, qgis, spool, monitor) mit Worker-Konfiguration sowie die Datenablage für benutzerdefinierte Objekte.
 
 - [**Suche**](/admin-de/themen/suche)  
   Zeigt die Konfiguration des Suchsystems mit Findern für verschiedene Quellen (Nominatim, PostgreSQL, WFS, WMS) und die Darstellung der Ergebnisse über Vorlagen.
