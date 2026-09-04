@@ -13,6 +13,7 @@ import gws.gis.source
 import gws.gis.zoom
 import gws.lib.bounds
 import gws.lib.extent
+import gws.base.grabber.box
 import gws.lib.grid
 
 from . import grabber, provider
@@ -66,7 +67,7 @@ class Object(gws.base.layer.image.Object):
             crs=self.mapCrs.srid,
             extent=self.bounds.extent,
             imageFormat=self.imageFormat,
-            blockSize=cache.requestTiles or grabber.DEFAULT_BLOCK_SIZE,
+            blockSize=cache.requestTiles or gws.base.grabber.box.DEFAULT_BLOCK_SIZE,
             cacheMaxAge=cache.maxAge or 0,
             cacheMaxLevel=cache.maxLevel or 0,
             edgeBuffer=cache.requestBuffer or 0,

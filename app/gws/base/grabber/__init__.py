@@ -5,4 +5,5 @@ tile grid, stores and reads them back.
 """
 
 from .core import Config, Object
+from . import box, tile
 

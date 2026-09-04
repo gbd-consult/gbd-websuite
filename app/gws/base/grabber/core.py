@@ -3,6 +3,7 @@
 import os
 
 import gws
+import gws.lib.gdalx
 import gws.lib.grid
 import gws.lib.crs
 import gws.lib.image
@@ -66,7 +67,7 @@ class Object(gws.Grabber):
 
         self.cacheMaxAge = self.cfg('cacheMaxAge') or 0
         self.cacheMaxLevel = self.cfg('cacheMaxLevel') or 0
-        self.cacheUid = self.cfg('cacheUid')
+        self.cacheUid = self.cfg('cacheUid') or self.uid
         self.cacheBaseDir = f'{gws.c.CACHE_DIR}/grabber/{self.cacheUid}'
         
         self.blockSize = self.cfg('blockSize') or 1
@@ -84,6 +85,83 @@ class Object(gws.Grabber):
             self.rangeForLevel[z] = rng
 
         self._emptyTile = b''
+
+    ##
+
+    def get_tile(self, tile):
+        x, y, z = tile
+        if not self.is_serving(z):
+            return self.empty_tile()
+
+        rng = self.rangeForLevel[z]
+        if not in_range(x, y, rng):
+            return self.empty_tile()
+
+        blob = self.store_read(tile)
+        if blob is not None:
+            return blob
+
+        blob = self.fetch_tile(tile)
+        self.store_write(tile, blob)
+
+        return blob
+
+    def get_tiles(self, tr):
+        x0, y0, x1, y1, z = tr
+        if not self.is_serving(z):
+            return {}
+
+        rng = self.rangeForLevel[z]
+        tiles = {}
+        for x, y in pairs(x0, x1, y0, y1):
+            if in_range(x, y, rng):
+                tiles[x, y, z] = self.get_tile((x, y, z))
+        return tiles
+
+    def get_box(self, extent, width, height):
+        w = gws.u.to_rounded_int(width)
+        h = gws.u.to_rounded_int(height)
+
+        z = gws.lib.grid.level_for_resolution(self.grid, (extent[2] - extent[0]) / w)
+        if not self.is_storing(z):
+            img = self.fetch_box(extent, w, h)
+            return img.to_bytes(self.mime, self.imageFormat.options)
+
+        rng = gws.lib.grid.range_for_extent(self.grid, extent, z)
+        if not rng:
+            return self.empty_box(w, h)
+
+        x0, y0, x1, y1, _ = rng
+        ts = self.grid.tileSize
+        mosaic = gws.lib.image.from_size(((x1 - x0 + 1) * ts, (y1 - y0 + 1) * ts))
+        for (tx, ty, _), blob in self.get_tiles(rng).items():
+            mosaic.paste(gws.lib.image.from_bytes(blob), ((tx - x0) * ts, (ty - y0) * ts))
+
+        mosaic_extent = gws.lib.grid.extent_for_range(self.grid, rng)
+        with gws.lib.gdalx.open_from_image(mosaic, gws.Bounds(crs=self.targetCrs, extent=mosaic_extent)) as ds:
+            img = ds.warp_to_image(dict(
+                dstSRS=self.targetCrs.epsg,
+                outputBounds=extent,
+                outputBoundsSRS=self.targetCrs.epsg,
+                width=w,
+                height=h,
+                resampleAlg='bilinear',
+            ))
+
+        return img.to_bytes(self.mime, self.imageFormat.options)
+
+    ##
+
+    def fetch_tile(self, tile: gws.MapTile) -> bytes:
+        img = self.fetch_box(
+            gws.lib.grid.extent_for_tile(self.grid, tile),
+            self.grid.tileSize,
+            self.grid.tileSize,
+        )
+        return img.to_bytes(self.mime, self.imageFormat.options)
+
+    def fetch_box(self, extent: gws.Extent, width: int, height: int) -> gws.Image:
+        raise NotImplementedError(f'fetch_box not implemented in {self!r}')
 
     ##
 
@@ -128,3 +206,13 @@ class Object(gws.Grabber):
     def empty_box(self, width, height) -> bytes:
         img = gws.lib.image.from_size((width, height))
         return img.to_bytes(self.mime, self.imageFormat.options)
+
+
+def pairs(x0, x1, y0, y1):
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            yield x, y
+
+
+def in_range(x, y, rng):
+    return rng[0] <= x <= rng[2] and rng[1] <= y <= rng[3]
