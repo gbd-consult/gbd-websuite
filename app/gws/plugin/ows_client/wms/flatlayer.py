@@ -11,10 +11,7 @@ import gws.base.metadata
 import gws.lib.crs
 import gws.gis.source
 import gws.gis.zoom
-import gws.lib.bounds
-import gws.lib.extent
 import gws.base.grabber.box
-import gws.lib.grid
 
 from . import grabber, provider
 
@@ -123,16 +120,6 @@ class Object(gws.base.layer.image.Object):
         if self.resolutions:
             return True
         raise gws.Error(f'layer {self!r}: no matching resolutions')
-
-    def configure_grid(self):
-        if super().configure_grid():
-            return True
-        self.grid = gws.TileGrid(
-            origin=gws.Origin.nw,
-            tileSize=256,
-            bounds=self.bounds,
-            resolutions=self.resolutions)
-        return True
 
     def configure_legend(self):
         if super().configure_legend():

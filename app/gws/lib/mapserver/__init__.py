@@ -60,4 +60,3 @@ Example usage::
 """
 
 from .core import version, Error, new_map, Map
-from . import util

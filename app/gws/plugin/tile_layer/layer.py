@@ -6,9 +6,6 @@ import gws
 import gws.base.layer
 import gws.config.util
 import gws.lib.bounds
-import gws.lib.crs
-import gws.lib.grid
-import gws.gis.zoom
 from . import grabber, provider
 
 gws.ext.new.layer('tile')
@@ -21,16 +18,6 @@ class Config(gws.base.layer.Config):
     """Tile service provider."""
     display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile
     """Layer display mode."""
-
-
-_GRID_DEFAULTS = gws.TileGrid(
-    bounds=gws.Bounds(
-        crs=gws.lib.crs.WEBMERCATOR,
-        extent=gws.lib.crs.WEBMERCATOR_SQUARE,
-    ),
-    origin=gws.Origin.nw,
-    tileSize=256,
-)
 
 
 class Object(gws.base.layer.image.Object):
@@ -78,27 +65,6 @@ class Object(gws.base.layer.image.Object):
     #         return True
     #     self.bounds = gws.lib.bounds.transform(self.serviceProvider.grid.bounds, self.mapCrs)
     #     return True
-
-    def configure_grid(self):
-        p = self.cfg('grid', default=gws.Config())
-
-        self.grid = gws.TileGrid(
-            origin=p.origin or gws.Origin.nw,
-            tileSize=p.tileSize or 256,
-        )
-
-        if p.extent:
-            extent = p.extent
-        elif self.bounds.crs == self.serviceProvider.grid.crs:
-            extent = self.serviceProvider.grid.extent
-        else:
-            extent = self.parentBounds.extent
-        self.grid.bounds = gws.Bounds(crs=self.bounds.crs, extent=extent)
-
-        if p.resolutions:
-            self.grid.resolutions = p.resolutions
-        else:
-            self.grid.resolutions = gws.gis.zoom.resolutions_from_bounds(self.grid.bounds, self.grid.tileSize)
 
     ##
 

@@ -2,7 +2,6 @@
 
 from .core import (
     CacheConfig,
-    GridConfig,
     Object,
     Config,
     Props,

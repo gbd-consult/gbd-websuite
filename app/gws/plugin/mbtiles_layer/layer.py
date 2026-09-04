@@ -3,14 +3,13 @@
 from typing import Optional
 
 import gws
+import gws.base.grabber.box
 import gws.base.layer
 import gws.config.util
 import gws.lib.gdalx
-import gws.lib.mapserver
-import gws.gis.zoom
 import gws.lib.bounds
 
-from . import provider
+from . import grabber, provider
 
 gws.ext.new.layer('mbtiles')
 
@@ -49,21 +48,34 @@ class Object(gws.base.layer.image.Object):
         self.msOptions.crs = self.bounds.crs
         return True
 
-    def configure_grid(self):
-        p = self.cfg('grid', default=gws.Config())
+    def configure_grabber(self):
+        self.grabber = self.create_grabber()
+        return True
 
-        self.grid = gws.TileGrid(
-            origin=p.origin or gws.Origin.nw,
-            tileSize=p.tileSize or 256,
-            bounds=self.bounds,
+    def create_grabber(self):
+        cache = self.cache or gws.LayerCache(maxAge=0, maxLevel=0)
+        uid = 'grabber_' + gws.u.sha256([
+            self.serviceProvider.path,
+            self.cfg('processing', default=[]),
+            self.cfg('transparentColor') or '',
+            self.mapCrs.srid,
+            vars(self.imageFormat),
+            list(self.bounds.extent),
+            cache.maxAge or 0,
+            cache.maxLevel or 0,
+            cache.requestTiles or 0,
+            cache.requestBuffer or 0,
+        ])
+        return self.root.create_shared(
+            grabber.Object,
+            crs=self.mapCrs.srid,
+            extent=self.bounds.extent,
+            imageFormat=self.imageFormat,
+            blockSize=cache.requestTiles or gws.base.grabber.box.DEFAULT_BLOCK_SIZE,
+            cacheMaxAge=cache.maxAge or 0,
+            cacheMaxLevel=cache.maxLevel or 0,
+            cacheUid=uid,
+            edgeBuffer=cache.requestBuffer or 0,
+            _defaultProvider=self.serviceProvider,
+            _defaultMsOptions=self.msOptions,
         )
-
-        if p.resolutions:
-            self.grid.resolutions = p.resolutions
-        else:
-            self.grid.resolutions = gws.gis.zoom.resolutions_from_bounds(self.grid.bounds, self.grid.tileSize)
-
-    ##
-
-    def render(self, lri):
-        return gws.lib.mapserver.util.raster_render(self, lri)

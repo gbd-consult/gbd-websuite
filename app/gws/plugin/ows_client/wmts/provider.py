@@ -15,15 +15,11 @@ from . import caps
 class Config(gws.base.ows.client.provider.Config):
     """WMTS provider configuration."""
 
-    grid: Optional[gws.base.layer.GridConfig]
-    """Source grid."""
-
 
 class Object(gws.base.ows.client.provider.Object):
     protocol = gws.OwsProtocol.WMTS
 
     tileMatrixSets: list[gws.TileMatrixSet]
-    grids: list[gws.TileGrid]
 
     def configure(self):
         cc = caps.parse(self.get_capabilities())
@@ -34,14 +30,6 @@ class Object(gws.base.ows.client.provider.Object):
         self.tileMatrixSets = cc.tileMatrixSets
 
         self.configure_operations(cc.operations)
-
-    def grid_for_tms(self, tms: gws.TileMatrixSet) -> gws.TileGrid:
-        return gws.TileGrid(
-            bounds=gws.Bounds(crs=tms.crs, extent=tms.matrices[0].extent),
-            origin=gws.Origin.nw,
-            resolutions=sorted([gws.lib.uom.scale_to_res(m.scale) for m in tms.matrices], reverse=True),
-            tileSize=tms.matrices[0].tileWidth,
-        )
 
     def tile_url_template(self, sl: gws.SourceLayer, tms: gws.TileMatrixSet, style: gws.SourceStyle) -> str:
         ru = sl.resourceUrls

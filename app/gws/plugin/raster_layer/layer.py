@@ -7,13 +7,7 @@ import gws.base.grabber.box
 import gws.base.layer
 import gws.base.shape
 import gws.config.util
-import gws.lib.gdalx
-import gws.lib.grid
-import gws.lib.mapserver
-import gws.gis.zoom
 import gws.lib.bounds
-import gws.lib.crs
-import gws.lib.osx
 
 from . import grabber, provider
 
@@ -105,17 +99,3 @@ class Object(gws.base.layer.image.Object):
         b = gws.lib.bounds.union([e.bounds for e in self.entries])
         self.bounds = gws.lib.bounds.transform(b, self.parentBounds.crs)
         return True
-
-    def configure_grid(self):
-        p = self.cfg('grid') or gws.base.layer.GridConfig()
-
-        self.grid = gws.TileGrid(
-            origin=p.origin or gws.Origin.nw,
-            tileSize=p.tileSize or 256,
-            bounds=self.bounds,
-        )
-
-        if p.resolutions:
-            self.grid.resolutions = p.resolutions
-        else:
-            self.grid.resolutions = gws.gis.zoom.resolutions_from_bounds(self.grid.bounds, self.grid.tileSize)

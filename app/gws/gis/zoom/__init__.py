@@ -133,24 +133,6 @@ def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_
     return [r for r in parent_resolutions if rmin <= r <= rmax]
 
 
-def resolutions_from_bounds(b: gws.Bounds, tile_size: int) -> list[float]:
-    """Loads resolutions from bounds.
-
-    Args:
-        b: Bounds object.
-        tile_size: The tile size.
-
-    Returns:
-        A list of resolutions.
-    """
-
-    siz = gws.lib.extent.size(b.extent)
-    res = []
-    for z in range(20):
-        res.append(siz[0] / (tile_size * (1 << z)))
-    return res
-
-
 def init_resolution(cfg, resolutions: list) -> float:
     """Returns the initial resolution.
 

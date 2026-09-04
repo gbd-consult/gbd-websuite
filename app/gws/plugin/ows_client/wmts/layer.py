@@ -6,8 +6,6 @@ import gws.config.util
 import gws.lib.bounds
 import gws.lib.crs
 import gws.gis.source
-import gws.gis.zoom
-import gws.lib.grid
 
 from . import grabber, provider
 
@@ -133,24 +131,6 @@ class Object(gws.base.layer.image.Object):
         res = [gws.lib.uom.scale_to_res(m.scale) for m in self.activeTms.matrices]
         self.resolutions = sorted(res, reverse=True)
         return True
-
-    def configure_grid(self):
-        p = self.cfg('grid', default=gws.Config())
-        self.grid = gws.TileGrid(
-            origin=p.origin or gws.Origin.nw,
-            tileSize=p.tileSize or self.activeTms.matrices[0].tileWidth,
-        )
-        if p.extent:
-            self.grid.bounds = gws.Bounds(crs=self.mapCrs, extent=p.extent)
-        elif self.activeTms.crs == self.mapCrs:
-            self.grid.bounds = gws.Bounds(crs=self.mapCrs, extent=self.activeTms.matrices[0].extent)
-        else:
-            self.grid.bounds = self.bounds
-
-        if p.resolutions:
-            self.grid.resolutions = p.resolutions
-        else:
-            self.grid.resolutions = gws.gis.zoom.resolutions_from_bounds(self.grid.bounds, self.grid.tileSize)
 
     def configure_legend(self):
         if super().configure_legend():

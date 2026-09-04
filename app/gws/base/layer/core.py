@@ -33,21 +33,6 @@ class CacheConfig(gws.Config):
     """Number of tiles to request at once."""
 
 
-class GridConfig(gws.Config):
-    """Grid configuration for caches and tiled data"""
-
-    crs: Optional[gws.CrsName]
-    """Target CRS for the grid."""
-    extent: Optional[gws.Extent]
-    """Target extent for the grid."""
-    origin: Optional[gws.Origin]
-    """Grid origin, defaults to north-west."""
-    resolutions: Optional[list[float]]
-    """Grid resolutions, defaults to parent layer resolutions."""
-    tileSize: Optional[int]
-    """Tile size in pixels, defaults to 256."""
-
-
 class AutoLayersOptions(gws.ConfigWithAccess):
     """Configuration for automatic layers."""
 
@@ -102,8 +87,8 @@ class Config(gws.ConfigWithAccess):
     """Extent buffer."""
     finders: Optional[list[gws.ext.config.finder]]
     """Search providers."""
-    grid: Optional[GridConfig]
-    """Client grid."""
+    grid: Optional[dict]
+    """Client grid. (deprecated in 8.5)"""
     imageFormat: Optional[gws.lib.image.FormatConfig]
     """Image format."""
     legend: Optional[gws.ext.config.legend]
@@ -205,7 +190,6 @@ class Object(gws.Layer):
 
         self.layers = []
 
-        self.grid = None
         self.cache = None
         self.grabber = None
         self.ows = gws.LayerOws()
@@ -221,7 +205,6 @@ class Object(gws.Layer):
         self.configure_bounds()
         self.configure_zoom_bounds()
         self.configure_resolutions()
-        self.configure_grid()
         self.configure_legend()
         self.configure_cache()
         self.configure_grabber()
@@ -258,19 +241,6 @@ class Object(gws.Layer):
 
     def configure_grabber(self):
         pass
-
-    def configure_grid(self):
-        p = self.cfg('grid')
-        if p:
-            if p.crs and p.crs != self.bounds.crs:
-                raise gws.Error(f'layer {self!r}: invalid target grid crs')
-            self.grid = gws.TileGrid(
-                origin=p.origin or gws.Origin.nw,
-                tileSize=p.tileSize or DEFAULT_TILE_SIZE,
-                bounds=gws.Bounds(crs=self.bounds.crs, extent=p.extent),
-                resolutions=p.resolutions,
-            )
-            return True
 
     def configure_legend(self):
         if not self.cfg('withLegend'):
@@ -404,13 +374,6 @@ class Object(gws.Layer):
                 extent=g.extent,
                 resolutions=[gws.lib.grid.resolution_for_level(g, z) for z in range(zmax + 1)],
                 tileSize=g.tileSize,
-            )
-        elif self.grid:
-            p.grid = GridProps(
-                origin=self.grid.origin,
-                extent=self.grid.bounds.extent,
-                resolutions=sorted(self.grid.resolutions, reverse=True),
-                tileSize=self.grid.tileSize,
             )
 
         if self.displayMode == gws.LayerDisplayMode.tile:

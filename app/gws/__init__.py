@@ -3118,16 +3118,6 @@ class LayerClientOptions(Data):
     """CSS class name for the layer tree item."""
 
 
-class TileGrid(Data):
-    """Tile grid."""
-
-    uid: str
-    bounds: Bounds
-    origin: Origin
-    resolutions: list[float]
-    tileSize: int
-
-
 class LayerCache(Data):
     """Layer cache."""
 
@@ -3187,7 +3177,6 @@ class Layer(Node):
     resolutions: list[float]
     title: str
 
-    grid: Optional[TileGrid]
     cache: Optional[LayerCache]
 
     metadata: 'Metadata'

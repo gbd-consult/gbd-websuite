@@ -4,14 +4,10 @@ import gws
 import gws.base.grabber.box
 import gws.base.layer
 import gws.config.util
-import gws.lib.crs
 import gws.lib.bounds
-import gws.lib.extent
 import gws.gis.source
 import gws.gis.zoom
 import gws.base.metadata
-import gws.lib.grid
-import gws.lib.osx
 
 from . import grabber, provider
 
@@ -124,17 +120,6 @@ class Object(gws.base.layer.image.Object):
         self.resolutions = gws.gis.zoom.resolutions_from_source_layers(self.sourceLayers, self.cfg('_parentResolutions'))
         if not self.resolutions:
             raise gws.Error(f'layer {self.uid!r}: no matching resolutions')
-
-    def configure_grid(self):
-        if super().configure_grid():
-            return True
-        self.grid = gws.TileGrid(
-            origin=gws.Origin.nw,
-            tileSize=256,
-            bounds=self.bounds,
-            resolutions=self.resolutions,
-        )
-        return True
 
     def configure_legend(self):
         # cannot use super() here, because the config must be extended with defaults
