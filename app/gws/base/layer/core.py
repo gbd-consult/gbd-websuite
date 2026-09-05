@@ -8,6 +8,7 @@ import gws.config.util
 import gws.lib.bounds
 import gws.lib.crs
 import gws.lib.grid
+import gws.lib.image
 import gws.lib.extent
 import gws.gis.source
 import gws.gis.zoom
@@ -236,7 +237,8 @@ class Object(gws.Layer):
     def configure_cache(self):
         if not self.cfg('withCache'):
             return True
-        self.cache = gws.LayerCache(self.cfg('cache'))
+        p = self.cfg('cache') or self.root.specs.read({}, 'gws.base.layer.core.CacheConfig')
+        self.cache = gws.LayerCache(p)
         return True
 
     def configure_grabber(self):
@@ -386,11 +388,55 @@ class Object(gws.Layer):
 
         return p
 
-    def render(self, lri):
-        pass
-
     def find_features(self, search, user):
         return []
+
+    def render(self, lri):
+        if lri.type == gws.LayerRenderInputType.box:
+            return self.render_box(lri)
+        if lri.type == gws.LayerRenderInputType.xyz:
+            return self.render_tile(lri)
+        if lri.type == gws.LayerRenderInputType.svg:
+            return self.render_svg(lri)
+
+    def render_tile(self, lri):
+        if not self.grabber:
+            return
+        return gws.LayerRenderOutput(
+            content=self.grabber.get_tile((lri.x, lri.y, lri.z)),
+        )
+
+    def render_box(self, lri):
+        if not self.grabber:
+            return
+
+        params = lri.renderParams
+        w, h = lri.view.pxSize
+
+        if not lri.view.rotation:
+            content = self.grabber.get_box(lri.view.bounds.extent, w, h, params)
+            return gws.LayerRenderOutput(content=content)
+
+        circ = gws.lib.extent.circumsquare(lri.view.bounds.extent)
+        d = gws.u.to_rounded_int(gws.lib.extent.diagonal((0, 0, w, h)))
+
+        content = self.grabber.get_box(circ, d, d, params)
+
+        img = gws.lib.image.from_bytes(content)
+        img.rotate(-lri.view.rotation).crop(
+            (
+                d / 2 - w / 2,
+                d / 2 - h / 2,
+                d / 2 + w / 2,
+                d / 2 + h / 2,
+            )
+        )
+
+        content = img.to_bytes(self.imageFormat.mimeTypes[0], self.imageFormat.options)
+        return gws.LayerRenderOutput(content=content)
+
+    def render_svg(self, lri):
+        pass
 
     def render_legend(self, args=None) -> Optional[gws.LegendRenderOutput]:
         if not self.legend:
@@ -404,4 +450,3 @@ class Object(gws.Layer):
             return gws.u.get_server_global('legend_' + self.uid, _get)
 
         return self.legend.render(args)
-

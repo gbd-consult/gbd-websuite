@@ -41,7 +41,7 @@ class Object(gws.base.layer.image.Object):
 
     def create_grabber(self):
         cache = self.cache or gws.LayerCache(maxAge=0, maxLevel=0)
-        params = self.get_render_params(gws.LayerRenderInput())
+        params = self.render_params(gws.LayerRenderInput())
         uid = 'grabber_' + gws.u.sha256([
             self.serviceProvider.uid,
             params,
@@ -165,7 +165,7 @@ class Object(gws.base.layer.image.Object):
 
     ##
 
-    def get_render_params(self, lri: gws.LayerRenderInput, parent_sql_filters: dict=None) -> dict:
+    def render_params(self, lri: gws.LayerRenderInput, parent_sql_filters: dict=None) -> dict:
         params = dict(lri.extraParams or {})
         
         layers = [sl.name for sl in self.imageLayers]

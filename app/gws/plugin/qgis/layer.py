@@ -9,7 +9,7 @@ import gws
 import gws.base.layer
 import gws.config.util
 
-from . import provider, flatlayer
+from . import grabber, provider, flatlayer
 
 gws.ext.new.layer('qgis')
 
@@ -33,6 +33,21 @@ class Object(gws.base.layer.group.Object):
     def configure(self):
         self.compositeRender = self.cfg('compositeRender', default=False)
         self.sqlFilters = self.cfg('sqlFilters', default={})
+
+    def configure_grabber(self):
+        if not self.cfg('compositeRender'):
+            return True
+        self.grabber = self.root.create_shared(
+            grabber.Object,
+            crs=self.mapCrs.srid,
+            extent=self.bounds.extent,
+            imageFormat=self.imageFormat,
+            cacheMaxAge=0,
+            cacheMaxLevel=0,
+            _defaultProvider=self.serviceProvider,
+            _defaultParams={},
+        )
+        return True
 
     def configure_group(self):
         gws.config.util.configure_service_provider_for(self, provider.Object)
@@ -76,24 +91,14 @@ class Object(gws.base.layer.group.Object):
             layers=[_to_leaf(la) for la in p['layers']],
         )
 
-    def render(self, lri):
-        if not self.compositeRender:
-            return super().render(lri)
+    def render_box(self, lri):
+        if self.compositeRender:
+            lri.renderParams = self.composite_render_params(lri)
+            if not lri.renderParams:
+                return
+        return super().render_box(lri)
 
-        if lri.type != gws.LayerRenderInputType.box:
-            return
-
-        params = self.get_render_params(lri)
-        if not params:
-            return
-
-        def get_box(bounds, width, height):
-            return self.serviceProvider.get_map(self, bounds, width, height, params)
-
-        content = gws.base.layer.util.generic_render_box(self, lri, get_box)
-        return gws.LayerRenderOutput(content=content)
-
-    def get_render_params(self, lri: gws.LayerRenderInput) -> Optional[dict]:
+    def composite_render_params(self, lri: gws.LayerRenderInput) -> Optional[dict]:
         leaves = dict(lri.extraParams or {}).get('compositeLayerUids', [])
         if not leaves:
             return
@@ -110,7 +115,7 @@ class Object(gws.base.layer.group.Object):
             if la.extType != 'qgisflat':
                 gws.log.debug(f'skipping {la.uid=} {la.extType=}')
                 continue
-            p = cast(flatlayer.Object, la).get_render_params(lri, self.sqlFilters)
+            p = cast(flatlayer.Object, la).render_params(lri, self.sqlFilters)
             if not p:
                 gws.log.debug(f'skipping {la.uid=} no params')
                 continue

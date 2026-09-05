@@ -14,19 +14,14 @@ class Object(gws.base.grabber.box.Object):
     def configure(self):
         self.serviceProvider = self.cfg('_defaultProvider')
         self.params = self.cfg('_defaultParams')
+        self.sourceCrs = self.targetCrs
 
-    def fetch_box(self, extent, width, height):
-        w = gws.u.to_rounded_int(width)
-        h = gws.u.to_rounded_int(height)
-
+    def fetch_box(self, bounds, width, height, params=None):
         blob = self.serviceProvider.get_map(
             None,
-            gws.Bounds(crs=self.targetCrs, extent=extent),
-            w,
-            h,
-            self.params,
+            bounds,
+            width,
+            height,
+            gws.u.merge(self.params, params),
         )
-
-        img = gws.lib.image.from_size((w, h))
-        img.paste(gws.lib.image.from_bytes(blob), (0, 0))
-        return img
+        return gws.lib.image.from_bytes(blob)

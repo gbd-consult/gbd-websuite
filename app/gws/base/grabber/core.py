@@ -88,7 +88,7 @@ class Object(gws.Grabber):
 
     ##
 
-    def get_tile(self, tile):
+    def get_tile(self, tile, params=None):
         x, y, z = tile
         if not self.is_serving(z):
             return self.empty_tile()
@@ -97,16 +97,16 @@ class Object(gws.Grabber):
         if not in_range(x, y, rng):
             return self.empty_tile()
 
-        blob = self.store_read(tile)
+        blob = self.store_read(tile, params)
         if blob is not None:
             return blob
 
-        blob = self.fetch_tile(tile)
-        self.store_write(tile, blob)
+        blob = self.fetch_tile(tile, params)
+        self.store_write(tile, blob, params)
 
         return blob
 
-    def get_tiles(self, tr):
+    def get_tiles(self, tr, params=None):
         x0, y0, x1, y1, z = tr
         if not self.is_serving(z):
             return {}
@@ -115,16 +115,16 @@ class Object(gws.Grabber):
         tiles = {}
         for x, y in pairs(x0, x1, y0, y1):
             if in_range(x, y, rng):
-                tiles[x, y, z] = self.get_tile((x, y, z))
+                tiles[x, y, z] = self.get_tile((x, y, z), params)
         return tiles
 
-    def get_box(self, extent, width, height):
+    def get_box(self, extent, width, height, params=None):
         w = gws.u.to_rounded_int(width)
         h = gws.u.to_rounded_int(height)
 
         z = gws.lib.grid.level_for_resolution(self.grid, (extent[2] - extent[0]) / w)
-        if not self.is_storing(z):
-            img = self.fetch_box(extent, w, h)
+        if params or not self.is_storing(z):
+            img = self.draw_box(extent, w, h, params)
             return img.to_bytes(self.mime, self.imageFormat.options)
 
         rng = gws.lib.grid.range_for_extent(self.grid, extent, z)
@@ -152,16 +152,17 @@ class Object(gws.Grabber):
 
     ##
 
-    def fetch_tile(self, tile: gws.MapTile) -> bytes:
-        img = self.fetch_box(
+    def fetch_tile(self, tile: gws.MapTile, params: dict | None = None) -> bytes:
+        img = self.draw_box(
             gws.lib.grid.extent_for_tile(self.grid, tile),
             self.grid.tileSize,
             self.grid.tileSize,
+            params,
         )
         return img.to_bytes(self.mime, self.imageFormat.options)
 
-    def fetch_box(self, extent: gws.Extent, width: int, height: int) -> gws.Image:
-        raise NotImplementedError(f'fetch_box not implemented in {self!r}')
+    def draw_box(self, extent: gws.Extent, width: int, height: int, params: dict | None = None) -> gws.Image:
+        raise NotImplementedError(f'draw_box not implemented in {self!r}')
 
     ##
 
@@ -188,13 +189,13 @@ class Object(gws.Grabber):
     def is_storing(self, z):
         return self.cacheMaxAge > 0 and z <= self.cacheMaxLevel
 
-    def store_read(self, mt: gws.MapTile):
-        if not self.is_storing(mt[2]):
+    def store_read(self, mt: gws.MapTile, params: dict | None = None):
+        if params or not self.is_storing(mt[2]):
             return None
         return self.store.read(mt, self.cacheMaxAge)
 
-    def store_write(self, mt: gws.MapTile, blob: bytes):
-        if not self.is_storing(mt[2]):
+    def store_write(self, mt: gws.MapTile, blob: bytes, params: dict | None = None):
+        if params or not self.is_storing(mt[2]):
             return None
         return self.store.write(mt, blob)
 

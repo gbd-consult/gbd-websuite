@@ -29,19 +29,10 @@ class Object(core.Object):
             geometryType=self.geometryType
         )
 
-    def render(self, lri):
-        if lri.type == gws.LayerRenderInputType.svg:
-            tags = self.render_svg_fragment(lri)
-            if tags:
-                return gws.LayerRenderOutput(tags=tags)
-
-        # if lri.type == 'box':
-
-    #     fr = self.render_svg_fragment(view)
-    #     ts = gws.debug.time_start('render_box:to_png')
-    #     img = gws.lib.svg.fragment_to_image(fr, size=view.pxSize, format='png')
-    #     gws.debug.time_end(ts)
-    #     return img.to_bytes()
+    def render_svg(self, lri):
+        tags = self.render_svg_fragment(lri)
+        if tags:
+            return gws.LayerRenderOutput(tags=tags)
     #
 
     def render_svg_fragment(self, lri: gws.LayerRenderInput):

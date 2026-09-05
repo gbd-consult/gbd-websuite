@@ -2051,6 +2051,7 @@ class LayerRenderInput(Data):
     """Layer render input."""
 
     extraParams: dict
+    renderParams: dict
     project: 'Project'
     style: 'Style'
     type: LayerRenderInputType
@@ -3219,24 +3220,28 @@ class Grabber(Node):
     tile grid, stores and reads them back.
     """
 
-    def get_tile(self, tile: MapTile) -> bytes:
+    def get_tile(self, tile: MapTile, params: Optional[dict] = None) -> bytes:
         """Return a single tile, fetching and storing it if needed.
 
         A tile outside the layer's range is a transparent image.
+        With ``params``, the request is dynamic: the store is bypassed.
         Raises on source failure.
         """
 
-    def get_tiles(self, tr: MapTileRange) -> dict[MapTile, bytes]:
+    def get_tiles(self, tr: MapTileRange, params: Optional[dict] = None) -> dict[MapTile, bytes]:
         """Return a rectangular block of tiles, fetching and storing missing ones.
 
         Sparse: contains entries only for tiles present in the grid.
+        With ``params``, the request is dynamic: the store is bypassed.
         Raises on source failure.
         """
 
-    def get_box(self, extent: Extent, width: int, height: int) -> bytes:
+    def get_box(self, extent: Extent, width: int, height: int, params: Optional[dict] = None) -> bytes:
         """Return an image for arbitrary extent and pixel size.
 
-        A box overlapping no data is a transparent image. Raises on source failure.
+        A box overlapping no data is a transparent image.
+        With ``params``, the request is dynamic: the store is bypassed.
+        Raises on source failure.
         """
 ################################################################################
 

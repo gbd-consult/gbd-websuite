@@ -15,15 +15,10 @@ class Object(gws.base.grabber.box.Object):
     def configure(self):
         self.serviceProvider = self.cfg('_defaultProvider')
         self.msOptions = self.cfg('_defaultMsOptions')
+        self.sourceCrs = self.targetCrs
+        self.maxRequestPixels = 9000
 
-    def fetch_box(self, extent, width, height):
-        w = gws.u.to_rounded_int(width)
-        h = gws.u.to_rounded_int(height)
-
+    def fetch_box(self, bounds, width, height, params=None):
         ms_map = gws.lib.mapserver.core.new_map()
         ms_map.add_layer(self.msOptions)
-        img = ms_map.draw(gws.Bounds(crs=self.targetCrs, extent=extent), (w, h))
-
-        canvas = gws.lib.image.from_size((w, h))
-        canvas.paste(img, (0, 0))
-        return canvas
+        return ms_map.draw(bounds, (width, height))

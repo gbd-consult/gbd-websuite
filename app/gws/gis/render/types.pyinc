@@ -89,6 +89,7 @@ class LayerRenderInput(Data):
     """Layer render input."""
 
     extraParams: dict
+    renderParams: dict
     project: 'Project'
     style: 'Style'
     type: LayerRenderInputType

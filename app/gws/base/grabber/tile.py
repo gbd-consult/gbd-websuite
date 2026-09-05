@@ -16,7 +16,7 @@ class Object(core.Object):
     sourceCrs: gws.Crs
     sourceMatrices: list[gws.TileMatrix]
 
-    def fetch_box(self, extent, width, height):
+    def draw_box(self, extent, width, height, params=None):
         w = gws.u.to_rounded_int(width)
         h = gws.u.to_rounded_int(height)
 

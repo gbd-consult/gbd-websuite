@@ -1,14 +1,18 @@
 """Base grabber for boxed sources."""
 
+import math
+
 import gws
 import gws.lib.extent
 import gws.lib.grid
+import gws.lib.gdalx
 import gws.lib.image
 
 from . import core
 
 DEFAULT_BLOCK_SIZE = 4
 DEFAULT_EDGE_BUFFER = 64
+DEFAULT_MAX_REQUEST_PIXELS = 4096
 
 
 class Config(core.Config):
@@ -19,12 +23,15 @@ class Config(core.Config):
 class Object(core.Object):
     """Base grabber for sources that render arbitrary boxes."""
 
+    sourceCrs: gws.Crs
     edgeBuffer: int
+    maxRequestPixels: int
 
     def configure(self):
         self.edgeBuffer = self.cfg('edgeBuffer') or DEFAULT_EDGE_BUFFER
+        self.maxRequestPixels = DEFAULT_MAX_REQUEST_PIXELS
 
-    def fetch_tile(self, tile):
+    def fetch_tile(self, tile, params=None):
         x, y, z = tile
         n = self.blockSize
         rng = self.rangeForLevel[z]
@@ -44,7 +51,7 @@ class Object(core.Object):
         w = (fx1 - fx0 + 1) * ts + 2 * buf
         h = (fy1 - fy0 + 1) * ts + 2 * buf
 
-        img = self.fetch_box(extent, w, h)
+        img = self.draw_box(extent, w, h, params)
         img.crop((buf, buf, w - buf, h - buf))
         arr = img.to_array()
 
@@ -57,5 +64,67 @@ class Object(core.Object):
             if (tx, ty) == (x, y):
                 out = blob
             else:
-                self.store_write((tx, ty, z), blob)
+                self.store_write((tx, ty, z), blob, params)
         return out
+
+    def draw_box(self, extent, width, height, params=None):
+        w = gws.u.to_rounded_int(width)
+        h = gws.u.to_rounded_int(height)
+
+        if self.sourceCrs == self.targetCrs:
+            return self.draw_chunks(extent, w, h, params)
+
+        src_extent = gws.lib.extent.transform(extent, self.targetCrs, self.sourceCrs)
+        src_res = (src_extent[2] - src_extent[0]) / w
+        src_extent = gws.lib.extent.buffer(src_extent, src_res * 2)
+        sw = w + 4
+        sh = h + 4
+
+        img = self.draw_chunks(src_extent, sw, sh, params)
+
+        with gws.lib.gdalx.open_from_image(img, gws.Bounds(crs=self.sourceCrs, extent=src_extent)) as ds:
+            return ds.warp_to_image(
+                dict(
+                    dstSRS=self.targetCrs.epsg,
+                    outputBounds=extent,
+                    outputBoundsSRS=self.targetCrs.epsg,
+                    width=w,
+                    height=h,
+                    resampleAlg='bilinear',
+                )
+            )
+
+    def draw_chunks(self, extent, w, h, params):
+        mpx = self.maxRequestPixels
+
+        if w <= mpx and h <= mpx:
+            img = self.fetch_box(gws.Bounds(crs=self.sourceCrs, extent=extent), w, h, params)
+            canvas = gws.lib.image.from_size((w, h))
+            canvas.paste(img, (0, 0))
+            return canvas
+
+        buf = self.edgeBuffer
+        csize = mpx - 2 * buf
+        xres = (extent[2] - extent[0]) / w
+        yres = (extent[3] - extent[1]) / h
+
+        canvas = gws.lib.image.from_size((w, h))
+
+        for py in range(0, h, csize):
+            for px in range(0, w, csize):
+                cw = min(csize, w - px)
+                ch = min(csize, h - py)
+                e = (
+                    extent[0] + (px - buf) * xres,
+                    extent[3] - (py + ch + buf) * yres,
+                    extent[0] + (px + cw + buf) * xres,
+                    extent[3] - (py - buf) * yres,
+                )
+                img = self.fetch_box(gws.Bounds(crs=self.sourceCrs, extent=e), cw + 2 * buf, ch + 2 * buf, params)
+                img.crop((buf, buf, buf + cw, buf + ch))
+                canvas.paste(img, (px, py))
+
+        return canvas
+
+    def fetch_box(self, bounds: gws.Bounds, width: int, height: int, params: dict | None = None) -> gws.Image:
+        raise NotImplementedError(f'fetch_box not implemented in {self!r}')
