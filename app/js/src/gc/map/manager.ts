@@ -12,9 +12,10 @@ let layerTypes = {
     'box': layer.BoxLayer,
     'group': layer.GroupLayer,
     'compositeLeaf': layer.CompositeLeafLayer,
+    'compositeBox': layer.CompositeBoxLayer,
+    'compositeTile': layer.CompositeTileLayer,
     'root': layer.RootLayer,
     'tile': layer.TileLayer,
-    'compositeTree': layer.CompositeTreeLayer,
     'vector': layer.FeatureLayer,
     'xyz': layer.XYZLayer,
 };

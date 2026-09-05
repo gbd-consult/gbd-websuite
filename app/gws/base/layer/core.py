@@ -403,7 +403,7 @@ class Object(gws.Layer):
         if not self.grabber:
             return
         return gws.LayerRenderOutput(
-            content=self.grabber.get_tile((lri.x, lri.y, lri.z)),
+            content=self.grabber.get_tile((lri.x, lri.y, lri.z), lri.renderParams),
         )
 
     def render_box(self, lri):

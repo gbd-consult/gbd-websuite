@@ -253,15 +253,7 @@ export class XYZLayer extends OlBackedLayer<ol.layer.Image> {
     }
 }
 
-export class CompositeTreeLayer extends OlBackedLayer<ol.layer.Image> {
-    async loadImage(oImage: ol.Image, url: string) {
-        let blob = await this.map.app.server.queueLoad(this.uid, url, 'blob');
-        if (blob) {
-            let img: any = oImage.getImage();
-            img.src = window.URL.createObjectURL(blob);
-        }
-    }
-
+abstract class CompositeLayer extends OlBackedLayer<ol.layer.Image> {
     get shouldDraw() {
         return this.visibleLeavesUids().length > 0;
     }
@@ -280,6 +272,22 @@ export class CompositeTreeLayer extends OlBackedLayer<ol.layer.Image> {
         }
     }
 
+    protected visibleLeavesUids() {
+        return this.map
+            .collect(this, la => la.type === 'compositeLeaf' && la.shouldDraw)
+            .map(la => la.uid);
+    }
+}
+
+export class CompositeBoxLayer extends CompositeLayer {
+    async loadImage(oImage: ol.Image, url: string) {
+        let blob = await this.map.app.server.queueLoad(this.uid, url, 'blob');
+        if (blob) {
+            let img: any = oImage.getImage();
+            img.src = window.URL.createObjectURL(blob);
+        }
+    }
+
     beforeDraw() {
         let src = this._oLayer.getSource() as ol.source.ImageWMS;
         let currUids = src.getParams().compositeLayerUids || [];
@@ -293,8 +301,6 @@ export class CompositeTreeLayer extends OlBackedLayer<ol.layer.Image> {
     }
 
     createOLayer() {
-        let uids = this.visibleLeavesUids();
-
         return new ol.layer.Image({
             extent: this.extent,
             source: new ol.source.ImageWMS({
@@ -303,16 +309,41 @@ export class CompositeTreeLayer extends OlBackedLayer<ol.layer.Image> {
                 imageLoadFunction: (img, url) => this.loadImage(img, url),
                 projection: this.map.projection,
                 params: {
-                    compositeLayerUids: uids
+                    compositeLayerUids: this.visibleLeavesUids()
                 },
             })
         });
     }
+}
 
-    protected visibleLeavesUids() {
-        return this.map
-            .collect(this, la => la.type === 'compositeLeaf' && la.shouldDraw)
-            .map(la => la.uid);
+export class CompositeTileLayer extends CompositeLayer {
+    tileUrl(uids) {
+        return this.props.url.replace('{c}', uids.join(','));
+    }
+
+    beforeDraw() {
+        let src = this._oLayer.getSource() as ol.source.TileImage;
+        let url = this.tileUrl(this.visibleLeavesUids());
+
+        if ((src.getUrls() || [])[0] !== url) {
+            src.setUrl(url);
+        }
+    }
+
+    createOLayer() {
+        return new ol.layer.Tile({
+            extent: this.extent,
+            source: new ol.source.TileImage({
+                url: this.tileUrl(this.visibleLeavesUids()),
+                projection: this.map.projection,
+                tileGrid: new ol.tilegrid.TileGrid({
+                    extent: this.props.grid.extent,
+                    tileSize: this.props.grid.tileSize,
+                    resolutions: this.props.grid.resolutions,
+                }),
+                wrapX: this.map.wrapX,
+            })
+        });
     }
 }
 

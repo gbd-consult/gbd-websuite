@@ -81,15 +81,20 @@ class Object(gws.base.layer.group.Object):
                 return pla
             if pla.get('type') == 'group':
                 pla['layers'] = [_to_leaf(la) for la in pla['layers']]
-            elif pla.get('type') == 'box':
+            elif pla.get('type') in ('box', 'tile'):
                 pla['type'] = 'compositeLeaf'
             return pla
 
-        return gws.u.merge(
+        p = gws.u.merge(
             p,
-            type='compositeTree',
+            type='compositeBox',
+            url=self.url_path('box'),
             layers=[_to_leaf(la) for la in p['layers']],
         )
+        if self.displayMode == gws.LayerDisplayMode.tile:
+            p.type = 'compositeTile'
+            p.url = self.url_path('tile').replace('/z/', '/compositeLayerUids/{c}/z/')
+        return p
 
     def render_box(self, lri):
         if self.compositeRender:
@@ -97,6 +102,13 @@ class Object(gws.base.layer.group.Object):
             if not lri.renderParams:
                 return
         return super().render_box(lri)
+
+    def render_tile(self, lri):
+        if self.compositeRender:
+            lri.renderParams = self.composite_render_params(lri)
+            if not lri.renderParams:
+                return
+        return super().render_tile(lri)
 
     def composite_render_params(self, lri: gws.LayerRenderInput) -> Optional[dict]:
         leaves = dict(lri.extraParams or {}).get('compositeLayerUids', [])

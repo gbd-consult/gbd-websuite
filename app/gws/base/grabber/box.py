@@ -33,7 +33,7 @@ class Object(core.Object):
 
     def fetch_tile(self, tile, params=None):
         x, y, z = tile
-        n = self.blockSize
+        n = 1 if params else self.blockSize
         rng = self.rangeForLevel[z]
 
         fx0 = max((x // n) * n, rng[0])

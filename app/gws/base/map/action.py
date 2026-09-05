@@ -42,6 +42,7 @@ class GetXyzRequest(gws.Request):
     x: int
     y: int
     z: int
+    compositeLayerUids: Optional[list[str]]
 
 
 class GetLegendRequest(gws.Request):
@@ -180,7 +181,9 @@ class Object(gws.base.action.Object):
 
     def _get_xyz(self, req: gws.WebRequester, p: GetXyzRequest):
         layer = req.user.require_layer(p.layerUid)
-        lri = gws.LayerRenderInput(type=gws.LayerRenderInputType.xyz, user=req.user, x=p.x, y=p.y, z=p.z)
+        lri = gws.LayerRenderInput(type=gws.LayerRenderInputType.xyz, user=req.user, x=p.x, y=p.y, z=p.z, extraParams={})
+        if p.compositeLayerUids:
+            lri.extraParams['compositeLayerUids'] = p.compositeLayerUids
         lro = None
 
         gws.debug.time_start(f'RENDER_XYZ layer={p.layerUid} lri={lri!r}')
