@@ -62,7 +62,7 @@ class Object(server.service.Object):
             # see https://docs.opengeospatial.org/is/13-082r2/13-082r2.html#29
             self.tileMatrixSets.append(
                 gws.TileMatrixSet(
-                    uid=f'TMS_{b.crs.srid}',
+                    identifier=f'TMS_{b.crs.srid}',
                     crs=b.crs,
                     matrices=self.make_tile_matrices(b.extent, 0, 16, self.tileSize),
                 )
@@ -97,7 +97,7 @@ class Object(server.service.Object):
             res = w / (tile_size * size)
             ms.append(
                 gws.TileMatrix(
-                    uid=f'{z:02d}',
+                    identifier=f'{z:02d}',
                     scale=gws.lib.uom.res_to_scale(res),
                     x=extent[0],
                     y=extent[3], # north origin
@@ -210,10 +210,10 @@ class Object(server.service.Object):
 
     def get_matrix_set(self, tms_uid):
         for tms in self.tileMatrixSets:
-            if tms.uid == tms_uid:
+            if tms.identifier == tms_uid:
                 return tms
 
     def get_matrix(self, tms: gws.TileMatrixSet, tm_uid):
         for tm in tms.matrices:
-            if tm.uid == tm_uid:
+            if tm.identifier == tm_uid:
                 return tm

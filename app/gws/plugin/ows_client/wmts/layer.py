@@ -45,7 +45,7 @@ class Object(gws.base.layer.image.Object):
             self.serviceProvider.uid,
             self.activeLayer.name,
             self.activeStyle.name,
-            self.activeTms.uid,
+            self.activeTms.identifier,
             self.mapCrs.srid,
             vars(self.imageFormat),
             list(self.bounds.extent),

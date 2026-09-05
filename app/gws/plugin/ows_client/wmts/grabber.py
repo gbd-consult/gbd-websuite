@@ -20,4 +20,4 @@ class Object(gws.base.grabber.tile.Object):
         self.sourceMatrices = self.tms.matrices
 
     def fetch_source_tile(self, m, col, row):
-        return self.serviceProvider.get_tile(self.urlTemplate, m.uid, col, row)
+        return self.serviceProvider.get_tile(self.urlTemplate, m.identifier, col, row)

@@ -2097,7 +2097,7 @@ class LayerRenderOutput(Data):
 class TileMatrix(Data):
     """WMTS TileMatrix object."""
 
-    uid: str
+    identifier: str
     scale: float
     x: float
     y: float
@@ -2111,7 +2111,7 @@ class TileMatrix(Data):
 class TileMatrixSet(Data):
     """WMTS TileMatrixSet object."""
 
-    uid: str
+    identifier: str
     crs: 'Crs'
     matrices: list[TileMatrix]
 

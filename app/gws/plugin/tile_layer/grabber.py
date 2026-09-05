@@ -19,7 +19,7 @@ class Object(gws.base.grabber.tile.Object):
         for z in range(self.serviceProvider.maxLevel + 1):
             nx, ny = gws.lib.grid.tile_count_for_level(sg, z)
             self.sourceMatrices.append(gws.TileMatrix(
-                uid=str(z),
+                identifier=str(z),
                 x=sg.extent[0],
                 y=sg.extent[3],
                 width=nx,
@@ -30,4 +30,4 @@ class Object(gws.base.grabber.tile.Object):
             ))
 
     def fetch_source_tile(self, m, col, row):
-        return self.serviceProvider.get_tile(col, row, int(m.uid))
+        return self.serviceProvider.get_tile(col, row, int(m.identifier))

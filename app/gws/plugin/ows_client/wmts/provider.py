@@ -38,7 +38,7 @@ class Object(gws.base.ows.client.provider.Object):
         if resource_url:
             return (
                 resource_url
-                .replace('{TileMatrixSet}', tms.uid)
+                .replace('{TileMatrixSet}', tms.identifier)
                 .replace('{Style}', style.name))
 
         params = {
@@ -47,7 +47,7 @@ class Object(gws.base.ows.client.provider.Object):
             'VERSION': self.version,
             'LAYER': sl.name,
             'FORMAT': sl.imageFormat or 'image/jpeg',
-            'TILEMATRIXSET': tms.uid,
+            'TILEMATRIXSET': tms.identifier,
             'STYLE': style.name,
             'TILEMATRIX': '{TileMatrix}',
             'TILECOL': '{TileCol}',

@@ -63,17 +63,17 @@ def layer(ta: server.TemplateArgs, lc: server.LayerCaps):
     yield 'Format', 'image/png'
 
     for tms in ta.tileMatrixSets:
-        yield 'TileMatrixSetLink/TileMatrixSet', tms.uid
+        yield 'TileMatrixSetLink/TileMatrixSet', tms.identifier
 
 
 def tile_matrix_set(ta: server.TemplateArgs, tms: gws.TileMatrixSet):
-    yield 'ows:Identifier', tms.uid
+    yield 'ows:Identifier', tms.identifier
     yield 'ows:SupportedCRS', tms.crs.epsg
 
     for tm in tms.matrices:
         yield (
             'TileMatrix',
-            ('ows:Identifier', tm.uid),
+            ('ows:Identifier', tm.identifier),
             ('ScaleDenominator', tm.scale),
             ('TopLeftCorner', tm.x, ' ', tm.y),
             ('TileWidth', tm.tileWidth),

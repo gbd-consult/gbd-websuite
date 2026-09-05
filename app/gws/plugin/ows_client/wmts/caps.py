@@ -13,7 +13,7 @@ import gws.base.ows.client.parseutil as u
 def parse(xml: str) -> gws.OwsCapabilities:
     caps_el = xmlx.from_string(xml, gws.XmlOptions(compactWhitespace=True, removeNamespaces=True))
     tms_lst = [_tile_matrix_set(el) for el in caps_el.findall('Contents/TileMatrixSet')]
-    tms_dct = {tms.uid: tms for tms in tms_lst}
+    tms_dct = {tms.identifier: tms for tms in tms_lst}
     sls = gws.gis.source.check_layers(
         _layer(el, tms_dct) for el in caps_el.findall('Contents/Layer'))
     return gws.OwsCapabilities(
@@ -75,7 +75,7 @@ def _tile_matrix_set(tms_el: gws.XmlElement):
 
     tms = gws.TileMatrixSet()
 
-    tms.uid = tms_el.textof('Identifier')
+    tms.identifier = tms_el.textof('Identifier')
     tms.crs = gws.lib.crs.require(tms_el.textof('SupportedCRS'))
     tms.matrices = sorted(
         [_tile_matrix(e) for e in tms_el.findall('TileMatrix')],
@@ -91,7 +91,7 @@ def _tile_matrix(tm_el: gws.XmlElement):
     #   ...
 
     tm = gws.TileMatrix()
-    tm.uid = tm_el.textof('Identifier')
+    tm.identifier = tm_el.textof('Identifier')
     tm.scale = u.to_float(tm_el.textof('ScaleDenominator'))
 
     p = u.to_float_pair(tm_el.textof('TopLeftCorner'))
