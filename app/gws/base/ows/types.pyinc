@@ -119,7 +119,7 @@ class OwsService(Node):
         """True if layer can be used in this service."""
 
 
-class OwsProvider(Node):
+class OwsProvider(ServiceProvider):
     """OWS services Provider."""
 
     alwaysXY: bool

@@ -63,6 +63,12 @@ class Object(gws.base.ows.client.provider.Object):
 
         self.configure_operations(cc.operations)
 
+    def cache_hash(self):
+        return gws.u.sha256([
+            super().cache_hash(),
+            self.cfg('bottomFirst', default=False),
+        ])
+
     def get_map(self, bounds: gws.Bounds, width: int, height: int, source_layers: list[gws.SourceLayer], mime: str) -> bytes:
         v3 = self.version >= '1.3'
 

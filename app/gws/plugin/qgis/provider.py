@@ -92,6 +92,12 @@ class Object(gws.OwsProvider):
             self.root.app.monitor.register_periodic_task(self, frequency=self.cfg('watchFrequency', default=0))
             gws.log.info(f'QGIS: monitoring: enabled: {self.server_project_path()!r}')
 
+    def cache_hash(self):
+        return gws.u.sha256([
+            vars(self.store),
+            self.forceCrs.srid,
+        ])
+
     def periodic_task(self):
         h = self.qgis_project().sourceHash
         if h != self.sourceHash:

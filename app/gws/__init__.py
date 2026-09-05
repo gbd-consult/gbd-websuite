@@ -3162,6 +3162,13 @@ class LayerOws(Node):
     xmlNamespace: Optional['XmlNamespace']
 
 
+class ServiceProvider(Node):
+    """Map material source shared by layers, grabbers, models and finders."""
+
+    def cache_hash(self) -> str:
+        """Hash of the source binding, stable across restarts; keys the tile cache."""
+
+
 class Layer(Node):
     """Layer object."""
 
@@ -4002,7 +4009,7 @@ class OwsService(Node):
         """True if layer can be used in this service."""
 
 
-class OwsProvider(Node):
+class OwsProvider(ServiceProvider):
     """OWS services Provider."""
 
     alwaysXY: bool

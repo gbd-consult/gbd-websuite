@@ -26,7 +26,7 @@ class ImageEntry(gws.Data):
     bounds: gws.Bounds
 
 
-class Object(gws.Node):
+class Object(gws.ServiceProvider):
     paths: list[str]
     crs: Optional[gws.Crs]
 
@@ -53,6 +53,12 @@ class Object(gws.Node):
             return
 
         raise gws.ConfigurationError('no paths or pathPattern specified for raster provider.')
+
+    def cache_hash(self):
+        return gws.u.sha256([
+            self.paths,
+            self.crs.srid if self.crs else '',
+        ])
 
     def enumerate_images(self, default_crs: gws.Crs) -> list[ImageEntry]:
         es1 = []

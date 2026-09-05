@@ -28,7 +28,7 @@ class Config(gws.Config):
     """Source grid."""
 
 
-class Object(gws.Node):
+class Object(gws.ServiceProvider):
     url: gws.Url
     grid: gws.MapGrid
     maxLevel: int
@@ -47,6 +47,15 @@ class Object(gws.Node):
             tileSize=p.tileSize,
         )
         self.grid = gws.lib.grid.new(opts)
+
+    def cache_hash(self):
+        return gws.u.sha256([
+            self.url,
+            self.grid.crs.srid,
+            list(self.grid.extent),
+            self.grid.baseResolution,
+            self.grid.tileSize,
+        ])
 
     def get_tile(self, x: int, y: int, z: int) -> bytes:
         url = self.url

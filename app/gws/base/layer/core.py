@@ -234,7 +234,7 @@ class Object(gws.Layer):
         prov = getattr(self, 'serviceProvider', None)
         return gws.u.sha256(
             [
-                prov.uid if prov else '',
+                prov.cache_hash() if prov else '',
                 [sl.name for sl in self.sourceLayers],
                 self.mapCrs.srid,
                 vars(self.imageFormat),

@@ -53,7 +53,7 @@ class Object(gws.base.layer.image.Object):
 
     def create_cache_name(self):
         return gws.u.sha256([
-            self.serviceProvider.path,
+            self.serviceProvider.cache_hash(),
             self.cfg('processing', default=[]),
             self.cfg('transparentColor') or '',
             self.mapCrs.srid,

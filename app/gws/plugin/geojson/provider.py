@@ -15,7 +15,7 @@ class Config(gws.Config):
     """path to a GeoJSON file"""
 
 
-class Object(gws.Node):
+class Object(gws.ServiceProvider):
     path: str
     _records: list[gws.FeatureRecord]
 
@@ -24,6 +24,9 @@ class Object(gws.Node):
 
     def configure(self):
         self.path = self.cfg('path')
+
+    def cache_hash(self):
+        return gws.u.sha256([self.path])
 
     def load_records(self):
         if getattr(self, '_records', None) is None:

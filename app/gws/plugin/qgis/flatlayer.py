@@ -40,7 +40,7 @@ class Object(gws.base.layer.image.Object):
 
     def create_cache_name(self):
         return gws.u.sha256([
-            self.serviceProvider.uid,
+            self.serviceProvider.cache_hash(),
             self.render_params(gws.LayerRenderInput()),
             self.mapCrs.srid,
             vars(self.imageFormat),

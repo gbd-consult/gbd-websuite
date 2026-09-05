@@ -120,6 +120,13 @@ class Object(gws.OwsProvider):
 
         return best_fmt or op.formats[0]
 
+    def cache_hash(self):
+        return gws.u.sha256([
+            self.url,
+            self.forceCrs.srid if self.forceCrs else '',
+            self.alwaysXY,
+        ])
+
     def get_operation(self, verb, method=None):
         for op in self.operations:
             if op.verb == verb:
