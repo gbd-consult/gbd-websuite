@@ -8,19 +8,20 @@ import gws.lib.osx
 
 
 class Object:
-    def __init__(self, base_dir: str, extension: str):
-        self.baseDir = base_dir
+    def __init__(self, cache: gws.LayerCache, extension: str):
+        self.cache = cache
+        self.baseDir = f'{gws.c.MAP_CACHE_DIR}/{cache.name}'
         self.extension = extension
 
     def path(self, mt: gws.MapTile) -> str:
         x, y, z = mt
-        return '{}/{:02d}/{:04d}/{:04d}/{:04d}/{:04d}.{}'.format(
-            self.baseDir, z, x // 10000, x % 10000, y // 10000, y % 10000, self.extension)
+        s = 10000
+        return f'{self.baseDir}/{z:02d}/{x // s:04d}/{x % s:04d}/{y // s:04d}/{y % s:04d}.{self.extension}'
 
-    def read(self, mt: gws.MapTile, max_age: int) -> bytes | None:
+    def read(self, mt: gws.MapTile) -> bytes | None:
         p = self.path(mt)
         age = gws.lib.osx.file_age(p)
-        if 0 <= age < max_age:
+        if 0 <= age < self.cache.maxAge:
             try:
                 with open(p, 'rb') as fp:
                     return fp.read()

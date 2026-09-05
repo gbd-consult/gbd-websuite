@@ -11,7 +11,6 @@ import gws.base.metadata
 import gws.lib.crs
 import gws.gis.source
 import gws.gis.zoom
-import gws.base.grabber.box
 
 from . import grabber, provider
 
@@ -43,29 +42,12 @@ class Object(gws.base.layer.image.Object):
         return True
 
     def create_grabber(self):
-        cache = self.cache or gws.LayerCache(maxAge=0, maxLevel=0)
-        uid = 'grabber_' + gws.u.sha256([
-            self.serviceProvider.uid,
-            [sl.name for sl in self.imageLayers],
-            self.sourceCrs.srid,
-            self.mapCrs.srid,
-            vars(self.imageFormat),
-            list(self.bounds.extent),
-            cache.maxAge or 0,
-            cache.maxLevel or 0,
-            cache.requestTiles or 0,
-            cache.requestBuffer or 0,
-        ])
         return self.root.create_shared(
             grabber.Object,
-            uid=uid,
             crs=self.mapCrs.srid,
             extent=self.bounds.extent,
             imageFormat=self.imageFormat,
-            blockSize=cache.requestTiles or gws.base.grabber.box.DEFAULT_BLOCK_SIZE,
-            cacheMaxAge=cache.maxAge or 0,
-            cacheMaxLevel=cache.maxLevel or 0,
-            edgeBuffer=cache.requestBuffer or 0,
+            _defaultCache=self.cache,
             _defaultProvider=self.serviceProvider,
             _defaultSourceLayers=self.imageLayers,
             _defaultSourceCrs=self.sourceCrs,

@@ -8,33 +8,26 @@ import gws.lib.grid
 import gws.lib.crs
 import gws.lib.image
 import gws.lib.mime
+import gws.gis.cache
 
-from . import store
 
 DEFAULT_IMAGE_FORMAT = gws.lib.image.FormatConfig(name='png8', mimeTypes=['image/png'], options={'mode': 'P'})
-
+DEFAULT_CACHE = gws.LayerCache(name='', maxAge=0, maxLevel=0, requestBuffer=0, requestTiles=0)
 
 class Config(gws.Config):
-    blockSize: int
     crs: gws.CrsName
     extent: gws.Extent
     imageFormat: gws.lib.image.FormatConfig
-    cacheMaxAge: int
-    """Maximum age of cached tiles, in seconds."""
-    cacheMaxLevel: int
-    """Maximum level to cache."""
-    cacheBaseDir: str
-    """Directory where tiles are stored."""
-    cacheUid: str
+
 
 class Object(gws.Grabber):
     """Base raster grabber."""
 
-    blockSize: int
     grid: gws.MapGrid
     rangeForLevel: dict[int, gws.MapTileRange]
     mime: str
-    store: store.Object
+    store: gws.gis.cache.store.Object
+    cache: gws.LayerCache
     extent: gws.Extent
     """Extent in the target CRS."""
     minLevel: int
@@ -46,14 +39,6 @@ class Object(gws.Grabber):
     """Target crs, defines the grabber CRS."""
     imageFormat: gws.ImageFormat
     """Format tiles are stored and returned in."""
-    cacheMaxAge: int
-    """Maximum age of cached tiles, in seconds."""
-    cacheMaxLevel: int
-    """Maximum level to cache."""
-    cacheBaseDir: str
-    """Directory where tiles are stored."""
-    cacheUid: str
-    """Unique cache identifier, used to separate caches of different grabbers."""
 
     def configure(self):
         p = self.cfg('crs')
@@ -64,14 +49,9 @@ class Object(gws.Grabber):
         self.imageFormat = gws.ImageFormat(name=p.name, mimeTypes=p.mimeTypes, options=p.options or {})
         self.mime = self.imageFormat.mimeTypes[0]
 
-
-        self.cacheMaxAge = self.cfg('cacheMaxAge') or 0
-        self.cacheMaxLevel = self.cfg('cacheMaxLevel') or 0
-        self.cacheUid = self.cfg('cacheUid') or self.uid
-        self.cacheBaseDir = f'{gws.c.CACHE_DIR}/grabber/{self.cacheUid}'
-        
-        self.blockSize = self.cfg('blockSize') or 1
-        self.store = store.Object(self.cacheBaseDir, gws.lib.mime.extension_for(self.mime))
+        self.cache = self.cfg('_defaultCache') or DEFAULT_CACHE
+        self.cache.name = self.cache.name or self.uid
+        self.store = gws.gis.cache.store.Object(self.cache, gws.lib.mime.extension_for(self.mime))
 
         self.extent = self.cfg('extent') or self.grid.extent
         self.minLevel = 0
@@ -187,12 +167,12 @@ class Object(gws.Grabber):
         return self.minLevel <= z <= self.maxLevel
 
     def is_storing(self, z):
-        return self.cacheMaxAge > 0 and z <= self.cacheMaxLevel
+        return self.cache.maxAge > 0 and z <= self.cache.maxLevel
 
     def store_read(self, mt: gws.MapTile, params: dict | None = None):
         if params or not self.is_storing(mt[2]):
             return None
-        return self.store.read(mt, self.cacheMaxAge)
+        return self.store.read(mt)
 
     def store_write(self, mt: gws.MapTile, blob: bytes, params: dict | None = None):
         if params or not self.is_storing(mt[2]):

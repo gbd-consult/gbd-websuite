@@ -1,4 +1,7 @@
 from .core import (
-    Config,
+    GlobalConfig,
+    LayerConfig,
     store_in_web_cache,
 )
+from . import store
+

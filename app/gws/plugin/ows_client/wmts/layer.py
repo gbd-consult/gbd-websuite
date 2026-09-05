@@ -40,9 +40,8 @@ class Object(gws.base.layer.image.Object):
         self.grabber = self.create_grabber()
         return True
 
-    def create_grabber(self):
-        cache = self.cache or gws.LayerCache(maxAge=0, maxLevel=0)
-        uid = 'grabber_' + gws.u.sha256([
+    def create_cache_name(self):
+        return 'cache_' + gws.u.sha256([
             self.serviceProvider.uid,
             self.activeLayer.name,
             self.activeStyle.name,
@@ -50,19 +49,17 @@ class Object(gws.base.layer.image.Object):
             self.mapCrs.srid,
             vars(self.imageFormat),
             list(self.bounds.extent),
-            cache.maxAge or 0,
-            cache.maxLevel or 0,
-            cache.requestTiles or 0,
+            self.cache.requestBuffer,
+            self.cache.requestTiles,
         ])
+
+    def create_grabber(self):
         return self.root.create_shared(
             grabber.Object,
-            uid=uid,
             crs=self.mapCrs.srid,
             extent=self.bounds.extent,
             imageFormat=self.imageFormat,
-            blockSize=cache.requestTiles or 1,
-            cacheMaxAge=cache.maxAge or 0,
-            cacheMaxLevel=cache.maxLevel or 0,
+            _defaultCache=self.cache,
             _defaultProvider=self.serviceProvider,
             _defaultTms=self.activeTms,
             _defaultUrlTemplate=self.serviceProvider.tile_url_template(self.activeLayer, self.activeTms, self.activeStyle),

@@ -28,15 +28,6 @@ class LayerClientOptions(Data):
     """CSS class name for the layer tree item."""
 
 
-class LayerCache(Data):
-    """Layer cache."""
-
-    maxAge: int
-    maxLevel: int
-    requestBuffer: int
-    requestTiles: int
-
-
 class FeatureLoadingStrategy(Enum):
     """Loading strategy for features."""
 
@@ -87,7 +78,7 @@ class Layer(Node):
     resolutions: list[float]
     title: str
 
-    cache: Optional[LayerCache]
+    cache: 'LayerCache'
 
     metadata: 'Metadata'
     legend: Optional['Legend']

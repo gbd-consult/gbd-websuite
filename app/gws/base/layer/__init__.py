@@ -1,7 +1,6 @@
 """Base Layer object."""
 
 from .core import (
-    CacheConfig,
     Object,
     Config,
     Props,

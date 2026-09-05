@@ -67,7 +67,7 @@ class Config(gws.ConfigWithAccess):
     """System-wide server actions."""
     auth: Optional[gws.base.auth.manager.Config]
     """Authorization methods and options."""
-    cache: Optional[gws.gis.cache.Config]
+    cache: Optional[gws.gis.cache.GlobalConfig]
     """Global cache configuration."""
     client: Optional[gws.base.client.Config]
     """Gws client configuration."""

@@ -24,7 +24,7 @@ class Config(gws.Config):
     """Max concurrent requests to this source."""
     url: gws.Url
     """Rest url with placeholders {x}, {y} and {z}."""
-    grid: Optional[gws.lib.grid.MapGridConfig]
+    grid: Optional[gws.lib.grid.Config]
     """Source grid."""
 
 
@@ -39,8 +39,8 @@ class Object(gws.Node):
         self.maxLevel = self.cfg('maxLevel')
         self.maxRequests = self.cfg('maxRequests')
 
-        p = cast(gws.lib.grid.MapGridConfig, self.cfg('grid', default=gws.Config()))
-        opts = gws.lib.grid.MapGridOptions(
+        p = cast(gws.lib.grid.Config, self.cfg('grid', default=gws.Config()))
+        opts = gws.lib.grid.Options(
             crs=gws.lib.crs.require(p.crs) if p.crs else gws.lib.crs.WEBMERCATOR,
             extent=p.extent,
             baseResolution=p.baseResolution,

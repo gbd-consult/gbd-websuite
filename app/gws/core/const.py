@@ -11,6 +11,7 @@ UID = int(env.GWS_UID or 1000)
 GID = int(env.GWS_GID or 1000)
 
 CACHE_DIR = f'{VAR_DIR}/cache'
+MAP_CACHE_DIR = f'{CACHE_DIR}/map'
 LEGEND_CACHE_DIR = f'{CACHE_DIR}/legend'
 NET_CACHE_DIR = f'{CACHE_DIR}/net'
 OBJECT_CACHE_DIR = f'{CACHE_DIR}/object'
@@ -32,6 +33,7 @@ EPHEMERAL_DIR = f'{TRANSIENT_DIR}/ephemeral'
 
 ALL_DIRS = [
     CACHE_DIR,
+    MAP_CACHE_DIR,
     LEGEND_CACHE_DIR,
     NET_CACHE_DIR,
     OBJECT_CACHE_DIR,

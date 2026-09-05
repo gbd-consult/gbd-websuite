@@ -42,8 +42,7 @@ class Object(gws.base.layer.group.Object):
             crs=self.mapCrs.srid,
             extent=self.bounds.extent,
             imageFormat=self.imageFormat,
-            cacheMaxAge=0,
-            cacheMaxLevel=0,
+            _defaultCache=self.cache,
             _defaultProvider=self.serviceProvider,
             _defaultParams={},
         )

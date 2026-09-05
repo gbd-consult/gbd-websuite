@@ -3,7 +3,6 @@
 from typing import Optional
 
 import gws
-import gws.base.grabber.box
 import gws.base.layer
 import gws.base.shape
 import gws.config.util
@@ -47,9 +46,8 @@ class Object(gws.base.layer.image.Object):
         self.grabber = self.create_grabber()
         return True
 
-    def create_grabber(self):
-        cache = self.cache or gws.LayerCache(maxAge=0, maxLevel=0)
-        uid = 'grabber_' + gws.u.sha256([
+    def create_cache_name(self):
+        return 'cache_' + gws.u.sha256([
             self.serviceProvider.uid,
             [e.path for e in self.entries],
             self.cfg('processing', default=[]),
@@ -59,21 +57,17 @@ class Object(gws.base.layer.image.Object):
             self.mapCrs.srid,
             vars(self.imageFormat),
             list(self.bounds.extent),
-            cache.maxAge or 0,
-            cache.maxLevel or 0,
-            cache.requestTiles or 0,
-            cache.requestBuffer or 0,
+            self.cache.requestBuffer,
+            self.cache.requestTiles,
         ])
+
+    def create_grabber(self):
         return self.root.create_shared(
             grabber.Object,
-            uid=uid,
             crs=self.mapCrs.srid,
             extent=self.bounds.extent,
             imageFormat=self.imageFormat,
-            blockSize=cache.requestTiles or gws.base.grabber.box.DEFAULT_BLOCK_SIZE,
-            cacheMaxAge=cache.maxAge or 0,
-            cacheMaxLevel=cache.maxLevel or 0,
-            edgeBuffer=cache.requestBuffer or 0,
+            _defaultCache=self.cache,
             _defaultProvider=self.serviceProvider,
             _defaultMsOptions=self.msOptions,
         )

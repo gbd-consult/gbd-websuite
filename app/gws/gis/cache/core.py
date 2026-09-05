@@ -1,20 +1,30 @@
-"""Cache management.
-
-Being redesigned for the grabber subsystem, see gws/base/grabber/___spec.md (4.4).
-"""
+"""Cache management."""
 
 import os
+from typing import Optional
 
 import gws
 
-DEFAULT_MAX_AGE = 7 * 24 * 3600
-DEFAULT_MAX_LEVEL = 3
+
+class LayerConfig(gws.Config):
+    """Layer cache configuration."""
+
+    name: str = ''
+    """Cache directory name; computed from the layer binding if omitted. (new in 8.5)"""
+    maxAge: gws.Duration = '7d'
+    """Cache max. age."""
+    maxLevel: int = 1
+    """Max. zoom level to cache."""
+    requestBuffer: Optional[int]
+    """Pixel buffer for source requests."""
+    requestTiles: Optional[int]
+    """Number of tiles to request at once."""
 
 
-class Config(gws.Config):
+class GlobalConfig(gws.Config):
     """Global cache options"""
 
-    seedingMaxTime: gws.Duration = '600'
+    seedingMaxTime: gws.Duration = '10m'
     """Max. time for a seeding job."""
     seedingConcurrency: int = 1
     """Number of concurrent seeding jobs."""

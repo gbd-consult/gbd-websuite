@@ -10,30 +10,27 @@ import gws.lib.image
 
 from . import core
 
-DEFAULT_BLOCK_SIZE = 4
-DEFAULT_EDGE_BUFFER = 64
+DEFAULT_REQUEST_TILES = 4
+DEFAULT_REQUEST_BUFFER = 64
 DEFAULT_MAX_REQUEST_PIXELS = 4096
-
-
-class Config(core.Config):
-    edgeBuffer: int
-    """Pixel buffer around a tile block, rendered and cropped."""
 
 
 class Object(core.Object):
     """Base grabber for sources that render arbitrary boxes."""
 
     sourceCrs: gws.Crs
-    edgeBuffer: int
+    requestTiles: int
+    requestBuffer: int
     maxRequestPixels: int
 
     def configure(self):
-        self.edgeBuffer = self.cfg('edgeBuffer') or DEFAULT_EDGE_BUFFER
+        self.requestTiles = self.cache.requestTiles or DEFAULT_REQUEST_TILES
+        self.requestBuffer = self.cache.requestBuffer or DEFAULT_REQUEST_BUFFER
         self.maxRequestPixels = DEFAULT_MAX_REQUEST_PIXELS
 
     def fetch_tile(self, tile, params=None):
         x, y, z = tile
-        n = 1 if params else self.blockSize
+        n = 1 if params else self.requestTiles
         rng = self.rangeForLevel[z]
 
         fx0 = max((x // n) * n, rng[0])
@@ -43,7 +40,7 @@ class Object(core.Object):
 
         ts = self.grid.tileSize
         res = gws.lib.grid.resolution_for_level(self.grid, z)
-        buf = self.edgeBuffer
+        buf = self.requestBuffer
 
         extent = gws.lib.grid.extent_for_range(self.grid, (fx0, fy0, fx1, fy1, z))
         extent = gws.lib.extent.buffer(extent, buf * res)
@@ -103,7 +100,7 @@ class Object(core.Object):
             canvas.paste(img, (0, 0))
             return canvas
 
-        buf = self.edgeBuffer
+        buf = self.requestBuffer
         csize = mpx - 2 * buf
         xres = (extent[2] - extent[0]) / w
         yres = (extent[3] - extent[1]) / h

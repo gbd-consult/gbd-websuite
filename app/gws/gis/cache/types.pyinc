@@ -1,0 +1,14 @@
+class LayerCache(Data):
+    """Layer raster cache."""
+
+    name: str
+    """Cache directory name."""
+    maxAge: int
+    """Cache max. age (seconds)."""
+    maxLevel: int
+    """Max. zoom level to cache."""
+    requestBuffer: int
+    """Pixel buffer for source requests."""
+    requestTiles: int
+    """Number of tiles to request at once."""
+

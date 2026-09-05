@@ -31,25 +31,12 @@ class Object(gws.base.layer.image.Object):
         return True
 
     def create_grabber(self):
-        cache = self.cache or gws.LayerCache(maxAge=0, maxLevel=0)
-        uid = 'grabber_' + gws.u.sha256([
-            self.serviceProvider.uid,
-            self.mapCrs.srid,
-            vars(self.imageFormat),
-            list(self.bounds.extent),
-            cache.maxAge or 0,
-            cache.maxLevel or 0,
-            cache.requestTiles or 0,
-        ])
         return self.root.create_shared(
             grabber.Object,
             crs=self.mapCrs.srid,
             extent=self.bounds.extent,
             imageFormat=self.imageFormat,
-            blockSize=cache.requestTiles or 1,
-            cacheMaxAge=cache.maxAge or 0,
-            cacheMaxLevel=cache.maxLevel or 0,
-            cacheUid=uid,
+            _defaultCache=self.cache,
             _defaultProvider=self.serviceProvider,
         )
 

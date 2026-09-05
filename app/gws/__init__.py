@@ -1958,6 +1958,26 @@ class MapGrid(Data):
 
 
 ################################################################################
+# /gis/cache/types.pyinc
+
+
+class LayerCache(Data):
+    """Layer raster cache."""
+
+    name: str
+    """Cache directory name."""
+    maxAge: int
+    """Cache max. age (seconds)."""
+    maxLevel: int
+    """Max. zoom level to cache."""
+    requestBuffer: int
+    """Pixel buffer for source requests."""
+    requestTiles: int
+    """Number of tiles to request at once."""
+################################################################################
+
+
+################################################################################
 # /gis/render/types.pyinc
 
 
@@ -3119,15 +3139,6 @@ class LayerClientOptions(Data):
     """CSS class name for the layer tree item."""
 
 
-class LayerCache(Data):
-    """Layer cache."""
-
-    maxAge: int
-    maxLevel: int
-    requestBuffer: int
-    requestTiles: int
-
-
 class FeatureLoadingStrategy(Enum):
     """Loading strategy for features."""
 
@@ -3178,7 +3189,7 @@ class Layer(Node):
     resolutions: list[float]
     title: str
 
-    cache: Optional[LayerCache]
+    cache: 'LayerCache'
 
     metadata: 'Metadata'
     legend: Optional['Legend']
@@ -3219,6 +3230,19 @@ class Grabber(Node):
     Provides raster images for a layer: fetches them from a source, aligns them to a
     tile grid, stores and reads them back.
     """
+
+    targetCrs: Crs
+    """Target CRS; one grabber serves exactly one CRS."""
+    grid: MapGrid
+    """The fixed target grid for the CRS."""
+    extent: Extent
+    """Extent covered by this grabber, in the target CRS."""
+    rangeForLevel: dict[int, MapTileRange]
+    """Tile range of the extent for each served level."""
+    cache: LayerCache
+    """Cache settings; the cache name keys the tile store."""
+    imageFormat: ImageFormat
+    """Format tiles are stored and returned in."""
 
     def get_tile(self, tile: MapTile, params: Optional[dict] = None) -> bytes:
         """Return a single tile, fetching and storing it if needed.

@@ -15,23 +15,11 @@ import gws.gis.zoom
 import gws.base.metadata
 import gws.lib.mime
 import gws.lib.image
+import gws.gis.cache
 
 from . import ows
 
 DEFAULT_TILE_SIZE = 256
-
-
-class CacheConfig(gws.Config):
-    """Cache configuration"""
-
-    maxAge: gws.Duration = '7d'
-    """Cache max. age."""
-    maxLevel: int = 1
-    """Max. zoom level to cache."""
-    requestBuffer: Optional[int]
-    """Pixel buffer for tile requests."""
-    requestTiles: Optional[int]
-    """Number of tiles to request at once."""
 
 
 class AutoLayersOptions(gws.ConfigWithAccess):
@@ -62,17 +50,10 @@ class ClientOptions(gws.Data):
     """CSS class name for the layer tree item."""
 
 
-class GridProps(gws.Props):
-    origin: str
-    extent: gws.Extent
-    resolutions: list[float]
-    tileSize: int
-
-
 class Config(gws.ConfigWithAccess):
     """Layer configuration"""
 
-    cache: Optional[CacheConfig]
+    cache: Optional[gws.gis.cache.LayerConfig]
     """Cache configuration."""
     clientOptions: Optional[ClientOptions]
     """Options for the layer display in the client."""
@@ -114,8 +95,8 @@ class Config(gws.ConfigWithAccess):
     """Layer is searchable."""
     withLegend: Optional[bool] = True
     """Layer has a legend."""
-    withCache: Optional[bool] = False
-    """Layer is cached."""
+    withCache: Optional[bool] = True
+    """Layer is cached. (changed in 8.5)"""
     withOws: Optional[bool] = True
     """Layer is enabled for OWS services."""
 
@@ -127,7 +108,7 @@ class Props(gws.Props):
     extent: Optional[gws.Extent]
     zoomExtent: Optional[gws.Extent]
     geometryType: Optional[gws.GeometryType]
-    grid: GridProps
+    grid: gws.lib.grid.Props
     layers: Optional[list['Props']]
     loadingStrategy: gws.FeatureLoadingStrategy
     metadata: gws.base.metadata.Props
@@ -190,16 +171,13 @@ class Object(gws.Layer):
         self.legendUrl = ''
 
         self.layers = []
-
-        self.cache = None
-        self.grabber = None
-        self.ows = gws.LayerOws()
-
-        setattr(self, 'provider', None)
         self.sourceLayers = []
+
+        self.grabber = None        
 
     def configure_layer(self):
         """Layer configuration protocol."""
+
         self.configure_provider()
         self.configure_sources()
         self.configure_models()
@@ -235,11 +213,36 @@ class Object(gws.Layer):
             return True
 
     def configure_cache(self):
+        p = cast(
+            gws.gis.cache.core.LayerConfig,
+            self.cfg('cache') or self.root.specs.read({}, 'gws.gis.cache.core.LayerConfig'),
+        )
+        self.cache = gws.LayerCache(
+            name=p.name or '',
+            maxAge=p.maxAge or 0,
+            maxLevel=p.maxLevel or 0,
+            requestBuffer=p.requestBuffer or 0,
+            requestTiles=p.requestTiles or 0,
+        )
         if not self.cfg('withCache'):
-            return True
-        p = self.cfg('cache') or self.root.specs.read({}, 'gws.base.layer.core.CacheConfig')
-        self.cache = gws.LayerCache(p)
+            self.cache.maxAge = 0
+        if not self.cache.name:
+            self.cache.name = self.create_cache_name()
         return True
+
+    def create_cache_name(self) -> str:
+        prov = getattr(self, 'serviceProvider', None)
+        return gws.u.sha256(
+            [
+                prov.uid if prov else '',
+                [sl.name for sl in self.sourceLayers],
+                self.mapCrs.srid,
+                vars(self.imageFormat),
+                list(self.bounds.extent),
+                self.cache.requestBuffer,
+                self.cache.requestTiles,
+            ]
+        )
 
     def configure_grabber(self):
         pass
@@ -369,14 +372,7 @@ class Object(gws.Layer):
         )
 
         if self.grabber:
-            g = self.grabber.grid
-            zmax = gws.lib.grid.level_for_resolution(g, min(self.resolutions))
-            p.grid = GridProps(
-                origin=gws.Origin.nw,
-                extent=g.extent,
-                resolutions=[gws.lib.grid.resolution_for_level(g, z) for z in range(zmax + 1)],
-                tileSize=g.tileSize,
-            )
+            p.grid = gws.lib.grid.props_for_resolutions(self.grabber.grid, self.resolutions)
 
         if self.displayMode == gws.LayerDisplayMode.tile:
             p.type = 'tile'

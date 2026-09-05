@@ -19,8 +19,16 @@ GEOGRAPHIC_FRAME = (-180.0, -90.0, 180.0, 90.0)
 BASE_RESOLUTION_PROJECTED = (WEBMERCATOR_SQUARE[2] - WEBMERCATOR_SQUARE[0]) / DEFAULT_TILE_SIZE
 BASE_RESOLUTION_GEOGRAPHIC = (GEOGRAPHIC_FRAME[3] - GEOGRAPHIC_FRAME[1]) / DEFAULT_TILE_SIZE
 
+class Props(gws.Props):
+    origin: str
+    extent: gws.Extent
+    resolutions: list[float]
+    tileSize: int
 
-class MapGridConfig(gws.Config):
+
+
+
+class Config(gws.Config):
     """Map grid options."""
 
     crs: Optional[gws.CrsName]
@@ -29,7 +37,7 @@ class MapGridConfig(gws.Config):
     tileSize: Optional[int]
 
 
-class MapGridOptions(gws.Data):
+class Options(gws.Data):
     """Map grid options."""
 
     crs: gws.Crs
@@ -39,10 +47,10 @@ class MapGridOptions(gws.Data):
 
 
 def for_crs(crs: gws.Crs) -> gws.MapGrid:
-    return new(MapGridOptions(crs=crs))
+    return new(Options(crs=crs))
 
 
-def new(opts: MapGridOptions) -> gws.MapGrid:
+def new(opts: Options) -> gws.MapGrid:
     mg = gws.MapGrid()
     mg.crs = opts.crs
     mg.extent = opts.extent or (GEOGRAPHIC_FRAME if mg.crs.isGeographic else WEBMERCATOR_SQUARE)
@@ -63,6 +71,16 @@ def level_for_resolution(mg: gws.MapGrid, resolution: float) -> int:
         if r <= resolution or math.isclose(r, resolution):
             return z
     raise ValueError(f'invalid resolution {resolution!r}')
+
+
+def props_for_resolutions(mg: gws.MapGrid, resolutions: list[float]) -> Props:
+    zmax = level_for_resolution(mg, min(resolutions))
+    return Props(
+        origin=gws.Origin.nw,
+        extent=mg.extent,
+        resolutions=[resolution_for_level(mg, z) for z in range(zmax + 1)],
+        tileSize=mg.tileSize,
+    )
 
 
 def tile_count_for_level(mg: gws.MapGrid, z: int) -> tuple[int, int]:
