@@ -13,7 +13,7 @@ class LayerConfig(gws.Config):
     """Cache directory name; computed from the layer binding if omitted. (new in 8.5)"""
     maxAge: gws.Duration = '7d'
     """Cache max. age."""
-    maxLevel: int = 1
+    maxLevel: int = 6
     """Max. zoom level to cache."""
     requestBuffer: Optional[int]
     """Pixel buffer for source requests."""
