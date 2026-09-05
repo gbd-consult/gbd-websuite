@@ -270,7 +270,7 @@ class Object(gws.Layer):
     def configure_resolutions(self):
         p = self.cfg('zoom')
         if p:
-            self.resolutions = gws.gis.zoom.resolutions_from_config(p, self.cfg('_parentResolutions'))
+            self.resolutions = gws.gis.zoom.resolutions_for_layer(p, self.cfg('_parentResolutions'))
             if not self.resolutions:
                 raise gws.Error(f'layer {self!r}: no resolutions, config={p!r} parent={self.parentResolutions!r}')
             return True

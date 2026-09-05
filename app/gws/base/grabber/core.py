@@ -12,6 +12,9 @@ import gws.gis.cache
 
 
 DEFAULT_IMAGE_FORMAT = gws.lib.image.FormatConfig(name='png8', mimeTypes=['image/png'], options={'mode': 'P'})
+
+MAX_LEVEL = 30
+"""Serving stopper: levels beyond this are never served or precomputed."""
 DEFAULT_CACHE = gws.LayerCache(name='', maxAge=0, maxLevel=0, requestBuffer=0, requestTiles=0)
 
 class Config(gws.Config):
@@ -55,7 +58,7 @@ class Object(gws.Grabber):
 
         self.extent = self.cfg('extent') or self.grid.extent
         self.minLevel = 0
-        self.maxLevel = 24
+        self.maxLevel = MAX_LEVEL
 
         self.rangeForLevel = {}
         for z in range(self.minLevel, self.maxLevel + 1):

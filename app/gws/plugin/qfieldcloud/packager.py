@@ -8,7 +8,7 @@ import gws.lib.bounds
 import gws.lib.osx as osx
 import gws.lib.extent
 import gws.gis.render
-import gws.gis.zoom
+import gws.lib.grid
 
 from . import core, caps as caps_mod
 
@@ -189,8 +189,7 @@ class Object:
         bounds = gws.u.require(self.caps.areaOfInterest or self.qfcProject.qgisProvider.bounds)
         bounds = gws.lib.bounds.transform(bounds, le.sourceLayer.supportedCrs[0])
 
-        ls = list(reversed(gws.gis.zoom.OSM_RESOLUTIONS))
-        resolution = ls[max_zoom]
+        resolution = gws.lib.grid.resolution_for_level(gws.lib.grid.for_crs(bounds.crs), max_zoom)
 
         w, h = gws.lib.extent.size(bounds.extent)
         px_size = (w / resolution, h / resolution, gws.Uom.px)
