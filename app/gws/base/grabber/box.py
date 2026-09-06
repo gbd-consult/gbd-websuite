@@ -53,7 +53,7 @@ class Object(core.Object):
         arr = img.to_array()
 
         out = None
-        for tx, ty in core.pairs(fx0, fx1, fy0, fy1):
+        for tx, ty, _ in gws.lib.grid.enum_tiles((fx0, fy0, fx1, fy1, z)):
             px = (tx - fx0) * ts
             py = (ty - fy0) * ts
             tile_img = gws.lib.image.from_array(arr[py:py + ts, px:px + ts].copy())

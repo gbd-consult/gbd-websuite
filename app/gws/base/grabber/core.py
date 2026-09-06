@@ -17,6 +17,7 @@ MAX_LEVEL = 30
 """Serving stopper: levels beyond this are never served or precomputed."""
 DEFAULT_CACHE = gws.LayerCache(name='', maxAge=0, maxLevel=0, requestBuffer=0, requestTiles=0)
 
+
 class Config(gws.Config):
     crs: gws.CrsName
     extent: gws.Extent
@@ -71,13 +72,18 @@ class Object(gws.Grabber):
 
     ##
 
+    def levels(self):
+        return list(self.rangeForLevel)
+
+    def tile_range_for_level(self, z):
+        return self.rangeForLevel[z]
+
     def get_tile(self, tile, params=None):
         x, y, z = tile
         if not self.is_serving(z):
             return self.empty_tile()
 
-        rng = self.rangeForLevel[z]
-        if not in_range(x, y, rng):
+        if not gws.lib.grid.in_range(tile, self.rangeForLevel[z]):
             return self.empty_tile()
 
         blob = self.store_read(tile, params)
@@ -90,15 +96,15 @@ class Object(gws.Grabber):
         return blob
 
     def get_tiles(self, tr, params=None):
-        x0, y0, x1, y1, z = tr
+        z = tr[4]
         if not self.is_serving(z):
             return {}
 
         rng = self.rangeForLevel[z]
         tiles = {}
-        for x, y in pairs(x0, x1, y0, y1):
-            if in_range(x, y, rng):
-                tiles[x, y, z] = self.get_tile((x, y, z), params)
+        for mt in gws.lib.grid.enum_tiles(tr):
+            if gws.lib.grid.in_range(mt, rng):
+                tiles[mt] = self.get_tile(mt, params)
         return tiles
 
     def get_box(self, extent, width, height, params=None):
@@ -122,14 +128,16 @@ class Object(gws.Grabber):
 
         mosaic_extent = gws.lib.grid.extent_for_range(self.grid, rng)
         with gws.lib.gdalx.open_from_image(mosaic, gws.Bounds(crs=self.targetCrs, extent=mosaic_extent)) as ds:
-            img = ds.warp_to_image(dict(
-                dstSRS=self.targetCrs.epsg,
-                outputBounds=extent,
-                outputBoundsSRS=self.targetCrs.epsg,
-                width=w,
-                height=h,
-                resampleAlg='bilinear',
-            ))
+            img = ds.warp_to_image(
+                dict(
+                    dstSRS=self.targetCrs.epsg,
+                    outputBounds=extent,
+                    outputBoundsSRS=self.targetCrs.epsg,
+                    width=w,
+                    height=h,
+                    resampleAlg='bilinear',
+                )
+            )
 
         return img.to_bytes(self.mime, self.imageFormat.options)
 
@@ -146,23 +154,6 @@ class Object(gws.Grabber):
 
     def draw_box(self, extent: gws.Extent, width: int, height: int, params: dict | None = None) -> gws.Image:
         raise NotImplementedError(f'draw_box not implemented in {self!r}')
-
-    ##
-
-    # def cache_status(self):
-    #     levels = []
-    #     for z in range(self.minLevel, self.maxLevel + 1):
-    #         d = f'{self.cacheBaseDir}/{z:02d}'
-    #         if not os.path.isdir(d):
-    #             continue
-    #         n = sum(len(fs) for _, _, fs in os.walk(d))
-    #         rng = self.rangeForLevel[z]
-    #         total = (rng[2] - rng[0] + 1) * (rng[3] - rng[1] + 1) if rng else 0
-    #         levels.append(gws.Data(level=z, storedCount=n, totalCount=total))
-    #     return gws.Data(uid=self.uid, baseDir=self.cacheBaseDir, levels=levels)
-
-    # def cache_drop(self):
-    #     self.store.drop()
 
     ##
 
@@ -190,13 +181,3 @@ class Object(gws.Grabber):
     def empty_box(self, width, height) -> bytes:
         img = gws.lib.image.from_size((width, height))
         return img.to_bytes(self.mime, self.imageFormat.options)
-
-
-def pairs(x0, x1, y0, y1):
-    for y in range(y0, y1 + 1):
-        for x in range(x0, x1 + 1):
-            yield x, y
-
-
-def in_range(x, y, rng):
-    return rng[0] <= x <= rng[2] and rng[1] <= y <= rng[3]

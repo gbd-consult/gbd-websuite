@@ -1974,6 +1974,34 @@ class LayerCache(Data):
     """Pixel buffer for source requests."""
     requestTiles: int
     """Number of tiles to request at once."""
+
+
+class TileStore:
+    """Tile store."""
+
+    baseDir: str
+    """Base directory of the store."""
+
+    def count(self) -> int:
+        """Return the number of tiles stored."""
+
+    def count_for_level(self, z: int) -> int:
+        """Return the number of tiles stored for a level."""
+
+    def path(self, mt: MapTile) -> str:
+        """Return the file path for a tile."""
+
+    def has(self, mt: MapTile, max_age: int) -> bool:
+        """True if the tile is stored and younger than ``max_age`` seconds."""
+
+    def read(self, mt: MapTile) -> Optional[bytes]:
+        """Return a stored tile or ``None`` if missing or stale."""
+
+    def write(self, mt: MapTile, blob: bytes):
+        """Store a tile."""
+
+    def drop(self):
+        """Remove the whole store."""
 ################################################################################
 
 
@@ -3231,6 +3259,9 @@ class Layer(Node):
 # /base/grabber/types.pyinc
 
 
+from gws import MapTileRange
+
+
 class Grabber(Node):
     """Raster grabber.
 
@@ -3244,10 +3275,10 @@ class Grabber(Node):
     """The fixed target grid for the CRS."""
     extent: Extent
     """Extent covered by this grabber, in the target CRS."""
-    rangeForLevel: dict[int, MapTileRange]
-    """Tile range of the extent for each served level."""
     cache: LayerCache
     """Cache settings; the cache name keys the tile store."""
+    store: 'TileStore'
+    """Tile store."""
     imageFormat: ImageFormat
     """Format tiles are stored and returned in."""
 
@@ -3274,6 +3305,12 @@ class Grabber(Node):
         With ``params``, the request is dynamic: the store is bypassed.
         Raises on source failure.
         """
+
+    def levels(self) -> list[int]:
+        """Return a list of levels this grabber supports."""
+
+    def tile_range_for_level(self, z: int) -> MapTileRange:
+        """Return the tile range for a level, in the grabber's grid."""
 ################################################################################
 
 

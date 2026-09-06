@@ -778,7 +778,7 @@ def format_map(fmt: str, x: Union[dict, 'Data'], default: str = '') -> str:
     return fmt.format_map(_FormatMapDefault(x, default))
 
 
-def sha256(x):
+def sha256(x, maxlen: int = None) -> str:
     def _bytes(x):
         if is_bytes(x):
             return bytes(x)
@@ -797,7 +797,8 @@ def sha256(x):
         j = json.dumps(x, default=_default, sort_keys=True, ensure_ascii=True)
         c = j.encode('utf8')
 
-    return hashlib.sha256(c).hexdigest()
+    h = hashlib.sha256(c).hexdigest()
+    return h[:maxlen] if maxlen else h
 
 
 class cached_property:
@@ -976,11 +977,11 @@ def get_server_global(name: str, init_fn):
 
 class _FileLock:
     _PAUSE = 2
-    _TIMEOUT = 60
 
-    def __init__(self, uid):
+    def __init__(self, uid, timeout):
         self.uid = to_uid(uid)
         self.path = const.LOCKS_DIR + '/' + self.uid
+        self.timeout = timeout
 
     def __enter__(self):
         self.acquire()
@@ -1003,8 +1004,8 @@ class _FileLock:
 
             t = time.time() - ts
 
-            if t > self._TIMEOUT:
-                raise ValueError('lock timeout', self.uid)
+            if t > self.timeout:
+                raise TimeoutError('lock timeout', self.uid)
 
             log.debug(f'server lock {self.uid!r} WAITING time={t:.3f}')
             time.sleep(self._PAUSE)
@@ -1013,12 +1014,12 @@ class _FileLock:
         try:
             os.unlink(self.path)
             log.debug(f'server lock {self.uid!r} RELEASED')
-        except:
-            log.exception(f'server lock {self.uid!r} RELEASE ERROR')
+        except Exception as exc:
+            log.exception(f'server lock {self.uid!r} RELEASE ERROR {exc!r}')
 
 
-def server_lock(uid):
-    return _FileLock(uid)
+def server_lock(uid, timeout: int = 60):
+    return _FileLock(uid, timeout)
 
 
 ##

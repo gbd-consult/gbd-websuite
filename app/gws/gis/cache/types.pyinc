@@ -12,3 +12,30 @@ class LayerCache(Data):
     requestTiles: int
     """Number of tiles to request at once."""
 
+
+class TileStore:
+    """Tile store."""
+
+    baseDir: str
+    """Base directory of the store."""
+
+    def count(self) -> int:
+        """Return the number of tiles stored."""
+
+    def count_for_level(self, z: int) -> int:
+        """Return the number of tiles stored for a level."""
+
+    def path(self, mt: MapTile) -> str:
+        """Return the file path for a tile."""
+
+    def has(self, mt: MapTile, max_age: int) -> bool:
+        """True if the tile is stored and younger than ``max_age`` seconds."""
+
+    def read(self, mt: MapTile) -> Optional[bytes]:
+        """Return a stored tile or ``None`` if missing or stale."""
+
+    def write(self, mt: MapTile, blob: bytes):
+        """Store a tile."""
+
+    def drop(self):
+        """Remove the whole store."""

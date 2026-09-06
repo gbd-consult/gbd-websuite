@@ -210,8 +210,7 @@ def file_mtime(path: _Path) -> float:
     """
     try:
         return os.stat(path).st_mtime
-    except OSError as exc:
-        gws.log.debug(f'OSError: file_mtime: {exc}')
+    except OSError:
         return -1
 
 
@@ -226,8 +225,7 @@ def file_age(path: _Path) -> int:
     """
     try:
         return int(time.time() - os.stat(path).st_mtime)
-    except OSError as exc:
-        gws.log.debug(f'OSError: file_age: {exc}')
+    except OSError:
         return -1
 
 
@@ -242,8 +240,7 @@ def file_size(path: _Path) -> int:
     """
     try:
         return os.stat(path).st_size
-    except OSError as exc:
-        gws.log.debug(f'OSError: file_size: {exc}')
+    except OSError:
         return -1
 
 
@@ -260,7 +257,6 @@ def file_checksum(path: _Path) -> str:
         with open(path, 'rb') as fp:
             return hashlib.sha256(fp.read()).hexdigest()
     except OSError as exc:
-        gws.log.debug(f'OSError: file_checksum: {exc}')
         return ''
 
 
@@ -344,6 +340,16 @@ def user_info(uid=None, gid=None) -> dict:
     return r
 
 
+def find_entries(dirname: _Path, deep: bool = True):
+    de: os.DirEntry
+    for de in os.scandir(dirname):
+        if de.name.startswith('.'):
+            continue
+        yield de
+        if de.is_dir() and deep:
+            yield from find_entries(de.path, deep=deep)
+
+
 def find_files(dirname: _Path, pattern=None, ext=None, deep: bool = True):
     """Finds files in a given directory.
 
@@ -362,15 +368,7 @@ def find_files(dirname: _Path, pattern=None, ext=None, deep: bool = True):
             ext = '|'.join(ext)
         pattern = '\\.(' + ext + ')$'
 
-    de: os.DirEntry
-    for de in os.scandir(dirname):
-        if de.name.startswith('.'):
-            continue
-
-        if de.is_dir() and deep:
-            yield from find_files(de.path, pattern)
-            continue
-
+    for de in find_entries(dirname, deep=deep):
         if de.is_file() and (pattern is None or re.search(pattern, de.path)):
             yield de.path
 
@@ -387,19 +385,10 @@ def find_directories(dirname: _Path, pattern=None, deep: bool = True):
     Returns:
         A generator object.
     """
-    de: os.DirEntry
-    for de in os.scandir(dirname):
-        if de.name.startswith('.'):
-            continue
 
-        if not de.is_dir():
-            continue
-
-        if pattern is None or re.search(pattern, de.path):
+    for de in find_entries(dirname, deep=deep):
+        if de.is_dir() and (pattern is None or re.search(pattern, de.path)):
             yield de.path
-
-        if deep:
-            yield from find_directories(de.path, pattern)
 
 
 class ParsePathResult(gws.Data):

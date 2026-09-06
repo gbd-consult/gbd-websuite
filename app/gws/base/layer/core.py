@@ -123,6 +123,8 @@ class Props(gws.Props):
 
 _DEFAULT_IMAGE_FORMAT = gws.lib.image.FormatConfig(name='png8', mimeTypes=['image/png'], options={'mode': 'P'})
 
+CACHE_NAME_LENGTH = 12
+
 
 class Object(gws.Layer):
     parent: gws.Layer
@@ -241,7 +243,8 @@ class Object(gws.Layer):
                 list(self.bounds.extent),
                 self.cache.requestBuffer,
                 self.cache.requestTiles,
-            ]
+            ],
+            maxlen=CACHE_NAME_LENGTH,
         )
 
     def configure_grabber(self):

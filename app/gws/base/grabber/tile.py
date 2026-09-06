@@ -5,6 +5,7 @@ import math
 import gws
 import gws.lib.extent
 import gws.lib.gdalx
+import gws.lib.grid
 import gws.lib.image
 
 from . import core
@@ -37,7 +38,7 @@ class Object(core.Object):
         mh = (r1 - r0 + 1) * m.tileHeight
         mosaic = gws.lib.image.from_size((mw, mh))
 
-        for col, row in core.pairs(c0, c1, r0, r1):
+        for col, row, _ in gws.lib.grid.enum_tiles((c0, r0, c1, r1, 0)):
             blob = self.fetch_source_tile(m, col, row)
             ix = (col - c0) * m.tileWidth
             iy = (row - r0) * m.tileHeight

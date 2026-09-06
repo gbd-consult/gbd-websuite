@@ -1,7 +1,7 @@
 """Map grids: tile pyramid math."""
 
 import math
-from typing import Optional
+from typing import Iterator, Optional
 
 import gws
 
@@ -120,3 +120,19 @@ def extent_for_range(mg: gws.MapGrid, tr: gws.MapTileRange) -> gws.Extent:
 def extent_for_tile(mg: gws.MapGrid, tile: gws.MapTile) -> gws.Extent:
     x, y, z = tile
     return extent_for_range(mg, (x, y, x, y, z))
+
+
+def enum_tiles(tr: gws.MapTileRange) -> Iterator[gws.MapTile]:
+    """Enumerate the tiles of a range, row by row."""
+
+    x0, y0, x1, y1, z = tr
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            yield x, y, z
+
+
+def in_range(mt: gws.MapTile, tr: gws.MapTileRange) -> bool:
+    """True if the tile lies within the range."""
+
+    x, y, z = mt
+    return z == tr[4] and tr[0] <= x <= tr[2] and tr[1] <= y <= tr[3]
