@@ -363,7 +363,7 @@ def _transform_extent_check(ext, srid_from, srid_to):
                 return _normalize_extent(ext_to)
 
         if ext_wgs[2] < ext_au[0] or ext_wgs[0] > ext_au[2] or ext_wgs[3] < ext_au[1] or ext_wgs[1] > ext_au[3]:
-            gws.log.warning(f'transform_extent: {ext=} {srid_from!r}->{srid_to!r}: outside of AoU ')
+            gws.log.debug(f'transform_extent: {ext=} {srid_from!r}->{srid_to!r}: outside of AoU ')
 
     ext_to = tr_from_wgs.transform_bounds(ext_wgs[0], ext_wgs[1], ext_wgs[2], ext_wgs[3])
 

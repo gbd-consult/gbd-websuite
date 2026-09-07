@@ -28,7 +28,7 @@ def seed(root: gws.Root, opts: core.SeedOptions) -> core.SeedResult:
 
 
 def _run(root: gws.Root, opts: core.SeedOptions) -> core.SeedResult:
-    st = core.status(root, opts.layerUids, opts.cacheNames, with_counts=False)
+    st = core.status(root, opts.layerUids, opts.cacheNames, with_counts=True)
     res = core.SeedResult(entries=st.entries, seedTime=0, seedStatus='')
     ts = gws.u.stime()
 
@@ -48,6 +48,8 @@ def _run(root: gws.Root, opts: core.SeedOptions) -> core.SeedResult:
         queue.stop('interrupted')
         for t in threads:
             t.join()
+
+    queue.report()
 
     res.seedTime = gws.u.stime() - ts
     res.seedStatus = queue.seedStatus
@@ -72,9 +74,6 @@ class _BlockGenerator:
                 for bx in range(x0, x1 + 1, self.size):
                     yield bx, by, min(bx + self.size - 1, x1), min(by + self.size - 1, y1), z
 
-    def __repr__(self):
-        return self.entry.name[:12]
-
 
 class _BlockQueue:
     """Yields blocks to seed, round-robin over entries, so that no single source gets all threads."""
@@ -85,7 +84,7 @@ class _BlockQueue:
         self.generators: list[_BlockGenerator] = []
         self.seedStatus = ''
         self.stopped = False
-        self.lastReport = 0.0
+        self.lastReport = gws.u.stime()
 
         for e in entries:
             levels = [lv for lv in e.levels if not zs or lv.z in zs]
@@ -99,7 +98,10 @@ class _BlockQueue:
                 block = next(bg.blocks, None)
                 if block is None:
                     continue
-                bg.startTime.setdefault(block[4], gws.u.stime())
+                z = block[4]
+                if z not in bg.startTime:
+                    bg.startTime[z] = gws.u.stime()
+                    bg.levels[z].cachedTiles = 0
                 self.generators.append(bg)
                 return bg, block
 
@@ -111,7 +113,8 @@ class _BlockQueue:
             lv.fetchedTiles += fetched
             lv.failedTiles += failed
             lv.seedTime = gws.u.stime() - bg.startTime[z]
-            self.report()
+            if gws.u.stime() - self.lastReport >= PROGRESS_INTERVAL:
+                self.report()
 
     def stop(self, status: str):
         with self.lock:
@@ -121,8 +124,6 @@ class _BlockQueue:
                 bg.entry.seedStatus = status
 
     def report(self):
-        if gws.u.stime() - self.lastReport < PROGRESS_INTERVAL:
-            return
         self.lastReport = gws.u.stime()
 
         percents = {}
@@ -130,10 +131,10 @@ class _BlockQueue:
             percents.setdefault(e.name, [0 for _ in range(e.grabber.cache.maxLevel + 1)])
             for lv in e.levels:
                 n = lv.cachedTiles + lv.fetchedTiles + lv.failedTiles
-                percents[e.name][lv.z] = (n / lv.totalTiles) * 100 if lv.totalTiles else 0
+                percents[e.name][lv.z] = int((n / lv.totalTiles) * 100 if lv.totalTiles else 0)
 
         for name, ps in sorted(percents.items()):
-            gws.log.info(f'seed {name[:12]}: %% [{" ".join(f"{p:3.0f}" for p in ps)}]')
+            gws.log.info(f'seed {name}: %% [{" ".join(f"{p:3d}" for p in ps)}]')
 
 
 def _worker(queue: _BlockQueue, deadline: float):
@@ -149,20 +150,20 @@ def _worker(queue: _BlockQueue, deadline: float):
         bg, block = p
 
         try:
-            present, fetched, failed = _seed_block(bg.entry.grabber, block)
+            present, fetched, failed = _seed_block(bg, block)
         except Exception as exc:
-            gws.log.error(f'seed {bg!r}: block {block} error: {exc!r}')
+            gws.log.error(f'seed {bg.entry.name}: block {block} error: {exc!r}')
             present, fetched, failed = 0, 0, 0
 
         queue.block_complete(bg, block, present, fetched, failed)
 
 
-def _seed_block(gr: gws.Grabber, block: gws.MapTileRange) -> tuple[int, int, int]:
+def _seed_block(bg: _BlockGenerator, block: gws.MapTileRange) -> tuple[int, int, int]:
     present = 0
     missing = []
 
     for mt in gws.lib.grid.enum_tiles(block):
-        if gr.store.has(mt, gr.cache.maxAge):
+        if bg.entry.grabber.store.has(mt, bg.entry.grabber.cache.maxAge):
             present += 1
         else:
             missing.append(mt)
@@ -172,8 +173,8 @@ def _seed_block(gr: gws.Grabber, block: gws.MapTileRange) -> tuple[int, int, int
 
     try:
         for mt in missing:
-            gr.get_tile(mt)
+            bg.entry.grabber.get_tile(mt)
         return present, len(missing), 0
     except Exception as exc:
-        gws.log.warning(f'seed: block {block} failed: {exc!r}')
+        gws.log.warning(f'seed {bg.entry.name}: block {block} failed: {exc!r}')
         return present, 0, len(missing)

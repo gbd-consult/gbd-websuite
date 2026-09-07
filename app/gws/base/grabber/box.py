@@ -10,10 +10,6 @@ import gws.lib.image
 
 from . import core
 
-DEFAULT_REQUEST_TILES = 4
-DEFAULT_REQUEST_BUFFER = 64
-DEFAULT_MAX_REQUEST_PIXELS = 4096
-
 
 class Object(core.Object):
     """Base grabber for sources that render arbitrary boxes."""
@@ -24,9 +20,9 @@ class Object(core.Object):
     maxRequestPixels: int
 
     def configure(self):
-        self.requestTiles = self.cache.requestTiles or DEFAULT_REQUEST_TILES
-        self.requestBuffer = self.cache.requestBuffer or DEFAULT_REQUEST_BUFFER
-        self.maxRequestPixels = DEFAULT_MAX_REQUEST_PIXELS
+        self.requestTiles = self.cache.requestTiles
+        self.requestBuffer = self.cache.requestBuffer
+        self.maxRequestPixels = 4096
 
     def fetch_tile(self, tile, params=None):
         x, y, z = tile
@@ -56,7 +52,7 @@ class Object(core.Object):
         for tx, ty, _ in gws.lib.grid.enum_tiles((fx0, fy0, fx1, fy1, z)):
             px = (tx - fx0) * ts
             py = (ty - fy0) * ts
-            tile_img = gws.lib.image.from_array(arr[py:py + ts, px:px + ts].copy())
+            tile_img = gws.lib.image.from_array(arr[py : py + ts, px : px + ts].copy())
             blob = tile_img.to_bytes(self.mime, self.imageFormat.options)
             if (tx, ty) == (x, y):
                 out = blob
@@ -72,6 +68,9 @@ class Object(core.Object):
             return self.draw_chunks(extent, w, h, params)
 
         src_extent = gws.lib.extent.transform(extent, self.targetCrs, self.sourceCrs)
+        if not gws.lib.extent.is_valid(src_extent):
+            return gws.lib.image.from_size((w, h))
+        
         src_res = (src_extent[2] - src_extent[0]) / w
         src_extent = gws.lib.extent.buffer(src_extent, src_res * 2)
         sw = w + 4

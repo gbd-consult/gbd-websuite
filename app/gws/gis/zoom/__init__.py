@@ -140,8 +140,25 @@ def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_
     if not smin:
         return parent_resolutions
 
-    rmin = units.scale_to_res(min(smin))
-    rmax = units.scale_to_res(max(smax))
+    return resolutions_from_scale_range(min(smin), max(smax), parent_resolutions)
+
+
+def resolutions_from_scale_range(smin: float, smax: float, parent_resolutions: list[float]) -> list[float]:
+    """Computes layer resolutions from a scale range.
+
+    The range bounds snap to the nearest parent resolutions and select the range between.
+
+    Args:
+        smin: Min scale denominator.
+        smax: Max scale denominator.
+        parent_resolutions: Parent (map) resolutions.
+
+    Returns:
+        A list of resolutions, sorted ascending.
+    """
+
+    rmin = units.scale_to_res(smin)
+    rmax = units.scale_to_res(smax)
 
     pdsc = sorted(parent_resolutions, reverse=True)
     if rmin > pdsc[0] or rmax < pdsc[-1]:

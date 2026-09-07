@@ -17,11 +17,10 @@ class LayerConfig(gws.Config):
     """Cache max. age."""
     maxLevel: int = 6
     """Max. zoom level to cache."""
-    requestBuffer: Optional[int]
+    requestBuffer: int = 64
     """Pixel buffer for source requests."""
-    requestTiles: Optional[int]
+    requestTiles: int = 4
     """Number of tiles to request at once."""
-
 
 class GlobalConfig(gws.Config):
     """Global cache options"""

@@ -61,7 +61,7 @@ class Object(gws.base.layer.image.Object):
             list(self.bounds.extent),
             self.cache.requestBuffer,
             self.cache.requestTiles,
-        ], maxlen=gws.base.layer.core.CACHE_NAME_LENGTH)
+        ])[: gws.base.layer.core.CACHE_NAME_LENGTH]
 
     def create_grabber(self):
         return self.root.create_shared(

@@ -115,6 +115,7 @@ def _status_to_json(status: core.Status) -> dict:
             {
                 'name': e.name,
                 'dir': e.dir,
+                'crs': e.grabber.targetCrs.srid,
                 'layers': [
                     {
                         'uid': la.uid,
@@ -150,10 +151,11 @@ def _display_status(js: dict, with_grids: bool):
 
         cli.info(f'CACHE  {e["name"]}')
         cli.info(f'DIR    {e["dir"] or "-"}')
+        cli.info(f'CRS    {e["crs"] or "-"}')
 
         la = e['layers'][0]
         uids = ','.join(la['uid'] for la in e['layers'])
-        cli.info(f'LAYER  {len(e["layers"])}: {la["type"]} "{la["title"]}" {uids}')
+        cli.info(f'LAYER  {len(e["layers"])}: {la["type"]} "{la["title"]}" uids={uids}')
         cli.info(f'%%     [{" ".join(f"{lv['percent']:3d}" for lv in e["levels"])}]')
 
         if not with_grids or not e['levels']:
@@ -237,7 +239,7 @@ def _display_seed(js: dict):
                     'failed': lv['failedTiles'],
                     '%%': int(100 * n / lv['totalTiles']) if lv['totalTiles'] else 0,
                     'time': lv["seedTime"],
-                    'tps': round(lv["fetchedTiles"] / lv["seedTime"], 2) if lv["seedTime"] else 0,
+                    'tps': int(lv["fetchedTiles"] / lv["seedTime"]) if lv["seedTime"] else 0,
                 }
             )
 

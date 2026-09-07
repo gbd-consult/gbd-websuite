@@ -43,15 +43,15 @@ class Object(gws.base.layer.image.Object):
     def configure_provider(self):
         return gws.config.util.configure_service_provider_for(self, provider.Object)
 
-    #
-    # reprojecting the world doesn't make sense, just use the map extent here
-    # see also ows_provider/wmts
-    #
-    # def configure_bounds(self):
-    #     if super().configure_bounds():
-    #         return True
-    #     self.bounds = gws.lib.bounds.transform(self.serviceProvider.grid.bounds, self.mapCrs)
-    #     return True
+    def configure_bounds(self):
+        if super().configure_bounds():
+            return True
+        grid = self.serviceProvider.grid
+        self.bounds = gws.lib.bounds.transform(
+            gws.Bounds(crs=grid.crs, extent=grid.extent),
+            self.mapCrs,
+        )
+        return True
 
     ##
 

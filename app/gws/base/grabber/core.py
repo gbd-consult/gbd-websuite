@@ -68,8 +68,6 @@ class Object(gws.Grabber):
                 raise gws.ConfigurationError(f'grabber {self.uid!r}: empty tile range for level {z}')
             self.rangeForLevel[z] = rng
 
-        self._emptyTile = b''
-
     ##
 
     def levels(self):
@@ -174,7 +172,7 @@ class Object(gws.Grabber):
         return self.store.write(mt, blob)
 
     def empty_tile(self) -> bytes:
-        if not self._emptyTile:
+        if not hasattr(self, '_emptyTile'):
             self._emptyTile = self.empty_box(self.grid.tileSize, self.grid.tileSize)
         return self._emptyTile
 

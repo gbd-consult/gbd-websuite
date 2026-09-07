@@ -221,10 +221,10 @@ class Object(gws.Layer):
         )
         self.cache = gws.LayerCache(
             name=p.name or '',
-            maxAge=p.maxAge or 0,
-            maxLevel=p.maxLevel or 0,
-            requestBuffer=p.requestBuffer or 0,
-            requestTiles=p.requestTiles or 0,
+            maxAge=p.maxAge,
+            maxLevel=p.maxLevel,
+            requestBuffer=p.requestBuffer,
+            requestTiles=p.requestTiles,
         )
         if not self.cfg('withCache'):
             self.cache.maxAge = 0
@@ -243,9 +243,8 @@ class Object(gws.Layer):
                 list(self.bounds.extent),
                 self.cache.requestBuffer,
                 self.cache.requestTiles,
-            ],
-            maxlen=CACHE_NAME_LENGTH,
-        )
+            ]
+        )[:CACHE_NAME_LENGTH]
 
     def configure_grabber(self):
         pass

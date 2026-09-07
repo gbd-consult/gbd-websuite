@@ -24,6 +24,8 @@ class Object(core.Object):
         src_extent = extent
         if self.targetCrs != self.sourceCrs:
             src_extent = gws.lib.extent.transform(src_extent, self.targetCrs, self.sourceCrs)
+            if not gws.lib.extent.is_valid(src_extent):
+                return gws.lib.image.from_size((w, h))
 
         m = self.matrix_for_resolution((src_extent[2] - src_extent[0]) / w)
         if self.targetCrs != self.sourceCrs:

@@ -5,7 +5,9 @@ import gws.base.layer
 import gws.config.util
 import gws.lib.bounds
 import gws.lib.crs
+import gws.lib.uom
 import gws.gis.source
+import gws.gis.zoom
 
 from . import grabber, provider
 
@@ -41,17 +43,19 @@ class Object(gws.base.layer.image.Object):
         return True
 
     def create_cache_name(self):
-        return gws.u.sha256([
-            self.serviceProvider.cache_hash(),
-            self.activeLayer.name,
-            self.activeStyle.name,
-            self.activeTms.identifier,
-            self.mapCrs.srid,
-            vars(self.imageFormat),
-            list(self.bounds.extent),
-            self.cache.requestBuffer,
-            self.cache.requestTiles,
-        ], maxlen=gws.base.layer.core.CACHE_NAME_LENGTH)
+        return gws.u.sha256(
+            [
+                self.serviceProvider.cache_hash(),
+                self.activeLayer.name,
+                self.activeStyle.name,
+                self.activeTms.identifier,
+                self.mapCrs.srid,
+                vars(self.imageFormat),
+                list(self.bounds.extent),
+                self.cache.requestBuffer,
+                self.cache.requestTiles,
+            ]
+        )[: gws.base.layer.core.CACHE_NAME_LENGTH]
 
     def create_grabber(self):
         return self.root.create_shared(
@@ -111,23 +115,28 @@ class Object(gws.base.layer.image.Object):
         self.activeStyle = gws.SourceStyle(name='default')
         return True
 
-    #
-    # reprojecting the world doesn't make sense, just use the map extent here
-    # @TODO maybe look for more sensible grid alignment
-    #
-    # def configure_bounds(self):
-    #     if super().configure_bounds():
-    #         return True
-    #     src_bounds = gws.Bounds(crs=self.activeTms.crs, extent=self.activeTms.matrices[0].extent)
-    #     self.bounds = gws.lib.bounds.transform(src_bounds, self.mapCrs)
-    #     return True
+    def configure_bounds(self):
+        if super().configure_bounds():
+            return True
+        src_bounds = gws.Bounds(
+            crs=self.activeTms.crs,
+            extent=self.activeTms.matrices[0].extent,
+        )
+        self.bounds = gws.lib.bounds.transform(src_bounds, self.mapCrs)
+        return True
 
     def configure_resolutions(self):
         if super().configure_resolutions():
             return True
-        res = [gws.lib.uom.scale_to_res(m.scale) for m in self.activeTms.matrices]
-        self.resolutions = sorted(res, reverse=True)
-        return True
+        scales = [m.scale for m in self.activeTms.matrices]
+        self.resolutions = gws.gis.zoom.resolutions_from_scale_range(
+            min(scales),
+            max(scales),
+            self.cfg('_parentResolutions'),
+        )
+        if self.resolutions:
+            return True
+        raise gws.Error(f'layer {self!r}: no matching resolutions')
 
     def configure_legend(self):
         if super().configure_legend():

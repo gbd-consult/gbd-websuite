@@ -778,7 +778,7 @@ def format_map(fmt: str, x: Union[dict, 'Data'], default: str = '') -> str:
     return fmt.format_map(_FormatMapDefault(x, default))
 
 
-def sha256(x, maxlen: int = None) -> str:
+def sha256(x) -> str:
     def _bytes(x):
         if is_bytes(x):
             return bytes(x)
@@ -797,8 +797,7 @@ def sha256(x, maxlen: int = None) -> str:
         j = json.dumps(x, default=_default, sort_keys=True, ensure_ascii=True)
         c = j.encode('utf8')
 
-    h = hashlib.sha256(c).hexdigest()
-    return h[:maxlen] if maxlen else h
+    return hashlib.sha256(c).hexdigest()
 
 
 class cached_property:
