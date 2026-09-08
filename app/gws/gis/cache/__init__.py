@@ -3,5 +3,5 @@ from .core import (
     LayerConfig,
     store_in_web_cache,
 )
-from . import store
+from . import store, view
 

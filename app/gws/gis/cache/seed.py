@@ -46,8 +46,6 @@ def _run(root: gws.Root, opts: core.SeedOptions) -> core.SeedResult:
     except KeyboardInterrupt:
         gws.log.info('seed: interrupted')
         queue.stop('interrupted')
-        for t in threads:
-            t.join()
 
     queue.report()
 
@@ -150,15 +148,16 @@ def _worker(queue: _BlockQueue, deadline: float):
         bg, block = p
 
         try:
-            present, fetched, failed = _seed_block(bg, block)
+            present, fetched, failed = _seed_block(queue, bg, block)
         except Exception as exc:
             gws.log.error(f'seed {bg.entry.name}: block {block} error: {exc!r}')
             present, fetched, failed = 0, 0, 0
 
-        queue.block_complete(bg, block, present, fetched, failed)
+        if not queue.stopped:
+            queue.block_complete(bg, block, present, fetched, failed)
 
 
-def _seed_block(bg: _BlockGenerator, block: gws.MapTileRange) -> tuple[int, int, int]:
+def _seed_block(queue: _BlockQueue, bg: _BlockGenerator, block: gws.MapTileRange) -> tuple[int, int, int]:
     present = 0
     missing = []
 
@@ -173,6 +172,8 @@ def _seed_block(bg: _BlockGenerator, block: gws.MapTileRange) -> tuple[int, int,
 
     try:
         for mt in missing:
+            if queue.stopped:
+                return present, 0, 0
             bg.entry.grabber.get_tile(mt)
         return present, len(missing), 0
     except Exception as exc:

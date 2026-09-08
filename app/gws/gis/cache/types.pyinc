@@ -25,6 +25,9 @@ class TileStore:
     def count_for_level(self, z: int) -> int:
         """Return the number of tiles stored for a level."""
 
+    def range_for_level(self, z: int) -> Optional[MapTileRange]:
+        """Return the bounding tile range of the stored tiles of a level, or ``None`` if empty."""
+
     def path(self, mt: MapTile) -> str:
         """Return the file path for a tile."""
 

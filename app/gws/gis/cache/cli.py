@@ -130,7 +130,7 @@ def _status_to_json(status: core.Status) -> dict:
                         'gridSize': list(lv.gridSize),
                         'totalTiles': lv.totalTiles,
                         'cachedTiles': lv.cachedTiles,
-                        'percent': int(100 * (lv.cachedTiles / lv.totalTiles)),
+                        'percentCached': lv.percentCached,
                     }
                     for lv in e.levels
                 ],
@@ -156,7 +156,7 @@ def _display_status(js: dict, with_grids: bool):
         la = e['layers'][0]
         uids = ','.join(la['uid'] for la in e['layers'])
         cli.info(f'LAYER  {len(e["layers"])}: {la["type"]} "{la["title"]}" uids={uids}')
-        cli.info(f'%%     [{" ".join(f"{lv['percent']:3d}" for lv in e["levels"])}]')
+        cli.info(f'%%     [{" ".join(f"{lv['percentCached']:3d}" for lv in e["levels"])}]')
 
         if not with_grids or not e['levels']:
             continue
@@ -170,7 +170,7 @@ def _display_status(js: dict, with_grids: bool):
                     'grid': f'{lv["gridSize"][0]} x {lv["gridSize"][1]}',
                     'total': lv['totalTiles'],
                     'cached': lv['cachedTiles'],
-                    '%%': lv['percent'],
+                    '%%': lv['percentCached'],
                 }
             )
         cli.info('')

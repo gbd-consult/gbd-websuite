@@ -18,6 +18,32 @@ class Object(gws.TileStore):
     def count_for_level(self, z: int) -> int:
         return _file_count(f'{self.baseDir}/{z:02d}', self.cache.maxAge)
 
+    def range_for_level(self, z: int) -> gws.MapTileRange | None:
+        path = f'{self.baseDir}/{z:02d}'
+        if not gws.u.is_dir(path):
+            return None
+
+        last_time = gws.u.stime() - self.cache.maxAge
+        rng = None
+
+        for de in osx.find_entries(path):
+            if not de.is_file() or de.name.endswith('.tmp'):
+                continue
+            s = de.stat()
+            if s.st_size == 0 or s.st_mtime < last_time:
+                continue
+            a, b, c, d = de.path[len(path) + 1 :].rsplit('.', 1)[0].split('/')
+            x = int(a) * 10000 + int(b)
+            y = int(c) * 10000 + int(d)
+            if rng is None:
+                rng = [x, y, x, y]
+            else:
+                rng = [min(rng[0], x), min(rng[1], y), max(rng[2], x), max(rng[3], y)]
+
+        if rng is None:
+            return None
+        return rng[0], rng[1], rng[2], rng[3], z
+
     def path(self, mt: gws.MapTile) -> str:
         x, y, z = mt
         s = 10000

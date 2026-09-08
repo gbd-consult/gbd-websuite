@@ -22,6 +22,7 @@ class LayerConfig(gws.Config):
     requestTiles: int = 4
     """Number of tiles to request at once."""
 
+
 class GlobalConfig(gws.Config):
     """Global cache options"""
 
@@ -40,6 +41,8 @@ class Level(gws.Data):
     failedTiles: int
     fetchedTiles: int
     totalTiles: int
+    percentCached: int
+    cachedRange: Optional[gws.MapTileRange]
 
 
 class Entry(gws.Data):
@@ -110,6 +113,7 @@ def status(root: gws.Root, layer_uids=None, cache_names=None, with_counts=True) 
                     failedTiles=0,
                     fetchedTiles=0,
                     totalTiles=(x1 - x0 + 1) * (y1 - y0 + 1),
+                    percentCached=0,
                 )
             )
 
@@ -122,10 +126,16 @@ def status(root: gws.Root, layer_uids=None, cache_names=None, with_counts=True) 
             continue
         e.dir = de.path
         if with_counts and e in st.entries:
-            for lv in e.levels:
-                lv.cachedTiles = e.grabber.store.count_for_level(lv.z)
+            compute_counts(e)
 
     return st
+
+
+def compute_counts(e: Entry):
+    for lv in e.levels:
+        lv.cachedTiles = e.grabber.store.count_for_level(lv.z)
+        lv.percentCached = int(lv.cachedTiles * 100 / lv.totalTiles) if lv.totalTiles else 0
+        lv.cachedRange = e.grabber.store.range_for_level(lv.z) if lv.cachedTiles else None
 
 
 def cleanup(root: gws.Root):

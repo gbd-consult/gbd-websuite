@@ -1988,6 +1988,9 @@ class TileStore:
     def count_for_level(self, z: int) -> int:
         """Return the number of tiles stored for a level."""
 
+    def range_for_level(self, z: int) -> Optional[MapTileRange]:
+        """Return the bounding tile range of the stored tiles of a level, or ``None`` if empty."""
+
     def path(self, mt: MapTile) -> str:
         """Return the file path for a tile."""
 
@@ -2764,6 +2767,9 @@ class User(Object):
     def can_edit(self, obj: Object, *context) -> bool:
         """Check if the user has "edit" permissions on an object."""
 
+    def has_role(self, role: str) -> bool:
+        """Check if the user has a specific role."""
+
     def acquire(self, uid: str = None, classref: Optional[ClassRef] = None, access: Optional[Access] = None) -> Optional[Object]:
         """Get a readable object by uid.
 
@@ -2916,6 +2922,7 @@ class AuthMethod(Node):
 
 class AuthMultiFactorState(Enum):
     """State of a multifactor authorization transaction."""
+
     open = 'open'
     """Transaction opened."""
     ok = 'ok'
@@ -3096,8 +3103,7 @@ class AuthSessionManager(Node):
         """
 
     def delete_all(self):
-        """Delete all Sessions.
-        """
+        """Delete all Sessions."""
 
     def get(self, uid: str) -> Optional['AuthSession']:
         """Get a valid Session by its uid.
@@ -3127,8 +3133,7 @@ class AuthSessionManager(Node):
         """
 
     def cleanup(self):
-        """Remove invalid Sessions from the storage.
-        """
+        """Remove invalid Sessions from the storage."""
 ################################################################################
 
 

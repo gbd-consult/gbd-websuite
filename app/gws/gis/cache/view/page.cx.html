@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>GWS cache viewer</title>
+<link rel="stylesheet" href="{url}ol.css">
+<link rel="stylesheet" href="{url}page.css">
+</head>
+<body>
+<div id="sidebar">
+    @for e in entries
+        <div class="cache {'selected' if e.name == name else ''}" data-name="{e.name}">
+            <div class="name">{e.name} / {e.grabber.targetCrs.srid}</div>
+            <div class="info">{e.layers[0].extType} &quot;{e.layers[0].title | html}&quot; ({len(e.layers)})</div>
+            <div class="levels">
+                @for lv in e.levels
+                    @if lv.percentCached == 0
+                        <span class="level p0">0</span>
+                    @else
+                        @let sel = 'selected' if e.name == name and lv.z == z else ''
+                        @let p = 'p100' if lv.percentCached == 100 else 'pn'
+                        <a 
+                            class="level {p} {sel}" 
+                            href="{url}{e.name}/{lv.z}" 
+                            data-name="{e.name}" 
+                            data-z="{lv.z}" 
+                            title="level {lv.z}: {lv.cachedTiles}/{lv.totalTiles}"
+                            >
+                            {lv.percentCached}
+                        </a>
+                    @end
+                @end
+            </div>
+        </div>
+    @end
+</div>
+<div id="map"></div>
+<div id="status"></div>
+<script id="config" type="application/json">{config | json}</script>
+<script src="{url}proj4.js"></script>
+<script src="{url}ol.js"></script>
+<script src="{url}page.js"></script>
+</body>
+</html>

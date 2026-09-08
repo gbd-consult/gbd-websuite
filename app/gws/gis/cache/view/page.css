@@ -1,0 +1,67 @@
+html,
+body {
+    margin: 0;
+    height: 100%;
+    font: 12px monospace;
+}
+body {
+    display: flex;
+}
+#sidebar {
+    width: 460px;
+    overflow: auto;
+    border-right: 1px solid #ccc;
+    box-sizing: border-box;
+}
+#map {
+    flex: 1;
+}
+.cache {
+    padding: 6px 8px;
+    border-bottom: 1px solid #ddd;
+}
+.cache.selected {
+    background: #eef3ff;
+}
+.cache .name {
+    font-weight: bold;
+}
+.cache .info {
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.levels {
+    white-space: nowrap;
+    overflow-x: auto;
+    margin-top: 4px;
+}
+.levels .level {
+    font-size: 10px;
+    display: inline-block;
+    text-align: right;
+    margin-right: 4px;
+    text-decoration: none;
+}
+.levels .p0 {
+    color: #999;
+}
+.levels .p100 {
+    color: #080;
+    font-weight: bold;
+}
+.levels .pn {
+    color: #c00;
+    font-weight: bold;
+}
+.levels .level.selected {
+    outline: 1px solid currentColor;
+}
+#status {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 4px 8px;
+}
