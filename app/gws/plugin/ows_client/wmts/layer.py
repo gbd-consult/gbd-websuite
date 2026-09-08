@@ -5,6 +5,7 @@ import gws.base.layer
 import gws.config.util
 import gws.lib.bounds
 import gws.lib.crs
+import gws.lib.extent
 import gws.lib.uom
 import gws.gis.source
 import gws.gis.zoom
@@ -123,6 +124,13 @@ class Object(gws.base.layer.image.Object):
             extent=self.activeTms.matrices[0].extent,
         )
         self.bounds = gws.lib.bounds.transform(src_bounds, self.mapCrs)
+
+        layer_bounds = gws.gis.source.combined_bounds([self.activeLayer], self.mapCrs)
+        if layer_bounds:
+            ext = gws.lib.extent.intersection([self.bounds.extent, layer_bounds.extent])
+            if ext and gws.lib.extent.is_valid(ext):
+                self.bounds = gws.Bounds(crs=self.mapCrs, extent=ext)
+
         return True
 
     def configure_resolutions(self):
