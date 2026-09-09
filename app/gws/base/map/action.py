@@ -157,13 +157,14 @@ class Object(gws.base.action.Object):
             raise gws.BadRequestError(f'invalid image size')
 
         layer = req.user.require_layer(p.layerUid)
-        lri = gws.LayerRenderInput(type=gws.LayerRenderInputType.box, user=req.user, extraParams={})
+        crs = gws.lib.crs.get(p.crs) or layer.mapCrs
+        lri = gws.LayerRenderInput(type=gws.LayerRenderInputType.box, targetCrs=crs, user=req.user, extraParams={})
 
         if p.compositeLayerUids:
             lri.extraParams['compositeLayerUids'] = p.compositeLayerUids
 
         lri.view = gws.gis.render.map_view_from_bbox(
-            crs=gws.lib.crs.get(p.crs) or layer.mapCrs,
+            crs=crs,
             bbox=p.bbox,
             size=(p.width, p.height, gws.Uom.px),
             dpi=gws.lib.uom.OGC_SCREEN_PPI,
@@ -181,7 +182,7 @@ class Object(gws.base.action.Object):
 
     def _get_xyz(self, req: gws.WebRequester, p: GetXyzRequest):
         layer = req.user.require_layer(p.layerUid)
-        lri = gws.LayerRenderInput(type=gws.LayerRenderInputType.xyz, user=req.user, x=p.x, y=p.y, z=p.z, extraParams={})
+        lri = gws.LayerRenderInput(type=gws.LayerRenderInputType.xyz, targetCrs=layer.mapCrs, user=req.user, x=p.x, y=p.y, z=p.z, extraParams={})
         if p.compositeLayerUids:
             lri.extraParams['compositeLayerUids'] = p.compositeLayerUids
         lro = None

@@ -21,6 +21,8 @@ class LayerConfig(gws.Config):
     """Pixel buffer for source requests."""
     requestTiles: int = 4
     """Number of tiles to request at once."""
+    crs: Optional[list[gws.CrsName]]
+    """CRS to cache tiles in. By default, tiles are cached in all supported CRS."""
 
 
 class GlobalConfig(gws.Config):
@@ -59,9 +61,16 @@ class Status(gws.Data):
     staleDirs: list[str]
 
 
-class SeedOptions(gws.Data):
+class Filter(gws.Data):
+    """Selects cache entries by layer, cache name prefix or CRS; empty lists select everything."""
+
     layerUids: list[str]
     cacheNames: list[str]
+    srids: list[int]
+
+
+class SeedOptions(gws.Data):
+    filter: Filter
     levels: list[int]
     maxTime: int
     concurrency: int
@@ -73,29 +82,31 @@ class SeedResult(gws.Data):
     seedStatus: str
 
 
-def status(root: gws.Root, layer_uids=None, cache_names=None, with_counts=True) -> Status:
+def status(root: gws.Root, flt: Optional[Filter] = None, with_counts=True) -> Status:
     st = Status(entries=[], staleDirs=[])
     emap = {}
+    flt = flt or Filter()
 
     for la in root.find_all(gws.ext.object.layer):
-        gr = cast(gws.Grabber, getattr(la, 'grabber', None))
-        if not gr or gr.cache.maxAge <= 0:
-            continue
-        if gr.cache.name not in emap:
-            emap[gr.cache.name] = Entry(
-                name=gr.cache.name,
-                grabber=gr,
-                dir='',
-                layers=[],
-                levels=[],
-                seedStatus='',
-            )
-        emap[gr.cache.name].layers.append(la)
+        for gr in getattr(la, 'grabbers', {}).values():
+            if gr.cache.maxAge <= 0:
+                continue
+            if gr.cache.name not in emap:
+                emap[gr.cache.name] = Entry(
+                    name=gr.cache.name,
+                    grabber=gr,
+                    dir='',
+                    layers=[],
+                    levels=[],
+                    seedStatus='',
+                )
+            emap[gr.cache.name].layers.append(la)
 
     for _, e in sorted(emap.items()):
-        b1 = not layer_uids or any(la.uid in layer_uids for la in e.layers)
-        b2 = not cache_names or any(e.name.startswith(cn) for cn in cache_names)
-        if b1 and b2:
+        b1 = not flt.layerUids or any(la.uid in flt.layerUids for la in e.layers)
+        b2 = not flt.cacheNames or any(e.name.startswith(cn) for cn in flt.cacheNames)
+        b3 = not flt.srids or e.grabber.targetCrs.srid in flt.srids
+        if b1 and b2 and b3:
             st.entries.append(e)
 
     for e in st.entries:
@@ -145,8 +156,8 @@ def cleanup(root: gws.Root):
         osx.rmdir(d)
 
 
-def drop(root: gws.Root, layer_uids=None, cache_names=None):
-    st = status(root, layer_uids=layer_uids, cache_names=cache_names, with_counts=False)
+def drop(root: gws.Root, flt: Optional[Filter] = None):
+    st = status(root, flt, with_counts=False)
     for e in st.entries:
         gws.log.info(f'drop: removing cache directory {e.dir}')
         e.grabber.store.drop()

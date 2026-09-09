@@ -2,7 +2,7 @@ import gws
 import gws.base.ows.client
 import gws.lib.crs
 import gws.gis.source
-import gws.lib.uom as units
+import gws.gis.zoom
 import gws.lib.xmlx as xmlx
 import gws.base.ows.client.parseutil as u
 
@@ -78,13 +78,13 @@ def _tile_matrix_set(tms_el: gws.XmlElement):
     tms.identifier = tms_el.textof('Identifier')
     tms.crs = gws.lib.crs.require(tms_el.textof('SupportedCRS'))
     tms.matrices = sorted(
-        [_tile_matrix(e) for e in tms_el.findall('TileMatrix')],
+        [_tile_matrix(e, tms.crs) for e in tms_el.findall('TileMatrix')],
         key=lambda m: -m.scale)
 
     return tms
 
 
-def _tile_matrix(tm_el: gws.XmlElement):
+def _tile_matrix(tm_el: gws.XmlElement, crs: gws.Crs):
     # <TileMatrix>
     #   <ows:Identifier>
     #   <ScaleDenominator>
@@ -104,7 +104,7 @@ def _tile_matrix(tm_el: gws.XmlElement):
     tm.tileWidth = u.to_int(tm_el.textof('TileWidth'))
     tm.tileHeight = u.to_int(tm_el.textof('TileHeight'))
 
-    tm.extent = _extent_for_matrix(tm)
+    tm.extent = _extent_for_matrix(tm, crs)
 
     return tm
 
@@ -112,8 +112,8 @@ def _tile_matrix(tm_el: gws.XmlElement):
 # compute a bbox for a TileMatrix
 # see http://portal.opengeospatial.org/files/?artifact_id=35326 page 8
 
-def _extent_for_matrix(m: gws.TileMatrix):
-    res = units.scale_to_res(m.scale)
+def _extent_for_matrix(m: gws.TileMatrix, crs: gws.Crs):
+    res = gws.gis.zoom.scale_to_res(m.scale, crs)
 
     return [
         m.x,

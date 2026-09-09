@@ -4,6 +4,7 @@ import gws
 import gws.base.database
 import gws.base.layer
 import gws.lib.bounds
+import gws.lib.extent
 import gws.base.feature
 import gws.lib.crs
 import gws.base.shape
@@ -50,12 +51,12 @@ class Object(gws.base.layer.vector.Object):
             _defaultTableName=self.tableName
         )
 
-    def configure_bounds(self):
-        if super().configure_bounds():
+    def configure_extent(self):
+        if super().configure_extent():
             return True
         b = self.db.table_bounds(self.tableName)
         if b:
-            self.bounds = gws.lib.bounds.transform(b, self.mapCrs)
+            self.wgsExtent = gws.lib.extent.transform_to_wgs(b.extent, b.crs)
             return True
 
     def configure_search(self):

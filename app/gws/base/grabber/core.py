@@ -1,8 +1,10 @@
 """Base raster grabber."""
 
 import os
+from typing import Optional
 
 import gws
+import gws.lib.extent
 import gws.lib.gdalx
 import gws.lib.grid
 import gws.lib.crs
@@ -15,13 +17,14 @@ DEFAULT_IMAGE_FORMAT = gws.lib.image.FormatConfig(name='png8', mimeTypes=['image
 
 MAX_LEVEL = 30
 """Serving stopper: levels beyond this are never served or precomputed."""
-DEFAULT_CACHE = gws.LayerCache(name='', maxAge=0, maxLevel=0, requestBuffer=0, requestTiles=0)
 
 
-class Config(gws.Config):
-    crs: gws.CrsName
-    extent: gws.Extent
-    imageFormat: gws.lib.image.FormatConfig
+class Options(gws.Data):
+    crs: gws.Crs
+    cache: gws.MapCache
+    extent: Optional[gws.Extent]
+    imageFormat: Optional[gws.ImageFormat]
+    provider: Optional[gws.ServiceProvider]
 
 
 class Object(gws.Grabber):
@@ -31,7 +34,7 @@ class Object(gws.Grabber):
     rangeForLevel: dict[int, gws.MapTileRange]
     mime: str
     store: gws.gis.cache.store.Object
-    cache: gws.LayerCache
+    cache: gws.MapCache
     extent: gws.Extent
     """Extent in the target CRS."""
     minLevel: int
@@ -44,20 +47,21 @@ class Object(gws.Grabber):
     imageFormat: gws.ImageFormat
     """Format tiles are stored and returned in."""
 
-    def configure(self):
-        p = self.cfg('crs')
-        self.targetCrs = gws.lib.crs.require(p) if p else gws.lib.crs.WEBMERCATOR
+    def __init__(self, opts: Options):
+        self.targetCrs = opts.crs
         self.grid = gws.lib.grid.for_crs(self.targetCrs)
 
-        p = self.cfg('imageFormat') or DEFAULT_IMAGE_FORMAT
-        self.imageFormat = gws.ImageFormat(name=p.name, mimeTypes=p.mimeTypes, options=p.options or {})
+        p = DEFAULT_IMAGE_FORMAT
+        self.imageFormat = opts.imageFormat or gws.ImageFormat(name=p.name, mimeTypes=p.mimeTypes, options=p.options or {})
         self.mime = self.imageFormat.mimeTypes[0]
 
-        self.cache = self.cfg('_defaultCache') or DEFAULT_CACHE
-        self.cache.name = self.cache.name or self.uid
-        self.store = gws.gis.cache.store.Object(self.cache, gws.lib.mime.extension_for(self.mime))
+        self.cache = opts.cache
+        self.store = gws.gis.cache.store.Object(
+            self.cache,
+            gws.lib.mime.extension_for(self.mime),
+        )
 
-        self.extent = self.cfg('extent') or self.grid.extent
+        self.extent = opts.extent or gws.lib.extent.transform_from_wgs(self.targetCrs.wgsMaxExtent, self.targetCrs)
         self.minLevel = 0
         self.maxLevel = MAX_LEVEL
 
@@ -65,7 +69,7 @@ class Object(gws.Grabber):
         for z in range(self.minLevel, self.maxLevel + 1):
             rng = gws.lib.grid.range_for_extent(self.grid, self.extent, z)
             if not rng:
-                raise gws.ConfigurationError(f'grabber {self.uid!r}: empty tile range for level {z}')
+                raise gws.ConfigurationError(f'grabber {self.cache.name!r}: empty tile range for level {z}')
             self.rangeForLevel[z] = rng
 
     ##

@@ -159,7 +159,7 @@ class Object(gws.base.template.Object):
             backgroundColor=mp.backgroundColor,
             bbox=mp.bbox,
             center=mp.center,
-            crs=tri.crs,
+            targetCrs=tri.crs,
             dpi=tri.dpi,
             mapSize=self.mapSize,
             notify=notify,

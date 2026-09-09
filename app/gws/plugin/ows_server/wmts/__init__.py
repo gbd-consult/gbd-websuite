@@ -7,21 +7,28 @@ References:
     - OGC 07-057r7 (https://portal.ogc.org/files/?artifact_id=35326)
 """
 
+from typing import Optional
+
 import gws
 import gws.config.util
 import gws.base.ows.server as server
-import gws.lib.extent
+import gws.lib.crs
+import gws.lib.grid
 import gws.lib.mime
 import gws.gis.render
-import gws.lib.uom
+import gws.gis.zoom
 
 gws.ext.new.owsService('wmts')
+
+MAX_LEVEL = 20
+"""Finest advertised tile matrix level."""
 
 
 class Config(server.service.Config):
     """WMTS Service configuration"""
 
-    pass
+    grids: Optional[list[gws.lib.grid.Config]]
+    """Tile matrix grids, one per CRS. A supported CRS without a grid uses the default grid."""
 
 
 _DEFAULT_TEMPLATES = [
@@ -51,20 +58,47 @@ class Object(server.service.Object):
     isOwsCommon = True
 
     tileMatrixSets: list[gws.TileMatrixSet]
-    tileSize = 256
+    grids: dict[str, gws.MapGrid]
+    """Grids by tile matrix set identifier."""
 
     def configure(self):
         gws.config.util.configure_templates_for(self, extra=_DEFAULT_TEMPLATES)
 
+        configured = {}
+        for p in self.cfg('grids', default=[]):
+            if not p.crs:
+                raise gws.ConfigurationError('wmts grid: crs is required')
+            crs = gws.lib.crs.require(p.crs)
+            if crs.srid in configured:
+                raise gws.ConfigurationError(f'wmts grid: duplicate crs {crs.srid}')
+            configured[crs.srid] = gws.lib.grid.new(
+                gws.lib.grid.Options(
+                    crs=crs,
+                    extent=p.extent,
+                    baseResolution=p.baseResolution,
+                    tileSize=p.tileSize,
+                    withSnap=p.withSnap,
+                )
+            )
+
+        supported = {b.crs.srid for b in self.supportedBounds}
+        for srid in configured:
+            if srid not in supported:
+                raise gws.ConfigurationError(f'wmts grid: crs {srid} is not supported by the service')
+
         # @TODO different matrix sets per layer
         self.tileMatrixSets = []
+        self.grids = {}
         for b in self.supportedBounds:
             # see https://docs.opengeospatial.org/is/13-082r2/13-082r2.html#29
+            mg = configured.get(b.crs.srid) or gws.lib.grid.for_crs(b.crs)
+            ident = f'TMS_{b.crs.srid}'
+            self.grids[ident] = mg
             self.tileMatrixSets.append(
                 gws.TileMatrixSet(
-                    identifier=f'TMS_{b.crs.srid}',
+                    identifier=ident,
                     crs=b.crs,
-                    matrices=self.make_tile_matrices(b.extent, 0, 16, self.tileSize),
+                    matrices=self.make_tile_matrices(mg, 0, MAX_LEVEL),
                 )
             )
 
@@ -87,25 +121,22 @@ class Object(server.service.Object):
             ),
         ]
 
-    def make_tile_matrices(self, extent, min_zoom, max_zoom, tile_size):
+    def make_tile_matrices(self, mg: gws.MapGrid, min_zoom, max_zoom):
         ms = []
 
-        w, h = gws.lib.extent.size(extent)
-
         for z in range(min_zoom, max_zoom + 1):
-            size = 1 << z
-            res = w / (tile_size * size)
+            nx, ny = gws.lib.grid.tile_count_for_level(mg, z)
             ms.append(
                 gws.TileMatrix(
                     identifier=f'{z:02d}',
-                    scale=gws.lib.uom.res_to_scale(res),
-                    x=extent[0],
-                    y=extent[3], # north origin
-                    tileWidth=tile_size,
-                    tileHeight=tile_size,
-                    width=size,
-                    height=size,
-                    extent=extent,
+                    scale=gws.gis.zoom.res_to_scale(gws.lib.grid.resolution_for_level(mg, z), mg.crs),
+                    x=mg.extent[0],
+                    y=mg.extent[3],
+                    tileWidth=mg.tileSize,
+                    tileHeight=mg.tileSize,
+                    width=nx,
+                    height=ny,
+                    extent=mg.extent,
                 )
             )
 
@@ -147,12 +178,13 @@ class Object(server.service.Object):
         gws.log.debug(f'WMTS: bounds for tile {tms_uid=} {tm_uid=} {row=} {col=}: {bounds}')
 
         mime = sr.requested_format('FORMAT')
+        ts = self.grids[tms_uid].tileSize
 
         mri = gws.MapRenderInput(
             backgroundColor=None,
             bbox=bounds.extent,
-            crs=bounds.crs,
-            mapSize=(self.tileSize, self.tileSize, gws.Uom.px),
+            targetCrs=bounds.crs,
+            mapSize=(ts, ts, gws.Uom.px),
             planes=[
                 gws.MapRenderInputPlane(
                     type=gws.MapRenderInputPlaneType.imageLayer,
@@ -199,14 +231,9 @@ class Object(server.service.Object):
         if not tm:
             return
 
-        w, h = gws.lib.extent.size(tm.extent)
-        span = w / tm.width
-
-        x = tm.x + col * span
-        y = tm.y - row * span
-
-        bbox = x, y - span, x + span, y
-        return gws.Bounds(crs=tms.crs, extent=bbox)
+        mg = self.grids[tms_uid]
+        z = int(tm.identifier)
+        return gws.Bounds(crs=tms.crs, extent=gws.lib.grid.extent_for_tile(mg, (col, row, z)))
 
     def get_matrix_set(self, tms_uid):
         for tms in self.tileMatrixSets:

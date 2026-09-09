@@ -87,7 +87,7 @@ def _find(st: core.Status, name: str) -> core.Entry:
 
 
 def _tile(root: gws.Root, name: str, z: int, x: int, y: int) -> gws.ContentResponse:
-    e = _find(core.status(root, cache_names=[name], with_counts=False), name)
+    e = _find(core.status(root, core.Filter(cacheNames=[name]), with_counts=False), name)
     store = e.grabber.store
     p = store.path((x, y, z))
     if not os.path.isfile(p):

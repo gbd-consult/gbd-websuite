@@ -75,7 +75,7 @@ class Object(gws.Map):
 
         p = self.cfg('zoom')
         self.resolutions = gws.gis.zoom.resolutions_from_config(p, crs=self.bounds.crs)
-        self.initResolution = gws.gis.zoom.init_resolution(p, self.resolutions)
+        self.initResolution = gws.gis.zoom.init_resolution(p, self.resolutions, crs=self.bounds.crs)
 
         p = self.cfg('coordinatePrecision')
         self.coordinatePrecision = p or self.bounds.crs.coordinatePrecision

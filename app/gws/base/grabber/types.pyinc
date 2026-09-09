@@ -1,8 +1,5 @@
 
-from gws import MapTileRange
-
-
-class Grabber(Node):
+class Grabber:
     """Raster grabber.
 
     Provides raster images for a layer: fetches them from a source, aligns them to a
@@ -15,8 +12,8 @@ class Grabber(Node):
     """The fixed target grid for the CRS."""
     extent: Extent
     """Extent covered by this grabber, in the target CRS."""
-    cache: LayerCache
-    """Cache settings; the cache name keys the tile store."""
+    cache: MapCache
+    """Cache settings; the name (``<layer cache name>_<srid>``) keys the tile store."""
     store: 'TileStore'
     """Tile store."""
     imageFormat: ImageFormat

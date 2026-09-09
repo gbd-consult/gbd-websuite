@@ -14,7 +14,7 @@ PROGRESS_INTERVAL = 5
 
 
 def seed(root: gws.Root, opts: core.SeedOptions) -> core.SeedResult:
-    defaults = core.SeedOptions(layerUids=[], cacheNames=[], levels=[], maxTime=600, concurrency=1)
+    defaults = core.SeedOptions(filter=None, levels=[], maxTime=600, concurrency=1)
     opts = cast(core.SeedOptions, gws.u.merge(defaults, opts))
     try:
         with gws.u.server_lock('seed', 0):
@@ -28,7 +28,7 @@ def seed(root: gws.Root, opts: core.SeedOptions) -> core.SeedResult:
 
 
 def _run(root: gws.Root, opts: core.SeedOptions) -> core.SeedResult:
-    st = core.status(root, opts.layerUids, opts.cacheNames, with_counts=True)
+    st = core.status(root, opts.filter, with_counts=True)
     res = core.SeedResult(entries=st.entries, seedTime=0, seedStatus='')
     ts = gws.u.stime()
 

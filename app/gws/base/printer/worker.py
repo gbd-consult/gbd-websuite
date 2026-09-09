@@ -145,7 +145,7 @@ class Object(gws.base.job.worker.Object):
             backgroundColor=_PAPER_COLOR,
             bbox=mp.bbox,
             center=mp.center,
-            crs=tri.crs,
+            targetCrs=tri.crs,
             dpi=tri.dpi,
             notify=tri.notify,
             planes=planes,

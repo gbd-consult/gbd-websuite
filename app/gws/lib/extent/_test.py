@@ -56,20 +56,18 @@ def test_intersection():
     a = (100, 100, 300, 300)
     b = (200, 200, 400, 400)
     c = (200, 100, 400, 300)
-    exts = [a, b, c]
-    assert extent.intersection(exts) == (200, 200, 300, 300)
+    assert extent.intersection(a, b, c) == (200, 200, 300, 300)
 
 
 def test_intersection_empty():
     a = (100, 100, 300, 300)
     b = (200, 200, 400, 400)
     c = (500, 600, 700, 700)
-    exts = [a, b, c]
-    assert not extent.intersection(exts)
+    assert not extent.intersection(a, b, c)
 
 
-def test_intersection_empty_list():
-    assert not extent.intersection([])
+def test_intersection_no_args():
+    assert not extent.intersection()
 
 
 def test_center():
@@ -99,12 +97,12 @@ def test_union():
         (100, 100, 300, 200),
         (100, 100, 200, 400)
     ]
-    assert extent.union(exts) == (1, 2, 300, 400)
+    assert extent.union(*exts) == (1, 2, 300, 400)
 
 
 def test_union_empty():
     with u.raises(Exception):
-        extent.union([])
+        extent.union()
 
 
 def test_intersect():

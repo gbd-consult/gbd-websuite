@@ -63,14 +63,14 @@ def from_box(box: str) -> Optional[gws.Extent]:
 #
 
 
-def intersection(exts: list[gws.Extent]) -> Optional[gws.Extent]:
+def intersection(*exts: gws.Extent) -> Optional[gws.Extent]:
     """Creates an extent that is the intersection of all given extents.
 
     Args:
         exts: Extents.
 
     Returns:
-        An extent.
+        An extent, or ``None`` if the extents do not intersect or none are given.
     """
 
     if not exts:
@@ -142,7 +142,7 @@ def buffer(e: gws.Extent, buf: float) -> gws.Extent:
     )
 
 
-def union(exts: list[gws.Extent]) -> gws.Extent:
+def union(*exts: gws.Extent) -> gws.Extent:
     """Creates the smallest extent that contains all the given extents.
 
     Args:

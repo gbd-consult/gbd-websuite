@@ -41,7 +41,7 @@ class MapRenderInput(Data):
     backgroundColor: int
     bbox: Extent
     center: Point
-    crs: 'Crs'
+    targetCrs: 'Crs'
     dpi: int
     mapSize: UomSize
     notify: Callable
@@ -92,6 +92,7 @@ class LayerRenderInput(Data):
     renderParams: dict
     project: 'Project'
     style: 'Style'
+    targetCrs: 'Crs'
     type: LayerRenderInputType
     user: 'User'
     view: MapView

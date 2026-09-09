@@ -27,6 +27,7 @@ import gws.lib.image
 import gws.base.metadata
 import gws.lib.mime
 import gws.lib.uom
+import gws.gis.zoom
 
 gws.ext.new.owsService('wms')
 
@@ -166,7 +167,7 @@ class Object(server.service.Object):
         mri = gws.MapRenderInput(
             backgroundColor=None if transparent else 0,
             bbox=sr.bounds.extent,
-            crs=sr.bounds.crs,
+            targetCrs=sr.bounds.crs,
             mapSize=(sr.pxSize[0], sr.pxSize[1], gws.Uom.px),
             planes=planes,
             project=self.project,
@@ -285,8 +286,8 @@ class Object(server.service.Object):
         dpi = sr.int_param('DPI', default=0) or sr.int_param('MAP_RESOLUTION', default=0)
         if dpi:
             # honor the dpi setting - compute the scale with "their" dpi and convert to "our" resolution
-            sr.resX = gws.lib.uom.scale_to_res(gws.lib.uom.mm_to_px(1000.0 * wh[0] / sr.pxSize[0], dpi))
-            sr.resY = gws.lib.uom.scale_to_res(gws.lib.uom.mm_to_px(1000.0 * wh[1] / sr.pxSize[1], dpi))
+            sr.resX = gws.gis.zoom.scale_to_res(gws.lib.uom.mm_to_px(1000.0 * wh[0] / sr.pxSize[0], dpi), sr.bounds.crs)
+            sr.resY = gws.gis.zoom.scale_to_res(gws.lib.uom.mm_to_px(1000.0 * wh[1] / sr.pxSize[1], dpi), sr.bounds.crs)
         else:
             sr.resX = wh[0] / sr.pxSize[0]
             sr.resY = wh[1] / sr.pxSize[1]
@@ -295,7 +296,7 @@ class Object(server.service.Object):
         sr.resolution = sr.resX
 
         gws.log.debug(
-            f'set_size_and_resolution: {wh=} px={sr.pxSize} {dpi=} resX={sr.resX} resY={sr.resY} 1:{gws.lib.uom.res_to_scale(sr.resolution)}'
+            f'set_size_and_resolution: {wh=} px={sr.pxSize} {dpi=} resX={sr.resX} resY={sr.resY} 1:{gws.gis.zoom.res_to_scale(sr.resolution, sr.bounds.crs)}'
         )
 
     def visible_layer_caps(self, sr, lcs: list[server.LayerCaps]) -> list[server.LayerCaps]:

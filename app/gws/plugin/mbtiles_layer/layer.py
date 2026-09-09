@@ -7,6 +7,7 @@ import gws.base.layer
 import gws.config.util
 import gws.lib.gdalx
 import gws.lib.bounds
+import gws.lib.extent
 
 from . import grabber, provider
 
@@ -39,37 +40,25 @@ class Object(gws.base.layer.image.Object):
         gws.config.util.configure_service_provider_for(self, provider.Object)
         self.msOptions.path = self.serviceProvider.path
 
-    def configure_bounds(self):
-        if super().configure_bounds():
-            return True
+    def configure_extent(self):
         with gws.lib.gdalx.open_raster(self.msOptions.path) as gd:
-            self.bounds = gws.lib.bounds.transform(gd.bounds(), self.mapCrs)
-        self.msOptions.crs = self.bounds.crs
+            b = gd.bounds()
+        self.msOptions.crs = b.crs
+        if super().configure_extent():
+            return True
+        self.wgsExtent = gws.lib.extent.transform_to_wgs(b.extent, b.crs)
         return True
 
-    def configure_grabber(self):
-        self.grabber = self.create_grabber()
-        return True
-
-    def create_cache_name(self):
+    def create_cache_name(self, cache):
         return gws.u.sha256([
             self.serviceProvider.cache_hash(),
             self.cfg('processing', default=[]),
             self.cfg('transparentColor') or '',
-            self.mapCrs.srid,
             vars(self.imageFormat),
-            list(self.bounds.extent),
-            self.cache.requestBuffer,
-            self.cache.requestTiles,
+            list(self.wgsExtent),
+            cache.requestBuffer,
+            cache.requestTiles,
         ])[: gws.base.layer.core.CACHE_NAME_LENGTH]
 
-    def create_grabber(self):
-        return self.root.create_shared(
-            grabber.Object,
-            crs=self.mapCrs.srid,
-            extent=self.bounds.extent,
-            imageFormat=self.imageFormat,
-            _defaultCache=self.cache,
-            _defaultProvider=self.serviceProvider,
-            _defaultMsOptions=self.msOptions,
-        )
+    def create_grabber(self, opts):
+        return grabber.Object(opts, msOptions=self.msOptions)

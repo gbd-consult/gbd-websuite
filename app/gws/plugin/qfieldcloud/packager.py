@@ -218,6 +218,7 @@ class Object:
 
         lri = gws.LayerRenderInput(
             type=gws.LayerRenderInputType.box,
+            targetCrs=bounds.crs,
             user=self.user,
             view=mv,
         )

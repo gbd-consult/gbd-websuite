@@ -10,8 +10,9 @@ from . import provider
 class Object(gws.base.grabber.tile.Object):
     serviceProvider: provider.Object
 
-    def configure(self):
-        self.serviceProvider = self.cfg('_defaultProvider')
+    def __init__(self, opts: gws.base.grabber.Options):
+        super().__init__(opts)
+        self.serviceProvider = opts.provider
 
         sg = self.serviceProvider.grid
         self.sourceCrs = sg.crs

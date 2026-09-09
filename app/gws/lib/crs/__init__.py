@@ -40,6 +40,14 @@ class Object(gws.Crs):
             return ext
         return _transform_extent_check(ext, self.srid, crs_to.srid)
 
+    def clip_extent(self, wgs_extent):
+        a = wgs_extent
+        b = self.wgsMaxExtent
+        x0, y0, x1, y1 = max(a[0], b[0]), max(a[1], b[1]), min(a[2], b[2]), min(a[3], b[3])
+        if x0 >= x1 or y0 >= y1:
+            return None
+        return x0, y0, x1, y1
+
     def transformer(self, crs_to):
         tr = _pyproj_transformer(self.srid, crs_to.srid)
         return tr.transform
@@ -105,7 +113,7 @@ class Object(gws.Crs):
         }
 
 
-#
+##
 
 
 def qgis_extent_width(extent: gws.Extent) -> float:
@@ -122,7 +130,7 @@ def qgis_extent_width(extent: gws.Extent) -> float:
     return (x1 - x0) / 180.0 * radius * c
 
 
-#
+##
 
 # enough precision to represent 1cm
 COORDINATE_PRECISION_DEG = 7
@@ -147,6 +155,7 @@ WGS84: gws.Crs = Object(
     datum='World Geodetic System 1984 ensemble',
     wgsExtent=(-180, -90, 180, 90),
     extent=(-180, -90, 180, 90),
+    wgsMaxExtent=(-180, -90, 180, 90),
     coordinatePrecision=COORDINATE_PRECISION_DEG,
 )
 
@@ -176,12 +185,18 @@ WEBMERCATOR: gws.Crs = Object(
         20037508.342789244,
         20048966.104014598,
     ),
+    wgsMaxExtent=(-180, -85.06, 180, 85.06),
     coordinatePrecision=COORDINATE_PRECISION_M,
 )
 
 WEBMERCATOR.bounds = gws.Bounds(crs=WEBMERCATOR, extent=WEBMERCATOR.extent)
 
 WEBMERCATOR_RADIUS = 6378137
+"""Radius of the web mercator sphere (the WGS84 semi-major axis), metres."""
+
+METERS_PER_DEGREE = 2 * math.pi * WEBMERCATOR_RADIUS / 360
+"""Metres per degree at the equator; the OGC convention for scale denominators in geographic CRS (WMTS 1.0, 6.1)."""
+
 WEBMERCATOR_SQUARE = (
     -math.pi * WEBMERCATOR_RADIUS,
     -math.pi * WEBMERCATOR_RADIUS,
@@ -521,7 +536,22 @@ def _make_crs(srid, pp, axis, uom):
     crs.extent = _transform_extent_check(crs.wgsExtent, WGS84.srid, srid)
     crs.bounds = gws.Bounds(extent=crs.extent, crs=crs)
 
+    crs.wgsMaxExtent = _wgs_max_extent(pp, crs.wgsExtent)
+
     return crs
+
+
+def _wgs_max_extent(pp, wgs_extent):
+    """The datum's area of use, or, for global datums, the own extent widened by its width on each side."""
+
+    geo = pp.geodetic_crs
+    au = geo.area_of_use if geo else None
+    if au and not _is_big_extent(au.bounds):
+        return _normalize_extent(au.bounds)
+
+    x0, y0, x1, y1 = wgs_extent
+    w = x1 - x0
+    return max(x0 - w, -180), y0, min(x1 + w, 180), y1
 
 
 _AXES_AND_UNITS = {

@@ -39,35 +39,25 @@ class Object(gws.base.layer.image.Object):
     def configure(self):
         self.configure_layer()
 
-    def configure_grabber(self):
-        self.grabber = self.create_grabber()
-        return True
-
-    def create_cache_name(self):
+    def create_cache_name(self, cache):
         return gws.u.sha256(
             [
                 self.serviceProvider.cache_hash(),
                 self.activeLayer.name,
                 self.activeStyle.name,
                 self.activeTms.identifier,
-                self.mapCrs.srid,
                 vars(self.imageFormat),
-                list(self.bounds.extent),
-                self.cache.requestBuffer,
-                self.cache.requestTiles,
+                list(self.wgsExtent),
+                cache.requestBuffer,
+                cache.requestTiles,
             ]
         )[: gws.base.layer.core.CACHE_NAME_LENGTH]
 
-    def create_grabber(self):
-        return self.root.create_shared(
-            grabber.Object,
-            crs=self.mapCrs.srid,
-            extent=self.bounds.extent,
-            imageFormat=self.imageFormat,
-            _defaultCache=self.cache,
-            _defaultProvider=self.serviceProvider,
-            _defaultTms=self.activeTms,
-            _defaultUrlTemplate=self.serviceProvider.tile_url_template(self.activeLayer, self.activeTms, self.activeStyle),
+    def create_grabber(self, opts):
+        return grabber.Object(
+            opts,
+            tms=self.activeTms,
+            urlTemplate=self.serviceProvider.tile_url_template(self.activeLayer, self.activeTms, self.activeStyle),
         )
 
     def configure_provider(self):
@@ -116,20 +106,21 @@ class Object(gws.base.layer.image.Object):
         self.activeStyle = gws.SourceStyle(name='default')
         return True
 
-    def configure_bounds(self):
-        if super().configure_bounds():
+    def configure_extent(self):
+        if super().configure_extent():
             return True
-        src_bounds = gws.Bounds(
-            crs=self.activeTms.crs,
-            extent=self.activeTms.matrices[0].extent,
-        )
-        self.bounds = gws.lib.bounds.transform(src_bounds, self.mapCrs)
+        tms_crs = self.activeTms.crs
+        ext = gws.lib.extent.transform_to_wgs(self.activeTms.matrices[0].extent, tms_crs)
+        if gws.lib.extent.is_valid_wgs(ext):
+            self.wgsExtent = tms_crs.clip_extent(ext) or tms_crs.wgsMaxExtent
+        else:
+            self.wgsExtent = tms_crs.wgsMaxExtent
 
-        layer_bounds = gws.gis.source.combined_bounds([self.activeLayer], self.mapCrs)
-        if layer_bounds:
-            ext = gws.lib.extent.intersection([self.bounds.extent, layer_bounds.extent])
-            if ext and gws.lib.extent.is_valid(ext):
-                self.bounds = gws.Bounds(crs=self.mapCrs, extent=ext)
+        layer_ext = gws.gis.source.combined_wgs_extent([self.activeLayer])
+        if layer_ext:
+            ext = gws.lib.extent.intersection(self.wgsExtent, layer_ext)
+            if ext and gws.lib.extent.is_valid_wgs(ext):
+                self.wgsExtent = ext
 
         return True
 
@@ -141,6 +132,7 @@ class Object(gws.base.layer.image.Object):
             min(scales),
             max(scales),
             self.cfg('_parentResolutions'),
+            self.mapCrs,
         )
         if self.resolutions:
             return True

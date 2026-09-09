@@ -7,6 +7,7 @@ import gws.lib.extent
 import gws.lib.image
 import gws.lib.svg
 import gws.lib.uom
+import gws.gis.zoom
 import gws.lib.xmlx as xmlx
 
 MAX_DPI = 1200
@@ -103,7 +104,7 @@ def _map_view(
         view.bounds = gws.Bounds(crs=crs, extent=bbox)
         view.center = gws.lib.extent.center(bbox)
         bw, bh = gws.lib.extent.size(bbox)
-        view.scale = gws.lib.uom.res_to_scale(bw / view.pxSize[0])
+        view.scale = gws.gis.zoom.res_to_scale(bw / view.pxSize[0], crs)
         return view
 
     if center:
@@ -194,7 +195,7 @@ def render_map(mri: gws.MapRenderInput) -> gws.MapRenderOutput:
     )
 
     # vectors always use PDF_DPI
-    rd.vectorView = _map_view(mri.bbox, mri.center, mri.crs, gws.lib.uom.PDF_DPI, mri.rotation, mri.scale, mri.mapSize)
+    rd.vectorView = _map_view(mri.bbox, mri.center, mri.targetCrs, gws.lib.uom.PDF_DPI, mri.rotation, mri.scale, mri.mapSize)
 
     if mri.mapSize[2] == gws.Uom.px:
         # if they want pixels, use PDF_PDI for rasters as well
@@ -203,7 +204,7 @@ def render_map(mri: gws.MapRenderInput) -> gws.MapRenderOutput:
     elif mri.mapSize[2] == gws.Uom.mm:
         # if they want mm, rasters should use they own dpi
         raster_dpi = min(MAX_DPI, max(MIN_DPI, rd.mri.dpi))
-        rd.rasterView = _map_view(mri.bbox, mri.center, mri.crs, raster_dpi, mri.rotation, mri.scale, mri.mapSize)
+        rd.rasterView = _map_view(mri.bbox, mri.center, mri.targetCrs, raster_dpi, mri.rotation, mri.scale, mri.mapSize)
 
     else:
         raise gws.Error(f'invalid size {mri.mapSize!r}')
@@ -239,6 +240,7 @@ def _render_plane(rd: _Renderer, plane: gws.MapRenderInputPlane):
             extra_params = {'compositeLayerUids': plane.compositeLayerUids}
         lro = plane.layer.render(gws.LayerRenderInput(
             type=gws.LayerRenderInputType.box,
+            targetCrs=rd.mri.targetCrs,
             view=rd.rasterView,
             extraParams=extra_params,
             user=rd.mri.user,
@@ -254,6 +256,7 @@ def _render_plane(rd: _Renderer, plane: gws.MapRenderInputPlane):
     if plane.type == gws.MapRenderInputPlaneType.svgLayer:
         lro = plane.layer.render(gws.LayerRenderInput(
             type=gws.LayerRenderInputType.svg,
+            targetCrs=rd.mri.targetCrs,
             view=rd.vectorView,
             style=plane.styles[0] if plane.styles else None,
             user=rd.mri.user,

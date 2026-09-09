@@ -11,10 +11,11 @@ class Object(gws.base.grabber.tile.Object):
     tms: gws.TileMatrixSet
     urlTemplate: str
 
-    def configure(self):
-        self.serviceProvider = self.cfg('_defaultProvider')
-        self.tms = self.cfg('_defaultTms')
-        self.urlTemplate = self.cfg('_defaultUrlTemplate')
+    def __init__(self, opts: gws.base.grabber.Options, tms: gws.TileMatrixSet, urlTemplate: str):
+        super().__init__(opts)
+        self.serviceProvider = opts.provider
+        self.tms = tms
+        self.urlTemplate = urlTemplate
 
         self.sourceCrs = self.tms.crs
         self.sourceMatrices = self.tms.matrices

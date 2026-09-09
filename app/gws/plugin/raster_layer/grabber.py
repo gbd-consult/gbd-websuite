@@ -12,9 +12,10 @@ class Object(gws.base.grabber.box.Object):
     serviceProvider: provider.Object
     msOptions: gws.MapServerLayerOptions
 
-    def configure(self):
-        self.serviceProvider = self.cfg('_defaultProvider')
-        self.msOptions = self.cfg('_defaultMsOptions')
+    def __init__(self, opts: gws.base.grabber.Options, msOptions: gws.MapServerLayerOptions):
+        super().__init__(opts)
+        self.serviceProvider = opts.provider
+        self.msOptions = msOptions
         self.sourceCrs = self.targetCrs
         self.maxRequestPixels = 9000
 

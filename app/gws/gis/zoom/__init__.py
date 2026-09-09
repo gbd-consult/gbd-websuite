@@ -64,10 +64,10 @@ def resolutions_from_config(cfg, crs: gws.Crs = None) -> list[float]:
         A list of resolutions, sorted ascending.
     """
 
-    dsc = _explicit_resolutions(cfg)
+    dsc = _explicit_resolutions(cfg, crs)
     if dsc:
         dsc = sorted(set(dsc), reverse=True)
-        lo, hi = _index_bounds(cfg, dsc)
+        lo, hi = _index_bounds(cfg, dsc, crs)
         dsc = dsc[lo:hi + 1]
     else:
         dsc = _ladder_resolutions(cfg, crs)
@@ -77,7 +77,7 @@ def resolutions_from_config(cfg, crs: gws.Crs = None) -> list[float]:
     return sorted(dsc)
 
 
-def resolutions_for_layer(cfg, parent_resolutions: list[float]) -> list[float]:
+def resolutions_for_layer(cfg, parent_resolutions: list[float], crs: gws.Crs = None) -> list[float]:
     """Computes layer resolutions from a config.
 
     The result is always a subset of the parent (map) resolutions:
@@ -88,6 +88,7 @@ def resolutions_for_layer(cfg, parent_resolutions: list[float]) -> list[float]:
     Args:
         cfg: A config.
         parent_resolutions: Parent (map) resolutions.
+        crs: Map CRS, for scale conversions.
 
     Returns:
         A list of resolutions, sorted ascending.
@@ -97,7 +98,7 @@ def resolutions_for_layer(cfg, parent_resolutions: list[float]) -> list[float]:
 
     ls = gws.u.get(cfg, 'scales')
     if ls:
-        idx = sorted(set(_nearest_index(pdsc, units.scale_to_res(s)) for s in ls))
+        idx = sorted(set(_nearest_index(pdsc, scale_to_res(s, crs)) for s in ls))
         dsc = [pdsc[i] for i in idx]
     else:
         ls = gws.u.get(cfg, 'resolutions')
@@ -113,7 +114,7 @@ def resolutions_for_layer(cfg, parent_resolutions: list[float]) -> list[float]:
     return sorted(dsc)
 
 
-def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_resolutions: list[float]) -> list[float]:
+def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_resolutions: list[float], crs: gws.Crs = None) -> list[float]:
     """Computes layer resolutions from source layer scale hints.
 
     The hints act as scale bounds over the parent resolutions: they snap to
@@ -122,6 +123,7 @@ def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_
     Args:
         source_layers: Source layers.
         parent_resolutions: Parent (map) resolutions.
+        crs: Map CRS, for scale conversions.
 
     Returns:
         A list of resolutions, sorted ascending.
@@ -140,10 +142,10 @@ def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_
     if not smin:
         return parent_resolutions
 
-    return resolutions_from_scale_range(min(smin), max(smax), parent_resolutions)
+    return resolutions_from_scale_range(min(smin), max(smax), parent_resolutions, crs)
 
 
-def resolutions_from_scale_range(smin: float, smax: float, parent_resolutions: list[float]) -> list[float]:
+def resolutions_from_scale_range(smin: float, smax: float, parent_resolutions: list[float], crs: gws.Crs = None) -> list[float]:
     """Computes layer resolutions from a scale range.
 
     The range bounds snap to the nearest parent resolutions and select the range between.
@@ -152,13 +154,14 @@ def resolutions_from_scale_range(smin: float, smax: float, parent_resolutions: l
         smin: Min scale denominator.
         smax: Max scale denominator.
         parent_resolutions: Parent (map) resolutions.
+        crs: Map CRS, for scale conversions.
 
     Returns:
         A list of resolutions, sorted ascending.
     """
 
-    rmin = units.scale_to_res(smin)
-    rmax = units.scale_to_res(smax)
+    rmin = scale_to_res(smin, crs)
+    rmax = scale_to_res(smax, crs)
 
     pdsc = sorted(parent_resolutions, reverse=True)
     if rmin > pdsc[0] or rmax < pdsc[-1]:
@@ -169,7 +172,7 @@ def resolutions_from_scale_range(smin: float, smax: float, parent_resolutions: l
     return sorted(pdsc[lo:hi + 1])
 
 
-def init_resolution(cfg, resolutions: list) -> float:
+def init_resolution(cfg, resolutions: list, crs: gws.Crs = None) -> float:
     """Returns the initial resolution.
 
     ``initLevel`` (an index, 0 = coarsest) wins over ``initScale``, which
@@ -178,6 +181,7 @@ def init_resolution(cfg, resolutions: list) -> float:
     Args:
         cfg: A config.
         resolutions: List of resolutions.
+        crs: Map CRS, for scale conversions.
     """
 
     dsc = sorted(resolutions, reverse=True)
@@ -186,7 +190,7 @@ def init_resolution(cfg, resolutions: list) -> float:
     if lvl is not None:
         return dsc[min(max(lvl, 0), len(dsc) - 1)]
 
-    init = _res_or_scale(cfg, 'initResolution', 'initScale')
+    init = _res_or_scale(cfg, 'initResolution', 'initScale', crs)
     if not init:
         return dsc[len(dsc) >> 1]
     return min(dsc, key=lambda r: abs(init - r))
@@ -196,12 +200,12 @@ def _ladder_resolutions(cfg, crs: gws.Crs = None) -> list[float]:
     mg = gws.lib.grid.for_crs(crs or gws.lib.crs.WEBMERCATOR)
 
     lo = _checked_level(cfg, 'minLevel') or 0
-    rmax = _res_or_scale(cfg, 'maxResolution', 'maxScale')
+    rmax = _res_or_scale(cfg, 'maxResolution', 'maxScale', crs)
     if rmax:
         lo = max(lo, _nearest_level(mg, rmax))
 
     hi = _checked_level(cfg, 'maxLevel')
-    rmin = _res_or_scale(cfg, 'minResolution', 'minScale')
+    rmin = _res_or_scale(cfg, 'minResolution', 'minScale', crs)
     if rmin:
         z = _nearest_level(mg, rmin)
         hi = z if hi is None else min(hi, z)
@@ -215,18 +219,18 @@ def _ladder_resolutions(cfg, crs: gws.Crs = None) -> list[float]:
     return [gws.lib.grid.resolution_for_level(mg, z) for z in range(lo, hi + 1)]
 
 
-def _index_bounds(cfg, dsc: list[float]) -> tuple[int, int]:
+def _index_bounds(cfg, dsc: list[float], crs: gws.Crs = None) -> tuple[int, int]:
     n = len(dsc)
 
     lo = _checked_level(cfg, 'minLevel') or 0
     lo = min(max(lo, 0), n - 1)
-    rmax = _res_or_scale(cfg, 'maxResolution', 'maxScale')
+    rmax = _res_or_scale(cfg, 'maxResolution', 'maxScale', crs)
     if rmax:
         lo = max(lo, _nearest_index(dsc, rmax))
 
     hi = _checked_level(cfg, 'maxLevel')
     hi = n - 1 if hi is None else min(max(hi, 0), n - 1)
-    rmin = _res_or_scale(cfg, 'minResolution', 'minScale')
+    rmin = _res_or_scale(cfg, 'minResolution', 'minScale', crs)
     if rmin:
         hi = min(hi, _nearest_index(dsc, rmin))
 
@@ -256,22 +260,22 @@ def _exact_index(dsc: list[float], res: float) -> int:
     raise gws.ConfigurationError(f'resolution {res!r} is not a map resolution')
 
 
-def _explicit_resolutions(cfg):
+def _explicit_resolutions(cfg, crs: gws.Crs = None):
     ls = gws.u.get(cfg, 'scales')
     if ls:
-        return [_checked_res(units.scale_to_res(x), x) for x in ls]
+        return [_checked_res(scale_to_res(x, crs), x, crs) for x in ls]
     ls = gws.u.get(cfg, 'resolutions')
     if ls:
-        return [_checked_res(x, x) for x in ls]
+        return [_checked_res(x, x, crs) for x in ls]
 
 
-def _res_or_scale(cfg, r, s):
+def _res_or_scale(cfg, r, s, crs: gws.Crs = None):
     x = gws.u.get(cfg, r)
     if x:
-        return _checked_res(x, x)
+        return _checked_res(x, x, crs)
     x = gws.u.get(cfg, s)
     if x:
-        return _checked_res(units.scale_to_res(x), x)
+        return _checked_res(scale_to_res(x, crs), x, crs)
 
 
 def _checked_level(cfg, key):
@@ -283,7 +287,25 @@ def _checked_level(cfg, key):
     return v
 
 
-def _checked_res(res, value):
-    if not (units.scale_to_res(MIN_SCALE) <= res <= units.scale_to_res(MAX_SCALE)):
+def _checked_res(res, value, crs: gws.Crs = None):
+    if not (scale_to_res(MIN_SCALE, crs) <= res <= scale_to_res(MAX_SCALE, crs)):
         raise gws.ConfigurationError(f'scale/resolution out of bounds: {value!r}')
     return res
+
+
+def scale_to_res(scale: float, crs: gws.Crs = None) -> float:
+    """Scale denominator to resolution in map units (degrees per pixel for geographic CRS)."""
+
+    return units.scale_to_res(scale) / _meters_per_unit(crs)
+
+
+def res_to_scale(res: float, crs: gws.Crs = None) -> int:
+    """Resolution in map units to scale denominator (degrees per pixel for geographic CRS)."""
+
+    return units.res_to_scale(res * _meters_per_unit(crs))
+
+
+def _meters_per_unit(crs: gws.Crs = None) -> float:
+    if crs and crs.isGeographic:
+        return gws.lib.crs.METERS_PER_DEGREE
+    return 1.0

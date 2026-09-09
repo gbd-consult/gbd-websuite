@@ -37,21 +37,8 @@ class Object(gws.base.layer.image.Object):
     def configure(self):
         self.configure_layer()
 
-    def configure_grabber(self):
-        self.grabber = self.create_grabber()
-        return True
-
-    def create_grabber(self):
-        return self.root.create_shared(
-            grabber.Object,
-            crs=self.mapCrs.srid,
-            extent=self.bounds.extent,
-            imageFormat=self.imageFormat,
-            _defaultCache=self.cache,
-            _defaultProvider=self.serviceProvider,
-            _defaultSourceLayers=self.imageLayers,
-            _defaultSourceCrs=self.sourceCrs,
-        )
+    def create_grabber(self, opts):
+        return grabber.Object(opts, sourceLayers=self.imageLayers, sourceCrs=self.sourceCrs)
 
     def configure_provider(self):
         return gws.config.util.configure_service_provider_for(self, provider.Object)
@@ -88,17 +75,17 @@ class Object(gws.base.layer.image.Object):
             _defaultSourceLayers=self.sourceLayers
         )
 
-    def configure_bounds(self):
-        if super().configure_bounds():
+    def configure_extent(self):
+        if super().configure_extent():
             return True
-        self.bounds = gws.gis.source.combined_bounds(self.imageLayers, self.mapCrs) or self.mapCrs.bounds
+        self.wgsExtent = gws.gis.source.combined_wgs_extent(self.imageLayers) or self.mapCrs.wgsExtent
         return True
 
     def configure_resolutions(self):
         if super().configure_resolutions():
             return True
         self.resolutions = gws.gis.zoom.resolutions_from_source_layers(
-            self.sourceLayers, self.cfg('_parentResolutions'))
+            self.sourceLayers, self.cfg('_parentResolutions'), self.mapCrs)
         if self.resolutions:
             return True
         raise gws.Error(f'layer {self!r}: no matching resolutions')

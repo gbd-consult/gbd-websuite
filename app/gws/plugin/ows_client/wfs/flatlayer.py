@@ -66,10 +66,10 @@ class Object(gws.base.layer.vector.Object):
             _defaultSourceLayers=self.sourceLayers
         )
 
-    def configure_bounds(self):
-        if super().configure_bounds():
+    def configure_extent(self):
+        if super().configure_extent():
             return True
-        self.bounds = gws.gis.source.combined_bounds(self.sourceLayers, self.mapCrs) or self.mapCrs.bounds
+        self.wgsExtent = gws.gis.source.combined_wgs_extent(self.sourceLayers) or self.mapCrs.wgsExtent
         return True
 
     def configure_metadata(self):

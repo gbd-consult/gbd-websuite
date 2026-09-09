@@ -45,6 +45,7 @@ class Object(gws.ServiceProvider):
             extent=p.extent,
             baseResolution=p.baseResolution,
             tileSize=p.tileSize,
+            withSnap=False,
         )
         self.grid = gws.lib.grid.new(opts)
 

@@ -1,23 +1,40 @@
-"""Map grids: tile pyramid math."""
+"""Map grids: tile pyramid math.
+
+A grid is a ``gws.MapGrid``: a CRS, a frame extent, a base resolution and a
+tile size. The origin is the north-west corner of the frame. Level ``z`` has
+the resolution ``baseResolution / 2**z``, so levels nest exactly (quad tree)
+and the ladder has no bottom: any resolution can be served by downsampling
+from the coarsest level whose resolution does not exceed it.
+
+Defaults: projected CRS use the web mercator square as frame and one tile at
+level 0; geographic CRS use ``(-180, -90, 180, 90)`` and two tiles (2x1) at
+level 0. Without an explicit base resolution, one tile at level 0 spans the
+frame height, so that the default resolutions are
+``156543.03392804097 / 2**z`` metres and ``0.703125 / 2**z`` degrees for a
+256px tile. Custom frames, base resolutions and tile sizes (tile source
+grids) are possible; a non-square custom frame needs an explicit base
+resolution. The frame is an indexing frame and does not have to be inside
+the area of use of the CRS.
+
+A custom grid can be snapped to the default grid of its CRS (``withSnap``):
+the base resolution becomes a ladder value, the nearest one if given,
+otherwise the coarsest whose tile spans the extent, and the extent is
+expanded outward to tile boundaries at that level. A snapped grid is a
+window on the default grid: its tile ``(x, y, z)`` is the default grid's
+``(x + ox * 2**z, y + oy * 2**z, z + k)`` for the integer offset ``(ox, oy)``
+of the window at level ``k``.
+
+Tiles are ``(x, y, z)``, ranges ``(min_x, min_y, max_x, max_y, z)``.
+"""
 
 import math
 from typing import Iterator, Optional
 
 import gws
+import gws.lib.crs
 
 DEFAULT_TILE_SIZE = 256
 
-WEBMERCATOR_RADIUS = 6378137
-WEBMERCATOR_SQUARE = (
-    -math.pi * WEBMERCATOR_RADIUS,
-    -math.pi * WEBMERCATOR_RADIUS,
-    +math.pi * WEBMERCATOR_RADIUS,
-    +math.pi * WEBMERCATOR_RADIUS,
-)
-GEOGRAPHIC_FRAME = (-180.0, -90.0, 180.0, 90.0)
-
-BASE_RESOLUTION_PROJECTED = (WEBMERCATOR_SQUARE[2] - WEBMERCATOR_SQUARE[0]) / DEFAULT_TILE_SIZE
-BASE_RESOLUTION_GEOGRAPHIC = (GEOGRAPHIC_FRAME[3] - GEOGRAPHIC_FRAME[1]) / DEFAULT_TILE_SIZE
 
 class Props(gws.Props):
     origin: str
@@ -35,6 +52,8 @@ class Config(gws.Config):
     extent: Optional[gws.Extent]
     baseResolution: Optional[float]
     tileSize: Optional[int]
+    withSnap: bool = True
+    """Snap the extent and the base resolution to the default grid of the CRS."""
 
 
 class Options(gws.Data):
@@ -44,6 +63,7 @@ class Options(gws.Data):
     extent: Optional[gws.Extent]
     baseResolution: Optional[float]
     tileSize: Optional[int]
+    withSnap: Optional[bool]
 
 
 def for_crs(crs: gws.Crs) -> gws.MapGrid:
@@ -53,10 +73,38 @@ def for_crs(crs: gws.Crs) -> gws.MapGrid:
 def new(opts: Options) -> gws.MapGrid:
     mg = gws.MapGrid()
     mg.crs = opts.crs
-    mg.extent = opts.extent or (GEOGRAPHIC_FRAME if mg.crs.isGeographic else WEBMERCATOR_SQUARE)
-    mg.baseResolution = opts.baseResolution or (BASE_RESOLUTION_GEOGRAPHIC if mg.crs.isGeographic else BASE_RESOLUTION_PROJECTED)
+    mg.extent = opts.extent or (gws.lib.crs.WGS84.extent if mg.crs.isGeographic else gws.lib.crs.WEBMERCATOR_SQUARE)
     mg.tileSize = opts.tileSize or DEFAULT_TILE_SIZE
+    mg.baseResolution = opts.baseResolution or (mg.extent[3] - mg.extent[1]) / mg.tileSize
+    with_snap = True if opts.withSnap is None else opts.withSnap
+    if with_snap and (opts.extent or opts.baseResolution):
+        _snap(mg, bool(opts.baseResolution))
     return mg
+
+
+def _snap(mg: gws.MapGrid, has_base_resolution: bool):
+    ref = for_crs(mg.crs)
+
+    if has_base_resolution:
+        k = round(math.log2(ref.baseResolution / mg.baseResolution))
+    else:
+        w = mg.extent[2] - mg.extent[0]
+        h = mg.extent[3] - mg.extent[1]
+        k = math.floor(math.log2(ref.baseResolution * mg.tileSize / max(w, h)) + 1e-9)
+
+    mg.baseResolution = resolution_for_level(ref, max(k, 0))
+
+    span = mg.baseResolution * mg.tileSize
+    eps = span * 1e-6
+    ox = ref.extent[0]
+    oy = ref.extent[3]
+
+    mg.extent = (
+        ox + math.floor((mg.extent[0] - ox + eps) / span) * span,
+        oy - math.ceil((oy - mg.extent[1] - eps) / span) * span,
+        ox + math.ceil((mg.extent[2] - ox - eps) / span) * span,
+        oy - math.floor((oy - mg.extent[3] + eps) / span) * span,
+    )
 
 
 def resolution_for_level(mg: gws.MapGrid, z: int) -> float:
@@ -86,8 +134,8 @@ def props_for_resolutions(mg: gws.MapGrid, resolutions: list[float]) -> Props:
 def tile_count_for_level(mg: gws.MapGrid, z: int) -> tuple[int, int]:
     span = resolution_for_level(mg, z) * mg.tileSize
     return (
-        max(1, round((mg.extent[2] - mg.extent[0]) / span)),
-        max(1, round((mg.extent[3] - mg.extent[1]) / span)),
+        max(1, math.ceil((mg.extent[2] - mg.extent[0]) / span - 1e-6)),
+        max(1, math.ceil((mg.extent[3] - mg.extent[1]) / span - 1e-6)),
     )
 
 

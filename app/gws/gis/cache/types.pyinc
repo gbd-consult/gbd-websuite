@@ -1,12 +1,12 @@
-class LayerCache(Data):
-    """Layer raster cache."""
+class MapCache(Data):
+    """Map tile cache settings."""
 
     name: str
     """Cache directory name."""
     maxAge: int
-    """Cache max. age (seconds)."""
+    """Cache max. age (seconds), 0 disables storing."""
     maxLevel: int
-    """Max. zoom level to cache."""
+    """Max. zoom level to store."""
     requestBuffer: int
     """Pixel buffer for source requests."""
     requestTiles: int

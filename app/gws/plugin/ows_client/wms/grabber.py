@@ -11,10 +11,11 @@ class Object(gws.base.grabber.box.Object):
     serviceProvider: provider.Object
     sourceLayers: list[gws.SourceLayer]
 
-    def configure(self):
-        self.serviceProvider = self.cfg('_defaultProvider')
-        self.sourceLayers = self.cfg('_defaultSourceLayers')
-        self.sourceCrs = self.cfg('_defaultSourceCrs')
+    def __init__(self, opts: gws.base.grabber.Options, sourceLayers: list[gws.SourceLayer], sourceCrs: gws.Crs):
+        super().__init__(opts)
+        self.serviceProvider = opts.provider
+        self.sourceLayers = sourceLayers
+        self.sourceCrs = sourceCrs
         self.maxRequestPixels = self.serviceProvider.maxRequestPixels
 
     def fetch_box(self, bounds, width, height, params=None):

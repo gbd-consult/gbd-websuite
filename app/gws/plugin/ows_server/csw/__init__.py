@@ -19,7 +19,7 @@ import gws.lib.crs
 import gws.lib.datetimex
 import gws.lib.extent
 import gws.lib.mime
-import gws.lib.uom
+import gws.gis.zoom
 
 gws.ext.new.owsService('csw')
 
@@ -233,7 +233,8 @@ class Object(server.service.Object):
 
         map = obj.find_closest(gws.ext.object.map)
         if map:
-            extra['isoSpatialResolution'] = gws.lib.uom.res_to_scale(cast(gws.base.map.Object, map).initResolution)
+            m = cast(gws.base.map.Object, map)
+            extra['isoSpatialResolution'] = gws.gis.zoom.res_to_scale(m.initResolution, m.bounds.crs)
 
         self.mdMap[cid] = gws.base.metadata.from_args(md, extra)
 

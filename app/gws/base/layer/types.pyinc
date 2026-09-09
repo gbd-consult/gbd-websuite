@@ -65,7 +65,8 @@ class Layer(Node):
     canRenderSvg: bool
     canRenderXyz: bool
 
-    grabber: Optional['Grabber']
+    grabbers: dict[int, 'Grabber']
+    """Grabbers by CRS code, one for each CRS the application supports."""
 
     isEnabledForOws: bool
     isGroup: bool
@@ -84,8 +85,6 @@ class Layer(Node):
     opacity: float
     resolutions: list[float]
     title: str
-
-    cache: 'LayerCache'
 
     metadata: 'Metadata'
     legend: Optional['Legend']

@@ -3,6 +3,7 @@
 import gws
 import gws.config
 import gws.lib.bounds
+import gws.lib.extent
 import gws.gis.source
 
 from . import core
@@ -30,16 +31,20 @@ class Object(core.Object):
             raise gws.Error(f'group is empty: {self}')
         self.configure_layer()
 
+        self.canRenderBox = any(la.canRenderBox for la in self.layers)
+        self.canRenderXyz = any(la.canRenderXyz for la in self.layers)
+        self.canRenderSvg = any(la.canRenderSvg for la in self.layers)
+
     def configure_group(self):
         p = self.cfg('layers')
         if p:
             self.configure_group_layers(p)
             return True
 
-    def configure_bounds(self):
-        if super().configure_bounds():
+    def configure_extent(self):
+        if super().configure_extent():
             return True
-        self.bounds = gws.lib.bounds.union([la.bounds for la in self.layers])
+        self.wgsExtent = gws.lib.extent.union(*(la.wgsExtent for la in self.layers))
         return True
 
     def configure_zoom_bounds(self):
@@ -66,10 +71,6 @@ class Object(core.Object):
             return True
 
     def post_configure(self):
-        self.canRenderBox = any(la.canRenderBox for la in self.layers)
-        self.canRenderXyz = any(la.canRenderXyz for la in self.layers)
-        self.canRenderSvg = any(la.canRenderSvg for la in self.layers)
-
         self.isSearchable = any(la.isSearchable for la in self.layers)
 
     ##

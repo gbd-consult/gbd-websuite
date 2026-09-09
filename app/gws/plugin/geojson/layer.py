@@ -5,6 +5,7 @@ import gws.base.layer
 import gws.base.shape
 import gws.config.util
 import gws.lib.bounds
+import gws.lib.extent
 import gws.lib.crs
 import gws.lib.jsonx
 
@@ -35,14 +36,15 @@ class Object(gws.base.layer.vector.Object):
     def configure_provider(self):
         return gws.config.util.configure_service_provider_for(self, provider.Object)
 
-    def configure_bounds(self):
-        if super().configure_bounds():
+    def configure_extent(self):
+        if super().configure_extent():
             return True
         recs = self.serviceProvider.load_records()
         if recs:
             bs = [rec.shape.bounds() for rec in recs if rec.shape]
             if bs:
-                self.bounds = gws.lib.bounds.transform(gws.lib.bounds.union(bs), self.mapCrs)
+                b = gws.lib.bounds.union(bs)
+                self.wgsExtent = gws.lib.extent.transform_to_wgs(b.extent, b.crs)
                 return True
 
     def configure_models(self):

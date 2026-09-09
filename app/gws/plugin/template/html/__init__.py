@@ -154,7 +154,7 @@ class Object(gws.base.template.Object):
 
         dst.bbox = bbox or src.bbox
         dst.center = center or src.center
-        dst.crs = tri.crs
+        dst.targetCrs = tri.crs
         dst.dpi = tri.dpi
         dst.mapSize = width, height, gws.Uom.mm
         dst.rotation = rotation or src.rotation

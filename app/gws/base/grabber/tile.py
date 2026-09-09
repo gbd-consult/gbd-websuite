@@ -61,6 +61,11 @@ class Object(core.Object):
         return img
 
     def matrix_for_resolution(self, wanted: float) -> gws.TileMatrix:
+        # Coarsest matrix with res <= wanted, i.e. never upscale (downscale up to 2x).
+        # Cross-CRS the wanted resolution rarely hits the source ladder, e.g. 3857 -> 25832
+        # at 51N needs 1.6x the target resolution, landing between two levels.
+        # Alternatives: nearest by ratio (upscale up to sqrt(2), coarser cartography, bigger labels)
+        # or a threshold as in MapProxy (allow upscale below a factor, default 1.15).
         for m in self.sourceMatrices:
             if matrix_resolution(m) <= wanted * (1 + 1e-6):
                 return m

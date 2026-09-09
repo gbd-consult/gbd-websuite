@@ -1868,6 +1868,18 @@ class Crs:
     """CRS own Extent."""
     bounds: Bounds
     """CRS own Bounds."""
+    wgsMaxExtent: Extent
+    """Maximal extent that makes sense for this CRS, in the WGS projection."""
+
+    def clip_extent(self, wgs_extent: Extent) -> Optional[Extent]:
+        """Clip a WGS extent to the maximal extent of this CRS.
+
+        Args:
+            wgs_extent: Extent in the WGS projection.
+
+        Returns:
+            The clipped extent in the WGS projection, or ``None`` if there is no intersection.
+        """
 
     coordinatePrecision: int
     """Preferred precision for coordinates in this CRS."""
@@ -1961,15 +1973,15 @@ class MapGrid(Data):
 # /gis/cache/types.pyinc
 
 
-class LayerCache(Data):
-    """Layer raster cache."""
+class MapCache(Data):
+    """Map tile cache settings."""
 
     name: str
     """Cache directory name."""
     maxAge: int
-    """Cache max. age (seconds)."""
+    """Cache max. age (seconds), 0 disables storing."""
     maxLevel: int
-    """Max. zoom level to cache."""
+    """Max. zoom level to store."""
     requestBuffer: int
     """Pixel buffer for source requests."""
     requestTiles: int
@@ -2054,7 +2066,7 @@ class MapRenderInput(Data):
     backgroundColor: int
     bbox: Extent
     center: Point
-    crs: 'Crs'
+    targetCrs: 'Crs'
     dpi: int
     mapSize: UomSize
     notify: Callable
@@ -2105,6 +2117,7 @@ class LayerRenderInput(Data):
     renderParams: dict
     project: 'Project'
     style: 'Style'
+    targetCrs: 'Crs'
     type: LayerRenderInputType
     user: 'User'
     view: MapView
@@ -3209,7 +3222,8 @@ class Layer(Node):
     canRenderSvg: bool
     canRenderXyz: bool
 
-    grabber: Optional['Grabber']
+    grabbers: dict[int, 'Grabber']
+    """Grabbers by CRS code, one for each CRS the application supports."""
 
     isEnabledForOws: bool
     isGroup: bool
@@ -3228,8 +3242,6 @@ class Layer(Node):
     opacity: float
     resolutions: list[float]
     title: str
-
-    cache: 'LayerCache'
 
     metadata: 'Metadata'
     legend: Optional['Legend']
@@ -3264,10 +3276,7 @@ class Layer(Node):
 # /base/grabber/types.pyinc
 
 
-from gws import MapTileRange
-
-
-class Grabber(Node):
+class Grabber:
     """Raster grabber.
 
     Provides raster images for a layer: fetches them from a source, aligns them to a
@@ -3280,8 +3289,8 @@ class Grabber(Node):
     """The fixed target grid for the CRS."""
     extent: Extent
     """Extent covered by this grabber, in the target CRS."""
-    cache: LayerCache
-    """Cache settings; the cache name keys the tile store."""
+    cache: MapCache
+    """Cache settings; the name (``<layer cache name>_<srid>``) keys the tile store."""
     store: 'TileStore'
     """Tile store."""
     imageFormat: ImageFormat
@@ -4994,6 +5003,9 @@ class Application(Node):
 
     versionString: str
     """Full version string for display purposes."""
+
+    def supported_crs(self) -> list['Crs']:
+        """All CRS used by maps, overview maps and OWS services, computed on first call."""
 
     defaultPrinter: 'Printer'
     """Default printer object."""

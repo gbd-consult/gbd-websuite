@@ -19,7 +19,8 @@ class Object(core.Object):
     requestBuffer: int
     maxRequestPixels: int
 
-    def configure(self):
+    def __init__(self, opts: core.Options):
+        super().__init__(opts)
         self.requestTiles = self.cache.requestTiles
         self.requestBuffer = self.cache.requestBuffer
         self.maxRequestPixels = 4096

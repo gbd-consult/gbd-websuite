@@ -14,29 +14,27 @@ from . import core, seed
 gws.ext.new.cli('cache')
 
 
-class StatusParams(gws.CliParams):
+class FilterParams(gws.CliParams):
     layerUids: Optional[list[str]]
     """List of layer IDs."""
     cacheNames: Optional[list[str]]
     """List of cache names or prefixes."""
+    crs: Optional[list[int]]
+    """List of CRS codes."""
+
+
+class StatusParams(FilterParams):
     grids: bool = False
     """Print grid tables."""
     json: str = ''
     """Write json report to path."""
 
 
-class DropParams(gws.CliParams):
-    layerUids: Optional[list[str]]
-    """List of layer IDs."""
-    cacheNames: Optional[list[str]]
-    """List of cache names or prefixes."""
+class DropParams(FilterParams):
+    pass
 
 
-class SeedParams(gws.CliParams):
-    layerUids: Optional[list[str]]
-    """List of layer IDs."""
-    cacheNames: Optional[list[str]]
-    """List of cache names or prefixes."""
+class SeedParams(FilterParams):
     levels: str = ''
     """Zoom levels (1,2,3 or 1-3)."""
     maxTime: Optional[int]
@@ -53,7 +51,7 @@ class Object(gws.Node):
         """Display the cache status."""
 
         root = gws.config.loader.load()
-        status = core.status(root, gws.u.to_list(p.layerUids), gws.u.to_list(p.cacheNames))
+        status = core.status(root, _filter(p))
         js = _status_to_json(status)
         if p.json:
             gws.lib.jsonx.to_path(p.json, js)
@@ -72,7 +70,7 @@ class Object(gws.Node):
         """Remove active cache directories."""
 
         root = gws.config.loader.load()
-        core.drop(root, gws.u.to_list(p.layerUids), gws.u.to_list(p.cacheNames))
+        core.drop(root, _filter(p))
 
     @gws.ext.command.cli('cacheSeed')
     def do_seed(self, p: SeedParams):
@@ -90,8 +88,7 @@ class Object(gws.Node):
             levels = []
 
         opts = core.SeedOptions(
-            layerUids=gws.u.to_list(p.layerUids),
-            cacheNames=gws.u.to_list(p.cacheNames),
+            filter=_filter(p),
             levels=levels,
             maxTime=p.maxTime or root.app.cfg('cache.seedingMaxTime'),
             concurrency=p.concurrency or root.app.cfg('cache.seedingConcurrency'),
@@ -105,6 +102,14 @@ class Object(gws.Node):
 
 
 ##
+
+
+def _filter(p: FilterParams) -> core.Filter:
+    return core.Filter(
+        layerUids=gws.u.to_list(p.layerUids),
+        cacheNames=gws.u.to_list(p.cacheNames),
+        srids=[int(s) for s in gws.u.to_list(p.crs)],
+    )
 
 
 def _status_to_json(status: core.Status) -> dict:
@@ -150,8 +155,8 @@ def _display_status(js: dict, with_grids: bool):
         cli.info('')
 
         cli.info(f'CACHE  {e["name"]}')
-        cli.info(f'DIR    {e["dir"] or "-"}')
-        cli.info(f'CRS    {e["crs"] or "-"}')
+        # cli.info(f'DIR    {e["dir"] or "-"}')
+        # cli.info(f'CRS    {e["crs"] or "-"}')
 
         la = e['layers'][0]
         uids = ','.join(la['uid'] for la in e['layers'])

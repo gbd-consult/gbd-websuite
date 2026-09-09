@@ -13,6 +13,7 @@ import gws.lib.extent
 import gws.gis.source
 import gws.gis.zoom
 import gws.base.metadata
+import gws.base.grabber
 import gws.lib.mime
 import gws.lib.image
 import gws.gis.cache
@@ -160,6 +161,7 @@ class Object(gws.Layer):
         self.parentResolutions = self.cfg('_parentResolutions')
         self.mapCrs = self.parentBounds.crs
 
+        self.wgsExtent = gws.lib.extent.transform_to_wgs(self.parentBounds.extent, self.parentBounds.crs)
         self.bounds = self.parentBounds
         self.zoomBounds = cast(gws.Bounds, None)
         self.resolutions = self.parentResolutions
@@ -175,7 +177,7 @@ class Object(gws.Layer):
         self.layers = []
         self.sourceLayers = []
 
-        self.grabber = None        
+        self.grabbers = {}
 
     def configure_layer(self):
         """Layer configuration protocol."""
@@ -183,12 +185,11 @@ class Object(gws.Layer):
         self.configure_provider()
         self.configure_sources()
         self.configure_models()
+        self.configure_extent()
         self.configure_bounds()
         self.configure_zoom_bounds()
         self.configure_resolutions()
         self.configure_legend()
-        self.configure_cache()
-        self.configure_grabber()
         self.configure_metadata()
         self.configure_templates()
         self.configure_search()
@@ -196,14 +197,30 @@ class Object(gws.Layer):
 
     ##
 
-    def configure_bounds(self):
+    def configure_extent(self):
         p = self.cfg('extent')
         if p:
             ext = gws.lib.extent.from_list(p)
             if not ext or not gws.lib.extent.is_valid(ext):
                 raise gws.ConfigurationError(f'invalid extent {p!r}')
-            self.bounds = gws.Bounds(crs=self.mapCrs, extent=ext)
+            self.wgsExtent = gws.lib.extent.transform_to_wgs(ext, self.mapCrs)
             return True
+
+    def configure_bounds(self):
+        """Bounds in the map CRS: the WGS extent clipped to the CRS and to the parent bounds."""
+
+        ext = self.mapCrs.clip_extent(self.wgsExtent)
+        if ext:
+            ext = gws.lib.extent.intersection(
+                gws.lib.extent.transform_from_wgs(ext, self.mapCrs),
+                self.parentBounds.extent,
+            )
+        if not ext:
+            gws.log.warning(f'layer {self!r}: extent outside of the parent bounds wgs={self.wgsExtent} parent={self.parentBounds.extent}')
+            self.bounds = gws.lib.bounds.copy(self.parentBounds)
+            return True
+        self.bounds = gws.Bounds(crs=self.mapCrs, extent=ext)
+        return True
 
     def configure_zoom_bounds(self):
         p = self.cfg('zoomExtent')
@@ -213,41 +230,6 @@ class Object(gws.Layer):
                 raise gws.ConfigurationError(f'invalid extent {p!r}')
             self.zoomBounds = gws.Bounds(crs=self.mapCrs, extent=ext)
             return True
-
-    def configure_cache(self):
-        p = cast(
-            gws.gis.cache.core.LayerConfig,
-            self.cfg('cache') or self.root.specs.read({}, 'gws.gis.cache.core.LayerConfig'),
-        )
-        self.cache = gws.LayerCache(
-            name=p.name or '',
-            maxAge=p.maxAge,
-            maxLevel=p.maxLevel,
-            requestBuffer=p.requestBuffer,
-            requestTiles=p.requestTiles,
-        )
-        if not self.cfg('withCache'):
-            self.cache.maxAge = 0
-        if not self.cache.name:
-            self.cache.name = self.create_cache_name()
-        return True
-
-    def create_cache_name(self) -> str:
-        prov = getattr(self, 'serviceProvider', None)
-        return gws.u.sha256(
-            [
-                prov.cache_hash() if prov else '',
-                [sl.name for sl in self.sourceLayers],
-                self.mapCrs.srid,
-                vars(self.imageFormat),
-                list(self.bounds.extent),
-                self.cache.requestBuffer,
-                self.cache.requestTiles,
-            ]
-        )[:CACHE_NAME_LENGTH]
-
-    def configure_grabber(self):
-        pass
 
     def configure_legend(self):
         if not self.cfg('withLegend'):
@@ -272,7 +254,7 @@ class Object(gws.Layer):
     def configure_resolutions(self):
         p = self.cfg('zoom')
         if p:
-            self.resolutions = gws.gis.zoom.resolutions_for_layer(p, self.cfg('_parentResolutions'))
+            self.resolutions = gws.gis.zoom.resolutions_for_layer(p, self.cfg('_parentResolutions'), self.mapCrs)
             if not self.resolutions:
                 raise gws.Error(f'layer {self!r}: no resolutions, config={p!r} parent={self.parentResolutions!r}')
             return True
@@ -311,18 +293,74 @@ class Object(gws.Layer):
         self.isSearchable = bool(self.finders)
         self.hasLegend = bool(self.legend)
 
-        if self.bounds.crs != self.mapCrs:
-            raise gws.Error(f'layer {self!r}: invalid CRS {self.bounds.crs}')
-
-        if not gws.lib.bounds.intersect(self.bounds, self.parentBounds):
-            gws.log.warning(f'layer {self!r}: bounds outside of the parent bounds b={self.bounds.extent} parent={self.parentBounds.extent}')
-            self.bounds = gws.lib.bounds.copy(self.parentBounds)
-
-        self.wgsExtent = gws.lib.bounds.transform(self.bounds, gws.lib.crs.WGS84).extent
         self.zoomBounds = self.zoomBounds or self.bounds
 
         if self.legend:
             self.legendUrl = self.url_path('legend')
+
+        self.post_configure_grabbers()
+
+    def post_configure_grabbers(self):
+        if not (self.canRenderBox or self.canRenderXyz):
+            return
+
+        p = cast(
+            gws.gis.cache.LayerConfig,
+            self.cfg('cache') or self.root.specs.read({}, 'gws.gis.cache.core.LayerConfig'),
+        )
+        cache_proto = gws.MapCache(
+            name=p.name,
+            maxAge=p.maxAge,
+            maxLevel=p.maxLevel,
+            requestBuffer=p.requestBuffer,
+            requestTiles=p.requestTiles,
+        )
+        if not self.cfg('withCache'):
+            cache_proto.maxAge = 0
+        if not cache_proto.name:
+            cache_proto.name = self.create_cache_name(cache_proto)
+
+        cache_srids = []
+        if p.crs:
+            cache_srids = [gws.lib.crs.require(c).srid for c in p.crs]
+
+        for crs in self.root.app.supported_crs():
+            ext = crs.clip_extent(self.wgsExtent)
+            if not ext:
+                gws.log.warning(f'layer {self!r}: extent {self.wgsExtent} is incompatible with {crs!r}')
+                continue
+            cache = gws.MapCache(**vars(cache_proto))
+            if cache_srids and crs.srid not in cache_srids:
+                cache.maxAge = 0
+            cache.name += f'_{crs.srid}'
+
+            opts = gws.base.grabber.Options(
+                crs=crs,
+                cache=cache,
+                extent=gws.lib.extent.transform_from_wgs(ext, crs),
+                imageFormat=self.imageFormat,
+                provider=getattr(self, 'serviceProvider', None),
+            )
+
+            gr = self.create_grabber(opts)
+            if gr:
+                self.grabbers[crs.srid] = gr
+
+    def create_cache_name(self, cache: gws.MapCache) -> str:
+        prov = getattr(self, 'serviceProvider', None)
+        return gws.u.sha256(
+            [
+                prov.cache_hash() if prov else '',
+                [sl.name for sl in self.sourceLayers],
+                vars(self.imageFormat),
+                list(self.wgsExtent),
+                cache.requestBuffer,
+                cache.requestTiles,
+            ]
+        )[:CACHE_NAME_LENGTH]
+
+    def create_grabber(self, opts: gws.base.grabber.Options) -> Optional[gws.Grabber]:
+        pass
 
     ##
 
@@ -373,8 +411,9 @@ class Object(gws.Layer):
             uid=self.uid,
         )
 
-        if self.grabber:
-            p.grid = gws.lib.grid.props_for_resolutions(self.grabber.grid, self.resolutions)
+        gr = self.grabbers.get(self.mapCrs.srid)
+        if gr:
+            p.grid = gws.lib.grid.props_for_resolutions(gr.grid, self.resolutions)
 
         if self.displayMode == gws.LayerDisplayMode.tile:
             p.type = 'tile'
@@ -397,28 +436,34 @@ class Object(gws.Layer):
         if lri.type == gws.LayerRenderInputType.svg:
             return self.render_svg(lri)
 
+    def grabber_for(self, lri: gws.LayerRenderInput) -> Optional[gws.Grabber]:
+        crs = lri.targetCrs or self.mapCrs
+        return self.grabbers.get(crs.srid)
+
     def render_tile(self, lri):
-        if not self.grabber:
+        gr = self.grabber_for(lri)
+        if not gr:
             return
         return gws.LayerRenderOutput(
-            content=self.grabber.get_tile((lri.x, lri.y, lri.z), lri.renderParams),
+            content=gr.get_tile((lri.x, lri.y, lri.z), lri.renderParams),
         )
 
     def render_box(self, lri):
-        if not self.grabber:
+        gr = self.grabber_for(lri)
+        if not gr:
             return
 
         params = lri.renderParams
         w, h = lri.view.pxSize
 
         if not lri.view.rotation:
-            content = self.grabber.get_box(lri.view.bounds.extent, w, h, params)
+            content = gr.get_box(lri.view.bounds.extent, w, h, params)
             return gws.LayerRenderOutput(content=content)
 
         circ = gws.lib.extent.circumsquare(lri.view.bounds.extent)
         d = gws.u.to_rounded_int(gws.lib.extent.diagonal((0, 0, w, h)))
 
-        content = self.grabber.get_box(circ, d, d, params)
+        content = gr.get_box(circ, d, d, params)
 
         img = gws.lib.image.from_bytes(content)
         img.rotate(-lri.view.rotation).crop(

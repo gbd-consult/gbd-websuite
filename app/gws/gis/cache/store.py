@@ -7,23 +7,23 @@ import gws.lib.osx as osx
 
 
 class Object(gws.TileStore):
-    def __init__(self, cache: gws.LayerCache, extension: str):
-        self.cache = cache
+    def __init__(self, cache: gws.MapCache, extension: str):
+        self.maxAge = cache.maxAge
         self.baseDir = f'{gws.c.MAP_CACHE_DIR}/{cache.name}'
         self.extension = extension
 
     def count(self) -> int:
-        return _file_count(self.baseDir, self.cache.maxAge)
+        return _file_count(self.baseDir, self.maxAge)
 
     def count_for_level(self, z: int) -> int:
-        return _file_count(f'{self.baseDir}/{z:02d}', self.cache.maxAge)
+        return _file_count(f'{self.baseDir}/{z:02d}', self.maxAge)
 
     def range_for_level(self, z: int) -> gws.MapTileRange | None:
         path = f'{self.baseDir}/{z:02d}'
         if not gws.u.is_dir(path):
             return None
 
-        last_time = gws.u.stime() - self.cache.maxAge
+        last_time = gws.u.stime() - self.maxAge
         rng = None
 
         for de in osx.find_entries(path):
@@ -55,7 +55,7 @@ class Object(gws.TileStore):
         return 0 <= age < max_age
 
     def read(self, mt: gws.MapTile) -> bytes | None:
-        if not self.has(mt, self.cache.maxAge):
+        if not self.has(mt, self.maxAge):
             return None
         try:
             with open(self.path(mt), 'rb') as fp:

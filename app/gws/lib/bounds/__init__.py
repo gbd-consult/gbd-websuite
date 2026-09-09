@@ -79,7 +79,7 @@ def union(bs: list[gws.Bounds]) -> gws.Bounds:
     exts = [gws.lib.extent.transform(b.extent, b.crs, crs) for b in bs]
     return gws.Bounds(
         crs=crs,
-        extent=gws.lib.extent.union(exts),
+        extent=gws.lib.extent.union(*exts),
     )
 
 

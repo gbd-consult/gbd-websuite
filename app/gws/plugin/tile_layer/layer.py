@@ -6,6 +6,7 @@ import gws
 import gws.base.layer
 import gws.config.util
 import gws.lib.bounds
+import gws.lib.extent
 from . import grabber, provider
 
 gws.ext.new.layer('tile')
@@ -26,31 +27,21 @@ class Object(gws.base.layer.image.Object):
     def configure(self):
         self.configure_layer()
 
-    def configure_grabber(self):
-        self.grabber = self.create_grabber()
-        return True
-
-    def create_grabber(self):
-        return self.root.create_shared(
-            grabber.Object,
-            crs=self.mapCrs.srid,
-            extent=self.bounds.extent,
-            imageFormat=self.imageFormat,
-            _defaultCache=self.cache,
-            _defaultProvider=self.serviceProvider,
-        )
+    def create_grabber(self, opts):
+        return grabber.Object(opts)
 
     def configure_provider(self):
         return gws.config.util.configure_service_provider_for(self, provider.Object)
 
-    def configure_bounds(self):
-        if super().configure_bounds():
+    def configure_extent(self):
+        if super().configure_extent():
             return True
         grid = self.serviceProvider.grid
-        self.bounds = gws.lib.bounds.transform(
-            gws.Bounds(crs=grid.crs, extent=grid.extent),
-            self.mapCrs,
-        )
+        ext = gws.lib.extent.transform_to_wgs(grid.extent, grid.crs)
+        if gws.lib.extent.is_valid_wgs(ext):
+            self.wgsExtent = grid.crs.clip_extent(ext) or grid.crs.wgsMaxExtent
+        else:
+            self.wgsExtent = grid.crs.wgsMaxExtent
         return True
 
     ##

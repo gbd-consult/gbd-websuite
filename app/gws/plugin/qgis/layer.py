@@ -33,20 +33,13 @@ class Object(gws.base.layer.group.Object):
     def configure(self):
         self.compositeRender = self.cfg('compositeRender', default=False)
         self.sqlFilters = self.cfg('sqlFilters', default={})
+        if self.compositeRender:
+            self.canRenderBox = True
 
-    def configure_grabber(self):
+    def create_grabber(self, opts):
         if not self.cfg('compositeRender'):
-            return True
-        self.grabber = self.root.create_shared(
-            grabber.Object,
-            crs=self.mapCrs.srid,
-            extent=self.bounds.extent,
-            imageFormat=self.imageFormat,
-            _defaultCache=self.cache,
-            _defaultProvider=self.serviceProvider,
-            _defaultParams={},
-        )
-        return True
+            return
+        return grabber.Object(opts, params={})
 
     def configure_group(self):
         gws.config.util.configure_service_provider_for(self, provider.Object)
@@ -64,10 +57,6 @@ class Object(gws.base.layer.group.Object):
             return True
         self.metadata = self.serviceProvider.metadata
         return True
-
-    def post_configure(self):
-        if self.compositeRender:
-            self.canRenderBox = True
 
     def props(self, user):
         p = super().props(user)

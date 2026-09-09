@@ -34,31 +34,18 @@ class Object(gws.base.layer.image.Object):
         self.sqlFilters = self.cfg('sqlFilters', default={})
         self.configure_layer()
 
-    def configure_grabber(self):
-        self.grabber = self.create_grabber()
-        return True
-
-    def create_cache_name(self):
+    def create_cache_name(self, cache):
         return gws.u.sha256([
             self.serviceProvider.cache_hash(),
             self.render_params(gws.LayerRenderInput()),
-            self.mapCrs.srid,
             vars(self.imageFormat),
-            list(self.bounds.extent),
-            self.cache.requestBuffer,
-            self.cache.requestTiles,
+            list(self.wgsExtent),
+            cache.requestBuffer,
+            cache.requestTiles,
         ])[: gws.base.layer.core.CACHE_NAME_LENGTH]
 
-    def create_grabber(self):
-        return self.root.create_shared(
-            grabber.Object,
-            crs=self.mapCrs.srid,
-            extent=self.bounds.extent,
-            imageFormat=self.imageFormat,
-            _defaultCache=self.cache,
-            _defaultProvider=self.serviceProvider,
-            _defaultParams=self.render_params(gws.LayerRenderInput()),
-        )
+    def create_grabber(self, opts):
+        return grabber.Object(opts, params=self.render_params(gws.LayerRenderInput()))
 
     def configure_provider(self):
         return gws.config.util.configure_service_provider_for(self, provider.Object)
@@ -93,10 +80,10 @@ class Object(gws.base.layer.image.Object):
             _defaultSourceLayers=self.searchLayers,
         )
 
-    def configure_bounds(self):
-        if super().configure_bounds():
+    def configure_extent(self):
+        if super().configure_extent():
             return True
-        self.bounds = gws.lib.bounds.transform(self.serviceProvider.bounds, self.mapCrs)
+        self.wgsExtent = self.serviceProvider.wgsExtent
         return True
 
     def configure_zoom_bounds(self):
@@ -110,7 +97,7 @@ class Object(gws.base.layer.image.Object):
     def configure_resolutions(self):
         if super().configure_resolutions():
             return True
-        self.resolutions = gws.gis.zoom.resolutions_from_source_layers(self.sourceLayers, self.cfg('_parentResolutions'))
+        self.resolutions = gws.gis.zoom.resolutions_from_source_layers(self.sourceLayers, self.cfg('_parentResolutions'), self.mapCrs)
         if not self.resolutions:
             raise gws.Error(f'layer {self.uid!r}: no matching resolutions')
 

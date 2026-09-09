@@ -5,12 +5,13 @@ import gws.test.util as u
 import gws.gis.render as render
 import gws.lib.crs
 import gws.lib.image
+import gws.lib.uom
 
 
 def test_map_view_from_center():
     size = (400.0, 400.0, gws.Uom.px)
     center = (100.0, 500.0)
-    crs = gws.lib.crs.WGS84
+    crs = gws.lib.crs.WEBMERCATOR
     dpi = 1000
     rotation = 0
     assert render.map_view_from_center(size, center, crs, dpi, rotation).dpi == 1000
@@ -26,7 +27,7 @@ def test_map_view_from_center():
 def test_map_view_from_bbox():
     size = (400.0, 400.0, gws.Uom.px)
     bbox = (100.0, 100.0, 500.0, 500.0)
-    crs = gws.lib.crs.WGS84
+    crs = gws.lib.crs.WEBMERCATOR
     dpi = 1000
     rotation = 0
     assert render.map_view_from_bbox(size, bbox, crs, dpi, rotation).dpi == 1000
@@ -39,11 +40,21 @@ def test_map_view_from_bbox():
     assert render.map_view_from_bbox(size, bbox, crs, dpi, rotation).bounds.extent == (100.0, 100.0, 500.0, 500.0)
 
 
+def test_map_view_from_bbox_geographic():
+    size = (400.0, 400.0, gws.Uom.px)
+    bbox = (10.0, 50.0, 11.0, 51.0)
+    crs = gws.lib.crs.WGS84
+    dpi = 1000
+    rotation = 0
+    res = 1.0 / 400.0
+    assert render.map_view_from_bbox(size, bbox, crs, dpi, rotation).scale == int(res * gws.lib.crs.METERS_PER_DEGREE / gws.lib.uom.OGC_M_PER_PX)
+
+
 # is it a mapping from the map to px?
 def test_map_view_transformer():
     size = (400.0, 400.0, gws.Uom.px)
     bbox = (100.0, 100.0, 500.0, 500.0)
-    crs = gws.lib.crs.WGS84
+    crs = gws.lib.crs.WEBMERCATOR
     dpi = 1000
     rotation = 0
     mv = render.map_view_from_bbox(size, bbox, crs, dpi, rotation)
@@ -54,7 +65,7 @@ def test_map_view_transformer():
 def test_map_view_transformer_rotated():
     size = (400.0, 400.0, gws.Uom.px)
     bbox = (100.0, 100.0, 500.0, 500.0)
-    crs = gws.lib.crs.WGS84
+    crs = gws.lib.crs.WEBMERCATOR
     dpi = 1000
     rotation = 45
     mv = render.map_view_from_bbox(size, bbox, crs, dpi, rotation)
@@ -73,7 +84,7 @@ def test_render_map_mm_bbox():
     mri = gws.MapRenderInput(
         backgroundColor=0,
         bbox=(100, 100, 300, 300),
-        crs=gws.lib.crs.WGS84,
+        targetCrs=gws.lib.crs.WEBMERCATOR,
         dpi=1000,
         mapSize=(200, 200, gws.Uom.mm),
         # notify = print('callable'),
@@ -85,7 +96,7 @@ def test_render_map_mm_bbox():
     assert render.render_map(mri).__str__() == (
         "{'planes': [], 'view': {'dpi': 96, 'rotation': 0, 'mmSize': (200, 200), "
         "'pxSize': (755.9055118110236, 755.9055118110236), 'bounds': {'crs': "
-        "<crs:4326>, 'extent': (100, 100, 300, 300)}, 'center': (200.0, 200.0), "
+        "<crs:3857>, 'extent': (100, 100, 300, 300)}, 'center': (200.0, 200.0), "
         "'scale': 944}}"
     )
 
@@ -101,7 +112,7 @@ def test_render_map_px_center():
     mri = gws.MapRenderInput(
         backgroundColor=0,
         center=(150, 150),
-        crs=gws.lib.crs.WGS84,
+        targetCrs=gws.lib.crs.WEBMERCATOR,
         dpi=1000,
         mapSize=(200, 200, gws.Uom.px),
         # notify = print('callable'),
@@ -113,7 +124,7 @@ def test_render_map_px_center():
     assert render.render_map(mri).__str__() == (
         "{'planes': [], 'view': {'dpi': 96, 'rotation': 0, 'pxSize': (200, 200), "
         "'mmSize': (52.916666666666664, 52.916666666666664), 'center': (150, 150), "
-        "'scale': 100, 'bounds': {'crs': <crs:4326>, 'extent': (147.35416666666666, "
+        "'scale': 100, 'bounds': {'crs': <crs:3857>, 'extent': (147.35416666666666, "
         '147.35416666666666, 152.64583333333334, 152.64583333333334)}}}'
     )
 

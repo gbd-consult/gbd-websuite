@@ -87,7 +87,7 @@ def check_layers(layers: Iterable[gws.SourceLayer], revert: bool = False) -> lis
         if not sl.wgsExtent and sl.layers:
             exts = gws.u.compact(c.wgsExtent for c in sl.layers)
             if exts:
-                sl.wgsExtent = gws.lib.extent.union(exts)
+                sl.wgsExtent = gws.lib.extent.union(*exts)
 
         return sl
 
@@ -164,8 +164,14 @@ def combined_crs_list(layers: list[gws.SourceLayer]) -> list[gws.Crs]:
     return list(cs)
 
 
-def combined_bounds(layers: list[gws.SourceLayer], crs: gws.Crs) -> Optional[gws.Bounds]:
+def combined_wgs_extent(layers: list[gws.SourceLayer]) -> Optional[gws.Extent]:
     bs = gws.u.compact(sl.wgsExtent for sl in layers)
     if bs:
-        b = gws.Bounds(extent=gws.lib.extent.union(bs), crs=gws.lib.crs.WGS84)
+        return gws.lib.extent.union(*bs)
+
+
+def combined_bounds(layers: list[gws.SourceLayer], crs: gws.Crs) -> Optional[gws.Bounds]:
+    ext = combined_wgs_extent(layers)
+    if ext:
+        b = gws.Bounds(extent=ext, crs=gws.lib.crs.WGS84)
         return gws.lib.bounds.transform(b, crs)

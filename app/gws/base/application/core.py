@@ -124,6 +124,8 @@ class Object(gws.Application):
 
     _developerOptions: dict
 
+    _supportedCrs: list[gws.Crs]
+
     def configure(self):
         self.version = self.root.specs.version
         self.versionString = f'GWS version {self.version}'
@@ -235,6 +237,17 @@ class Object(gws.Application):
         for p in self.projects:
             if p.uid == uid:
                 return p
+
+    def supported_crs(self):
+        if not hasattr(self, '_supportedCrs'):
+            crs_set = set()
+            for m in self.root.find_all(gws.ext.object.map):
+                crs_set.add(m.bounds.crs)
+            for s in self.root.find_all(gws.ext.object.owsService):
+                for b in s.supportedBounds:
+                    crs_set.add(b.crs)
+            self._supportedCrs = sorted(crs_set, key=lambda c: c.srid)
+        return self._supportedCrs
 
     def helper(self, ext_type):
         if ext_type not in self._helperMap:

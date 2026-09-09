@@ -53,6 +53,9 @@ class Application(Node):
     versionString: str
     """Full version string for display purposes."""
 
+    def supported_crs(self) -> list['Crs']:
+        """All CRS used by maps, overview maps and OWS services, computed on first call."""
+
     defaultPrinter: 'Printer'
     """Default printer object."""
 

@@ -4,7 +4,7 @@ from typing import Optional
 
 import gws
 import gws.lib.extent
-import gws.lib.uom
+import gws.gis.zoom
 import gws.lib.xmlx as xmlx
 
 from . import core
@@ -43,7 +43,7 @@ def for_layer(layer: gws.Layer, user: gws.User, service: Optional[gws.OwsService
     lc.hasLegend = layer.hasLegend
     lc.isSearchable = layer.isSearchable
 
-    scales = [gws.lib.uom.res_to_scale(r) for r in layer.resolutions]
+    scales = [gws.gis.zoom.res_to_scale(r, layer.mapCrs) for r in layer.resolutions]
     lc.minScale = int(min(scales))
     lc.maxScale = int(max(scales))
 

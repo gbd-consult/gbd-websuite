@@ -83,6 +83,18 @@ class Crs:
     """CRS own Extent."""
     bounds: Bounds
     """CRS own Bounds."""
+    wgsMaxExtent: Extent
+    """Maximal extent that makes sense for this CRS, in the WGS projection."""
+
+    def clip_extent(self, wgs_extent: Extent) -> Optional[Extent]:
+        """Clip a WGS extent to the maximal extent of this CRS.
+
+        Args:
+            wgs_extent: Extent in the WGS projection.
+
+        Returns:
+            The clipped extent in the WGS projection, or ``None`` if there is no intersection.
+        """
 
     coordinatePrecision: int
     """Preferred precision for coordinates in this CRS."""
