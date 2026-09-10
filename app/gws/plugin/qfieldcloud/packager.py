@@ -201,7 +201,8 @@ class Object:
             self.qfcProject.root.create_temporary(
                 gws.ext.object.layer,
                 type='qgisflat',
-                _parentBounds=bounds,
+                _parentWgsExtent=gws.lib.bounds.wgs_extent(bounds),
+                _mapCrs=bounds.crs,
                 _parentResolutions=[1],
                 _defaultProvider=self.qfcProject.qgisProvider,
                 _defaultSourceLayers=[le.sourceLayer],

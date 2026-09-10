@@ -5,7 +5,6 @@ from typing import Optional, cast
 import gws
 import gws.base.model
 import gws.config.util
-import gws.lib.bounds
 import gws.lib.crs
 import gws.lib.grid
 import gws.lib.image
@@ -143,7 +142,7 @@ class Object(gws.Layer):
 
     hasLegend = False
 
-    parentBounds: gws.Bounds
+    parentWgsExtent: gws.Extent
     parentResolutions: list[float]
 
     def configure(self):
@@ -157,12 +156,12 @@ class Object(gws.Layer):
         p = self.cfg('imageFormat') or _DEFAULT_IMAGE_FORMAT
         self.imageFormat = gws.ImageFormat(name=p.name, mimeTypes=p.mimeTypes, options=p.options or {})
 
-        self.parentBounds = self.cfg('_parentBounds')
+        self.parentWgsExtent = self.cfg('_parentWgsExtent')
         self.parentResolutions = self.cfg('_parentResolutions')
-        self.mapCrs = self.parentBounds.crs
+        self.mapCrs = self.cfg('_mapCrs')
 
-        self.wgsExtent = gws.lib.extent.transform_to_wgs(self.parentBounds.extent, self.parentBounds.crs)
-        self.bounds = self.parentBounds
+        self.wgsExtent = self.parentWgsExtent
+        self.bounds = cast(gws.Bounds, None)
         self.zoomBounds = cast(gws.Bounds, None)
         self.resolutions = self.parentResolutions
 
@@ -207,19 +206,15 @@ class Object(gws.Layer):
             return True
 
     def configure_bounds(self):
-        """Bounds in the map CRS: the WGS extent clipped to the CRS and to the parent bounds."""
+        """Bounds in the map CRS: the WGS extent clipped to the parent extent and to the CRS."""
 
-        ext = self.mapCrs.clip_extent(self.wgsExtent)
+        ext = gws.lib.extent.intersection(self.wgsExtent, self.parentWgsExtent)
         if ext:
-            ext = gws.lib.extent.intersection(
-                gws.lib.extent.transform_from_wgs(ext, self.mapCrs),
-                self.parentBounds.extent,
-            )
+            ext = self.mapCrs.clip_extent(ext)
         if not ext:
-            gws.log.warning(f'layer {self!r}: extent outside of the parent bounds wgs={self.wgsExtent} parent={self.parentBounds.extent}')
-            self.bounds = gws.lib.bounds.copy(self.parentBounds)
-            return True
-        self.bounds = gws.Bounds(crs=self.mapCrs, extent=ext)
+            gws.log.warning(f'layer {self!r}: extent outside of the parent extent wgs={self.wgsExtent} parent={self.parentWgsExtent}')
+            ext = self.mapCrs.clip_extent(self.parentWgsExtent)
+        self.bounds = gws.Bounds(crs=self.mapCrs, extent=gws.lib.extent.transform_from_wgs(ext, self.mapCrs))
         return True
 
     def configure_zoom_bounds(self):
@@ -276,7 +271,8 @@ class Object(gws.Layer):
         for cfg in layer_configs:
             cfg = gws.u.merge(
                 cfg,
-                _parentBounds=self.bounds,
+                _parentWgsExtent=self.wgsExtent,
+                _mapCrs=self.mapCrs,
                 _parentResolutions=self.resolutions,
             )
             ls.append(self.create_child(gws.ext.object.layer, cfg))

@@ -66,11 +66,12 @@ class Object(gws.Map):
                 raise gws.ConfigurationError(f'invalid extent {p!r}')
             buf = self.cfg('extentBuffer') or 0
             self.bounds = gws.Bounds(crs=crs, extent=gws.lib.extent.buffer(ext, buf))
+            self.wgsExtent = gws.lib.extent.transform_to_wgs(self.bounds.extent, crs)
         else:
-            self.bounds = gws.Bounds(crs=crs, extent=crs.extent)
+            self.wgsExtent = crs.wgsMaxExtent
+            self.bounds = gws.Bounds(crs=crs, extent=gws.lib.extent.transform_from_wgs(self.wgsExtent, crs))
 
         self.center = self.cfg('center') or gws.lib.extent.center(self.bounds.extent)
-        self.wgsExtent = gws.lib.extent.transform_to_wgs(self.bounds.extent, self.bounds.crs)
         self.wrapX = self.cfg('wrapX', default=False)
 
         p = self.cfg('zoom')
@@ -85,7 +86,8 @@ class Object(gws.Map):
             type='group',
             title=self.title,
             layers=self.cfg('layers'),
-            _parentBounds=self.bounds,
+            _parentWgsExtent=self.wgsExtent,
+            _mapCrs=self.bounds.crs,
             _parentResolutions=self.resolutions,
         )
 

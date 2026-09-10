@@ -63,7 +63,7 @@ class Object(gws.base.layer.image.Object):
     def configure_provider(self):
         gws.config.util.configure_service_provider_for(self, provider.Object)
         
-        default_crs = self.serviceProvider.crs or self.parentBounds.crs
+        default_crs = self.serviceProvider.crs or self.mapCrs
         self.entries = self.serviceProvider.enumerate_images(default_crs)
         if not self.entries:
             raise gws.ConfigurationError('no images found')
