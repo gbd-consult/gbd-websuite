@@ -10,6 +10,9 @@ import gws.lib.image
 
 from . import core
 
+MAX_SOURCE_PIXEL_RATIO = 16
+"""Cap on source pixels per target pixel for cross-CRS requests."""
+
 
 class Object(core.Object):
     """Base grabber for sources that render arbitrary boxes."""
@@ -68,14 +71,26 @@ class Object(core.Object):
         if self.sourceCrs == self.targetCrs:
             return self.draw_chunks(extent, w, h, params)
 
-        src_extent = gws.lib.extent.transform(extent, self.targetCrs, self.sourceCrs)
+        wgs_extent = self.sourceCrs.clip_extent(gws.lib.extent.transform_to_wgs(extent, self.targetCrs))
+        if not wgs_extent:
+            return gws.lib.image.from_size((w, h))
+
+        src_extent = gws.lib.extent.transform_from_wgs(wgs_extent, self.sourceCrs)
         if not gws.lib.extent.is_valid(src_extent):
             return gws.lib.image.from_size((w, h))
-        
-        src_res = (src_extent[2] - src_extent[0]) / w
+
+        src_res = self.source_resolution(extent, (extent[2] - extent[0]) / w)
+        if not src_res:
+            return gws.lib.image.from_size((w, h))
+
         src_extent = gws.lib.extent.buffer(src_extent, src_res * 2)
-        sw = w + 4
-        sh = h + 4
+        sw = math.ceil((src_extent[2] - src_extent[0]) / src_res)
+        sh = math.ceil((src_extent[3] - src_extent[1]) / src_res)
+
+        f = math.sqrt((sw * sh) / (w * h * MAX_SOURCE_PIXEL_RATIO))
+        if f > 1:
+            sw = math.ceil(sw / f)
+            sh = math.ceil(sh / f)
 
         img = self.draw_chunks(src_extent, sw, sh, params)
 
@@ -88,8 +103,23 @@ class Object(core.Object):
                     width=w,
                     height=h,
                     resampleAlg='bilinear',
+                    warpOptions=['XSCALE=1', 'YSCALE=1'],
                 )
             )
+
+    def source_resolution(self, extent, res):
+        tr = self.targetCrs.transformer(self.sourceCrs)
+        x0, y0, x1, y1 = extent
+        best = 0.0
+        for x in (x0, (x0 + x1) / 2, x1):
+            for y in (y0, (y0 + y1) / 2, y1):
+                ax, ay = tr(x, y)
+                bx, by = tr(x + res, y)
+                cx, cy = tr(x, y + res)
+                for d in (math.hypot(bx - ax, by - ay), math.hypot(cx - ax, cy - ay)):
+                    if math.isfinite(d) and d > 0 and (not best or d < best):
+                        best = d
+        return best
 
     def draw_chunks(self, extent, w, h, params):
         mpx = self.maxRequestPixels

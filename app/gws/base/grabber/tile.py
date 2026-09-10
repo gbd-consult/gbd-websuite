@@ -56,6 +56,7 @@ class Object(core.Object):
                 width=w,
                 height=h,
                 resampleAlg='bilinear',
+                warpOptions=['XSCALE=1', 'YSCALE=1'],
             ))
 
         return img
