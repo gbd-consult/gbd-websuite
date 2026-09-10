@@ -28,7 +28,11 @@ class Object(core.Object):
         self.requestBuffer = self.cache.requestBuffer
         self.maxRequestPixels = 4096
 
-    def fetch_tile(self, tile, params=None):
+        cls = type(self)
+        if cls.fetch_box_as_bytes is Object.fetch_box_as_bytes and cls.fetch_box_as_image is Object.fetch_box_as_image:
+            raise gws.Error(f'{cls.__name__}: neither fetch_box_as_bytes nor fetch_box_as_image is implemented')
+
+    def compose_block_as_images(self, tile, params=None):
         x, y, z = tile
         n = 1 if params else self.requestTiles
         rng = self.rangeForLevel[z]
@@ -48,28 +52,23 @@ class Object(core.Object):
         w = (fx1 - fx0 + 1) * ts + 2 * buf
         h = (fy1 - fy0 + 1) * ts + 2 * buf
 
-        img = self.draw_box(extent, w, h, params)
+        img = self.compose_box_as_image(extent, w, h, params)
         img.crop((buf, buf, w - buf, h - buf))
         arr = img.to_array()
 
-        out = None
+        images = {}
         for tx, ty, _ in gws.lib.grid.enum_tiles((fx0, fy0, fx1, fy1, z)):
             px = (tx - fx0) * ts
             py = (ty - fy0) * ts
-            tile_img = gws.lib.image.from_array(arr[py : py + ts, px : px + ts].copy())
-            blob = tile_img.to_bytes(self.mime, self.imageFormat.options)
-            if (tx, ty) == (x, y):
-                out = blob
-            else:
-                self.store_write((tx, ty, z), blob, params)
-        return out
+            images[(tx, ty, z)] = gws.lib.image.from_array(arr[py : py + ts, px : px + ts].copy())
+        return images
 
-    def draw_box(self, extent, width, height, params=None):
+    def compose_box_as_image(self, extent, width, height, params=None):
         w = gws.u.to_rounded_int(width)
         h = gws.u.to_rounded_int(height)
 
         if self.sourceCrs == self.targetCrs:
-            return self.draw_chunks(extent, w, h, params)
+            return self.compose_chunks_as_image(extent, w, h, params)
 
         wgs_extent = self.sourceCrs.clip_extent(gws.lib.extent.transform_to_wgs(extent, self.targetCrs))
         if not wgs_extent:
@@ -92,7 +91,7 @@ class Object(core.Object):
             sw = math.ceil(sw / f)
             sh = math.ceil(sh / f)
 
-        img = self.draw_chunks(src_extent, sw, sh, params)
+        img = self.compose_chunks_as_image(src_extent, sw, sh, params)
 
         with gws.lib.gdalx.open_from_image(img, gws.Bounds(crs=self.sourceCrs, extent=src_extent)) as ds:
             return ds.warp_to_image(
@@ -121,11 +120,11 @@ class Object(core.Object):
                         best = d
         return best
 
-    def draw_chunks(self, extent, w, h, params):
+    def compose_chunks_as_image(self, extent, w, h, params):
         mpx = self.maxRequestPixels
 
         if w <= mpx and h <= mpx:
-            img = self.fetch_box(gws.Bounds(crs=self.sourceCrs, extent=extent), w, h, params)
+            img = self.fetch_box_as_image(gws.Bounds(crs=self.sourceCrs, extent=extent), w, h, params)
             canvas = gws.lib.image.from_size((w, h))
             canvas.paste(img, (0, 0))
             return canvas
@@ -147,11 +146,16 @@ class Object(core.Object):
                     extent[0] + (px + cw + buf) * xres,
                     extent[3] - (py - buf) * yres,
                 )
-                img = self.fetch_box(gws.Bounds(crs=self.sourceCrs, extent=e), cw + 2 * buf, ch + 2 * buf, params)
+                img = self.fetch_box_as_image(gws.Bounds(crs=self.sourceCrs, extent=e), cw + 2 * buf, ch + 2 * buf, params)
                 img.crop((buf, buf, buf + cw, buf + ch))
                 canvas.paste(img, (px, py))
 
         return canvas
 
-    def fetch_box(self, bounds: gws.Bounds, width: int, height: int, params: dict | None = None) -> gws.Image:
-        raise NotImplementedError(f'fetch_box not implemented in {self!r}')
+    def fetch_box_as_bytes(self, bounds: gws.Bounds, width: int, height: int, params: dict | None = None) -> bytes:
+        img = self.fetch_box_as_image(bounds, width, height, params)
+        return img.to_bytes(self.mime, self.imageFormat.options)
+
+    def fetch_box_as_image(self, bounds: gws.Bounds, width: int, height: int, params: dict | None = None) -> gws.Image:
+        blob = self.fetch_box_as_bytes(bounds, width, height, params)
+        return gws.lib.image.from_bytes(blob)

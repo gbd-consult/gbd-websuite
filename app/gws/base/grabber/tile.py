@@ -17,7 +17,7 @@ class Object(core.Object):
     sourceCrs: gws.Crs
     sourceMatrices: list[gws.TileMatrix]
 
-    def draw_box(self, extent, width, height, params=None):
+    def compose_box_as_image(self, extent, width, height, params=None):
         w = gws.u.to_rounded_int(width)
         h = gws.u.to_rounded_int(height)
 
@@ -41,10 +41,9 @@ class Object(core.Object):
         mosaic = gws.lib.image.from_size((mw, mh))
 
         for col, row, _ in gws.lib.grid.enum_tiles((c0, r0, c1, r1, 0)):
-            blob = self.fetch_source_tile(m, col, row)
+            img = self.fetch_tile_as_image(m, col, row)
             ix = (col - c0) * m.tileWidth
             iy = (row - r0) * m.tileHeight
-            img = gws.lib.image.from_bytes(blob)
             mosaic.paste(img, (ix, iy))
 
         src_bounds = gws.Bounds(crs=self.sourceCrs, extent=matrix_range_extent(m, rng))
@@ -72,8 +71,12 @@ class Object(core.Object):
                 return m
         return self.sourceMatrices[-1]
 
-    def fetch_source_tile(self, m: gws.TileMatrix, col: int, row: int) -> bytes:
-        raise NotImplementedError(f'fetch_source_tile not implemented in {self!r}')
+    def fetch_tile_as_bytes(self, m: gws.TileMatrix, col: int, row: int) -> bytes:
+        raise NotImplementedError(f'fetch_tile_as_bytes not implemented in {self!r}')
+
+    def fetch_tile_as_image(self, m: gws.TileMatrix, col: int, row: int) -> gws.Image:
+        blob = self.fetch_tile_as_bytes(m, col, row)
+        return gws.lib.image.from_bytes(blob)
 
 
 def matrix_resolution(m: gws.TileMatrix) -> float:

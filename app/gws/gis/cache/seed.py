@@ -174,7 +174,7 @@ def _seed_block(queue: _BlockQueue, bg: _BlockGenerator, block: gws.MapTileRange
         for mt in missing:
             if queue.stopped:
                 return present, 0, 0
-            bg.entry.grabber.get_tile(mt)
+            bg.entry.grabber.get_tile_as_bytes(mt)
         return present, len(missing), 0
     except Exception as exc:
         gws.log.warning(f'seed {bg.entry.name}: block {block} failed: {exc!r}')

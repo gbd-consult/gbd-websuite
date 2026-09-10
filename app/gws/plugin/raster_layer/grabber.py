@@ -19,7 +19,7 @@ class Object(gws.base.grabber.box.Object):
         self.sourceCrs = self.targetCrs
         self.maxRequestPixels = 9000
 
-    def fetch_box(self, bounds, width, height, params=None):
+    def fetch_box_as_image(self, bounds, width, height, params=None):
         ms_map = gws.lib.mapserver.core.new_map()
         ms_map.add_layer(self.msOptions)
         return ms_map.draw(bounds, (width, height))

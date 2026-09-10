@@ -441,7 +441,7 @@ class Object(gws.Layer):
         if not gr:
             return
         return gws.LayerRenderOutput(
-            content=gr.get_tile((lri.x, lri.y, lri.z), lri.renderParams),
+            content=gr.get_tile_as_bytes((lri.x, lri.y, lri.z), lri.renderParams),
         )
 
     def render_box(self, lri):
@@ -453,13 +453,13 @@ class Object(gws.Layer):
         w, h = lri.view.pxSize
 
         if not lri.view.rotation:
-            content = gr.get_box(lri.view.bounds.extent, w, h, params)
+            content = gr.get_box_as_bytes(lri.view.bounds.extent, w, h, params)
             return gws.LayerRenderOutput(content=content)
 
         circ = gws.lib.extent.circumsquare(lri.view.bounds.extent)
         d = gws.u.to_rounded_int(gws.lib.extent.diagonal((0, 0, w, h)))
 
-        content = gr.get_box(circ, d, d, params)
+        content = gr.get_box_as_bytes(circ, d, d, params)
 
         img = gws.lib.image.from_bytes(content)
         img.rotate(-lri.view.rotation).crop(

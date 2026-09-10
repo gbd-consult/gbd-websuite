@@ -80,7 +80,46 @@ class Object(gws.Grabber):
     def tile_range_for_level(self, z):
         return self.rangeForLevel[z]
 
-    def get_tile(self, tile, params=None):
+    def get_tile_as_bytes(self, tile, params=None):
+        r = self._get_tile(tile, params)
+        if isinstance(r, bytes):
+            return r
+        return r.to_bytes(self.mime, self.imageFormat.options)
+
+    def get_tile_as_image(self, tile, params=None):
+        r = self._get_tile(tile, params)
+        if isinstance(r, bytes):
+            return gws.lib.image.from_bytes(r)
+        return r
+
+    def get_tiles_as_bytes(self, tr, params=None):
+        return {mt: self.get_tile_as_bytes(mt, params) for mt in self.tiles_in_range(tr)}
+
+    def get_tiles_as_images(self, tr, params=None):
+        return {mt: self.get_tile_as_image(mt, params) for mt in self.tiles_in_range(tr)}
+
+    def get_box_as_bytes(self, extent, width, height, params=None):
+        r = self._get_box(extent, width, height, params)
+        if isinstance(r, bytes):
+            return r
+        return r.to_bytes(self.mime, self.imageFormat.options)
+
+    def get_box_as_image(self, extent, width, height, params=None):
+        r = self._get_box(extent, width, height, params)
+        if isinstance(r, bytes):
+            return gws.lib.image.from_bytes(r)
+        return r
+
+    def tiles_in_range(self, tr):
+        z = tr[4]
+        if not self.is_serving(z):
+            return []
+        rng = self.rangeForLevel[z]
+        return [mt for mt in gws.lib.grid.enum_tiles(tr) if gws.lib.grid.in_range(mt, rng)]
+
+    ##
+
+    def _get_tile(self, tile: gws.MapTile, params: dict | None) -> bytes | gws.Image:
         x, y, z = tile
         if not self.is_serving(z):
             return self.empty_tile()
@@ -92,31 +131,19 @@ class Object(gws.Grabber):
         if blob is not None:
             return blob
 
-        blob = self.fetch_tile(tile, params)
-        self.store_write(tile, blob, params)
+        images = self.compose_block_as_images(tile, params)
+        for mt, img in images.items():
+            self.store_write_image(mt, img, params)
 
-        return blob
+        return images[tile]
 
-    def get_tiles(self, tr, params=None):
-        z = tr[4]
-        if not self.is_serving(z):
-            return {}
-
-        rng = self.rangeForLevel[z]
-        tiles = {}
-        for mt in gws.lib.grid.enum_tiles(tr):
-            if gws.lib.grid.in_range(mt, rng):
-                tiles[mt] = self.get_tile(mt, params)
-        return tiles
-
-    def get_box(self, extent, width, height, params=None):
+    def _get_box(self, extent: gws.Extent, width, height, params: dict | None) -> bytes | gws.Image:
         w = gws.u.to_rounded_int(width)
         h = gws.u.to_rounded_int(height)
 
         z = gws.lib.grid.level_for_resolution(self.grid, (extent[2] - extent[0]) / w)
         if params or not self.is_storing(z):
-            img = self.draw_box(extent, w, h, params)
-            return img.to_bytes(self.mime, self.imageFormat.options)
+            return self.compose_box_as_image(extent, w, h, params)
 
         rng = gws.lib.grid.range_for_extent(self.grid, extent, z)
         if not rng:
@@ -125,12 +152,12 @@ class Object(gws.Grabber):
         x0, y0, x1, y1, _ = rng
         ts = self.grid.tileSize
         mosaic = gws.lib.image.from_size(((x1 - x0 + 1) * ts, (y1 - y0 + 1) * ts))
-        for (tx, ty, _), blob in self.get_tiles(rng).items():
-            mosaic.paste(gws.lib.image.from_bytes(blob), ((tx - x0) * ts, (ty - y0) * ts))
+        for (tx, ty, _), img in self.get_tiles_as_images(rng).items():
+            mosaic.paste(img, ((tx - x0) * ts, (ty - y0) * ts))
 
         mosaic_extent = gws.lib.grid.extent_for_range(self.grid, rng)
         with gws.lib.gdalx.open_from_image(mosaic, gws.Bounds(crs=self.targetCrs, extent=mosaic_extent)) as ds:
-            img = ds.warp_to_image(
+            return ds.warp_to_image(
                 dict(
                     dstSRS=self.targetCrs.epsg,
                     outputBounds=extent,
@@ -141,21 +168,23 @@ class Object(gws.Grabber):
                 )
             )
 
-        return img.to_bytes(self.mime, self.imageFormat.options)
-
     ##
 
-    def fetch_tile(self, tile: gws.MapTile, params: dict | None = None) -> bytes:
-        img = self.draw_box(
+    def compose_block_as_images(self, tile: gws.MapTile, params: dict | None = None) -> dict[gws.MapTile, gws.Image]:
+        img = self.compose_box_as_image(
             gws.lib.grid.extent_for_tile(self.grid, tile),
             self.grid.tileSize,
             self.grid.tileSize,
             params,
         )
+        return {tile: img}
+
+    def compose_box_as_bytes(self, extent: gws.Extent, width: int, height: int, params: dict | None = None) -> bytes:
+        img = self.compose_box_as_image(extent, width, height, params)
         return img.to_bytes(self.mime, self.imageFormat.options)
 
-    def draw_box(self, extent: gws.Extent, width: int, height: int, params: dict | None = None) -> gws.Image:
-        raise NotImplementedError(f'draw_box not implemented in {self!r}')
+    def compose_box_as_image(self, extent: gws.Extent, width: int, height: int, params: dict | None = None) -> gws.Image:
+        raise NotImplementedError(f'compose_box_as_image not implemented in {self!r}')
 
     ##
 
@@ -174,6 +203,11 @@ class Object(gws.Grabber):
         if params or not self.is_storing(mt[2]):
             return None
         return self.store.write(mt, blob)
+
+    def store_write_image(self, mt: gws.MapTile, img: gws.Image, params: dict | None = None):
+        if params or not self.is_storing(mt[2]):
+            return None
+        return self.store.write(mt, img.to_bytes(self.mime, self.imageFormat.options))
 
     def empty_tile(self) -> bytes:
         if not hasattr(self, '_emptyTile'):
