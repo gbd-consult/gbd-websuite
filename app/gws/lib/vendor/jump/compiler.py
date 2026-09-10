@@ -256,12 +256,12 @@ class Node:
             self.no = no
 
         def emit(self, tr: 'Translator'):
-            return (
-                    _parens(tr.emit(self.yes))
-                    + ' if '
-                    + _parens(tr.emit(self.cond))
-                    + ' else '
-                    + _parens(tr.emit(self.no))
+            return _parens(
+                _parens(tr.emit(self.yes))
+                + ' if '
+                + _parens(tr.emit(self.cond))
+                + ' else '
+                + _parens(tr.emit(self.no))
             )
 
     class Index:
@@ -2235,12 +2235,12 @@ class Translator:
         return _parens(code)
 
     def emit_comp_binary_op(self, node):
-        # a < b < c => (a) < (b) < (c)
+        # a < b < c => (a < (b) < (c))
         codes = [self.emit(node.subject)]
         for op, other in node.pairs:
             codes.append(op)
             codes.append(_parens(self.emit(other)))
-        return ' '.join(codes)
+        return _parens(' '.join(codes))
 
     def emit_unary_op(self, node):
         code = self.emit(node.subject)

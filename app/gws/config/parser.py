@@ -132,7 +132,7 @@ def _parse_app_dict(dct: dict, path, pp: '_Parser'):
     app_cfg.set('projectDirs', project_dirs)
     app_cfg.set('projects', projects)
 
-    gws.log.if_debug(_save_debug, app_cfg, path, '.parsed.json')
+    _save_debug(app_cfg, path, '.parsed.json')
     return app_cfg
 
 
@@ -205,7 +205,7 @@ class _Parser:
 
         if r:
             r = _to_plain(r)
-            gws.log.if_debug(_save_debug, r, path, '.src.json')
+            _save_debug(r, path, '.src.json')
             return r
 
     def read2(self, path: str):
@@ -213,7 +213,7 @@ class _Parser:
             return self.read_py(path)
         if path.endswith('.json'):
             return self.read_json(path)
-        if path.endswith('.yml') or path.endswith('.yaml'):
+        if path.endswith(('.yml', '.yaml')):
             return self.read_yaml(path)
         if path.endswith('.cx'):
             return self.read_cx(path)
@@ -264,7 +264,7 @@ class _Parser:
             _register_syntax_error(self.ctx, path, gws.u.read_file(exc.path), message=exc.message, line=exc.line)
             return
 
-        args = args = {
+        args = {
             'true': True,
             'false': False,
             'ctx': self.ctx,
@@ -275,7 +275,7 @@ class _Parser:
         if err_cnt[0] > 0:
             return
 
-        gws.log.if_debug(_save_debug, slon, path, '.src.slon')
+        _save_debug(slon, path, '.src.slon')
 
         try:
             return gws.lib.vendor.slon.loads(slon, as_object=True)
