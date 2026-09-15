@@ -1,3 +1,7 @@
+## Version 8.4.15
+
+- fixed issue with legend rendering for certain layers
+
 ## Version 8.4.14
 
 - geoservices plugin: improved feature templates
