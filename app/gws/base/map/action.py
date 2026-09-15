@@ -212,7 +212,7 @@ class Object(gws.base.action.Object):
         lro = layer.render_legend()
         content = gws.base.legend.output_to_bytes(lro)
         if content:
-            return lro.mime, content
+            return gws.lib.mime.PNG, content
         return self._empty_pixel
 
     def _image_response(self, lro: gws.LayerRenderOutput) -> ImageResponse:
