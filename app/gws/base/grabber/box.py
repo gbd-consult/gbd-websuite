@@ -29,8 +29,8 @@ class Object(core.Object):
 
     def compose_tile_block_as_image_dict(self, tile, params=None):
         z = tile[-1]
-        n = 1 if params else self.requestTiles
-        bx, by, _ = tile if params else self.block_start_tile(tile)
+        n = self.requestTiles
+        bx, by, _ = self.block_start_tile(tile)
 
         level_rng = self.tile_range_for_level(z)
         block_rng = (

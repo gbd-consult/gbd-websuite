@@ -23,6 +23,11 @@ def system_dirs():
 RED = (255, 0, 0, 255)
 
 
+def _max_extent(srid):
+    crs = gws.lib.crs.get(srid)
+    return gws.lib.extent.transform_from_wgs(crs.wgsMaxExtent, crs)
+
+
 class FakeBox(box.Object):
     def __init__(self, opts, source_srid):
         super().__init__(opts)
@@ -67,7 +72,7 @@ def _opts(srid=3857, max_age=0, extent=None, request_tiles=4, request_buffer=64)
     return core.Options(
         crs=gws.lib.crs.get(srid),
         cache=cache,
-        extent=extent,
+        extent=extent or _max_extent(srid),
         imageFormat=gws.ImageFormat(name='png8', mimeTypes=[gws.lib.mime.PNG], options={'mode': 'P'}),
         provider=None,
     )
@@ -127,15 +132,13 @@ def test_block_tiles_are_cut_from_one_image():
         assert (arr[..., 3] == 255).all()
 
 
-def test_dynamic_block_is_the_tile_plus_buffer():
+def test_dynamic_block_is_meta_tiled_too():
     gr = _grabber()
     params = {'param_1': 'value_1'}
     images = gr.compose_tile_block_as_image_dict((2125, 1365, 12), params)
-    res = gws.lib.grid.resolution_for_level(GRID_3857, 12)
     bounds, w, h, p = gr.fetches[0]
-    assert list(images) == [(2125, 1365, 12)]
-    assert bounds.extent == gws.lib.extent.buffer(_range_extent((2125, 1365, 2125, 1365, 12)), 64 * res)
-    assert (w, h) == (256 + 128, 256 + 128)
+    assert len(images) == 16
+    assert (w, h) == (4 * 256 + 128, 4 * 256 + 128)
     assert p is params
 
 

@@ -687,7 +687,10 @@ def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int
         parts.append(p)
         path = b'/'.join(parts)
         if path and not os.path.isdir(path):
-            os.mkdir(path, mode)
+            try:
+                os.mkdir(path, mode)
+            except FileExistsError:
+                pass
 
     chown_default(bpath, user, group)
     return bpath.decode('utf8')
@@ -990,7 +993,6 @@ class _FileLock:
 
     def __enter__(self):
         self.acquire()
-        log.debug(f'server lock {self.uid!r} ACQUIRED')
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.release()
@@ -1007,6 +1009,7 @@ class _FileLock:
             else:
                 os.ftruncate(self.fp, 0)
                 os.write(self.fp, str(os.getpid()).encode('ascii'))
+                log.debug(f'server lock {self.uid!r}: acquired')
                 return
 
             t = time.time() - ts
@@ -1015,9 +1018,9 @@ class _FileLock:
                 pid = self._holder_pid()
                 os.close(self.fp)
                 self.fp = None
-                raise LockBusyError(f'server lock {self.uid!r}: busy {pid=})')
+                log.debug(f'server lock {self.uid!r}: BUSY {pid=}')
+                raise LockBusyError(f'server lock {self.uid!r}: busy {pid=}')
 
-            log.debug(f'server lock {self.uid!r}: WAITING time={t:.3f} pid={self._holder_pid()}')
             time.sleep(self._PAUSE)
 
     def release(self):
@@ -1026,7 +1029,7 @@ class _FileLock:
         try:
             fcntl.flock(self.fp, fcntl.LOCK_UN)
             os.close(self.fp)
-            log.debug(f'server lock {self.uid!r}: RELEASED')
+            log.debug(f'server lock {self.uid!r}: released')
         except OSError as exc:
             log.exception(f'server lock {self.uid!r}: RELEASE ERROR {exc!r}')
         self.fp = None

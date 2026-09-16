@@ -23,6 +23,11 @@ def system_dirs():
 
 
 RED = (255, 0, 0, 255)
+
+
+def _max_extent(srid):
+    crs = gws.lib.crs.get(srid)
+    return gws.lib.extent.transform_from_wgs(crs.wgsMaxExtent, crs)
 PNG8 = gws.ImageFormat(name='png8', mimeTypes=[gws.lib.mime.PNG], options={'mode': 'P'})
 
 
@@ -51,7 +56,7 @@ def _grabber(max_age=0, max_level=14, name=None, srid=3857, extent=None, image_f
     opts = core.Options(
         crs=gws.lib.crs.get(srid),
         cache=cache,
-        extent=extent,
+        extent=extent or _max_extent(srid),
         imageFormat=image_format or PNG8,
         provider=None,
     )
@@ -60,6 +65,10 @@ def _grabber(max_age=0, max_level=14, name=None, srid=3857, extent=None, image_f
 
 def _block_extent(z=12, bx=2124, by=1364, n=4):
     return gws.lib.grid.extent_for_range(gws.lib.grid.for_crs(gws.lib.crs.get(3857)), (bx, by, bx + n - 1, by + n - 1, z))
+
+
+def _key(params):
+    return gws.u.sha256(params)[:12] if params else ''
 
 
 def _rgba(b):
@@ -86,7 +95,7 @@ def test_uncached_tiles_go_to_ephemeral_store_only():
     gr = _grabber(max_age=0)
     mt = _block_tiles()[0]
     gr.get_tile_as_bytes(mt)
-    assert gr.ephemeralStore.has(mt, 60)
+    assert gr.store_for(15).has(mt, 60)
     assert not gr.store.has(mt, 3600)
 
 
@@ -95,27 +104,56 @@ def test_cached_tiles_go_to_persistent_store():
     mt = _block_tiles(z=12)[0]
     gr.get_tile_as_bytes(mt)
     assert gr.store.has(mt, 3600)
-    assert not gr.ephemeralStore.has(mt, 60)
+    assert not gr.store_for(15).has(mt, 60)
 
 
 def test_levels_above_max_level_go_to_ephemeral_store():
     gr = _grabber(max_age=3600, max_level=14)
     mt = _block_tiles(z=15, bx=4248, by=2728)[0]
     gr.get_tile_as_bytes(mt)
-    assert gr.ephemeralStore.has(mt, 60)
+    assert gr.store_for(15).has(mt, 60)
     assert not gr.store.has(mt, 3600)
 
 
-def test_dynamic_requests_fetch_single_tiles_and_store_nothing():
+def test_dynamic_requests_are_meta_tiled_into_a_params_keyed_ephemeral_store():
     gr = _grabber(max_age=3600)
+    params = {'param_1': 'value_1'}
     tiles = _block_tiles()[:3]
     for mt in tiles:
-        gr.get_tile_as_bytes(mt, {'param_1': 'value_1'})
-    assert len(gr.fetches) == 3
-    assert all(f[1:3] == (256 + 128, 256 + 128) for f in gr.fetches)
-    for mt in tiles:
+        gr.get_tile_as_bytes(mt, params)
+    assert len(gr.fetches) == 1
+    assert gr.fetches[0][1:4] == (4 * 256 + 128, 4 * 256 + 128, params)
+
+    st = gr.store_for(12, _key(params))
+    assert st.baseDir != gr.store_for(12).baseDir
+    assert st.maxAge == core.EPHEMERAL_MAX_AGE
+    for mt in _block_tiles():
+        assert st.has(mt, 60)
         assert not gr.store.has(mt, 3600)
-        assert not gr.ephemeralStore.has(mt, 60)
+        assert not gr.store_for(15).has(mt, 60)
+
+
+def test_dynamic_requests_with_different_params_use_different_stores():
+    gr = _grabber(max_age=0)
+    mt = _block_tiles()[0]
+    gr.get_tile_as_bytes(mt, {'param_1': 'value_1'})
+    gr.get_tile_as_bytes(mt, {'param_1': 'value_1'})
+    assert len(gr.fetches) == 1
+    gr.get_tile_as_bytes(mt, {'param_1': 'value_2'})
+    assert len(gr.fetches) == 2
+    gr.get_tile_as_bytes(mt)
+    assert len(gr.fetches) == 3
+    assert gr.fetches[2][3] is None
+
+
+def test_dynamic_lock_identity_includes_params():
+    gr = _grabber()
+    params = {'param_1': 'value_1'}
+    with mock.patch.object(gws.u, 'server_lock', wraps=gws.u.server_lock) as lock:
+        gr.get_tile_as_bytes((2127, 1367, 12), params)
+    lock.assert_called_once_with(f'grabber_{gr.cache.name}_{_key(params)}_12_2124_1364', core.BLOCK_LOCK_TIMEOUT)
+    assert _key(params) != _key({'param_1': 'value_2'})
+    assert _key(None) == _key({}) == ''
 
 
 def test_expired_ephemeral_tile_is_fetched_again():
@@ -123,7 +161,7 @@ def test_expired_ephemeral_tile_is_fetched_again():
     mt = _block_tiles()[0]
     gr.get_tile_as_bytes(mt)
     old = time.time() - core.EPHEMERAL_MAX_AGE - 10
-    os.utime(gr.ephemeralStore.path(mt), (old, old))
+    os.utime(gr.store_for(15).path(mt), (old, old))
     gr.get_tile_as_bytes(mt)
     assert len(gr.fetches) == 2
 
@@ -133,7 +171,7 @@ def test_block_is_composed_under_lock_and_reread_after():
     mt = _block_tiles()[0]
     with mock.patch.object(gr, 'compose_tile_block_as_image_dict', wraps=gr.compose_tile_block_as_image_dict) as compose:
         gr.get_tile_as_bytes(mt)
-        with gws.u.server_lock('grabber_' + gr.cache.name + '_12_2124_1364', 0):
+        with gws.u.server_lock('grabber_' + gr.cache.name + '__12_2124_1364', 0):
             pass
         assert compose.call_count == 1
 
@@ -142,11 +180,11 @@ def test_busy_block_lock_returns_empty_tile():
     gr = _grabber(max_age=0)
     mt = _block_tiles()[0]
     with mock.patch.object(core, 'BLOCK_LOCK_TIMEOUT', 0):
-        with gws.u.server_lock('grabber_' + gr.cache.name + '_12_2124_1364', 0):
+        with gws.u.server_lock('grabber_' + gr.cache.name + '__12_2124_1364', 0):
             b = gr.get_tile_as_bytes(mt)
     assert b == gr.empty_tile()
     assert gr.fetches == []
-    assert not gr.ephemeralStore.has(mt, 60)
+    assert not gr.store_for(15).has(mt, 60)
 
 
 def test_store_write_survives_missing_dir(tmp_path):
@@ -166,10 +204,10 @@ def test_defaults():
     assert gr.imageFormat.name == 'png8'
     assert gr.mime == gws.lib.mime.PNG
     assert gr.levels() == list(range(core.MAX_LEVEL + 1))
-    assert gr.extent == gws.lib.extent.transform_from_wgs(gr.targetCrs.wgsMaxExtent, gr.targetCrs)
+    assert gr.extent == _max_extent(3857)
     assert gr.tile_range_for_level(0) == (0, 0, 0, 0, 0)
     assert gr.store.baseDir == f'{gws.c.MAP_CACHE_DIR}/{gr.cache.name}'
-    assert gr.ephemeralStore.baseDir == f'{gws.c.EPHEMERAL_DIR}/tiles_{gr.cache.name}'
+    assert gr.store_for(15).baseDir == f'{gws.c.EPHEMERAL_DIR}/tiles_{gr.cache.name}_'
     assert gr.store.extension == 'png'
 
 
@@ -211,7 +249,7 @@ def test_tile_outside_range_is_transparent_without_fetch():
     assert b == gr.empty_tile()
     assert gr.fetches == []
     assert not gr.store.has(mt, 3600)
-    assert not gr.ephemeralStore.has(mt, 60)
+    assert not gr.store_for(15).has(mt, 60)
 
 
 def test_tile_beyond_max_level_is_transparent_without_fetch():
@@ -272,25 +310,34 @@ def test_source_failure_propagates_and_stores_nothing():
     with u.raises(gws.ExternalServiceError):
         gr.get_tile_as_bytes(mt)
     assert not gr.store.has(mt, 3600)
-    assert not gr.ephemeralStore.has(mt, 60)
+    assert not gr.store_for(15).has(mt, 60)
 
 
 def test_lock_identity_is_block_snapped():
     gr = _grabber()
     with mock.patch.object(gws.u, 'server_lock', wraps=gws.u.server_lock) as lock:
         gr.get_tile_as_bytes((2127, 1367, 12))
-    lock.assert_called_once_with(f'grabber_{gr.cache.name}_12_2124_1364', core.BLOCK_LOCK_TIMEOUT)
+    lock.assert_called_once_with(f'grabber_{gr.cache.name}__12_2124_1364', core.BLOCK_LOCK_TIMEOUT)
 
 
-def test_store_write_triggers_cleanup():
+def test_ephemeral_block_write_triggers_cleanup():
     gr = _grabber(max_age=0)
+    gr.store_for(12)
     with mock.patch.object(gws.u, 'ephemeral_cleanup') as cleanup:
         gr.get_tile_as_bytes(_block_tiles()[0])
-    assert cleanup.call_count == 16
+    assert cleanup.call_count == 1
+
+    gr = _grabber(max_age=3600)
+    with mock.patch.object(gws.u, 'ephemeral_cleanup') as cleanup:
+        gr.get_tile_as_bytes(_block_tiles()[0])
+    assert cleanup.call_count == 0
 
 
-def test_is_storing():
+def test_store_for():
     gr = _grabber(max_age=3600, max_level=14)
+    assert gr.store_for(12) is gr.store
+    assert gr.store_for(15) is gr.store_for(16)
+    assert gr.store_for(12, _key({'param_1': 'value_1'})).baseDir.endswith(_key({'param_1': 'value_1'}))
     assert gr.is_storing(14)
     assert not gr.is_storing(15)
     assert not _grabber(max_age=0).is_storing(0)
@@ -355,7 +402,7 @@ def test_dynamic_box_bypasses_store():
     gr.get_box_as_image(extent, 512, 512, params)
     assert gr.fetches == [(extent, 512, 512, params)]
     assert gr.store.count() == 0
-    assert gr.ephemeralStore.count() == 0
+    assert gr.store_for(15).count() == 0
 
 
 def test_cached_box_overlapping_no_data_is_transparent():
@@ -377,7 +424,7 @@ def test_compose_box_not_implemented_in_base():
     gr = core.Object(core.Options(
         crs=gws.lib.crs.get(3857),
         cache=gws.MapCache(name='grabber_' + gws.u.random_string(8), maxAge=0, maxLevel=0, requestBuffer=0, requestTiles=1),
-        extent=None,
+        extent=_max_extent(3857),
         imageFormat=PNG8,
         provider=None,
     ))
@@ -391,7 +438,7 @@ def test_block_composition_not_implemented_in_base_for_meta_tiling():
     gr = core.Object(core.Options(
         crs=gws.lib.crs.get(3857),
         cache=gws.MapCache(name='grabber_' + gws.u.random_string(8), maxAge=0, maxLevel=0, requestBuffer=0, requestTiles=1),
-        extent=None,
+        extent=_max_extent(3857),
         imageFormat=PNG8,
         provider=None,
     ))

@@ -27,7 +27,7 @@ BLOCK_LOCK_TIMEOUT = 60
 class Options(gws.Data):
     crs: gws.Crs
     cache: gws.MapCache
-    extent: Optional[gws.Extent]
+    extent: gws.Extent
     imageFormat: gws.ImageFormat
     provider: Optional[gws.ServiceProvider]
 
@@ -35,16 +35,10 @@ class Options(gws.Data):
 class Object(gws.Grabber):
     """Base raster grabber."""
 
-    grid: gws.MapGrid
     rangeForLevel: dict[int, gws.MapTileRange]
     mime: str
-    store: gws.gis.cache.store.Object
-    """Persistent store, for levels within the cache settings."""
-    ephemeralStore: gws.gis.cache.store.Object
+    defaultEphemeralStore: gws.TileStore
     """Short-lived store, for everything else, so that blocks are composed once."""
-    cache: gws.MapCache
-    extent: gws.Extent
-    """Extent in the target CRS."""
     minLevel: int
     """Coarsest served level."""
     maxLevel: int
@@ -52,10 +46,6 @@ class Object(gws.Grabber):
     requestTiles: int
     """Tiles per side composed in one block; 1 means no meta-tiling."""
 
-    targetCrs: gws.Crs
-    """Target crs, defines the grabber CRS."""
-    imageFormat: gws.ImageFormat
-    """Format tiles are stored and returned in."""
     sourceCrs: gws.Crs
     """Source crs, defines the original CRS of the raster data."""
 
@@ -73,13 +63,9 @@ class Object(gws.Grabber):
             max_age=self.cache.maxAge,
             extension=gws.lib.mime.extension_for(self.mime),
         )
-        self.ephemeralStore = gws.gis.cache.store.Object(
-            gws.u.ephemeral_dir(f'tiles_{self.cache.name}'),
-            max_age=EPHEMERAL_MAX_AGE,
-            extension=gws.lib.mime.extension_for(self.mime),
-        )
+        self.defaultEphemeralStore = self.ephemeral_store('')
 
-        self.extent = opts.extent or gws.lib.extent.transform_from_wgs(self.targetCrs.wgsMaxExtent, self.targetCrs)
+        self.extent = opts.extent
         self.minLevel = 0
         self.maxLevel = MAX_LEVEL
 
@@ -126,30 +112,34 @@ class Object(gws.Grabber):
         if not gws.lib.grid.in_range(tile, self.tile_range_for_level(z)):
             return self.empty_tile(), None
 
-        if params:
-            block_images = self.compose_tile_block_as_image_dict(tile, params)
-            return None, block_images[tile]
+        store_key = gws.u.sha256(params)[:12] if params else ''
+        store = self.store_for(z, store_key)
 
-        blob = self.store_read(tile)
+        blob = store.read(tile)
         if blob is not None:
             return blob, None
 
         try:
             bx, by, _ = self.block_start_tile(tile)
-            with gws.u.server_lock(f'grabber_{self.cache.name}_{z}_{bx}_{by}', BLOCK_LOCK_TIMEOUT):
-                return self.get_block_and_return_pair(tile)
+            with gws.u.server_lock(f'grabber_{self.cache.name}_{store_key}_{z}_{bx}_{by}', BLOCK_LOCK_TIMEOUT):
+                blob = store.read(tile)
+                if blob is not None:
+                    return blob, None
+                return self.get_block_and_return_pair(tile, params, store)
         except gws.LockBusyError:
             gws.log.warning(f'grabber {self.cache.name!r}: block lock busy for {tile!r}')
             return self.empty_tile(), None
 
-    def get_block_and_return_pair(self, tile: gws.MapTile) -> _BlobImagePair:
+    def get_block_and_return_pair(self, tile: gws.MapTile, params: dict | None, store: gws.TileStore) -> _BlobImagePair:
         out = self.empty_tile(), None
-        block_images = self.compose_tile_block_as_image_dict(tile)
+        block_images = self.compose_tile_block_as_image_dict(tile, params)
         for bt, img in block_images.items():
             blob = self.as_bytes((None, img))
-            self.store_write(bt, blob)
+            store.write(bt, blob)
             if bt == tile:
                 out = blob, img
+        if store is not self.store:
+            gws.u.ephemeral_cleanup()
         return out
 
     def get_box_as_pair(self, extent: gws.Extent, width, height, params: dict | None) -> tuple[bytes | None, gws.Image | None]:
@@ -198,7 +188,7 @@ class Object(gws.Grabber):
             raise NotImplementedError(f'compose_tile_block_as_image_dict not implemented in {self!r}')
         return {tile: self.compose_tile_as_image(tile, params)}
 
-    def compose_box_as_image(self, extent: gws.Extent, width: int, height: int, params: dict | None = None) -> gws.Image:
+    def compose_box_as_image(self, extent: gws.Extent, w: int, h: int, params: dict | None = None) -> gws.Image:
         raise NotImplementedError(f'compose_box_as_image not implemented in {self!r}')
 
     ##
@@ -268,14 +258,19 @@ class Object(gws.Grabber):
     def is_storing(self, z):
         return self.cache.maxAge > 0 and z <= self.cache.maxLevel
 
-    def store_read(self, mt: gws.MapTile):
-        st = self.store if self.is_storing(mt[-1]) else self.ephemeralStore
-        return st.read(mt)
+    def store_for(self, z: int, key: str = '') -> gws.TileStore:
+        if key:
+            return self.ephemeral_store(key)
+        if self.is_storing(z):
+            return self.store
+        return self.defaultEphemeralStore
 
-    def store_write(self, mt: gws.MapTile, blob: bytes):
-        st = self.store if self.is_storing(mt[-1]) else self.ephemeralStore
-        st.write(mt, blob)
-        gws.u.ephemeral_cleanup()
+    def ephemeral_store(self, key: str) -> gws.TileStore:
+        return gws.gis.cache.store.Object(
+            gws.u.ephemeral_dir(f'tiles_{self.cache.name}_{key}'),
+            max_age=EPHEMERAL_MAX_AGE,
+            extension=gws.lib.mime.extension_for(self.mime),
+        )
 
     def empty_tile(self) -> bytes:
         if not hasattr(self, '_emptyTile'):

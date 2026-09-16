@@ -81,6 +81,11 @@ class FakeTile(tile.Object):
         return gws.lib.image.from_size((ts, ts), color=_color(col, row, int(m.identifier))).to_bytes(gws.lib.mime.PNG)
 
 
+def _max_extent(srid):
+    crs = gws.lib.crs.get(srid)
+    return gws.lib.extent.transform_from_wgs(crs.wgsMaxExtent, crs)
+
+
 def _opts(srid=3857, max_age=0):
     cache = gws.MapCache(
         name='grabber_' + gws.u.random_string(8),
@@ -92,7 +97,7 @@ def _opts(srid=3857, max_age=0):
     return core.Options(
         crs=gws.lib.crs.get(srid),
         cache=cache,
-        extent=None,
+        extent=_max_extent(srid),
         imageFormat=gws.ImageFormat(name='png8', mimeTypes=[gws.lib.mime.PNG], options={'mode': 'P'}),
         provider=None,
     )

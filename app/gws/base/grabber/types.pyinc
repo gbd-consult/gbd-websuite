@@ -8,6 +8,8 @@ class Grabber:
 
     targetCrs: Crs
     """Target CRS; one grabber serves exactly one CRS."""
+    sourceCrs: Crs
+    """Source CRS; defines the original CRS of the raster data."""
     grid: MapGrid
     """The fixed target grid for the CRS."""
     extent: Extent
