@@ -145,7 +145,7 @@ def status(root: gws.Root, flt: Optional[Filter] = None, with_counts=True) -> St
 def compute_counts(e: Entry):
     for lv in e.levels:
         lv.cachedTiles = e.grabber.store.count_for_level(lv.z)
-        lv.percentCached = int(lv.cachedTiles * 100 / lv.totalTiles) if lv.totalTiles else 0
+        lv.percentCached = max(1, int(lv.cachedTiles * 100 / lv.totalTiles)) if lv.cachedTiles else 0
         lv.cachedRange = e.grabber.store.range_for_level(lv.z) if lv.cachedTiles else None
 
 

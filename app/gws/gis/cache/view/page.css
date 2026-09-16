@@ -9,12 +9,50 @@ body {
 }
 #sidebar {
     width: 460px;
-    overflow: auto;
+    display: flex;
+    flex-direction: column;
     border-right: 1px solid #ccc;
     box-sizing: border-box;
 }
+#search {
+    display: flex;
+    padding: 12px 16px;
+    border-bottom: 1px solid #ccc;
+}
+#search-input {
+    flex: 1;
+    font: inherit;
+    padding: 3px 6px;
+    box-sizing: border-box;
+}
+#search-clear {
+    margin-left: 4px;
+    font: inherit;
+    cursor: pointer;
+}
+#caches {
+    flex: 1;
+    overflow: auto;
+}
+.cache.hidden {
+    display: none;
+}
 #map {
     flex: 1;
+    position: relative;
+}
+#zoom {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 4px 8px;
+    font-weight: bold;
+}
+#map .ol-zoom {
+    top: 36px;
+    left: 8px;
 }
 .cache {
     padding: 6px 8px;
@@ -41,7 +79,7 @@ body {
     font-size: 10px;
     display: inline-block;
     text-align: right;
-    margin-right: 4px;
+    padding: 2px 2px;
     text-decoration: none;
 }
 .levels .p0 {
@@ -64,4 +102,5 @@ body {
     top: 8px;
     background: rgba(255, 255, 255, 0.9);
     padding: 4px 8px;
+    font-weight: bold;
 }

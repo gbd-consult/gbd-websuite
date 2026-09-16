@@ -8,6 +8,11 @@
 </head>
 <body>
 <div id="sidebar">
+    <div id="search">
+        <input id="search-input" type="text" placeholder="filter" autocomplete="off">
+        <button id="search-clear" type="button" title="clear">&times;</button>
+    </div>
+    <div id="caches">
     @for e in entries
         <div class="cache {'selected' if e.name == name else ''}" data-name="{e.name}">
             <div class="name">{e.name} / {e.grabber.targetCrs.srid}</div>
@@ -33,8 +38,9 @@
             </div>
         </div>
     @end
+    </div>
 </div>
-<div id="map"></div>
+<div id="map"><div id="zoom"></div></div>
 <div id="status"></div>
 <script id="config" type="application/json">{config | json}</script>
 <script src="{url}proj4.js"></script>

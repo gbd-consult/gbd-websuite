@@ -8,7 +8,19 @@ function pad(n, w) {
 
 function tilePath(z, x, y) {
     var s = 10000;
-    return pad(z, 2) + '/' + pad(Math.floor(x / s), 4) + '/' + pad(x % s, 4) + '/' + pad(Math.floor(y / s), 4) + '/' + pad(y % s, 4) + '.' + S.ext;
+    return (
+        pad(z, 2) +
+        '/' +
+        pad(Math.floor(x / s), 4) +
+        '/' +
+        pad(x % s, 4) +
+        '/' +
+        pad(Math.floor(y / s), 4) +
+        '/' +
+        pad(y % s, 4) +
+        '.' +
+        S.ext
+    );
 }
 
 function tileUrl(tileCoord) {
@@ -37,14 +49,31 @@ function select(name, z) {
         ext: cache.ext,
     };
 
-    var total = cache.counts[z][0], cached = cache.counts[z][1];
-    var pct = total ? Math.floor(100 * cached / total) : 0;
-    document.getElementById('status').textContent = name + ' / ' + cache.srid + ' :: level ' + z + ' :: total ' + total + ' :: cached ' + cached + ' (' + pct + '%)';
+    var total = cache.counts[z][0],
+        cached = cache.counts[z][1];
+    var pct = total ? Math.floor((100 * cached) / total) : 0;
+    document.getElementById('status').textContent = [
+        'cache ',
+        name,
+        '/',
+        cache.srid,
+        ' | level=',
+        z,
+        ' | total=',
+        total,
+        ' | cached=',
+        cached,
+        ' (',
+        pct,
+        '%)',
+    ].join('');
 
     var els = document.querySelectorAll('.cache, .level');
     for (var i = 0; i < els.length; i++) {
         var el = els[i];
-        var on = el.getAttribute('data-name') === name && (el.className.indexOf('cache') >= 0 || el.getAttribute('data-z') === String(z));
+        var on =
+            el.getAttribute('data-name') === name &&
+            (el.className.indexOf('cache') >= 0 || el.getAttribute('data-z') === String(z));
         el.className = el.className.replace(/ ?\bselected\b/, '') + (on ? ' selected' : '');
     }
 
@@ -55,7 +84,8 @@ function rangeExtent() {
     var r = S.range;
     if (!r) return S.extent;
     var span = S.resolution * S.tileSize;
-    var ox = S.gridExtent[0], oy = S.gridExtent[3];
+    var ox = S.gridExtent[0],
+        oy = S.gridExtent[3];
     return [ox + r[0] * span, oy - (r[3] + 1) * span, ox + (r[2] + 1) * span, oy - r[1] * span];
 }
 
@@ -73,7 +103,7 @@ function showMap() {
         document.getElementById('status').textContent = 'unknown projection ' + code;
         return;
     }
-    proj.setExtent(S.crs.extent);
+    if (!proj.getExtent()) proj.setExtent(S.crs.extent);
 
     var grid = new ol.tilegrid.TileGrid({
         extent: S.gridExtent,
@@ -92,16 +122,40 @@ function showMap() {
     map = new ol.Map({
         target: 'map',
         layers: [
-            new ol.layer.Tile({source: new ol.source.OSM({wrapX: false}), opacity: 0.6}),
-            new ol.layer.Tile({source: source}),
+            new ol.layer.Tile({ source: new ol.source.OSM({ wrapX: false }), opacity: 0.3 }),
+            new ol.layer.Tile({ source: source }),
         ],
-        view: new ol.View({projection: proj, extent: S.crs.extent}),
+        view: new ol.View({ projection: proj, extent: S.crs.extent }),
     });
 
-    map.getView().fit(rangeExtent(), {constrainResolution: false});
+    map.getView().on('change:resolution', showZoom);
+    map.getView().setCenter(ol.extent.getCenter(rangeExtent()));
+    map.getView().setResolution(S.resolution);
+    showZoom();
+}
+
+function showZoom() {
+    var view = map.getView();
+    document.getElementById('zoom').textContent = Math.floor(view.getZoom()) + ' (' + view.getResolution().toFixed(4) + ')';
+}
+
+function filter() {
+    var q = document.getElementById('search-input').value.toLowerCase();
+    var els = document.querySelectorAll('.cache');
+    for (var i = 0; i < els.length; i++) {
+        var el = els[i];
+        var on = !q || el.textContent.toLowerCase().indexOf(q) >= 0;
+        el.className = el.className.replace(/ ?\bhidden\b/, '') + (on ? '' : ' hidden');
+    }
 }
 
 function main() {
+    document.getElementById('search-input').addEventListener('input', filter);
+    document.getElementById('search-clear').addEventListener('click', function () {
+        document.getElementById('search-input').value = '';
+        filter();
+    });
+
     document.getElementById('sidebar').addEventListener('click', function (evt) {
         var a = evt.target.closest('a.level');
         if (!a) return;
