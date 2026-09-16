@@ -26,6 +26,16 @@ class Image:
             PIL image mode.
         """
 
+    def convert(self, mode: str) -> 'Image':
+        """Converts the image to the specified mode.
+
+        Args:
+            mode: The desired image mode.
+
+        Returns:
+            The image object converted to the specified mode.
+        """
+
     def add_box(self, color=None) -> 'Image':
         """Creates a 1 pixel wide box on the image's edge.
 

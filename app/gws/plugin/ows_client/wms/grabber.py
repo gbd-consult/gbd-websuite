@@ -25,3 +25,6 @@ class Object(gws.base.grabber.box.Object):
             self.sourceLayers,
             self.mime,
         )
+
+    def fetch_box_as_image(self, bounds, width, height, params=None):
+        return self.as_image((self.fetch_box_as_bytes(bounds, width, height, params), None))

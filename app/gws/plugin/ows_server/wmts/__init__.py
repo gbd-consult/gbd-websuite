@@ -126,10 +126,12 @@ class Object(server.service.Object):
 
         for z in range(min_zoom, max_zoom + 1):
             nx, ny = gws.lib.grid.tile_count_for_level(mg, z)
+            res = gws.lib.grid.resolution_for_level(mg, z)
             ms.append(
                 gws.TileMatrix(
                     identifier=f'{z:02d}',
-                    scale=gws.gis.zoom.res_to_scale(gws.lib.grid.resolution_for_level(mg, z), mg.crs),
+                    scale=gws.gis.zoom.res_to_scale(res, mg.crs),
+                    resolution=res,
                     x=mg.extent[0],
                     y=mg.extent[3],
                     tileWidth=mg.tileSize,

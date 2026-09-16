@@ -27,51 +27,55 @@ class Object(core.Object):
         self.requestBuffer = self.cache.requestBuffer
         self.maxRequestPixels = 4096
 
-    def compose_block_as_images(self, tile, params=None):
-        x, y, z = tile
+    def compose_tile_block_as_image_dict(self, tile, params=None):
+        z = tile[-1]
         n = 1 if params else self.requestTiles
-        bx, by = (x // n) * n, (y // n) * n
-        rng = self.rangeForLevel[z]
+        bx, by, _ = tile if params else self.block_start_tile(tile)
 
-        fx0 = max(bx, rng[0])
-        fy0 = max(by, rng[1])
-        fx1 = min(bx + n - 1, rng[2])
-        fy1 = min(by + n - 1, rng[3])
+        level_rng = self.tile_range_for_level(z)
+        block_rng = (
+            max(bx, level_rng[0]),
+            max(by, level_rng[1]),
+            min(bx + n - 1, level_rng[2]),
+            min(by + n - 1, level_rng[3]),
+            z,
+        )
 
-        ts = self.grid.tileSize
+        tile_size = self.grid.tileSize
+        buf_size = self.requestBuffer
         res = gws.lib.grid.resolution_for_level(self.grid, z)
-        buf = self.requestBuffer
 
-        extent = gws.lib.grid.extent_for_range(self.grid, (fx0, fy0, fx1, fy1, z))
-        extent = gws.lib.extent.buffer(extent, buf * res)
+        extent = gws.lib.grid.extent_for_range(self.grid, block_rng)
+        extent = gws.lib.extent.buffer(extent, buf_size * res)
 
-        w = (fx1 - fx0 + 1) * ts + 2 * buf
-        h = (fy1 - fy0 + 1) * ts + 2 * buf
+        w = (block_rng[2] - block_rng[0] + 1) * tile_size + 2 * buf_size
+        h = (block_rng[3] - block_rng[1] + 1) * tile_size + 2 * buf_size
 
         img = self.compose_box_as_image(extent, w, h, params)
-        img.crop((buf, buf, w - buf, h - buf))
+        img.crop((buf_size, buf_size, w - buf_size, h - buf_size))
         arr = img.to_array()
 
-        images = {}
-        for tx, ty, _ in gws.lib.grid.enum_tiles((fx0, fy0, fx1, fy1, z)):
-            px = (tx - fx0) * ts
-            py = (ty - fy0) * ts
-            images[(tx, ty, z)] = gws.lib.image.from_array(arr[py : py + ts, px : px + ts].copy())
-        return images
+        tile_to_img = {}
+        bx = block_rng[0]
+        by = block_rng[1]
+
+        for tx, ty, _ in gws.lib.grid.enum_tiles(block_rng):
+            px = (tx - bx) * tile_size
+            py = (ty - by) * tile_size
+            slice = arr[py : py + tile_size, px : px + tile_size].copy()
+            tile_to_img[(tx, ty, z)] = gws.lib.image.from_array(slice)
+
+        return tile_to_img
 
     def compose_box_as_image(self, extent, width, height, params=None):
         w = gws.u.to_rounded_int(width)
         h = gws.u.to_rounded_int(height)
 
         if self.sourceCrs == self.targetCrs:
-            return self.compose_chunks_as_image(extent, w, h, params)
+            return self.compose_box_as_image_in_source_crs(extent, w, h, params)
 
-        wgs_extent = self.sourceCrs.clip_extent(gws.lib.extent.transform_to_wgs(extent, self.targetCrs))
-        if not wgs_extent:
-            return gws.lib.image.from_size((w, h))
-
-        src_extent = gws.lib.extent.transform_from_wgs(wgs_extent, self.sourceCrs)
-        if not gws.lib.extent.is_valid(src_extent):
+        src_extent = self.extent_to_source_crs(extent)
+        if not src_extent:
             return gws.lib.image.from_size((w, h))
 
         src_res = self.source_resolution(extent, (extent[2] - extent[0]) / w)
@@ -87,20 +91,8 @@ class Object(core.Object):
             sw = math.ceil(sw / f)
             sh = math.ceil(sh / f)
 
-        img = self.compose_chunks_as_image(src_extent, sw, sh, params)
-
-        with gws.lib.gdalx.open_from_image(img, gws.Bounds(crs=self.sourceCrs, extent=src_extent)) as ds:
-            return ds.warp_to_image(
-                dict(
-                    dstSRS=self.targetCrs.epsg,
-                    outputBounds=extent,
-                    outputBoundsSRS=self.targetCrs.epsg,
-                    width=w,
-                    height=h,
-                    resampleAlg='bilinear',
-                    warpOptions=['XSCALE=1', 'YSCALE=1'],
-                )
-            )
+        img = self.compose_box_as_image_in_source_crs(src_extent, sw, sh, params)
+        return self.warp_image(img, src_extent, extent, w, h)
 
     def source_resolution(self, extent, res):
         tr = self.targetCrs.transformer(self.sourceCrs)
@@ -116,42 +108,42 @@ class Object(core.Object):
                         best = d
         return best
 
-    def compose_chunks_as_image(self, extent, w, h, params):
-        mpx = self.maxRequestPixels
+    def compose_box_as_image_in_source_crs(self, extent, w, h, params):
+        max_pix = self.maxRequestPixels
 
-        if w <= mpx and h <= mpx:
-            img = self.fetch_box_as_image(gws.Bounds(crs=self.sourceCrs, extent=extent), w, h, params)
-            canvas = gws.lib.image.from_size((w, h))
-            canvas.paste(img, (0, 0))
-            return canvas
+        if w <= max_pix and h <= max_pix:
+            b = gws.Bounds(crs=self.sourceCrs, extent=extent)
+            img = self.fetch_box_as_image(b, w, h, params)
+            return self.normalize_image(img, w, h)
 
-        buf = self.requestBuffer
-        csize = mpx - 2 * buf
+        buf_size = self.requestBuffer
+        chunk_size = max_pix - 2 * buf_size
         xres = (extent[2] - extent[0]) / w
         yres = (extent[3] - extent[1]) / h
 
         canvas = gws.lib.image.from_size((w, h))
 
-        for py in range(0, h, csize):
-            for px in range(0, w, csize):
-                cw = min(csize, w - px)
-                ch = min(csize, h - py)
+        for start_y in range(0, h, chunk_size):
+            for start_x in range(0, w, chunk_size):
+                cw = min(chunk_size, w - start_x)
+                ch = min(chunk_size, h - start_y)
+                fw = cw + 2 * buf_size
+                fh = ch + 2 * buf_size
                 e = (
-                    extent[0] + (px - buf) * xres,
-                    extent[3] - (py + ch + buf) * yres,
-                    extent[0] + (px + cw + buf) * xres,
-                    extent[3] - (py - buf) * yres,
+                    extent[0] + (start_x - buf_size) * xres,
+                    extent[3] - (start_y + ch + buf_size) * yres,
+                    extent[0] + (start_x + cw + buf_size) * xres,
+                    extent[3] - (start_y - buf_size) * yres,
                 )
-                img = self.fetch_box_as_image(gws.Bounds(crs=self.sourceCrs, extent=e), cw + 2 * buf, ch + 2 * buf, params)
-                img.crop((buf, buf, buf + cw, buf + ch))
-                canvas.paste(img, (px, py))
+                img = self.fetch_box_as_image(gws.Bounds(crs=self.sourceCrs, extent=e), fw, fh, params)
+                img = self.normalize_image(img, fw, fh)
+                img.crop((buf_size, buf_size, buf_size + cw, buf_size + ch))
+                canvas.paste(img, (start_x, start_y))
 
         return canvas
 
     def fetch_box_as_bytes(self, bounds: gws.Bounds, width: int, height: int, params: dict | None = None) -> bytes:
-        img = self.fetch_box_as_image(bounds, width, height, params)
-        return img.to_bytes(self.mime, self.imageFormat.options)
+        raise NotImplementedError(f'fetch_box_as_bytes not implemented in {self!r}')
 
     def fetch_box_as_image(self, bounds: gws.Bounds, width: int, height: int, params: dict | None = None) -> gws.Image:
-        blob = self.fetch_box_as_bytes(bounds, width, height, params)
-        return gws.lib.image.from_bytes(blob)
+        raise NotImplementedError(f'fetch_box_as_image not implemented in {self!r}')

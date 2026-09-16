@@ -1198,6 +1198,16 @@ class Image:
             PIL image mode.
         """
 
+    def convert(self, mode: str) -> 'Image':
+        """Converts the image to the specified mode.
+
+        Args:
+            mode: The desired image mode.
+
+        Returns:
+            The image object converted to the specified mode.
+        """
+
     def add_box(self, color=None) -> 'Image':
         """Creates a 1 pixel wide box on the image's edge.
 
@@ -1970,6 +1980,29 @@ class MapGrid(Data):
     extent: Extent
     baseResolution: float
     tileSize: int
+
+
+class TileMatrix(Data):
+    """TileMatrix object."""
+
+    identifier: str
+    scale: float
+    resolution: float
+    x: float
+    y: float
+    width: float
+    height: float
+    tileWidth: float
+    tileHeight: float
+    extent: Extent
+
+
+class TileMatrixSet(Data):
+    """TileMatrixSet object."""
+
+    identifier: str
+    crs: 'Crs'
+    matrices: list[TileMatrix]
 ################################################################################
 
 
@@ -2140,28 +2173,6 @@ class LayerRenderOutput(Data):
 
 ################################################################################
 # /gis/source/types.pyinc
-
-
-class TileMatrix(Data):
-    """WMTS TileMatrix object."""
-
-    identifier: str
-    scale: float
-    x: float
-    y: float
-    width: float
-    height: float
-    tileWidth: float
-    tileHeight: float
-    extent: Extent
-
-
-class TileMatrixSet(Data):
-    """WMTS TileMatrixSet object."""
-
-    identifier: str
-    crs: 'Crs'
-    matrices: list[TileMatrix]
 
 
 class SourceStyle(Data):
@@ -3314,7 +3325,7 @@ class Grabber:
         Same contract as ``get_tile_as_bytes``, decoded pixels instead of bytes.
         """
 
-    def get_tiles_as_bytes(self, tr: MapTileRange, params: Optional[dict] = None) -> dict[MapTile, bytes]:
+    def get_tiles_as_bytes_dict(self, tr: MapTileRange, params: Optional[dict] = None) -> dict[MapTile, bytes]:
         """Return a rectangular block of tiles as encoded images.
 
         Sparse: contains entries only for tiles present in the grid.
@@ -3322,10 +3333,10 @@ class Grabber:
         Raises on source failure.
         """
 
-    def get_tiles_as_images(self, tr: MapTileRange, params: Optional[dict] = None) -> dict[MapTile, 'Image']:
+    def get_tiles_as_image_dict(self, tr: MapTileRange, params: Optional[dict] = None) -> dict[MapTile, 'Image']:
         """Return a rectangular block of tiles as images.
 
-        Same contract as ``get_tiles_as_bytes``, decoded pixels instead of bytes.
+        Same contract as ``get_tiles_as_bytes_dict``, decoded pixels instead of bytes.
         """
 
     def get_box_as_bytes(self, extent: Extent, width: int, height: int, params: Optional[dict] = None) -> bytes:

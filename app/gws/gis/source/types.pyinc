@@ -1,25 +1,3 @@
-class TileMatrix(Data):
-    """WMTS TileMatrix object."""
-
-    identifier: str
-    scale: float
-    x: float
-    y: float
-    width: float
-    height: float
-    tileWidth: float
-    tileHeight: float
-    extent: Extent
-
-
-class TileMatrixSet(Data):
-    """WMTS TileMatrixSet object."""
-
-    identifier: str
-    crs: 'Crs'
-    matrices: list[TileMatrix]
-
-
 class SourceStyle(Data):
     """Generic OGC Style."""
 

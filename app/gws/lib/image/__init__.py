@@ -289,6 +289,11 @@ class Image(gws.Image):
         self.img = self.img.crop(box)
         return self
 
+    def convert(self, mode):
+        if self.img.mode != mode:
+            self.img = self.img.convert(mode)
+        return self
+
     def paste(self, other, where=None):
         self.img.paste(cast('Image', other).img, where)
         return self

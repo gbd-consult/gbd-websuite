@@ -21,44 +21,40 @@ class Object(core.Object):
         w = gws.u.to_rounded_int(width)
         h = gws.u.to_rounded_int(height)
 
-        src_extent = extent
-        if self.targetCrs != self.sourceCrs:
-            src_extent = gws.lib.extent.transform(src_extent, self.targetCrs, self.sourceCrs)
-            if not gws.lib.extent.is_valid(src_extent):
+        if self.targetCrs == self.sourceCrs:
+            src_extent = extent
+        else:
+            src_extent = self.extent_to_source_crs(extent)
+            if not src_extent:
                 return gws.lib.image.from_size((w, h))
 
-        m = self.matrix_for_resolution((src_extent[2] - src_extent[0]) / w)
+        mat = self.matrix_for_resolution((src_extent[2] - src_extent[0]) / w)
         if self.targetCrs != self.sourceCrs:
-            src_extent = gws.lib.extent.buffer(src_extent, matrix_resolution(m) * 2)
+            src_extent = gws.lib.extent.buffer(src_extent, mat.resolution * 2)
 
-        rng = matrix_range(m, src_extent)
+        rng = self.matrix_range_for_extent(mat, src_extent)
         if not rng:
             return gws.lib.image.from_size((w, h))
 
-        c0, r0, c1, r1 = rng
-        mw = (c1 - c0 + 1) * m.tileWidth
-        mh = (r1 - r0 + 1) * m.tileHeight
+        c0, r0, c1, r1, _ = rng
+        mw = (c1 - c0 + 1) * mat.tileWidth
+        mh = (r1 - r0 + 1) * mat.tileHeight
         mosaic = gws.lib.image.from_size((mw, mh))
 
         for col, row, _ in gws.lib.grid.enum_tiles((c0, r0, c1, r1, 0)):
-            img = self.fetch_tile_as_image(m, col, row)
-            ix = (col - c0) * m.tileWidth
-            iy = (row - r0) * m.tileHeight
-            mosaic.paste(img, (ix, iy))
+            img = self.fetch_tile_as_image(mat, col, row)
+            px = (col - c0) * mat.tileWidth
+            py = (row - r0) * mat.tileHeight
+            mosaic.paste(img, (px, py))
 
-        src_bounds = gws.Bounds(crs=self.sourceCrs, extent=matrix_range_extent(m, rng))
-        with gws.lib.gdalx.open_from_image(mosaic, src_bounds) as ds:
-            img = ds.warp_to_image(dict(
-                dstSRS=self.targetCrs.epsg,
-                outputBounds=extent,
-                outputBoundsSRS=self.targetCrs.epsg,
-                width=w,
-                height=h,
-                resampleAlg='bilinear',
-                warpOptions=['XSCALE=1', 'YSCALE=1'],
-            ))
+        src_extent = self.matrix_extent_for_range(mat, rng)
+        return self.warp_image(mosaic, src_extent, extent, w, h)
 
-        return img
+    def fetch_tile_as_bytes(self, m: gws.TileMatrix, col: int, row: int) -> bytes:
+        raise NotImplementedError(f'fetch_tile_as_bytes not implemented in {self!r}')
+
+    def fetch_tile_as_image(self, m: gws.TileMatrix, col: int, row: int) -> gws.Image:
+        return self.as_image((self.fetch_tile_as_bytes(m, col, row), None))
 
     def matrix_for_resolution(self, wanted: float) -> gws.TileMatrix:
         # Coarsest matrix with res <= wanted, i.e. never upscale (downscale up to 2x).
@@ -67,45 +63,38 @@ class Object(core.Object):
         # Alternatives: nearest by ratio (upscale up to sqrt(2), coarser cartography, bigger labels)
         # or a threshold as in MapProxy (allow upscale below a factor, default 1.15).
         for m in self.sourceMatrices:
-            if matrix_resolution(m) <= wanted * (1 + 1e-6):
+            if m.resolution <= wanted * (1 + 1e-6):
                 return m
         return self.sourceMatrices[-1]
 
-    def fetch_tile_as_bytes(self, m: gws.TileMatrix, col: int, row: int) -> bytes:
-        raise NotImplementedError(f'fetch_tile_as_bytes not implemented in {self!r}')
+    def matrix_range_for_extent(self, mat: gws.TileMatrix, extent: gws.Extent) -> gws.MapTileRange | None:
+        tile_w = mat.resolution * mat.tileWidth
+        tile_h = mat.resolution * mat.tileHeight
 
-    def fetch_tile_as_image(self, m: gws.TileMatrix, col: int, row: int) -> gws.Image:
-        blob = self.fetch_tile_as_bytes(m, col, row)
-        return gws.lib.image.from_bytes(blob)
+        c0 = math.floor((extent[0] - mat.x + tile_w * 1e-6) / tile_w)
+        c1 = math.floor((extent[2] - mat.x - tile_w * 1e-6) / tile_w)
+        r0 = math.floor((mat.y - extent[3] + tile_h * 1e-6) / tile_h)
+        r1 = math.floor((mat.y - extent[1] - tile_h * 1e-6) / tile_h)
 
+        if c1 < c0 or r1 < r0 or c1 < 0 or r1 < 0 or c0 >= mat.width or r0 >= mat.height:
+            return None
+        return (
+            max(c0, 0),
+            max(r0, 0),
+            min(c1, int(mat.width) - 1),
+            min(r1, int(mat.height) - 1),
+            0,
+        )
 
-def matrix_resolution(m: gws.TileMatrix) -> float:
-    return (m.extent[2] - m.extent[0]) / (m.width * m.tileWidth)
+    def matrix_extent_for_range(self, mat: gws.TileMatrix, rng: gws.MapTileRange) -> gws.Extent:
+        tile_w = mat.resolution * mat.tileWidth
+        tile_h = mat.resolution * mat.tileHeight
 
+        c0, r0, c1, r1, _ = rng
 
-def matrix_range(m: gws.TileMatrix, extent: gws.Extent) -> tuple[int, int, int, int] | None:
-    res = matrix_resolution(m)
-    sx = res * m.tileWidth
-    sy = res * m.tileHeight
-
-    c0 = math.floor((extent[0] - m.x + sx * 1e-6) / sx)
-    c1 = math.floor((extent[2] - m.x - sx * 1e-6) / sx)
-    r0 = math.floor((m.y - extent[3] + sy * 1e-6) / sy)
-    r1 = math.floor((m.y - extent[1] - sy * 1e-6) / sy)
-
-    if c1 < c0 or r1 < r0 or c1 < 0 or r1 < 0 or c0 >= m.width or r0 >= m.height:
-        return None
-    return max(c0, 0), max(r0, 0), min(c1, m.width - 1), min(r1, m.height - 1)
-
-
-def matrix_range_extent(m: gws.TileMatrix, rng: tuple[int, int, int, int]) -> gws.Extent:
-    res = matrix_resolution(m)
-    sx = res * m.tileWidth
-    sy = res * m.tileHeight
-    c0, r0, c1, r1 = rng
-    return (
-        m.x + c0 * sx,
-        m.y - (r1 + 1) * sy,
-        m.x + (c1 + 1) * sx,
-        m.y - r0 * sy,
-    )
+        return (
+            mat.x + c0 * tile_w,
+            mat.y - (r1 + 1) * tile_h,
+            mat.x + (c1 + 1) * tile_w,
+            mat.y - r0 * tile_h,
+        )

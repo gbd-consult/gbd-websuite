@@ -14,14 +14,14 @@ def parse(xml: str) -> gws.OwsCapabilities:
     caps_el = xmlx.from_string(xml, gws.XmlOptions(compactWhitespace=True, removeNamespaces=True))
     tms_lst = [_tile_matrix_set(el) for el in caps_el.findall('Contents/TileMatrixSet')]
     tms_dct = {tms.identifier: tms for tms in tms_lst}
-    sls = gws.gis.source.check_layers(
-        _layer(el, tms_dct) for el in caps_el.findall('Contents/Layer'))
+    sls = gws.gis.source.check_layers(_layer(el, tms_dct) for el in caps_el.findall('Contents/Layer'))
     return gws.OwsCapabilities(
         tileMatrixSets=tms_lst,
         metadata=u.service_metadata(caps_el),
         operations=u.service_operations(caps_el),
         sourceLayers=sls,
-        version=caps_el.get('version'))
+        version=caps_el.get('version'),
+    )
 
 
 def _layer(layer_el: gws.XmlElement, tms_dct):
@@ -58,10 +58,7 @@ def _layer(layer_el: gws.XmlElement, tms_dct):
 
     sl.imageFormat = layer_el.textof('Format')
 
-    sl.resourceUrls = {
-        e.get('resourceType'): e.get('template')
-        for e in layer_el.findall('ResourceURL')
-    }
+    sl.resourceUrls = {e.get('resourceType'): e.get('template') for e in layer_el.findall('ResourceURL')}
 
     return sl
 
@@ -77,9 +74,7 @@ def _tile_matrix_set(tms_el: gws.XmlElement):
 
     tms.identifier = tms_el.textof('Identifier')
     tms.crs = gws.lib.crs.require(tms_el.textof('SupportedCRS'))
-    tms.matrices = sorted(
-        [_tile_matrix(e, tms.crs) for e in tms_el.findall('TileMatrix')],
-        key=lambda m: -m.scale)
+    tms.matrices = sorted([_tile_matrix(e, tms.crs) for e in tms_el.findall('TileMatrix')], key=lambda m: -m.scale)
 
     return tms
 
@@ -93,6 +88,7 @@ def _tile_matrix(tm_el: gws.XmlElement, crs: gws.Crs):
     tm = gws.TileMatrix()
     tm.identifier = tm_el.textof('Identifier')
     tm.scale = u.to_float(tm_el.textof('ScaleDenominator'))
+    tm.resolution = gws.gis.zoom.scale_to_res(tm.scale, crs)
 
     p = u.to_float_pair(tm_el.textof('TopLeftCorner'))
     tm.x = p[0]
@@ -104,20 +100,13 @@ def _tile_matrix(tm_el: gws.XmlElement, crs: gws.Crs):
     tm.tileWidth = u.to_int(tm_el.textof('TileWidth'))
     tm.tileHeight = u.to_int(tm_el.textof('TileHeight'))
 
-    tm.extent = _extent_for_matrix(tm, crs)
+    # see http://portal.opengeospatial.org/files/?artifact_id=35326 page 8
+    res = tm.resolution
+    tm.extent = (
+        tm.x,
+        tm.y - res * tm.height * tm.tileHeight,
+        tm.x + res * tm.width * tm.tileWidth,
+        tm.y,
+    )
 
     return tm
-
-
-# compute a bbox for a TileMatrix
-# see http://portal.opengeospatial.org/files/?artifact_id=35326 page 8
-
-def _extent_for_matrix(m: gws.TileMatrix, crs: gws.Crs):
-    res = gws.gis.zoom.scale_to_res(m.scale, crs)
-
-    return [
-        m.x,
-        m.y - res * m.height * m.tileHeight,
-        m.x + res * m.width * m.tileWidth,
-        m.y,
-    ]

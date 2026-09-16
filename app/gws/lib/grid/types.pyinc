@@ -11,3 +11,28 @@ class MapGrid(Data):
     extent: Extent
     baseResolution: float
     tileSize: int
+
+
+class TileMatrix(Data):
+    """TileMatrix object."""
+
+    identifier: str
+    scale: float
+    resolution: float
+    x: float
+    y: float
+    width: float
+    height: float
+    tileWidth: float
+    tileHeight: float
+    extent: Extent
+
+
+class TileMatrixSet(Data):
+    """TileMatrixSet object."""
+
+    identifier: str
+    crs: 'Crs'
+    matrices: list[TileMatrix]
+
+

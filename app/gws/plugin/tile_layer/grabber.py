@@ -21,6 +21,7 @@ class Object(gws.base.grabber.tile.Object):
             nx, ny = gws.lib.grid.tile_count_for_level(sg, z)
             self.sourceMatrices.append(gws.TileMatrix(
                 identifier=str(z),
+                resolution=gws.lib.grid.resolution_for_level(sg, z),
                 x=sg.extent[0],
                 y=sg.extent[3],
                 width=nx,

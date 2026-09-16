@@ -190,7 +190,7 @@ class Object(gws.OwsProvider):
 
     ##
 
-    def get_map(self, layer: gws.Layer, bounds: gws.Bounds, width: float, height: float, params: dict) -> bytes:
+    def get_map(self, bounds: gws.Bounds, width: float, height: float, params: dict) -> bytes:
         bbox = bounds.extent
         if bounds.crs.isYX and not self.alwaysXY:
             bbox = gws.lib.extent.swap_xy(bbox)
