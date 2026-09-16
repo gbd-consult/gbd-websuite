@@ -12,7 +12,7 @@ import os
 import pickle
 import random
 import re
-import shutil
+import subprocess
 import sys
 import threading
 import time
@@ -706,7 +706,7 @@ def chown_default(path, user=None, group=None):
 
 
 _ephemeral_state = dict(
-    last_check_time=0,
+    next_check=0,
     check_interval=2 * 3600,
     max_age=2 * 3600,
 )
@@ -715,9 +715,7 @@ _ephemeral_state = dict(
 def ephemeral_path(name: str) -> str:
     """Return a new ephemeral path name."""
 
-    if stime() > _ephemeral_state['last_check_time'] + _ephemeral_state['check_interval']:
-        ephemeral_cleanup()
-    
+    ephemeral_cleanup()
     name = str(os.getpid()) + '_' + random_string(64) + '_' + name
     return const.EPHEMERAL_DIR + '/' + name
 
@@ -725,36 +723,31 @@ def ephemeral_path(name: str) -> str:
 def ephemeral_dir(name: str) -> str:
     """Create and return an ephemeral directory."""
 
+    ephemeral_cleanup()
     return ensure_dir(const.EPHEMERAL_DIR + '/' + name)
 
-def ephemeral_set_max_age(seconds: int):
-    """Set the maximum age for ephemeral paths."""
 
-    _ephemeral_state['max_age'] = seconds
+def ephemeral_cleanup(force=False):
+    """Remove ephemeral paths older than max age.
 
+    Throttled to once per check interval unless ``force`` is set.
+    Runs ``find`` detached and returns the process, or ``None`` if throttled.
+    """
 
-def ephemeral_cleanup():
-    """Remove ephemeral paths older than max age."""
-
-    cnt = 0
     ts = stime()
 
-    for de in os.scandir(const.EPHEMERAL_DIR):
-        try:
-            age = int(ts - de.stat().st_mtime)
-            if age > _ephemeral_state['max_age']:
-                if de.is_dir():
-                    shutil.rmtree(de.path)
-                else:
-                    os.unlink(de.path)
-                cnt += 1
-        except (OSError, FileNotFoundError):
-            pass
+    if ts < _ephemeral_state['next_check'] and not force:
+        return
 
-    _ephemeral_state['last_check_time'] = ts
+    _ephemeral_state['next_check'] = ts + _ephemeral_state['check_interval']
 
-    if cnt > 0:
-        log.debug(f'ephemeral_cleanup: {cnt}')
+    cutoff = ts - _ephemeral_state['max_age']
+    cmd = [
+        'find', const.EPHEMERAL_DIR, '-mindepth', '1',
+        '(', '-type', 'f', '!', '-newermt', f'@{cutoff}', '-o', '-type', 'd', '-empty', ')',
+        '-delete',
+    ]
+    return subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def random_string(size: int) -> str:
