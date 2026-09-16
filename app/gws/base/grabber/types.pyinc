@@ -15,7 +15,7 @@ class Grabber:
     cache: MapCache
     """Cache settings; the name (``<layer cache name>_<srid>``) keys the tile store."""
     store: 'TileStore'
-    """Tile store."""
+    """Persistent tile store."""
     imageFormat: ImageFormat
     """Format tiles are stored and returned in."""
 

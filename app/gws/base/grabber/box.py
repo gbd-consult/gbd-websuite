@@ -18,7 +18,6 @@ class Object(core.Object):
     """Base grabber for sources that render arbitrary boxes."""
 
     sourceCrs: gws.Crs
-    requestTiles: int
     requestBuffer: int
     maxRequestPixels: int
 
@@ -28,19 +27,16 @@ class Object(core.Object):
         self.requestBuffer = self.cache.requestBuffer
         self.maxRequestPixels = 4096
 
-        cls = type(self)
-        if cls.fetch_box_as_bytes is Object.fetch_box_as_bytes and cls.fetch_box_as_image is Object.fetch_box_as_image:
-            raise gws.Error(f'{cls.__name__}: neither fetch_box_as_bytes nor fetch_box_as_image is implemented')
-
     def compose_block_as_images(self, tile, params=None):
         x, y, z = tile
         n = 1 if params else self.requestTiles
+        bx, by = (x // n) * n, (y // n) * n
         rng = self.rangeForLevel[z]
 
-        fx0 = max((x // n) * n, rng[0])
-        fy0 = max((y // n) * n, rng[1])
-        fx1 = min((x // n) * n + n - 1, rng[2])
-        fy1 = min((y // n) * n + n - 1, rng[3])
+        fx0 = max(bx, rng[0])
+        fy0 = max(by, rng[1])
+        fx1 = min(bx + n - 1, rng[2])
+        fy1 = min(by + n - 1, rng[3])
 
         ts = self.grid.tileSize
         res = gws.lib.grid.resolution_for_level(self.grid, z)

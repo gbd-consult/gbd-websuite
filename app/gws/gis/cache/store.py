@@ -7,9 +7,9 @@ import gws.lib.osx as osx
 
 
 class Object(gws.TileStore):
-    def __init__(self, cache: gws.MapCache, extension: str):
-        self.maxAge = cache.maxAge
-        self.baseDir = f'{gws.c.MAP_CACHE_DIR}/{cache.name}'
+    def __init__(self, base_dir: str, max_age: int, extension: str):
+        self.baseDir = base_dir
+        self.maxAge = max_age
         self.extension = extension
 
     def count(self) -> int:
@@ -65,11 +65,14 @@ class Object(gws.TileStore):
 
     def write(self, mt: gws.MapTile, blob: bytes):
         p = self.path(mt)
-        osx.mkdir(os.path.dirname(p))
         tmp = f'{p}.{gws.u.random_string(32)}.tmp'
-        with open(tmp, 'wb') as fp:
-            fp.write(blob)
-        os.replace(tmp, p)
+        try:
+            osx.mkdir(os.path.dirname(p))
+            with open(tmp, 'wb') as fp:
+                fp.write(blob)
+            os.replace(tmp, p)
+        except OSError as exc:
+            gws.log.warning(f'tile store: write failed {p!r}: {exc}')
 
     def drop(self):
         if gws.u.is_dir(self.baseDir):
