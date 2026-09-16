@@ -46,7 +46,6 @@ import gws.config
 import gws.lib.datetimex
 import gws.lib.osx
 import gws.lib.watcher
-import gws.lib.lock
 
 # see bin/gws
 _SERVER_START_SCRIPT = f'{gws.c.VAR_DIR}/server.sh'

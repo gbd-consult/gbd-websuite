@@ -502,6 +502,10 @@ class ResponseTooLargeError(Error):
 class ExternalServiceError(Error):
     """Generic error when an external service fails."""
     pass
+
+
+LockBusyError = u.LockBusyError
+"""Raised when a server lock cannot be acquired within the timeout."""
 ################################################################################
 
 

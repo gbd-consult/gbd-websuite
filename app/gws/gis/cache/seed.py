@@ -19,7 +19,7 @@ def seed(root: gws.Root, opts: core.SeedOptions) -> core.SeedResult:
     try:
         with gws.u.server_lock('seed', 0):
             return _run(root, opts)
-    except TimeoutError:
+    except gws.LockBusyError:
         gws.log.info('seed: already running')
         return core.SeedResult(entries=[], seedTime=0, seedStatus='locked')
 

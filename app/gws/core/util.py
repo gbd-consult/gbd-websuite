@@ -5,6 +5,7 @@ Most common function which are needed everywhere.
 This module is available as ``gws.u`` everywhere.
 """
 
+import fcntl
 import hashlib
 import json
 import os
@@ -818,11 +819,16 @@ class cached_property:
 # server globals are pickled in /tmp
 
 
-_app_lock = threading.RLock()
+_app_locks: dict[str, threading.RLock] = {}
+_app_master_lock = threading.Lock()
 
 
 def app_lock(name=''):
-    return _app_lock
+    with _app_master_lock:
+        lock = _app_locks.get(name)
+        if lock is None:
+            lock = _app_locks[name] = threading.RLock()
+        return lock
 
 
 _app_globals: dict = {}
@@ -974,13 +980,20 @@ def get_server_global(name: str, init_fn):
         return _server_globals[uid]
 
 
+class LockBusyError(Exception):
+    """Raised when a server lock cannot be acquired within the timeout."""
+
+    pass
+
+
 class _FileLock:
-    _PAUSE = 2
+    _PAUSE = 0.05
 
     def __init__(self, uid, timeout):
         self.uid = to_uid(uid)
         self.path = const.LOCKS_DIR + '/' + self.uid
         self.timeout = timeout
+        self.fp = None
 
     def __enter__(self):
         self.acquire()
@@ -991,33 +1004,60 @@ class _FileLock:
 
     def acquire(self):
         ts = time.time()
+        self.fp = os.open(self.path, os.O_CREAT | os.O_RDWR)
 
         while True:
             try:
-                fp = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-                os.write(fp, bytes(os.getpid()))
-                os.close(fp)
-                return
-            except FileExistsError:
+                fcntl.flock(self.fp, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except OSError:
                 pass
+            else:
+                os.ftruncate(self.fp, 0)
+                os.write(self.fp, str(os.getpid()).encode('ascii'))
+                return
 
             t = time.time() - ts
 
-            if t > self.timeout:
-                raise TimeoutError('lock timeout', self.uid)
+            if t >= self.timeout:
+                pid = self._holder_pid()
+                os.close(self.fp)
+                self.fp = None
+                raise LockBusyError(f'server lock {self.uid!r}: busy {pid=})')
 
-            log.debug(f'server lock {self.uid!r} WAITING time={t:.3f}')
+            log.debug(f'server lock {self.uid!r}: WAITING time={t:.3f} pid={self._holder_pid()}')
             time.sleep(self._PAUSE)
 
     def release(self):
+        if self.fp is None:
+            return
         try:
-            os.unlink(self.path)
-            log.debug(f'server lock {self.uid!r} RELEASED')
-        except Exception as exc:
-            log.exception(f'server lock {self.uid!r} RELEASE ERROR {exc!r}')
+            fcntl.flock(self.fp, fcntl.LOCK_UN)
+            os.close(self.fp)
+            log.debug(f'server lock {self.uid!r}: RELEASED')
+        except OSError as exc:
+            log.exception(f'server lock {self.uid!r}: RELEASE ERROR {exc!r}')
+        self.fp = None
+
+    def _holder_pid(self):
+        if self.fp is None:
+            return '?'
+        try:
+            os.lseek(self.fp, 0, os.SEEK_SET)
+            return os.read(self.fp, 64).decode('ascii') or '?'
+        except OSError:
+            return '?'
 
 
-def server_lock(uid, timeout: int = 60):
+def server_lock(uid, timeout: float = 60):
+    """Acquire an inter-process lock.
+
+    Args:
+        uid: Lock identifier.
+        timeout: Seconds to wait for the lock. ``0`` means a single attempt.
+
+    Raises:
+        LockBusyError: if the lock is not acquired within ``timeout``.
+    """
     return _FileLock(uid, timeout)
 
 
