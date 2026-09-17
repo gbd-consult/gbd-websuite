@@ -35,6 +35,7 @@ class Object(gws.base.layer.group.Object):
         self.sqlFilters = self.cfg('sqlFilters', default={})
         if self.compositeRender:
             self.canRenderBox = True
+            self.canRenderXyz = True
 
     def create_grabber(self, opts):
         if not self.cfg('compositeRender'):
