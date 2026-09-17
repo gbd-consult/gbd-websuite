@@ -24,6 +24,8 @@ class Config(gws.base.layer.Config):
 class Object(gws.base.layer.image.Object):
     serviceProvider: provider.Object
 
+    canRenderInClient = True
+
     def configure(self):
         self.configure_layer()
 

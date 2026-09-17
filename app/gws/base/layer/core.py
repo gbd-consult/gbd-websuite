@@ -136,6 +136,9 @@ class Object(gws.Layer):
     canRenderSvg = False
     canRenderXyz = False
 
+    canRenderInClient = False
+    """The layer can be drawn by the client directly from its source (``display: client``)."""
+
     isEnabledForOws = False
     isGroup = False
     isSearchable = False
@@ -149,6 +152,14 @@ class Object(gws.Layer):
         self.clientOptions = self.cfg('clientOptions') or gws.Data()
         self.cssSelector = self.cfg('cssSelector')
         self.displayMode = self.cfg('display')
+        
+        if self.displayMode == gws.LayerDisplayMode.client and not self.canRenderInClient:
+            raise gws.ConfigurationError(f'invalid display mode')
+        if self.displayMode == gws.LayerDisplayMode.box and not self.canRenderBox:
+            raise gws.ConfigurationError(f'invalid display mode')
+        if self.displayMode == gws.LayerDisplayMode.tile and not self.canRenderXyz:
+            raise gws.ConfigurationError(f'invalid display mode')
+        
         self.loadingStrategy = self.cfg('loadingStrategy')
         self.opacity = self.cfg('opacity')
         self.title = self.cfg('title')

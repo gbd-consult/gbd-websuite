@@ -28,6 +28,24 @@ class Config(gws.base.layer.Config):
     """WMTS style name."""
 
 
+class TileMatrixSetProps(gws.Props):
+    """Tile matrix set, as needed by the client to address source tiles directly."""
+
+    origin: gws.Point
+    """Top-left corner of the matrices."""
+    resolutions: list[float]
+    """Resolutions, coarsest first."""
+    matrixIds: list[str]
+    """Matrix identifiers, in the order of ``resolutions``."""
+    tileSize: gws.Size
+    """Tile size in pixels."""
+
+
+class Props(gws.base.layer.core.Props):
+    tileMatrixSet: Optional[TileMatrixSetProps]
+    """Tile matrix set for the client display mode."""
+
+
 class Object(gws.base.layer.image.Object):
     serviceProvider: provider.Object
     sourceLayers: list[gws.SourceLayer]
@@ -36,8 +54,12 @@ class Object(gws.base.layer.image.Object):
     activeStyle: gws.SourceStyle
     activeTms: gws.TileMatrixSet
 
+    canRenderInClient = True
+
     def configure(self):
         self.configure_layer()
+        if self.displayMode == gws.LayerDisplayMode.client and self.activeTms.crs != self.mapCrs:
+            raise gws.ConfigurationError(f'display mode "client" needs a tile matrix set in the map CRS')
 
     def create_cache_name(self, cache):
         return gws.u.sha256(
@@ -63,6 +85,24 @@ class Object(gws.base.layer.image.Object):
 
     def configure_provider(self):
         return gws.config.util.configure_service_provider_for(self, provider.Object)
+
+    def props(self, user):
+        p = super().props(user)
+        if self.displayMode != gws.LayerDisplayMode.client:
+            return p
+        tms = self.activeTms
+        m0 = tms.matrices[0]
+        return gws.u.merge(
+            p,
+            type='wmts',
+            url=self.serviceProvider.tile_url_template(self.activeLayer, tms, self.activeStyle),
+            tileMatrixSet=TileMatrixSetProps(
+                origin=(m0.x, m0.y),
+                resolutions=[tm.resolution for tm in tms.matrices],
+                matrixIds=[tm.identifier for tm in tms.matrices],
+                tileSize=(int(m0.tileWidth), int(m0.tileHeight)),
+            ),
+        )
 
     def configure_sources(self):
         if super().configure_sources():

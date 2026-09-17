@@ -253,6 +253,34 @@ export class XYZLayer extends OlBackedLayer<ol.layer.Image> {
     }
 }
 
+export class WMTSLayer extends OlBackedLayer<ol.layer.Image> {
+    createOLayer() {
+        let props = this.props as gws.plugin.ows_client.wmts.layer.Props;
+        let tms = props.tileMatrixSet;
+        let template = props.url;
+
+        let tileGrid = new ol.tilegrid.WMTS({
+            origin: tms.origin,
+            resolutions: tms.resolutions,
+            matrixIds: tms.matrixIds,
+            tileSize: tms.tileSize,
+        });
+
+        return new ol.layer.Tile({
+            source: new ol.source.TileImage({
+                projection: this.map.projection,
+                tileGrid,
+                tileUrlFunction: (coord: ol.TileCoord) => template
+                    .replace('{TileMatrix}', tms.matrixIds[coord[0]])
+                    .replace('{TileCol}', String(coord[1]))
+                    .replace('{TileRow}', String(-coord[2] - 1)),
+                crossOrigin: 'Anonymous',
+                wrapX: this.map.wrapX,
+            })
+        });
+    }
+}
+
 abstract class CompositeLayer extends OlBackedLayer<ol.layer.Image> {
     get shouldDraw() {
         return this.visibleLeavesUids().length > 0;

@@ -1,0 +1,24 @@
+uid "wmts_client_layer"
+
+title "Client-side WMTS layer"
+
+metadata.keywords [ "wmts" "ows" ]
+
+metadata.abstract """
+Client-side display of `wmts` layers
+"""
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 70000
+}
+
+map.layers+ {
+    title "Topographische Karte NRW"
+    type "wmts"
+    provider.url "https://www.wmts.nrw.de/geobasis/wmts_nw_dtk"
+    metadata.attribution "&copy; <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
+    display "client"
+}
+
+{demo_osm_background}

@@ -17,6 +17,7 @@ let layerTypes = {
     'root': layer.RootLayer,
     'tile': layer.TileLayer,
     'vector': layer.FeatureLayer,
+    'wmts': layer.WMTSLayer,
     'xyz': layer.XYZLayer,
 };
 
