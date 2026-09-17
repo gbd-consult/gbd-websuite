@@ -35,6 +35,3 @@ class Object(gws.base.grabber.tile.Object):
 
     def fetch_tile_as_bytes(self, tm, col, row):
         return self.serviceProvider.get_tile(col, row, int(tm.identifier))
-
-    def fetch_tile_as_image(self, tm, col, row):
-        return self.to_image(self.fetch_tile_as_bytes(tm, col, row))

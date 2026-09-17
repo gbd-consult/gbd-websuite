@@ -80,9 +80,6 @@ class FakeTile(tile.Object):
         ts = int(tm.tileWidth)
         return gws.lib.image.from_size((ts, ts), color=_color(col, row, int(tm.identifier))).to_bytes(gws.lib.mime.PNG)
 
-    def fetch_tile_as_image(self, tm, col, row):
-        return self.to_image(self.fetch_tile_as_bytes(tm, col, row))
-
 
 def _max_extent(srid):
     crs = gws.lib.crs.get(srid)
@@ -247,11 +244,15 @@ def test_cross_crs_box_outside_source_is_transparent():
 ##
 
 
-def test_fetch_tile_as_image_converts_bytes():
+def test_source_tiles_are_cached_between_requests():
     gr = _grabber()
-    img = gr.fetch_tile_as_image(M[3], 1, 2)
-    assert img.size() == (256, 256)
-    assert tuple(img.to_array()[0, 0]) == _color(1, 2, 3)
+    gr.get_tile_as_image((2124, 1364, 12))
+    gr.get_tile_as_image((2124, 1364, 12))
+    assert gr.fetches == [(12, 2124, 1364)]
+
+    gr2 = FakeTile(_opts(), 3857)
+    gr2.get_tile_as_image((2124, 1364, 12))
+    assert gr2.fetches == [(12, 2124, 1364)]
 
 
 def test_fetch_tile_not_implemented_raises():
@@ -264,5 +265,3 @@ def test_fetch_tile_not_implemented_raises():
     gr = NoFetchTile(_opts())
     with u.raises(NotImplementedError):
         gr.get_tile_as_image((2124, 1364, 12))
-    with u.raises(NotImplementedError):
-        gr.fetch_tile_as_bytes(M[3], 1, 2)

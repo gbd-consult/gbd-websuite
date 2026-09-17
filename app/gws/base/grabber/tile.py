@@ -40,15 +40,16 @@ class Object(core.Object):
             gws.log.debug(f'grabber {self.cache.name!r}: empty image: box {extent!r} outside the source matrix {tm.identifier!r}')
             return self.empty_image(w, h)
 
-        c0, r0, c1, r1, _ = mtr
-        mw = (c1 - c0 + 1) * tm.tileWidth
-        mh = (r1 - r0 + 1) * tm.tileHeight
+        x0, y0, x1, y1, _ = mtr
+        mw = (x1 - x0 + 1) * tm.tileWidth
+        mh = (y1 - y0 + 1) * tm.tileHeight
         mosaic = gws.lib.image.from_size((mw, mh))
 
-        for col, row, _ in gws.lib.grid.enum_tiles((c0, r0, c1, r1, 0)):
-            img = self.fetch_tile_as_image(tm, col, row)
-            px = (col - c0) * tm.tileWidth
-            py = (row - r0) * tm.tileHeight
+        for x, y, _ in gws.lib.grid.enum_tiles((x0, y0, x1, y1, 0)):
+            blob = self._fetch_and_cache_source_tile(tm, x, y)
+            img = self.to_image(blob)
+            px = (x - x0) * tm.tileWidth
+            py = (y - y0) * tm.tileHeight
             mosaic.paste(img, (px, py))
 
         src_extent = self._matrix_extent_for_range(tm, mtr)
@@ -59,12 +60,16 @@ class Object(core.Object):
 
         raise NotImplementedError(f'fetch_tile_as_bytes not implemented in {self!r}')
 
-    def fetch_tile_as_image(self, tm: gws.TileMatrix, col: int, row: int) -> gws.Image:
-        """Fetch a source tile with exactly one request, as an image."""
-
-        raise NotImplementedError(f'fetch_tile_as_image not implemented in {self!r}')
-
     ##
+
+    def _fetch_and_cache_source_tile(self, tm: gws.TileMatrix, col: int, row: int) -> bytes:
+        """Return a source tile, fetched once and kept in the ephemeral store for neighbouring requests."""
+
+        key = gws.u.sha256([self.cache.name, tm.identifier, col, row])
+        return gws.u.get_ephemeral_content(
+            f'source_tile_{key}',
+            lambda: self.fetch_tile_as_bytes(tm, col, row),
+        )
 
     def _matrix_for_resolution(self, res: float) -> gws.TileMatrix:
         """Return the coarsest source matrix that does not need upscaling."""
