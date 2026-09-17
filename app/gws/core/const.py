@@ -13,7 +13,6 @@ GID = int(env.GWS_GID or 1000)
 CACHE_DIR = f'{VAR_DIR}/cache'
 MAP_CACHE_DIR = f'{CACHE_DIR}/map'
 LEGEND_CACHE_DIR = f'{CACHE_DIR}/legend'
-NET_CACHE_DIR = f'{CACHE_DIR}/net'
 OBJECT_CACHE_DIR = f'{CACHE_DIR}/object'
 
 CONFIG_DIR = f'{VAR_DIR}/config'
@@ -35,7 +34,6 @@ ALL_DIRS = [
     CACHE_DIR,
     MAP_CACHE_DIR,
     LEGEND_CACHE_DIR,
-    NET_CACHE_DIR,
     OBJECT_CACHE_DIR,
     CONFIG_DIR,
     MISC_DIR,

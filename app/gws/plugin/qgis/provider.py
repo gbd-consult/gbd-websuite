@@ -182,9 +182,9 @@ class Object(gws.OwsProvider):
         )
         return gws.u.merge(defaults, gws.u.to_upper_dict(params))
 
-    def call_server(self, params: dict, max_age=0) -> gws.lib.net.HTTPResponse:
+    def call_server(self, params: dict) -> gws.lib.net.HTTPResponse:
         params = self.server_params(params)
-        res = gws.lib.net.http_request(self.url, params=params, max_age=max_age, timeout=1000)
+        res = gws.lib.net.http_request(self.url, params=params, timeout=1000)
         res.raise_if_failed()
         return res
 

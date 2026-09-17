@@ -2,6 +2,7 @@ from typing import Optional
 
 import re
 import requests
+import requests.adapters
 import urllib.parse
 import certifi
 
@@ -346,21 +347,10 @@ def http_request(url, **kwargs) -> HTTPResponse:
         url = add_params(url, kwargs.pop('params'))
 
     method = kwargs.pop('method', 'GET').upper()
-    max_age = kwargs.pop('max_age', 0)
-    cache_path = _cache_path(url)
-
-    if method == 'GET' and max_age:
-        age = gws.lib.osx.file_age(cache_path)
-        if 0 <= age < max_age:
-            gws.log.debug(f'HTTP_CACHED_{method}: url={url!r} path={cache_path!r} age={age}')
-            return gws.u.unserialize_from_path(cache_path)
 
     gws.debug.time_start(f'HTTP_{method}={url!r}')
     res = _http_request(method, url, kwargs)
     gws.debug.time_end()
-
-    if method == 'GET' and max_age and res.ok:
-        gws.u.serialize_to_path(res, cache_path)
 
     return res
 
@@ -369,6 +359,23 @@ _DEFAULT_CONNECT_TIMEOUT = 60
 _DEFAULT_READ_TIMEOUT = 60
 
 _USER_AGENT = f'GBD WebSuite (https://gbd-websuite.de)'
+
+_POOL_SIZE = 16
+"""Max. keep-alive connections per host and process."""
+
+_session: requests.Session | None = None
+
+
+def _get_session() -> requests.Session:
+    # one session per process: reuses TCP/TLS connections to the same host across requests
+    global _session
+    if _session is None:
+        s = requests.Session()
+        adapter = requests.adapters.HTTPAdapter(pool_connections=_POOL_SIZE, pool_maxsize=_POOL_SIZE)
+        s.mount('http://', adapter)
+        s.mount('https://', adapter)
+        _session = s
+    return _session
 
 
 def _http_request(method, url, kwargs) -> HTTPResponse:
@@ -387,7 +394,7 @@ def _http_request(method, url, kwargs) -> HTTPResponse:
     kwargs['headers'].setdefault('User-Agent', _USER_AGENT)
 
     try:
-        res = requests.request(method, url, **kwargs)
+        res = _get_session().request(method, url, **kwargs)
         if 200 <= res.status_code < 300:
             gws.log.debug(f'HTTP_OK_{method}: url={url!r} status={res.status_code!r}')
             return HTTPResponse(ok=True, url=url, res=res)
@@ -402,7 +409,3 @@ def _http_request(method, url, kwargs) -> HTTPResponse:
     except requests.RequestException as exc:
         gws.log.error(f'HTTP_FAILED_{method}: (Generic: {exc!r}) url={url!r}')
         return HTTPResponse(ok=False, url=url, text=repr(exc), status_code=_STATUS_GENERIC_ERROR)
-
-
-def _cache_path(url):
-    return gws.c.NET_CACHE_DIR + '/' + gws.u.sha256(url)

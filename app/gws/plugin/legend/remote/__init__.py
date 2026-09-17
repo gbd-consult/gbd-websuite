@@ -24,12 +24,20 @@ class Object(gws.base.legend.Object):
     def render(self, args=None):
         lros = []
 
+        def _fetch(url):
+            res = gws.base.ows.client.request.get_url(url)
+            if not res.content_type.startswith('image/'):
+                raise gws.base.ows.client.Error(f'wrong content type {res.content_type!r}')
+            return res.content
+
         for url in self.urls:
             try:
-                res = gws.base.ows.client.request.get_url(url, max_age=self.cacheMaxAge)
-                if not res.content_type.startswith('image/'):
-                    raise gws.base.ows.client.Error(f'wrong content type {res.content_type!r}')
-                img = gws.lib.image.from_bytes(res.content)
+                content = gws.u.get_cached_object(
+                    f'legend_{gws.u.sha256(url)}',
+                    self.cacheMaxAge,
+                    lambda: _fetch(url),
+                )
+                img = gws.lib.image.from_bytes(content)
                 lro = gws.LegendRenderOutput(image=img, size=img.size())
                 lros.append(lro)
             except gws.base.ows.client.Error:

@@ -80,12 +80,18 @@ class Object(gws.base.legend.Object):
             TRANSPARENT=True,
         )
         opts = gws.u.to_upper_dict(self.cfg('options', default={}))
-        self.params = self.serviceProvider.server_params(
-            gws.u.merge(_DEFAULT_LEGEND_PARAMS, defaults, opts))
+        self.params = self.serviceProvider.server_params(gws.u.merge(_DEFAULT_LEGEND_PARAMS, defaults, opts))
 
     ##
 
     def render(self, args=None):
-        res = self.serviceProvider.call_server(self.params, max_age=self.cacheMaxAge)
-        img = gws.lib.image.from_bytes(res.content)
+        def _get():
+            return self.serviceProvider.call_server(self.params).content
+
+        content = gws.u.get_cached_object(
+            f'legend_{gws.u.sha256([self.serviceProvider.url, self.params])}',
+            self.cacheMaxAge,
+            _get,
+        )
+        img = gws.lib.image.from_bytes(content)
         return gws.LegendRenderOutput(image=img, size=img.size(), mime=gws.lib.mime.PNG)

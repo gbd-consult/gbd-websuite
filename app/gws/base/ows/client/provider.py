@@ -176,4 +176,8 @@ class Object(gws.OwsProvider):
             verb=gws.OwsVerb.GetCapabilities,
         )
         args = self.prepare_operation(op)
-        return request.get_text(args, max_age=self.cfg('capsCacheMaxAge'))
+        return gws.u.get_cached_object(
+            f'ows_caps_{gws.u.sha256([args.url, args.params])}',
+            self.cfg('capsCacheMaxAge'),
+            lambda: request.get_text(args),
+        )
