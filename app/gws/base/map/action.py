@@ -7,6 +7,7 @@ import gws.base.action
 import gws.base.legend
 import gws.lib.bounds
 import gws.lib.crs
+import gws.lib.extent
 import gws.gis.render
 import gws.lib.image
 import gws.lib.intl
@@ -158,14 +159,23 @@ class Object(gws.base.action.Object):
 
         layer = req.user.require_layer(p.layerUid)
         crs = gws.lib.crs.get(p.crs) or layer.mapCrs
-        lri = gws.LayerRenderInput(type=gws.LayerRenderInputType.box, targetCrs=crs, user=req.user, extraParams={})
+        lri = gws.LayerRenderInput(
+            type=gws.LayerRenderInputType.box,
+            targetCrs=crs,
+            user=req.user,
+            extraParams={},
+        )
+
+        bbox = p.bbox
+        if crs.isYX and req.param('service') == 'WMS' and req.param('version', '').startswith('1.3'):
+            bbox = gws.lib.extent.swap_xy(bbox)
 
         if p.compositeLayerUids:
             lri.extraParams['compositeLayerUids'] = p.compositeLayerUids
 
         lri.view = gws.gis.render.map_view_from_bbox(
             crs=crs,
-            bbox=p.bbox,
+            bbox=bbox,
             size=(p.width, p.height, gws.Uom.px),
             dpi=gws.lib.uom.OGC_SCREEN_PPI,
             rotation=0,
@@ -182,7 +192,15 @@ class Object(gws.base.action.Object):
 
     def _get_xyz(self, req: gws.WebRequester, p: GetXyzRequest):
         layer = req.user.require_layer(p.layerUid)
-        lri = gws.LayerRenderInput(type=gws.LayerRenderInputType.xyz, targetCrs=layer.mapCrs, user=req.user, x=p.x, y=p.y, z=p.z, extraParams={})
+        lri = gws.LayerRenderInput(
+            type=gws.LayerRenderInputType.xyz,
+            targetCrs=layer.mapCrs,
+            user=req.user,
+            x=p.x,
+            y=p.y,
+            z=p.z,
+            extraParams={},
+        )
         if p.compositeLayerUids:
             lri.extraParams['compositeLayerUids'] = p.compositeLayerUids
         lro = None
@@ -190,7 +208,7 @@ class Object(gws.base.action.Object):
         gws.debug.time_start(f'RENDER_XYZ layer={p.layerUid} lri={lri!r}')
         try:
             lro = layer.render(lri)
-        except:
+        except Exception:
             gws.log.exception()
         gws.debug.time_end()
 
