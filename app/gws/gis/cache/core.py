@@ -174,11 +174,8 @@ def store_in_web_cache(url: str, img: bytes):
         None. Image is stored in the cache.
     """
     path = gws.c.FASTCACHE_DIR + url
-    dirname = os.path.dirname(path)
-    tmp = dirname + '/' + gws.u.random_string(64)
     try:
-        os.makedirs(dirname, 0o755, exist_ok=True)
-        gws.u.write_file_b(tmp, img)
-        os.rename(tmp, path)
+        os.makedirs(os.path.dirname(path), 0o755, exist_ok=True)
+        gws.u.write_file_b(path, img)
     except OSError:
         gws.log.warning(f'store_in_web_cache FAILED path={path!r}')

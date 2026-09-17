@@ -65,12 +65,9 @@ class Object(gws.TileStore):
 
     def write(self, mt: gws.MapTile, blob: bytes):
         p = self.path(mt)
-        tmp = f'{p}.{gws.u.random_string(32)}.tmp'
         try:
             osx.mkdir(os.path.dirname(p))
-            with open(tmp, 'wb') as fp:
-                fp.write(blob)
-            os.replace(tmp, p)
+            gws.u.write_file_b(p, blob)
         except OSError as exc:
             gws.log.warning(f'tile store: write failed {p!r}: {exc}')
 

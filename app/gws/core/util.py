@@ -615,26 +615,29 @@ def read_file_b(path: str) -> bytes:
 
 
 def write_file(path: str, s: str, user: int = None, group: int = None):
-    try:
-        with open(path, 'wt', encoding='utf8') as fp:
-            fp.write(s)
-        chown_default(path, user, group)
-        return path
-    except Exception as exc:
-        log.debug(f'error writing {path=} {exc=}')
-        raise
+    """Write a text file atomically (via a temporary file in the same directory)."""
+
+    return write_file_b(path, s.encode('utf8'), user, group)
 
 
 def write_file_b(path: str, s: str | bytes, user: int = None, group: int = None):
+    """Write a binary file atomically (via a temporary file in the same directory)."""
+
     if isinstance(s, str):
         s = s.encode('utf8')
+    tmp = f'{path}.{random_string(32)}.tmp'
     try:
-        with open(path, 'wb') as fp:
+        with open(tmp, 'wb') as fp:
             fp.write(s)
-        chown_default(path, user, group)
+        chown_default(tmp, user, group)
+        os.replace(tmp, path)
         return path
     except Exception as exc:
         log.debug(f'error writing {path=} {exc=}')
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
         raise
 
 
@@ -747,7 +750,7 @@ def ephemeral_cleanup(force=False):
     cutoff = ts - _ephemeral_state['max_age']
     cmd = [
         'find', const.EPHEMERAL_DIR, '-mindepth', '1',
-        '(', '-type', 'f', '!', '-newermt', f'@{cutoff}', '-o', '-type', 'd', '-empty', ')',
+        '!', '-newermt', f'@{cutoff}', '(', '-type', 'f', '-o', '-type', 'd', '-empty', ')',
         '-delete',
     ]
     return subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -872,6 +875,31 @@ def unserialize_from_path(path):
 _server_globals = {}
 
 
+def get_ephemeral_content(name: str, init_fn) -> bytes:
+    uid = to_uid(name)
+    path = ephemeral_dir('content') + '/' + uid
+
+    def _get():
+        if not os.path.isfile(path):
+            return
+        try:
+            return read_file_b(path)
+        except OSError:
+            return
+
+    b = _get()
+    if b is not None:
+        return b
+
+    with server_lock(f'ephemeral_content_{uid}'):
+        b = _get()
+        if b is not None:
+            return b
+
+        b = init_fn()
+        write_file_b(path, b)
+        return b
+
 def get_cached_object(name: str, life_time: int, init_fn):
     uid = to_uid(name)
     path = const.OBJECT_CACHE_DIR + '/' + uid
@@ -908,37 +936,6 @@ def get_cached_object(name: str, life_time: int, init_fn):
             log.exception(f'get_cached_object {uid!r} STORE ERROR')
 
         return obj
-
-
-def get_cached_file(path: str, life_time: int, init_fn) -> str:
-    uid = to_uid(path)
-
-    def _get():
-        if not os.path.isfile(path):
-            return
-        try:
-            age = int(time.time() - os.stat(path).st_mtime)
-        except OSError:
-            return
-        if age < life_time:
-            log.debug(f'get_cached_file {path!r} {life_time=} {age=} - loaded')
-            return path
-
-    p = _get()
-    if p:
-        return p
-
-    with server_lock(uid):
-        p = _get()
-        if p:
-            return p
-
-        tmp = path + random_string(64)
-        write_file_b(tmp, init_fn())
-        os.replace(tmp, path)
-        log.debug(f'get_cached_file {path!r} - stored')
-
-        return path
 
 
 def get_server_global(name: str, init_fn):

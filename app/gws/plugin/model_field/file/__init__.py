@@ -54,7 +54,6 @@ class FileValue(gws.Data):
 
 _PREVIEW_SIZE = 120, 120
 _PREVIEW_MIME = gws.lib.mime.PNG
-_PREVIEW_CACHE_LIFE_TIME = 24 * 3600
 _PREVIEW_MAX_PIXELS = 40_000_000
 _PREVIEW_BIG_FILE_SIZE = 1024 * 1024
 
@@ -254,17 +253,6 @@ class Object(gws.base.model.field.Object):
         if not md5:
             return
 
-        cache_key = gws.u.sha256(
-            [
-                self.model.uid,
-                self.name,
-                feature.uid(),
-                md5,
-                _PREVIEW_SIZE,
-                _PREVIEW_MIME,
-            ]
-        )
-
         def make_preview():
             content = feature.record.attributes.get(f'{self.name}_preview_content')
 
@@ -290,11 +278,19 @@ class Object(gws.base.model.field.Object):
             except gws.lib.image.Error as exc:
                 raise gws.NotFoundError(f'file preview: {exc}') from exc
 
-        cache_dir = gws.u.ensure_dir(gws.c.CACHE_DIR + '/preview')
-        cache_path = cache_dir + f'/{cache_key}.{gws.lib.mime.extension_for(_PREVIEW_MIME)}'
+        cache_key = gws.u.sha256(
+            [
+                self.model.uid,
+                self.name,
+                feature.uid(),
+                md5,
+                _PREVIEW_SIZE,
+                _PREVIEW_MIME,
+            ]
+        )
 
         return gws.ContentResponse(
-            contentPath=gws.u.get_cached_file(cache_path, _PREVIEW_CACHE_LIFE_TIME, make_preview),
+            content=gws.u.get_ephemeral_content(f'preview_{cache_key}', make_preview),
             mime=_PREVIEW_MIME,
         )
 
