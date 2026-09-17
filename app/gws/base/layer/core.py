@@ -151,15 +151,11 @@ class Object(gws.Layer):
     def configure(self):
         self.clientOptions = self.cfg('clientOptions') or gws.Data()
         self.cssSelector = self.cfg('cssSelector')
+
         self.displayMode = self.cfg('display')
-        
         if self.displayMode == gws.LayerDisplayMode.client and not self.canRenderInClient:
-            raise gws.ConfigurationError(f'invalid display mode')
-        if self.displayMode == gws.LayerDisplayMode.box and not self.canRenderBox:
-            raise gws.ConfigurationError(f'invalid display mode')
-        if self.displayMode == gws.LayerDisplayMode.tile and not self.canRenderXyz:
-            raise gws.ConfigurationError(f'invalid display mode')
-        
+            raise gws.ConfigurationError(f'display mode "client" is not supported for this layer')
+
         self.loadingStrategy = self.cfg('loadingStrategy')
         self.opacity = self.cfg('opacity')
         self.title = self.cfg('title')
