@@ -1841,62 +1841,48 @@ class Bounds(Data):
 class Crs:
     """Coordinate reference system."""
 
-    srid: int
-    """CRS SRID."""
     axis: Axis
     """Axis orientation."""
-    uom: Uom
-    """CRS unit."""
+    base: int
+    """Base CRS code."""
+    bounds: Bounds
+    """CRS own Bounds."""
+    coordinatePrecision: int
+    """Preferred precision for coordinates in this CRS."""
+    datum: str
+    """Datum."""
+    epsg: str
+    """Name in the "epsg" format."""
+    extent: Extent
+    """CRS own Extent."""
     isGeographic: bool
     """This CRS is geographic."""
     isProjected: bool
     """This CRS is projected."""
     isYX: bool
     """This CRS has a lat/lon axis."""
+    name: str
+    """CRS name."""
     proj4text: str
     """Proj4 definition."""
-    wkt: str
-    """WKT definition."""
-
-    epsg: str
-    """Name in the "epsg" format."""
+    srid: int
+    """CRS SRID."""
+    uom: Uom
+    """CRS unit."""
+    uri: str
+    """Name in the "uri" format."""
+    url: str
+    """Name in the "url" format."""
     urn: str
     """Name in the "urn" format."""
     urnx: str
     """Name in the "urnx" format."""
-    url: str
-    """Name in the "url" format."""
-    uri: str
-    """Name in the "uri" format."""
-
-    name: str
-    """CRS name."""
-    base: int
-    """Base CRS code."""
-    datum: str
-    """Datum."""
-
     wgsExtent: Extent
     """CRS Extent in the WGS projection."""
-    extent: Extent
-    """CRS own Extent."""
-    bounds: Bounds
-    """CRS own Bounds."""
     wgsMaxExtent: Extent
     """Maximal extent that makes sense for this CRS, in the WGS projection."""
-
-    def clip_extent(self, wgs_extent: Extent) -> Optional[Extent]:
-        """Clip a WGS extent to the maximal extent of this CRS.
-
-        Args:
-            wgs_extent: Extent in the WGS projection.
-
-        Returns:
-            The clipped extent in the WGS projection, or ``None`` if there is no intersection.
-        """
-
-    coordinatePrecision: int
-    """Preferred precision for coordinates in this CRS."""
+    wkt: str
+    """WKT definition."""
 
     def axis_for_format(self, fmt: 'CrsFormat') -> Axis:
         """Get the axis depending on the string format.
@@ -1905,15 +1891,14 @@ class Crs:
         https://docs.geoserver.org/latest/en/user/services/wfs/axis_order.html
         """
 
-    def transform_extent(self, extent: Extent, crs_to: 'Crs') -> Extent:
-        """Transform an Extent from this CRS to another.
+    def clip_wgs_extent(self, wgs_extent: Extent) -> Optional[Extent]:
+        """Clip a WGS extent to the maximal extent of this CRS.
 
         Args:
-            extent: Extent.
-            crs_to: Target CRS.
+            wgs_extent: Extent in the WGS projection.
 
         Returns:
-            A transformed Extent.
+            The clipped extent in the WGS projection, or ``None`` if there is no intersection.
         """
 
     def extent_size_in_meters(self, extent: Extent) -> Size:
@@ -1931,14 +1916,14 @@ class Crs:
             az: Azimuth in degrees (0 = North, 90 = East, etc.).
         """
 
-    def transformer(self, crs_to: 'Crs') -> Callable:
-        """Create a transformer function to another CRS.
-
-        Args:
-            crs_to: Target CRS.
+    def to_geojson(self) -> dict:
+        """Return a geojson representation of the CRS (as per GJ2008).
 
         Returns:
-            A function.
+            A GeoJson dict.
+
+        References:
+            https://geojson.org/geojson-spec#named-crs
         """
 
     def to_string(self, fmt: Optional['CrsFormat'] = None) -> str:
@@ -1951,14 +1936,28 @@ class Crs:
             A string.
         """
 
-    def to_geojson(self) -> dict:
-        """Return a geojson representation of the CRS (as per GJ2008).
+    def transform_extent(self, extent: Extent, crs_to: 'Crs') -> Extent:
+        """Transform an Extent from this CRS to another.
+
+        Args:
+            extent: Extent.
+            crs_to: Target CRS.
 
         Returns:
-            A GeoJson dict.
+            A transformed Extent.
+        """
 
-        References:
-            https://geojson.org/geojson-spec#named-crs
+    def transform_resolution(self, extent: Extent, res: float, crs_to: 'Crs') -> float:
+        """Transform a resolution over an extent from this CRS to another, ``0.0`` if the transformation fails."""
+
+    def transformer(self, crs_to: 'Crs') -> Callable:
+        """Create a transformer function to another CRS.
+
+        Args:
+            crs_to: Target CRS.
+
+        Returns:
+            A function.
         """
 ################################################################################
 
@@ -3298,20 +3297,22 @@ class Grabber:
     tile grid, stores and reads them back.
     """
 
-    targetCrs: Crs
-    """Target CRS; one grabber serves exactly one CRS."""
-    grid: MapGrid
-    """The fixed target grid for the CRS."""
-    extent: Extent
-    """Extent covered by this grabber, in the target CRS."""
     cache: MapCache
     """Cache settings; the name (``<layer cache name>_<srid>``) keys the tile store."""
-    store: 'TileStore'
-    """Persistent tile store."""
+    extent: Extent
+    """Extent covered by this grabber, in the target CRS."""
+    grid: MapGrid
+    """The fixed target grid for the CRS."""
     imageFormat: ImageFormat
     """Format tiles are stored and returned in."""
+    sourceCrs: Crs
+    """Source CRS; defines the original CRS of the raster data."""
+    store: 'TileStore'
+    """Persistent tile store."""
+    targetCrs: Crs
+    """Target CRS; one grabber serves exactly one CRS."""
 
-    def get_tile_as_bytes(self, tile: MapTile, params: Optional[dict] = None) -> bytes:
+    def get_tile_as_bytes(self, mt: MapTile, params: Optional[dict] = None) -> bytes:
         """Return a single tile as an encoded image, composing and storing it if needed.
 
         A tile outside the layer's range is a transparent image.
@@ -3319,13 +3320,13 @@ class Grabber:
         Raises on source failure.
         """
 
-    def get_tile_as_image(self, tile: MapTile, params: Optional[dict] = None) -> 'Image':
+    def get_tile_as_image(self, mt: MapTile, params: Optional[dict] = None) -> 'Image':
         """Return a single tile as an image, composing and storing it if needed.
 
         Same contract as ``get_tile_as_bytes``, decoded pixels instead of bytes.
         """
 
-    def get_tiles_as_bytes_dict(self, tr: MapTileRange, params: Optional[dict] = None) -> dict[MapTile, bytes]:
+    def get_tiles_as_bytes_dict(self, mtr: MapTileRange, params: Optional[dict] = None) -> dict[MapTile, bytes]:
         """Return a rectangular block of tiles as encoded images.
 
         Sparse: contains entries only for tiles present in the grid.
@@ -3333,13 +3334,13 @@ class Grabber:
         Raises on source failure.
         """
 
-    def get_tiles_as_image_dict(self, tr: MapTileRange, params: Optional[dict] = None) -> dict[MapTile, 'Image']:
+    def get_tiles_as_image_dict(self, mtr: MapTileRange, params: Optional[dict] = None) -> dict[MapTile, 'Image']:
         """Return a rectangular block of tiles as images.
 
         Same contract as ``get_tiles_as_bytes_dict``, decoded pixels instead of bytes.
         """
 
-    def get_box_as_bytes(self, extent: Extent, width: int, height: int, params: Optional[dict] = None) -> bytes:
+    def get_box_as_bytes(self, extent: Extent, w: int, h: int, params: Optional[dict] = None) -> bytes:
         """Return an encoded image for arbitrary extent and pixel size.
 
         A box overlapping no data is a transparent image.
@@ -3347,7 +3348,7 @@ class Grabber:
         Raises on source failure.
         """
 
-    def get_box_as_image(self, extent: Extent, width: int, height: int, params: Optional[dict] = None) -> 'Image':
+    def get_box_as_image(self, extent: Extent, w: int, h: int, params: Optional[dict] = None) -> 'Image':
         """Return an image for arbitrary extent and pixel size.
 
         Same contract as ``get_box_as_bytes``, decoded pixels instead of bytes.

@@ -28,7 +28,7 @@ class Object(gws.base.layer.image.Object):
         self.configure_layer()
 
     def create_grabber(self, opts):
-        return grabber.Object(opts)
+        return grabber.Object(opts, serviceProvider=self.serviceProvider)
 
     def configure_provider(self):
         return gws.config.util.configure_service_provider_for(self, provider.Object)
@@ -39,7 +39,7 @@ class Object(gws.base.layer.image.Object):
         grid = self.serviceProvider.grid
         ext = gws.lib.extent.transform_to_wgs(grid.extent, grid.crs)
         if gws.lib.extent.is_valid_wgs(ext):
-            self.wgsExtent = grid.crs.clip_extent(ext) or grid.crs.wgsMaxExtent
+            self.wgsExtent = grid.crs.clip_wgs_extent(ext) or grid.crs.wgsMaxExtent
         else:
             self.wgsExtent = grid.crs.wgsMaxExtent
         return True

@@ -74,7 +74,6 @@ def _opts(srid=3857, max_age=0, extent=None, request_tiles=4, request_buffer=64)
         cache=cache,
         extent=extent or _max_extent(srid),
         imageFormat=gws.ImageFormat(name='png8', mimeTypes=[gws.lib.mime.PNG], options={'mode': 'P'}),
-        provider=None,
     )
 
 
@@ -218,12 +217,12 @@ def test_cross_crs_box_outside_source_area_is_transparent():
     assert gr.fetches == []
 
 
-def test_source_resolution():
-    gr = _grabber()
-    assert abs(gr.source_resolution((1e6, 6e6, 1e6 + 3000, 6e6 + 2000), 10) - 10) < 1e-6
+def test_transform_resolution():
+    crs = gws.lib.crs.get(3857)
+    assert abs(crs.transform_resolution((1e6, 6e6, 1e6 + 3000, 6e6 + 2000), 10, crs) - 10) < 1e-6
 
-    gr = _grabber(srid=25832, source_srid=3857)
-    r = gr.source_resolution((500000 - 1280, 5700000 - 1280, 500000 + 1280, 5700000 + 1280), 10)
+    crs = gws.lib.crs.get(25832)
+    r = crs.transform_resolution((500000 - 1280, 5700000 - 1280, 500000 + 1280, 5700000 + 1280), 10, gws.lib.crs.get(3857))
     assert 15 < r < 17
 
 

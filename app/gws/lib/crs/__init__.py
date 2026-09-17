@@ -40,7 +40,46 @@ class Object(gws.Crs):
             return ext
         return _transform_extent_check(ext, self.srid, crs_to.srid)
 
-    def clip_extent(self, wgs_extent):
+    def transform_resolution(self, extent, res, crs_to):
+        """Transform a resolution from this CRS to another.
+
+        Samples nine points of the extent (corners, edge midpoints, centre), transforms each
+        together with a one-pixel step in x and in y, and measures the step lengths in the
+        target CRS. The smallest finite positive length is returned, so that the target
+        resolution is never coarser than the source resolution anywhere in the extent;
+        ``0.0`` if no sample transforms.
+        """
+
+        tr = self.transformer(crs_to)
+
+        x0, y0, x1, y1 = extent
+        xm = (x0 + x1) / 2
+        ym = (y0 + y1) / 2
+
+        points = [
+            (x0, y0),
+            (xm, y0),
+            (x1, y0),
+            (x0, ym),
+            (xm, ym),
+            (x1, ym),
+            (x0, y1),
+            (xm, y1),
+            (x1, y1),
+        ]
+
+        ds = []
+        for x, y in points:
+            ax, ay = tr(x, y)
+            bx, by = tr(x + res, y)
+            cx, cy = tr(x, y + res)
+            ds.append(math.hypot(bx - ax, by - ay))
+            ds.append(math.hypot(cx - ax, cy - ay))
+
+        ds = [d for d in ds if math.isfinite(d) and d > 0]
+        return min(ds) if ds else 0.0
+
+    def clip_wgs_extent(self, wgs_extent):
         a = wgs_extent
         b = self.wgsMaxExtent
         x0, y0, x1, y1 = max(a[0], b[0]), max(a[1], b[1]), min(a[2], b[2]), min(a[3], b[3])

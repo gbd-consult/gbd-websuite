@@ -1,7 +1,6 @@
 """Base raster grabber."""
 
 import os
-from typing import Optional
 
 import gws
 import gws.lib.extent
@@ -29,25 +28,23 @@ class Options(gws.Data):
     cache: gws.MapCache
     extent: gws.Extent
     imageFormat: gws.ImageFormat
-    provider: Optional[gws.ServiceProvider]
 
 
 class Object(gws.Grabber):
     """Base raster grabber."""
 
-    rangeForLevel: dict[int, gws.MapTileRange]
-    mime: str
     defaultEphemeralStore: gws.TileStore
-    """Short-lived store, for everything else, so that blocks are composed once."""
-    minLevel: int
-    """Coarsest served level."""
+    """Short-lived store for static tiles outside the cache settings, so that blocks are composed once."""
     maxLevel: int
     """Finest served level."""
+    mime: str
+    """Mime type of ``imageFormat``."""
+    minLevel: int
+    """Coarsest served level."""
+    mtrByLevel: dict[int, gws.MapTileRange]
+    """Tile range covered by ``extent``, per served level."""
     requestTiles: int
     """Tiles per side composed in one block; 1 means no meta-tiling."""
-
-    sourceCrs: gws.Crs
-    """Source crs, defines the original CRS of the raster data."""
 
     def __init__(self, opts: Options):
         self.targetCrs = opts.crs
@@ -63,174 +60,120 @@ class Object(gws.Grabber):
             max_age=self.cache.maxAge,
             extension=gws.lib.mime.extension_for(self.mime),
         )
-        self.defaultEphemeralStore = self.ephemeral_store('')
+        self.defaultEphemeralStore = self._ephemeral_store('')
 
         self.extent = opts.extent
         self.minLevel = 0
         self.maxLevel = MAX_LEVEL
 
-        self.rangeForLevel = {}
+        self.mtrByLevel = {}
         for z in range(self.minLevel, self.maxLevel + 1):
-            rng = gws.lib.grid.range_for_extent(self.grid, self.extent, z)
-            if not rng:
+            mtr = gws.lib.grid.range_for_extent(self.grid, self.extent, z)
+            if not mtr:
                 raise gws.ConfigurationError(f'grabber {self.cache.name!r}: empty tile range for level {z}')
-            self.rangeForLevel[z] = rng
+            self.mtrByLevel[z] = mtr
 
     ##
+
+    def get_tile_as_bytes(self, mt, params=None):
+        return self.pair_to_bytes(self._get_tile_as_pair(mt, params))
+
+    def get_tile_as_image(self, mt, params=None):
+        return self.pair_to_image(self._get_tile_as_pair(mt, params))
+
+    def get_tiles_as_bytes_dict(self, mtr, params=None):
+        return {t: self.get_tile_as_bytes(t, params) for t in self._valid_tiles_in_range(mtr)}
+
+    def get_tiles_as_image_dict(self, mtr, params=None):
+        return {t: self.get_tile_as_image(t, params) for t in self._valid_tiles_in_range(mtr)}
+
+    def get_box_as_bytes(self, extent, w, h, params=None):
+        return self.pair_to_bytes(self._get_box_as_pair(extent, w, h, params))
+
+    def get_box_as_image(self, extent, w, h, params=None):
+        return self.pair_to_image(self._get_box_as_pair(extent, w, h, params))
 
     def levels(self):
-        return list(self.rangeForLevel)
+        return list(self.mtrByLevel)
 
     def tile_range_for_level(self, z):
-        return self.rangeForLevel[z]
-
-    def get_tile_as_bytes(self, tile, params=None):
-        return self.as_bytes(self.get_tile_as_pair(tile, params))
-
-    def get_tile_as_image(self, tile, params=None):
-        return self.as_image(self.get_tile_as_pair(tile, params))
-
-    def get_tiles_as_bytes_dict(self, tr, params=None):
-        return {mt: self.get_tile_as_bytes(mt, params) for mt in self.valid_tiles_in_range(tr)}
-
-    def get_tiles_as_image_dict(self, tr, params=None):
-        return {mt: self.get_tile_as_image(mt, params) for mt in self.valid_tiles_in_range(tr)}
-
-    def get_box_as_bytes(self, extent, width, height, params=None):
-        return self.as_bytes(self.get_box_as_pair(extent, width, height, params))
-
-    def get_box_as_image(self, extent, width, height, params=None):
-        return self.as_image(self.get_box_as_pair(extent, width, height, params))
+        return self.mtrByLevel[z]
 
     ##
 
-    def get_tile_as_pair(self, tile: gws.MapTile, params: dict | None) -> _BlobImagePair:
-        z = tile[-1]
-        if not self.is_serving(z):
-            return self.empty_tile(), None
+    def compose_tile_block_as_image_dict(self, mt: gws.MapTile, params: dict | None = None) -> dict[gws.MapTile, gws.Image]:
+        """Compose the block of ``requestTiles`` x ``requestTiles`` tiles containing a tile."""
 
-        if not gws.lib.grid.in_range(tile, self.tile_range_for_level(z)):
-            return self.empty_tile(), None
+        if self.requestTiles != 1:
+            raise NotImplementedError(f'compose_tile_block_as_image_dict not implemented in {self!r}')
+        return {mt: self.compose_tile_as_image(mt, params)}
 
-        store_key = gws.u.sha256(params)[:12] if params else ''
-        store = self.store_for(z, store_key)
+    def compose_tile_as_image(self, mt: gws.MapTile, params: dict | None = None) -> gws.Image:
+        """Compose a single tile over its own extent."""
 
-        blob = store.read(tile)
-        if blob is not None:
-            return blob, None
-
-        try:
-            bx, by, _ = self.block_start_tile(tile)
-            with gws.u.server_lock(f'grabber_{self.cache.name}_{store_key}_{z}_{bx}_{by}', BLOCK_LOCK_TIMEOUT):
-                blob = store.read(tile)
-                if blob is not None:
-                    return blob, None
-                return self.get_block_and_return_pair(tile, params, store)
-        except gws.LockBusyError:
-            gws.log.warning(f'grabber {self.cache.name!r}: block lock busy for {tile!r}')
-            return self.empty_tile(), None
-
-    def get_block_and_return_pair(self, tile: gws.MapTile, params: dict | None, store: gws.TileStore) -> _BlobImagePair:
-        out = self.empty_tile(), None
-        block_images = self.compose_tile_block_as_image_dict(tile, params)
-        for bt, img in block_images.items():
-            blob = self.as_bytes((None, img))
-            store.write(bt, blob)
-            if bt == tile:
-                out = blob, img
-        if store is not self.store:
-            gws.u.ephemeral_cleanup()
-        return out
-
-    def get_box_as_pair(self, extent: gws.Extent, width, height, params: dict | None) -> tuple[bytes | None, gws.Image | None]:
-        w = gws.u.to_rounded_int(width)
-        h = gws.u.to_rounded_int(height)
-
-        z = gws.lib.grid.level_for_resolution(self.grid, (extent[2] - extent[0]) / w)
-        if params or not self.is_storing(z):
-            return None, self.compose_box_as_image(extent, w, h, params)
-
-        rng = gws.lib.grid.range_for_extent(self.grid, extent, z)
-        if not rng:
-            return self.empty_box(w, h), None
-
-        x0, y0, x1, y1, _ = rng
-        ts = self.grid.tileSize
-        mosaic = gws.lib.image.from_size(((x1 - x0 + 1) * ts, (y1 - y0 + 1) * ts))
-        for (tx, ty, _), img in self.get_tiles_as_image_dict(rng).items():
-            mosaic.paste(img, ((tx - x0) * ts, (ty - y0) * ts))
-
-        mosaic_extent = gws.lib.grid.extent_for_range(self.grid, rng)
-        with gws.lib.gdalx.open_from_image(mosaic, gws.Bounds(crs=self.targetCrs, extent=mosaic_extent)) as ds:
-            return None, ds.warp_to_image(
-                dict(
-                    dstSRS=self.targetCrs.epsg,
-                    outputBounds=extent,
-                    outputBoundsSRS=self.targetCrs.epsg,
-                    width=w,
-                    height=h,
-                    resampleAlg='bilinear',
-                )
-            )
-
-    ##
-
-    def compose_tile_as_image(self, tile: gws.MapTile, params: dict | None = None) -> gws.Image:
         return self.compose_box_as_image(
-            gws.lib.grid.extent_for_tile(self.grid, tile),
+            gws.lib.grid.extent_for_tile(self.grid, mt),
             self.grid.tileSize,
             self.grid.tileSize,
             params,
         )
 
-    def compose_tile_block_as_image_dict(self, tile: gws.MapTile, params: dict | None = None) -> dict[gws.MapTile, gws.Image]:
-        if self.requestTiles != 1:
-            raise NotImplementedError(f'compose_tile_block_as_image_dict not implemented in {self!r}')
-        return {tile: self.compose_tile_as_image(tile, params)}
-
     def compose_box_as_image(self, extent: gws.Extent, w: int, h: int, params: dict | None = None) -> gws.Image:
+        """Compose an image for an arbitrary extent and pixel size from the source."""
+
         raise NotImplementedError(f'compose_box_as_image not implemented in {self!r}')
 
     ##
 
-    def as_bytes(self, bi: _BlobImagePair) -> bytes:
+    def pair_to_bytes(self, bi: _BlobImagePair) -> bytes:
+        """Return the bytes form of a pair, encoding the image if needed."""
+
         blob, img = bi
         if blob is not None:
             return blob
         if img is not None:
-            return img.to_bytes(self.mime, self.imageFormat.options)
+            return self.to_bytes(img)
         raise gws.Error('unexpected state')
 
-    def as_image(self, bi: _BlobImagePair) -> gws.Image:
+    def pair_to_image(self, bi: _BlobImagePair) -> gws.Image:
+        """Return the image form of a pair, decoding the bytes if needed."""
+
         blob, img = bi
         if img is not None:
             return img
         if blob is not None:
-            return gws.lib.image.from_bytes(blob)
+            return self.to_image(blob)
         raise gws.Error('unexpected state')
 
-    def normalize_image(self, img: gws.Image, width: int, height: int) -> gws.Image:
+    def to_bytes(self, img: gws.Image) -> bytes:
+        """Encode an image in the grabber's image format."""
+
+        return img.to_bytes(self.mime, self.imageFormat.options)
+
+    def to_image(self, blob: bytes) -> gws.Image:
+        """Decode an encoded image."""
+
+        return gws.lib.image.from_bytes(blob)
+
+    def normalize_image(self, img: gws.Image, w: int, h: int) -> gws.Image:
         """Ensure a source image is RGBA and has the requested size."""
 
-        if img.size() != (width, height):
-            raise gws.ExternalServiceError(f'grabber {self.cache.name!r}: unexpected image size {img.size()!r}, expected {(width, height)!r}')
+        if img.size() != (w, h):
+            raise gws.ExternalServiceError(f'grabber {self.cache.name!r}: unexpected image size {img.size()!r}')
         return img.convert('RGBA')
 
-    def valid_tiles_in_range(self, tr):
-        z = tr[-1]
-        if not self.is_serving(z):
-            return []
-        level_rng = self.tile_range_for_level(z)
-        return [mt for mt in gws.lib.grid.enum_tiles(tr) if gws.lib.grid.in_range(mt, level_rng)]
-
     def block_start_tile(self, mt: gws.MapTile) -> gws.MapTile:
+        """Return the first tile of the block containing a tile."""
+
         x, y, z = mt
         n = self.requestTiles
         return (x // n) * n, (y // n) * n, z
 
     def extent_to_source_crs(self, extent: gws.Extent) -> gws.Extent | None:
+        """Transform a target extent into the source CRS, clipped to the source area of use."""
+
         wgs_extent = gws.lib.extent.transform_to_wgs(extent, self.targetCrs)
-        wgs_extent = self.sourceCrs.clip_extent(wgs_extent)
+        wgs_extent = self.sourceCrs.clip_wgs_extent(wgs_extent)
         if not wgs_extent:
             return
         src_extent = gws.lib.extent.transform_from_wgs(wgs_extent, self.sourceCrs)
@@ -239,6 +182,8 @@ class Object(gws.Grabber):
         return src_extent
 
     def warp_image(self, img: gws.Image, src_extent: gws.Extent, target_extent: gws.Extent, w: int, h: int) -> gws.Image:
+        """Warp a source image onto a target extent and pixel size."""
+
         with gws.lib.gdalx.open_from_image(img, gws.Bounds(crs=self.sourceCrs, extent=src_extent)) as ds:
             return ds.warp_to_image(
                 dict(
@@ -252,30 +197,132 @@ class Object(gws.Grabber):
                 )
             )
 
-    def is_serving(self, z):
+    def empty_image(self, w: int, h: int) -> gws.Image:
+        """Return a transparent image of the given size."""
+
+        return gws.lib.image.from_size((w, h))
+
+    def empty_box(self, w: int, h: int) -> bytes:
+        """Return a transparent image of the given size, as encoded bytes."""
+
+        return self.to_bytes(self.empty_image(w, h))
+
+    def empty_tile(self) -> bytes:
+        """Return the transparent tile."""
+
+        if not hasattr(self, '_emptyTile'):
+            self._emptyTile = self.empty_box(self.grid.tileSize, self.grid.tileSize)
+        return self._emptyTile
+
+    def is_serving(self, z: int) -> bool:
+        """True if a level is within the serving range."""
+
         return self.minLevel <= z <= self.maxLevel
 
-    def is_storing(self, z):
+    def is_storing(self, z: int) -> bool:
+        """True if a level goes to the persistent store."""
+
         return self.cache.maxAge > 0 and z <= self.cache.maxLevel
 
-    def store_for(self, z: int, key: str = '') -> gws.TileStore:
+    ##
+
+    def _get_tile_as_pair(self, mt: gws.MapTile, params: dict | None) -> _BlobImagePair:
+        """Return a tile from the store, composing and storing its block on a miss."""
+
+        z = mt[-1]
+        if not self.is_serving(z):
+            return self.empty_tile(), None
+
+        if not gws.lib.grid.in_range(mt, self.tile_range_for_level(z)):
+            return self.empty_tile(), None
+
+        store_key = gws.u.sha256(params)[:12] if params else ''
+        store = self._store_for(z, store_key)
+
+        blob = store.read(mt)
+        if blob is not None:
+            return blob, None
+
+        try:
+            bx, by, _ = self.block_start_tile(mt)
+            with gws.u.server_lock(f'grabber_{self.cache.name}_{store_key}_{z}_{bx}_{by}', BLOCK_LOCK_TIMEOUT):
+                # the tile might be written by another render
+                blob = store.read(mt)
+                if blob is not None:
+                    return blob, None
+                block_images = self._compose_and_store_tile_block(mt, params, store)
+                return None, block_images[mt]
+        except gws.LockBusyError:
+            gws.log.warning(f'grabber {self.cache.name!r}: block lock busy for {mt!r}')
+            return self.empty_tile(), None
+
+    def _compose_and_store_tile_block(self, mt: gws.MapTile, params: dict | None, store: gws.TileStore) -> dict[gws.MapTile, gws.Image]:
+        """Compose the block containing a tile and write all its tiles to the store."""
+
+        block_images = self.compose_tile_block_as_image_dict(mt, params)
+        for t, img in block_images.items():
+            blob = self.to_bytes(img)
+            store.write(t, blob)
+        if store is not self.store:
+            gws.u.ephemeral_cleanup()
+        return block_images
+
+    def _get_box_as_pair(self, extent: gws.Extent, w: float, h: float, params: dict | None) -> _BlobImagePair:
+        """Return a box, mosaicked from stored tiles at storing levels, composed directly otherwise."""
+
+        w = gws.u.to_rounded_int(w)
+        h = gws.u.to_rounded_int(h)
+
+        z = gws.lib.grid.level_for_resolution(self.grid, gws.lib.extent.w(extent) / w)
+        if params or not self.is_storing(z):
+            return None, self.compose_box_as_image(extent, w, h, params)
+
+        mtr = gws.lib.grid.range_for_extent(self.grid, extent, z)
+        if not mtr:
+            return self.empty_box(w, h), None
+
+        x0, y0, x1, y1, _ = mtr
+        ts = self.grid.tileSize
+        mosaic = gws.lib.image.from_size(((x1 - x0 + 1) * ts, (y1 - y0 + 1) * ts))
+        for (tx, ty, _), img in self.get_tiles_as_image_dict(mtr).items():
+            mosaic.paste(img, ((tx - x0) * ts, (ty - y0) * ts))
+
+        mosaic_extent = gws.lib.grid.extent_for_range(self.grid, mtr)
+        with gws.lib.gdalx.open_from_image(mosaic, gws.Bounds(crs=self.targetCrs, extent=mosaic_extent)) as ds:
+            return None, ds.warp_to_image(
+                dict(
+                    dstSRS=self.targetCrs.epsg,
+                    outputBounds=extent,
+                    outputBoundsSRS=self.targetCrs.epsg,
+                    width=w,
+                    height=h,
+                    resampleAlg='bilinear',
+                )
+            )
+
+    def _valid_tiles_in_range(self, mtr: gws.MapTileRange) -> list[gws.MapTile]:
+        """Return the tiles of a range that lie within the served levels and extent."""
+
+        z = mtr[-1]
+        if not self.is_serving(z):
+            return []
+        level_mtr = self.tile_range_for_level(z)
+        return [t for t in gws.lib.grid.enum_tiles(mtr) if gws.lib.grid.in_range(t, level_mtr)]
+
+    def _store_for(self, z: int, key: str = '') -> gws.TileStore:
+        """Return the store for a level and params key."""
+
         if key:
-            return self.ephemeral_store(key)
+            return self._ephemeral_store(key)
         if self.is_storing(z):
             return self.store
         return self.defaultEphemeralStore
 
-    def ephemeral_store(self, key: str) -> gws.TileStore:
+    def _ephemeral_store(self, key: str) -> gws.TileStore:
+        """Create an ephemeral store for a params key."""
+
         return gws.gis.cache.store.Object(
             gws.u.ephemeral_dir(f'tiles_{self.cache.name}_{key}'),
             max_age=EPHEMERAL_MAX_AGE,
             extension=gws.lib.mime.extension_for(self.mime),
         )
-
-    def empty_tile(self) -> bytes:
-        if not hasattr(self, '_emptyTile'):
-            self._emptyTile = self.empty_box(self.grid.tileSize, self.grid.tileSize)
-        return self._emptyTile
-
-    def empty_box(self, width, height) -> bytes:
-        return self.as_bytes((None, gws.lib.image.from_size((width, height))))

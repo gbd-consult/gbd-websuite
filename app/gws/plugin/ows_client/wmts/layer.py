@@ -56,6 +56,7 @@ class Object(gws.base.layer.image.Object):
     def create_grabber(self, opts):
         return grabber.Object(
             opts,
+            serviceProvider=self.serviceProvider,
             tms=self.activeTms,
             urlTemplate=self.serviceProvider.tile_url_template(self.activeLayer, self.activeTms, self.activeStyle),
         )
@@ -112,7 +113,7 @@ class Object(gws.base.layer.image.Object):
         tms_crs = self.activeTms.crs
         ext = gws.lib.extent.transform_to_wgs(self.activeTms.matrices[0].extent, tms_crs)
         if gws.lib.extent.is_valid_wgs(ext):
-            self.wgsExtent = tms_crs.clip_extent(ext) or tms_crs.wgsMaxExtent
+            self.wgsExtent = tms_crs.clip_wgs_extent(ext) or tms_crs.wgsMaxExtent
         else:
             self.wgsExtent = tms_crs.wgsMaxExtent
 

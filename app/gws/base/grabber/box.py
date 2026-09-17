@@ -5,21 +5,21 @@ import math
 import gws
 import gws.lib.extent
 import gws.lib.grid
-import gws.lib.gdalx
 import gws.lib.image
 
 from . import core
 
-MAX_SOURCE_PIXEL_RATIO = 16
-"""Cap on source pixels per target pixel for cross-CRS requests."""
+MAX_SOURCE_PIXEL_RATIO = 4
+"""Cap on source pixels per target pixel per side, for cross-CRS requests."""
 
 
 class Object(core.Object):
     """Base grabber for sources that render arbitrary boxes."""
 
-    sourceCrs: gws.Crs
-    requestBuffer: int
     maxRequestPixels: int
+    """Cap on the pixel size of one source request; larger boxes are fetched in chunks."""
+    requestBuffer: int
+    """Pixels rendered around a block or chunk and cropped, for consistent labels across seams."""
 
     def __init__(self, opts: core.Options):
         super().__init__(opts)
@@ -27,88 +27,102 @@ class Object(core.Object):
         self.requestBuffer = self.cache.requestBuffer
         self.maxRequestPixels = 4096
 
-    def compose_tile_block_as_image_dict(self, tile, params=None):
-        z = tile[-1]
-        n = self.requestTiles
-        bx, by, _ = self.block_start_tile(tile)
+    def compose_tile_block_as_image_dict(self, mt, params=None):
+        """Render the block plus a buffer in one request and cut it into tiles."""
 
-        level_rng = self.tile_range_for_level(z)
-        block_rng = (
-            max(bx, level_rng[0]),
-            max(by, level_rng[1]),
-            min(bx + n - 1, level_rng[2]),
-            min(by + n - 1, level_rng[3]),
+        z = mt[-1]
+        n = self.requestTiles
+        bx, by, _ = self.block_start_tile(mt)
+
+        level_mtr = self.tile_range_for_level(z)
+        lx0, ly0, lx1, ly1, _ = level_mtr
+
+        block_mtr = (
+            max(bx, lx0),
+            max(by, ly0),
+            min(bx + n - 1, lx1),
+            min(by + n - 1, ly1),
             z,
         )
+        bx0, by0, bx1, by1, _ = block_mtr
 
         tile_size = self.grid.tileSize
         buf_size = self.requestBuffer
         res = gws.lib.grid.resolution_for_level(self.grid, z)
 
-        extent = gws.lib.grid.extent_for_range(self.grid, block_rng)
+        extent = gws.lib.grid.extent_for_range(self.grid, block_mtr)
         extent = gws.lib.extent.buffer(extent, buf_size * res)
 
-        w = (block_rng[2] - block_rng[0] + 1) * tile_size + 2 * buf_size
-        h = (block_rng[3] - block_rng[1] + 1) * tile_size + 2 * buf_size
+        w = (bx1 - bx0 + 1) * tile_size + buf_size * 2
+        h = (by1 - by0 + 1) * tile_size + buf_size * 2
 
         img = self.compose_box_as_image(extent, w, h, params)
         img.crop((buf_size, buf_size, w - buf_size, h - buf_size))
-        arr = img.to_array()
+        pixels = img.to_array()
 
-        tile_to_img = {}
-        bx = block_rng[0]
-        by = block_rng[1]
+        block_images = {}
 
-        for tx, ty, _ in gws.lib.grid.enum_tiles(block_rng):
-            px = (tx - bx) * tile_size
-            py = (ty - by) * tile_size
-            slice = arr[py : py + tile_size, px : px + tile_size].copy()
-            tile_to_img[(tx, ty, z)] = gws.lib.image.from_array(slice)
+        for tx, ty, _ in gws.lib.grid.enum_tiles(block_mtr):
+            px = (tx - bx0) * tile_size
+            py = (ty - by0) * tile_size
+            slice = pixels[py : py + tile_size, px : px + tile_size]
+            block_images[(tx, ty, z)] = gws.lib.image.from_array(slice.copy())
 
-        return tile_to_img
+        return block_images
 
-    def compose_box_as_image(self, extent, width, height, params=None):
-        w = gws.u.to_rounded_int(width)
-        h = gws.u.to_rounded_int(height)
+    def compose_box_as_image(self, extent, w, h, params=None):
+        """Fetch the box in the source CRS, warping it when the CRS differ."""
+
+        w = gws.u.to_rounded_int(w)
+        h = gws.u.to_rounded_int(h)
 
         if self.sourceCrs == self.targetCrs:
-            return self.compose_box_as_image_in_source_crs(extent, w, h, params)
+            return self._fetch_and_compose_box(extent, w, h, params)
 
         src_extent = self.extent_to_source_crs(extent)
         if not src_extent:
-            return gws.lib.image.from_size((w, h))
+            gws.log.debug(f'grabber {self.cache.name!r}: empty image: box {extent!r} outside the source CRS area')
+            return self.empty_image(w, h)
 
-        src_res = self.source_resolution(extent, (extent[2] - extent[0]) / w)
+        target_res = gws.lib.extent.w(extent) / w
+        src_res = self.targetCrs.transform_resolution(extent, target_res, self.sourceCrs)
         if not src_res:
-            return gws.lib.image.from_size((w, h))
+            gws.log.debug(f'grabber {self.cache.name!r}: empty image: no source resolution for box {extent!r}')
+            return self.empty_image(w, h)
 
         src_extent = gws.lib.extent.buffer(src_extent, src_res * 2)
-        sw = math.ceil((src_extent[2] - src_extent[0]) / src_res)
-        sh = math.ceil((src_extent[3] - src_extent[1]) / src_res)
+        sw = math.ceil(gws.lib.extent.w(src_extent) / src_res)
+        sh = math.ceil(gws.lib.extent.h(src_extent) / src_res)
 
-        f = math.sqrt((sw * sh) / (w * h * MAX_SOURCE_PIXEL_RATIO))
-        if f > 1:
-            sw = math.ceil(sw / f)
-            sh = math.ceil(sh / f)
+        # src_res is the finest resolution anywhere in the box, so where the projection is strongly
+        # distorted the source request can grow far beyond the output. Cap it at N times the output
+        # per side, shrinking both sides by the same factor to keep the source pixels square.
+        factor = max(
+            sw / (w * MAX_SOURCE_PIXEL_RATIO),
+            sh / (h * MAX_SOURCE_PIXEL_RATIO),
+        )
+        if factor > 1:
+            sw = math.ceil(sw / factor)
+            sh = math.ceil(sh / factor)
 
-        img = self.compose_box_as_image_in_source_crs(src_extent, sw, sh, params)
+        img = self._fetch_and_compose_box(src_extent, sw, sh, params)
         return self.warp_image(img, src_extent, extent, w, h)
 
-    def source_resolution(self, extent, res):
-        tr = self.targetCrs.transformer(self.sourceCrs)
-        x0, y0, x1, y1 = extent
-        best = 0.0
-        for x in (x0, (x0 + x1) / 2, x1):
-            for y in (y0, (y0 + y1) / 2, y1):
-                ax, ay = tr(x, y)
-                bx, by = tr(x + res, y)
-                cx, cy = tr(x, y + res)
-                for d in (math.hypot(bx - ax, by - ay), math.hypot(cx - ax, cy - ay)):
-                    if math.isfinite(d) and d > 0 and (not best or d < best):
-                        best = d
-        return best
+    def fetch_box_as_bytes(self, bounds: gws.Bounds, w: int, h: int, params: dict | None = None) -> bytes:
+        """Fetch a box from the source with exactly one request, as encoded bytes."""
 
-    def compose_box_as_image_in_source_crs(self, extent, w, h, params):
+        raise NotImplementedError(f'fetch_box_as_bytes not implemented in {self!r}')
+
+    def fetch_box_as_image(self, bounds: gws.Bounds, w: int, h: int, params: dict | None = None) -> gws.Image:
+        """Fetch a box from the source with exactly one request, as an image."""
+
+        raise NotImplementedError(f'fetch_box_as_image not implemented in {self!r}')
+
+    ##
+
+    def _fetch_and_compose_box(self, extent: gws.Extent, w: int, h: int, params: dict | None) -> gws.Image:
+        """Fetch a source-CRS box, split into chunks of at most ``maxRequestPixels``."""
+
         max_pix = self.maxRequestPixels
 
         if w <= max_pix and h <= max_pix:
@@ -117,33 +131,40 @@ class Object(core.Object):
             return self.normalize_image(img, w, h)
 
         buf_size = self.requestBuffer
-        chunk_size = max_pix - 2 * buf_size
-        xres = (extent[2] - extent[0]) / w
-        yres = (extent[3] - extent[1]) / h
+        chunk_size = max_pix - buf_size * 2
+        
+        x_res = gws.lib.extent.w(extent) / w
+        y_res = gws.lib.extent.h(extent) / h
 
         canvas = gws.lib.image.from_size((w, h))
 
-        for start_y in range(0, h, chunk_size):
-            for start_x in range(0, w, chunk_size):
-                cw = min(chunk_size, w - start_x)
-                ch = min(chunk_size, h - start_y)
-                fw = cw + 2 * buf_size
-                fh = ch + 2 * buf_size
+        for sy in range(0, h, chunk_size):
+            for sx in range(0, w, chunk_size):
+                chunk_w = min(chunk_size, w - sx)
+                chunk_h = min(chunk_size, h - sy)
+                fetch_w = chunk_w + buf_size * 2
+                fetch_h = chunk_h + buf_size * 2
                 e = (
-                    extent[0] + (start_x - buf_size) * xres,
-                    extent[3] - (start_y + ch + buf_size) * yres,
-                    extent[0] + (start_x + cw + buf_size) * xres,
-                    extent[3] - (start_y - buf_size) * yres,
+                    extent[0] + (sx - buf_size) * x_res,
+                    extent[3] - (sy + chunk_h + buf_size) * y_res,
+                    extent[0] + (sx + chunk_w + buf_size) * x_res,
+                    extent[3] - (sy - buf_size) * y_res,
                 )
-                img = self.fetch_box_as_image(gws.Bounds(crs=self.sourceCrs, extent=e), fw, fh, params)
-                img = self.normalize_image(img, fw, fh)
-                img.crop((buf_size, buf_size, buf_size + cw, buf_size + ch))
-                canvas.paste(img, (start_x, start_y))
+                img = self.fetch_box_as_image(
+                    gws.Bounds(crs=self.sourceCrs, extent=e),
+                    fetch_w,
+                    fetch_h,
+                    params,
+                )
+                img = self.normalize_image(img, fetch_w, fetch_h)
+                img.crop(
+                    (
+                        buf_size,
+                        buf_size,
+                        buf_size + chunk_w,
+                        buf_size + chunk_h,
+                    )
+                )
+                canvas.paste(img, (sx, sy))
 
         return canvas
-
-    def fetch_box_as_bytes(self, bounds: gws.Bounds, width: int, height: int, params: dict | None = None) -> bytes:
-        raise NotImplementedError(f'fetch_box_as_bytes not implemented in {self!r}')
-
-    def fetch_box_as_image(self, bounds: gws.Bounds, width: int, height: int, params: dict | None = None) -> gws.Image:
-        raise NotImplementedError(f'fetch_box_as_image not implemented in {self!r}')

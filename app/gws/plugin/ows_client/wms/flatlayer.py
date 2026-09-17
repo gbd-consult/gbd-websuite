@@ -38,7 +38,7 @@ class Object(gws.base.layer.image.Object):
         self.configure_layer()
 
     def create_grabber(self, opts):
-        return grabber.Object(opts, sourceLayers=self.imageLayers, sourceCrs=self.sourceCrs)
+        return grabber.Object(opts, serviceProvider=self.serviceProvider, sourceLayers=self.imageLayers, sourceCrs=self.sourceCrs)
 
     def configure_provider(self):
         return gws.config.util.configure_service_provider_for(self, provider.Object)

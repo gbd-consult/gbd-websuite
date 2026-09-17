@@ -210,10 +210,10 @@ class Object(gws.Layer):
 
         ext = gws.lib.extent.intersection(self.wgsExtent, self.parentWgsExtent)
         if ext:
-            ext = self.mapCrs.clip_extent(ext)
+            ext = self.mapCrs.clip_wgs_extent(ext)
         if not ext:
             gws.log.warning(f'layer {self!r}: extent outside of the parent extent wgs={self.wgsExtent} parent={self.parentWgsExtent}')
-            ext = self.mapCrs.clip_extent(self.parentWgsExtent)
+            ext = self.mapCrs.clip_wgs_extent(self.parentWgsExtent)
         self.bounds = gws.Bounds(crs=self.mapCrs, extent=gws.lib.extent.transform_from_wgs(ext, self.mapCrs))
         return True
 
@@ -321,7 +321,7 @@ class Object(gws.Layer):
             cache_srids = [gws.lib.crs.require(c).srid for c in p.crs]
 
         for crs in self.root.app.supported_crs():
-            ext = crs.clip_extent(self.wgsExtent)
+            ext = crs.clip_wgs_extent(self.wgsExtent)
             if not ext:
                 gws.log.warning(f'layer {self!r}: extent {self.wgsExtent} is incompatible with {crs!r}')
                 continue
@@ -335,7 +335,6 @@ class Object(gws.Layer):
                 cache=cache,
                 extent=gws.lib.extent.transform_from_wgs(ext, crs),
                 imageFormat=self.imageFormat,
-                provider=getattr(self, 'serviceProvider', None),
             )
 
             gr = self.create_grabber(opts)

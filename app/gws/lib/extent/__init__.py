@@ -108,6 +108,18 @@ def size(e: gws.Extent) -> gws.Size:
     )
 
 
+def w(e: gws.Extent) -> float:
+    """The width of the extent."""
+
+    return e[2] - e[0]
+
+
+def h(e: gws.Extent) -> float:
+    """The height of the extent."""
+
+    return e[3] - e[1]
+
+
 def diagonal(e: gws.Extent) -> float:
     """The length of the diagonal"""
 

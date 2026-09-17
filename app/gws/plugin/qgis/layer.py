@@ -39,7 +39,7 @@ class Object(gws.base.layer.group.Object):
     def create_grabber(self, opts):
         if not self.cfg('compositeRender'):
             return
-        return grabber.Object(opts, params={})
+        return grabber.Object(opts, serviceProvider=self.serviceProvider, params={})
 
     def configure_group(self):
         gws.config.util.configure_service_provider_for(self, provider.Object)

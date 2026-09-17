@@ -45,7 +45,7 @@ class Object(gws.base.layer.image.Object):
         ])[: gws.base.layer.core.CACHE_NAME_LENGTH]
 
     def create_grabber(self, opts):
-        return grabber.Object(opts, params=self.render_params(gws.LayerRenderInput()))
+        return grabber.Object(opts, serviceProvider=self.serviceProvider, params=self.render_params(gws.LayerRenderInput()))
 
     def configure_provider(self):
         return gws.config.util.configure_service_provider_for(self, provider.Object)

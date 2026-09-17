@@ -75,10 +75,13 @@ class FakeTile(tile.Object):
         self.sourceMatrices = fn(self.sourceCrs, max_level)
         self.fetches = []
 
-    def fetch_tile_as_bytes(self, m, col, row):
-        self.fetches.append((int(m.identifier), col, row))
-        ts = int(m.tileWidth)
-        return gws.lib.image.from_size((ts, ts), color=_color(col, row, int(m.identifier))).to_bytes(gws.lib.mime.PNG)
+    def fetch_tile_as_bytes(self, tm, col, row):
+        self.fetches.append((int(tm.identifier), col, row))
+        ts = int(tm.tileWidth)
+        return gws.lib.image.from_size((ts, ts), color=_color(col, row, int(tm.identifier))).to_bytes(gws.lib.mime.PNG)
+
+    def fetch_tile_as_image(self, tm, col, row):
+        return self.to_image(self.fetch_tile_as_bytes(tm, col, row))
 
 
 def _max_extent(srid):
@@ -99,7 +102,6 @@ def _opts(srid=3857, max_age=0):
         cache=cache,
         extent=_max_extent(srid),
         imageFormat=gws.ImageFormat(name='png8', mimeTypes=[gws.lib.mime.PNG], options={'mode': 'P'}),
-        provider=None,
     )
 
 
@@ -130,30 +132,30 @@ def test_matrix_resolution():
 
 def test_matrix_range():
     gr = _grabber()
-    assert gr.matrix_range_for_extent(M[0], M[0].extent) == (0, 0, 0, 0, 0)
-    assert gr.matrix_range_for_extent(M[1], (0, 0, HALF, HALF)) == (1, 0, 1, 0, 0)
-    assert gr.matrix_range_for_extent(M[1], (-1e5, -1e5, 1e5, 1e5)) == (0, 0, 1, 1, 0)
-    assert gr.matrix_range_for_extent(M[12], _tile_extent((2124, 1364, 12))) == (2124, 1364, 2124, 1364, 0)
-    assert gr.matrix_range_for_extent(M[1], (HALF + 1, 0, HALF + 2, 1)) is None
-    assert gr.matrix_range_for_extent(M[1], (0, -HALF - 2, 1, -HALF - 1)) is None
-    assert gr.matrix_range_for_extent(M[1], (-HALF - 10, -HALF - 10, HALF + 10, HALF + 10)) == (0, 0, 1, 1, 0)
+    assert gr._matrix_range_for_extent(M[0], M[0].extent) == (0, 0, 0, 0, 0)
+    assert gr._matrix_range_for_extent(M[1], (0, 0, HALF, HALF)) == (1, 0, 1, 0, 0)
+    assert gr._matrix_range_for_extent(M[1], (-1e5, -1e5, 1e5, 1e5)) == (0, 0, 1, 1, 0)
+    assert gr._matrix_range_for_extent(M[12], _tile_extent((2124, 1364, 12))) == (2124, 1364, 2124, 1364, 0)
+    assert gr._matrix_range_for_extent(M[1], (HALF + 1, 0, HALF + 2, 1)) is None
+    assert gr._matrix_range_for_extent(M[1], (0, -HALF - 2, 1, -HALF - 1)) is None
+    assert gr._matrix_range_for_extent(M[1], (-HALF - 10, -HALF - 10, HALF + 10, HALF + 10)) == (0, 0, 1, 1, 0)
 
 
 def test_matrix_range_extent():
     gr = _grabber()
-    assert gr.matrix_extent_for_range(M[1], (1, 0, 1, 0, 0)) == (0, 0, HALF, HALF)
-    e = gr.matrix_extent_for_range(M[12], (2124, 1364, 2125, 1365, 0))
+    assert gr._matrix_extent_for_range(M[1], (1, 0, 1, 0, 0)) == (0, 0, HALF, HALF)
+    e = gr._matrix_extent_for_range(M[12], (2124, 1364, 2125, 1365, 0))
     assert e == gws.lib.grid.extent_for_range(GRID_3857, (2124, 1364, 2125, 1365, 12))
 
 
 def test_matrix_for_resolution_never_upscales():
     gr = _grabber()
     r5 = M[5].resolution
-    assert gr.matrix_for_resolution(r5).identifier == '5'
-    assert gr.matrix_for_resolution(r5 * 1.5).identifier == '5'
-    assert gr.matrix_for_resolution(r5 * 0.9).identifier == '6'
-    assert gr.matrix_for_resolution(r5 * 2).identifier == '4'
-    assert gr.matrix_for_resolution(M[20].resolution / 10).identifier == '20'
+    assert gr._matrix_for_resolution(r5).identifier == '5'
+    assert gr._matrix_for_resolution(r5 * 1.5).identifier == '5'
+    assert gr._matrix_for_resolution(r5 * 0.9).identifier == '6'
+    assert gr._matrix_for_resolution(r5 * 2).identifier == '4'
+    assert gr._matrix_for_resolution(M[20].resolution / 10).identifier == '20'
 
 
 ##
@@ -229,7 +231,7 @@ def test_cross_crs_tile_is_warped_from_buffered_source_tiles():
     assert all(f[0] == 12 for f in gr.fetches)
 
     src = gws.lib.extent.transform(gws.lib.grid.extent_for_tile(gr.grid, (x0, y0, z)), gr.targetCrs, gr.sourceCrs)
-    c0, r0, c1, r1, _ = gr.matrix_range_for_extent(M[12], src)
+    c0, r0, c1, r1, _ = gr._matrix_range_for_extent(M[12], src)
     assert {(c, r) for _, c, r in gr.fetches} >= {(c, r) for c in range(c0, c1 + 1) for r in range(r0, r1 + 1)}
 
 
@@ -262,3 +264,5 @@ def test_fetch_tile_not_implemented_raises():
     gr = NoFetchTile(_opts())
     with u.raises(NotImplementedError):
         gr.get_tile_as_image((2124, 1364, 12))
+    with u.raises(NotImplementedError):
+        gr.fetch_tile_as_bytes(M[3], 1, 2)

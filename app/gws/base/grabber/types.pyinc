@@ -6,22 +6,22 @@ class Grabber:
     tile grid, stores and reads them back.
     """
 
-    targetCrs: Crs
-    """Target CRS; one grabber serves exactly one CRS."""
-    sourceCrs: Crs
-    """Source CRS; defines the original CRS of the raster data."""
-    grid: MapGrid
-    """The fixed target grid for the CRS."""
-    extent: Extent
-    """Extent covered by this grabber, in the target CRS."""
     cache: MapCache
     """Cache settings; the name (``<layer cache name>_<srid>``) keys the tile store."""
-    store: 'TileStore'
-    """Persistent tile store."""
+    extent: Extent
+    """Extent covered by this grabber, in the target CRS."""
+    grid: MapGrid
+    """The fixed target grid for the CRS."""
     imageFormat: ImageFormat
     """Format tiles are stored and returned in."""
+    sourceCrs: Crs
+    """Source CRS; defines the original CRS of the raster data."""
+    store: 'TileStore'
+    """Persistent tile store."""
+    targetCrs: Crs
+    """Target CRS; one grabber serves exactly one CRS."""
 
-    def get_tile_as_bytes(self, tile: MapTile, params: Optional[dict] = None) -> bytes:
+    def get_tile_as_bytes(self, mt: MapTile, params: Optional[dict] = None) -> bytes:
         """Return a single tile as an encoded image, composing and storing it if needed.
 
         A tile outside the layer's range is a transparent image.
@@ -29,13 +29,13 @@ class Grabber:
         Raises on source failure.
         """
 
-    def get_tile_as_image(self, tile: MapTile, params: Optional[dict] = None) -> 'Image':
+    def get_tile_as_image(self, mt: MapTile, params: Optional[dict] = None) -> 'Image':
         """Return a single tile as an image, composing and storing it if needed.
 
         Same contract as ``get_tile_as_bytes``, decoded pixels instead of bytes.
         """
 
-    def get_tiles_as_bytes_dict(self, tr: MapTileRange, params: Optional[dict] = None) -> dict[MapTile, bytes]:
+    def get_tiles_as_bytes_dict(self, mtr: MapTileRange, params: Optional[dict] = None) -> dict[MapTile, bytes]:
         """Return a rectangular block of tiles as encoded images.
 
         Sparse: contains entries only for tiles present in the grid.
@@ -43,13 +43,13 @@ class Grabber:
         Raises on source failure.
         """
 
-    def get_tiles_as_image_dict(self, tr: MapTileRange, params: Optional[dict] = None) -> dict[MapTile, 'Image']:
+    def get_tiles_as_image_dict(self, mtr: MapTileRange, params: Optional[dict] = None) -> dict[MapTile, 'Image']:
         """Return a rectangular block of tiles as images.
 
         Same contract as ``get_tiles_as_bytes_dict``, decoded pixels instead of bytes.
         """
 
-    def get_box_as_bytes(self, extent: Extent, width: int, height: int, params: Optional[dict] = None) -> bytes:
+    def get_box_as_bytes(self, extent: Extent, w: int, h: int, params: Optional[dict] = None) -> bytes:
         """Return an encoded image for arbitrary extent and pixel size.
 
         A box overlapping no data is a transparent image.
@@ -57,7 +57,7 @@ class Grabber:
         Raises on source failure.
         """
 
-    def get_box_as_image(self, extent: Extent, width: int, height: int, params: Optional[dict] = None) -> 'Image':
+    def get_box_as_image(self, extent: Extent, w: int, h: int, params: Optional[dict] = None) -> 'Image':
         """Return an image for arbitrary extent and pixel size.
 
         Same contract as ``get_box_as_bytes``, decoded pixels instead of bytes.
