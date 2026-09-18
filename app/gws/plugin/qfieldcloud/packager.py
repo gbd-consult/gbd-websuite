@@ -187,7 +187,7 @@ class Object:
             return
 
         bounds = gws.u.require(self.caps.areaOfInterest or self.qfcProject.qgisProvider.bounds)
-        bounds = gws.lib.bounds.transform(bounds, le.sourceLayer.supportedCrs[0])
+        bounds = gws.lib.bounds.transform(bounds, self.qfcProject.qgisProvider.forceCrs)
 
         resolution = gws.lib.grid.resolution_for_level(gws.lib.grid.for_crs(bounds.crs), max_zoom)
 
@@ -225,7 +225,7 @@ class Object:
         )
 
         lro = gws.u.require(flat_layer.render(lri))
-        img = gws.lib.image.from_bytes(lro.content)
+        img = gws.lib.image.from_bytes(lro.content).convert('RGBA')
 
         with gws.lib.gdalx.open_from_image(img, bounds) as src:
             src.save_as(cache_path)

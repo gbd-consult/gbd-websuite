@@ -25,6 +25,7 @@ class QfcProject(gws.Node):
     def configure(self):
         self.title = self.cfg('title', '') or self.uid
         self.qgisProvider = self.create_child(gws.plugin.qgis.provider.Object, self.cfg('provider'))
+        self.root.app.register_supported_crs(self.qgisProvider.forceCrs)
         self.models = self.create_children(gws.ext.object.model, self.cfg('models'))
         self.mapCacheLifeTime = self.cfg('mapCacheLifeTime') or 0
 
