@@ -188,7 +188,10 @@ def root_create_shared(self, classref, config, **kwargs):
 
 def root_create_temporary(self, classref, config, **kwargs):
     config = to_config(config, kwargs)
-    return create_node(self, classref, None, config, temp=True)
+    node = create_node(self, classref, None, config, temp=True)
+    if node:
+        super_invoke(node, 'post_configure')
+    return node
 
 
 def root_create_application(self, config, **kwargs):
