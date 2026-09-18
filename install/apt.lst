@@ -2,11 +2,10 @@
 
 python3
 python3-pip
-python3.12-venv
+python3-venv
 
 gosu
 
-xvfb
 nginx-extras
 rsyslog
 
@@ -14,7 +13,9 @@ rsyslog
 
 libgeos-c1t64
 libproj25
-libgdal34t64
+# must match gdal in pip.lst
+libgdal38
+# needed to build the gdal python bindings
 libgdal-dev
 gdal-bin
 
@@ -22,7 +23,7 @@ tzdata
 
 # ldap
 
-libldap2-dev
+libldap-dev
 libsasl2-dev
 
 # fonts
@@ -39,23 +40,23 @@ tdsodbc
 
 graphviz
 
-# wkhtmltopdf
+# wkhtmltopdf (the 'patched qt' deb needs this)
 
 xfonts-75dpi
 
 # bundled mapserver
 
 libcairo2
-libcurl3-gnutls
+libcurl3t64-gnutls
 libfreetype6
 libfribidi0
 libgif7
 libharfbuzz0b
-libjpeg8
-libpng16-16
+libjpeg-turbo8
+libpng16-16t64
 libpq5
 libprotobuf-c1
-libxml2
+libxml2-16
 libfcgi-bin
 
 #

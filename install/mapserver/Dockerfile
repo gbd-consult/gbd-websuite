@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 LABEL Description="MapServer build image"
 
 ARG DEBIAN_FRONTEND=noninteractive

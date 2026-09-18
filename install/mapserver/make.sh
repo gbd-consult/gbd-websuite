@@ -6,28 +6,29 @@ VERSION=$1
 shift
 ARCH=$1
 shift
+PACKAGE=$1
+shift
 
 HELP="
-make.sh <command> <version> [<arch>]
+make.sh <command> <version> <arch> <package>
     commands
       - download = download the Mapserver release
       - docker   = build the build image
       - bash     = shell to a build container
       - release  = build the release package
       - debug    = build the debug package
+      - all      = download, docker, release
     version
       Mapserver version like 8.2.2
     arch
-      amd64 (default) or arm64
+      amd64 or arm64
+    package
+      full path to the output tarball
 "
 
-if [ -z "$CMD" ] || [ -z "$VERSION" ]; then
+if [ -z "$CMD" ] || [ -z "$VERSION" ] || [ -z "$ARCH" ] || [ -z "$PACKAGE" ]; then
     echo -e "$HELP"
     exit 1
-fi
-
-if [ -z "$ARCH" ] ; then
-    ARCH=amd64
 fi
 
 ##
@@ -37,15 +38,21 @@ THIS_DIR=$(dirname $(realpath $BASH_SOURCE))
 BUILD_IMAGE=gbd-mapserver-build-$VERSION-$ARCH
 
 BASE_DIR=/opt/gbd
-BUILD_DIR=$BASE_DIR/gbd-mapserver-build
+BUILD_DIR=$BASE_DIR/gbd-mapserver
 
 mkdir -p $BUILD_DIR/src
-mkdir -p $BUILD_DIR/out
 
 SRC_DIR=$BUILD_DIR/src/$VERSION
-OUT_DIR=$BUILD_DIR/out
 
 PKGNAME=gbd-mapserver
+
+case $CMD in
+    debug) MODE=Debug ;;
+    release|all|bash) MODE=Release ;;
+esac
+
+OUT_DIR=$(dirname $PACKAGE)
+mkdir -p $OUT_DIR
 
 set -e
 
@@ -53,19 +60,39 @@ set -e
 
 run_container() {
     docker run \
-        -it \
+        $DOCKER_OPTS \
         --rm \
         --mount type=bind,src=$SRC_DIR,dst=/SRC \
         --mount type=bind,src=$OUT_DIR,dst=/OUT \
         --mount type=bind,src=$THIS_DIR,dst=/COMPILE \
+        --env MODE=$MODE \
         $BUILD_IMAGE \
         "$@"
 }
 
-build_in_container() {
-    MODE=$1
-    shift
+download_sources() {
+    rm -fr $SRC_DIR && mkdir -p $SRC_DIR
+    cd $SRC_DIR
 
+    curl -k -L -O "https://download.osgeo.org/mapserver/mapserver-${VERSION}.tar.gz"
+    tar -xzf mapserver-$VERSION.tar.gz
+}
+
+build_image() {
+    docker rmi -f $BUILD_IMAGE
+    docker build \
+        --platform=linux/$ARCH \
+        --progress plain \
+        --file $THIS_DIR/Dockerfile \
+        --tag $BUILD_IMAGE \
+        $THIS_DIR
+}
+
+build_package() {
+    run_container /COMPILE/make.sh build-in-container $VERSION $ARCH /OUT/$(basename $PACKAGE)
+}
+
+build_in_container() {
     cd /
 
     # copy sources to the container to speed up things...
@@ -110,7 +137,7 @@ build_in_container() {
         -DWITH_LIBXML2=1 \
         -DWITH_MSSQL2008=0 \
         -DWITH_MYSQL=0 \
-        -DWITH_OGCAPI=0 \
+        -DWITH_OGCAPI=1 \
         -DWITH_ORACLE_PLUGIN=0 \
         -DWITH_ORACLESPATIAL=0 \
         -DWITH_PERL=0 \
@@ -145,8 +172,7 @@ build_in_container() {
     # package
     cd /MS/_BUILD
     find . -depth -name __pycache__ -exec rm -fr {} \;
-    tar -czf $PKGNAME-$VERSION-$ARCH-$MODE.tar.gz $PKGNAME
-    cp *.tar.gz /OUT
+    tar -czf $PACKAGE $PKGNAME
 }
 
 
@@ -155,42 +181,33 @@ build_in_container() {
 case $CMD in
 
 download)
-    rm -fr $SRC_DIR && mkdir -p $SRC_DIR
-    cd $SRC_DIR
-
-    cd $SRC_DIR
-    curl -k -L -O "https://download.osgeo.org/mapserver/mapserver-${VERSION}.tar.gz"
-    tar -xzf mapserver-$VERSION.tar.gz
+    download_sources
     ;;
 
 docker)
-    docker rmi -f $BUILD_IMAGE
-    docker build \
-        --platform=linux/$ARCH \
-        --progress plain \
-        --file $THIS_DIR/Dockerfile \
-        --tag $BUILD_IMAGE \
-        $THIS_DIR
+    build_image
     ;;
 
 bash)
-    run_container bash
+    DOCKER_OPTS=-it run_container bash
     ;;
 
 release)
-    run_container /COMPILE/make.sh release-in-container $VERSION $ARCH
+    build_package
     ;;
 
 debug)
-    run_container /COMPILE/make.sh debug-in-container $VERSION $ARCH
+    build_package
     ;;
 
-release-in-container)
-    build_in_container Release
+all)
+    download_sources
+    build_image
+    build_package
     ;;
 
-debug-in-container)
-    build_in_container Debug
+build-in-container)
+    build_in_container
     ;;
 
 *)

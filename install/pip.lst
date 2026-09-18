@@ -1,19 +1,20 @@
 # gws core
 
 numpy==2.*
+# 2.15+ has no 'narrow' unit names for 'de', see lib/intl
 Babel==2.14.*
 GeoAlchemy2==0.*
 jq==1.*
 pendulum==3.*
-Pillow==10.*
-psutil==5.*
+Pillow==12.*
+psutil==7.*
 psycopg2-binary==2.*
-pycountry==24.*
+pycountry==26.*
 pypdf==6.*
 pyproj==3.*
 python-ldap==3.*
 PyYAML==6.*
-qrcode==7.*
+qrcode==8.*
 requests==2.*
 shapely==2.*
 SQLAlchemy==2.*
@@ -23,23 +24,22 @@ lxml==6.*
 
 uWSGI==2.*
 
-
-# need wheel for GDAL
-wheel
+# must match major.minor of libgdal in apt.lst and must not be newer than it
+gdal==3.12.2
 
 # testing
 
-pytest==7.*
+pytest==9.*
 pytest-clarity==1.*
 coverage==7.*
 
 # documentation
 
-Sphinx==7.*
+Sphinx==9.*
 sphinx-autoapi==3.*
 Pygments==2.*
 
-# NB no 3.0 yet
+# lib/vendor/dog uses the 2.x plugin API
 mistune==2.*
 
 # NB see https://github.com/lepture/python-livereload/issues/270
