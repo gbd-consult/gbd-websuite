@@ -93,7 +93,7 @@ DEFAULT_ASSETS_DIR = '/data/assets'
 DEFAULT_WEB_DIR = '/data/web'
 DEFAULT_REWRITE_RULES = [
     gws.WebRewriteRule(pattern=r'^/$', target='/_/webPage/name/home'),
-    gws.WebRewriteRule(pattern=r'^/project/([a-z0-9_-]+)$', target='/_/webPage/name/project/projectUid/$1'),
+    gws.WebRewriteRule(pattern=r'^/project/([a-z0-9_-]+)(?=/@|$)', target='/_/webPage/name/project/projectUid/$1'),
 ]
 
 
