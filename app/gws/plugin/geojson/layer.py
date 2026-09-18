@@ -5,7 +5,6 @@ import gws.base.layer
 import gws.base.shape
 import gws.config.util
 import gws.lib.bounds
-import gws.lib.extent
 import gws.lib.crs
 import gws.lib.jsonx
 
@@ -43,9 +42,10 @@ class Object(gws.base.layer.vector.Object):
         if recs:
             bs = [rec.shape.bounds() for rec in recs if rec.shape]
             if bs:
-                b = gws.lib.bounds.union(bs)
-                self.wgsExtent = gws.lib.extent.transform_to_wgs(b.extent, b.crs)
-                return True
+                ext = gws.lib.bounds.wgs_extent(gws.lib.bounds.union(bs), pad=True)
+                if ext:
+                    self.wgsExtent = ext
+                    return True
 
     def configure_models(self):
         return gws.config.util.configure_models_for(self, with_default=True)

@@ -4,7 +4,6 @@ import gws
 import gws.base.database
 import gws.base.layer
 import gws.lib.bounds
-import gws.lib.extent
 import gws.base.feature
 import gws.lib.crs
 import gws.base.shape
@@ -56,8 +55,10 @@ class Object(gws.base.layer.vector.Object):
             return True
         b = self.db.table_bounds(self.tableName)
         if b:
-            self.wgsExtent = gws.lib.extent.transform_to_wgs(b.extent, b.crs)
-            return True
+            ext = gws.lib.bounds.wgs_extent(b, pad=True)
+            if ext:
+                self.wgsExtent = ext
+                return True
 
     def configure_search(self):
         if super().configure_search():

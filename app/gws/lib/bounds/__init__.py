@@ -7,6 +7,9 @@ import gws.lib.crs
 import gws.lib.extent
 import gws.lib.gml
 
+_PAD = 1e-3
+_MIN_PAD = 1e-6
+
 
 def from_request_bbox(bbox: str, default_crs: gws.Crs = None, always_xy=False) -> Optional[gws.Bounds]:
     """Create Bounds from a KVP BBOX param.
@@ -108,8 +111,23 @@ def transform(b: gws.Bounds, crs_to: gws.Crs) -> gws.Bounds:
     )
 
 
-def wgs_extent(b: gws.Bounds) -> Optional[gws.Extent]:
-    ext = gws.lib.extent.transform(b.extent, b.crs, gws.lib.crs.WGS84)
+def wgs_extent(b: gws.Bounds, pad: bool = False) -> Optional[gws.Extent]:
+    """Transform bounds to a WGS extent.
+
+    Args:
+        b: A Bounds object.
+        pad: Enlarge the extent slightly, so that features on the edges of a data-derived extent
+            survive the round trip through WGS.
+
+    Returns:
+        A WGS extent or None if the result is invalid.
+    """
+
+    ext = b.extent
+    if pad:
+        buf = max(gws.lib.extent.w(ext) * _PAD, gws.lib.extent.h(ext) * _PAD, _MIN_PAD)
+        ext = gws.lib.extent.buffer(ext, buf)
+    ext = gws.lib.extent.transform(ext, b.crs, gws.lib.crs.WGS84)
     return ext if gws.lib.extent.is_valid(ext) else None
 
 
