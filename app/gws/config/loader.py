@@ -10,6 +10,7 @@ import gws.lib.dynimport
 from . import parser
 
 _ERROR_PREFIX = 'CONFIGURATION ERROR'
+_WARNING_PREFIX = 'CONFIGURATION WARNING'
 
 _ROOT_NAME = 'gws_root_object'
 
@@ -48,6 +49,7 @@ class Object:
 
         self.ctx = gws.ConfigContext(
             errors=[],
+            warnings=[],
         )
 
         self.manifestPath = real_manifest_path(manifest_path)
@@ -136,6 +138,8 @@ class Object:
         if root:
             for ce in root.configErrors:
                 self.ctx.errors.append(gws.ConfigErrorInfo(ce))
+            for cw in root.configWarnings:
+                self.ctx.warnings.append(gws.ConfigErrorInfo(cw))
         return root
 
     def _run_hook(self, event):
@@ -157,6 +161,7 @@ class Object:
     def _result(self):
         return gws.ConfigResult(
             errors=self.ctx.errors,
+            warnings=self.ctx.warnings,
             root=self.root,
             config=self.config,
             info=_info_string(self.root, self.tm1),
@@ -287,29 +292,43 @@ def real_manifest_path(manifest_path: str) -> str:
 
 def log_report(cr: gws.ConfigResult):
     err_cnt = len(cr.errors) if cr.errors else 0
+    warn_cnt = len(cr.warnings) if cr.warnings else 0
     ln = '*' * 80
 
-    if err_cnt == 0:
+    if err_cnt == 0 and warn_cnt == 0:
         gws.log.info(ln)
         gws.log.info(f'configured: {cr.info}')
         gws.log.info(ln)
         return
 
-    gws.log.error(ln)
-    gws.log.error(f'configured wth errors: errors: {err_cnt}, {cr.info}')
-    gws.log.error(ln)
+    if err_cnt == 0:
+        gws.log.warning(ln)
+        gws.log.warning(f'configured with warnings: {warn_cnt}, {cr.info}')
+        gws.log.warning(ln)
+    else:
+        gws.log.error(ln)
+        gws.log.error(f'configured with errors: {err_cnt}, warnings: {warn_cnt}, {cr.info}')
+        gws.log.error(ln)
 
     # cr.errors.sort(key=lambda ce: ce.message)
 
     for n, cei in enumerate(cr.errors, 1):
         gws.log.error(f'{_ERROR_PREFIX}: {n} of {err_cnt}')
-        _log_error(cei)
+        _log_info(cei, gws.log.error, _ERROR_PREFIX)
         gws.log.error(f'{_ERROR_PREFIX}: ')
 
-    gws.log.error(ln)
+    for n, cei in enumerate(cr.warnings, 1):
+        gws.log.warning(f'{_WARNING_PREFIX}: {n} of {warn_cnt}')
+        _log_info(cei, gws.log.warning, _WARNING_PREFIX)
+        gws.log.warning(f'{_WARNING_PREFIX}: ')
+
+    if err_cnt == 0:
+        gws.log.warning(ln)
+    else:
+        gws.log.error(ln)
 
 
-def _log_error(cei: gws.ConfigErrorInfo):
+def _log_info(cei: gws.ConfigErrorInfo, log_fn, prefix):
     ls = []
     ls.append(cei.message)
     tab = ' ' * 4
@@ -337,7 +356,7 @@ def _log_error(cei: gws.ConfigErrorInfo):
         ls.extend(cei.contextLines)
 
     for s in ls:
-        gws.log.error(f'{_ERROR_PREFIX}: {s}')
+        log_fn(f'{prefix}: {s}')
 
 
 def _time_and_memory():

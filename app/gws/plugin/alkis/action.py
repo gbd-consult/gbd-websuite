@@ -437,7 +437,7 @@ class Object(gws.base.action.Object):
         def _load():
             s = self.ix.status()
             if s.missing:
-                gws.log.warning(f'ALKIS: index not found in schema {self.indexSchema}')
+                self.root.config_warning(f'ALKIS: index not found in schema {self.indexSchema}')
             return s
 
         self.ixStatus = gws.u.get_server_global(f'gws.plugin.alkis.action.ixStatus.{self.indexSchema}', _load)

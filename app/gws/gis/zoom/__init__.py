@@ -47,6 +47,22 @@ class Config(gws.Config):
     """Maximal resolution. (deprecated in 8.5)"""
 
 
+_DEPRECATED_OPTIONS = {
+    'resolutions': '"zoom.scales"',
+    'initResolution': '"zoom.initScale" or "zoom.initLevel"',
+    'minResolution': '"zoom.minScale" or "zoom.minLevel"',
+    'maxResolution': '"zoom.maxScale" or "zoom.maxLevel"',
+}
+
+
+def warn_deprecated_options(cfg, root: gws.Root):
+    """Register a configuration warning for each deprecated zoom option in use."""
+
+    for k, v in _DEPRECATED_OPTIONS.items():
+        if gws.u.get(cfg, k) is not None:
+            root.config_warning(f'"zoom.{k}" is deprecated, use {v}')
+
+
 def resolutions_from_config(cfg, crs: gws.Crs = None) -> list[float]:
     """Computes map resolutions from a config.
 

@@ -71,6 +71,8 @@ def gws_root(cfg: str = '', specs: gws.SpecRuntime = None, activate=True, defaul
         for err in root.configErrors:
             gws.log.error(f'CONFIGURATION ERROR: {err}')
         raise gws.ConfigurationError('config failed')
+    for warn in root.configWarnings:
+        gws.log.warning(f'CONFIGURATION WARNING: {warn}')
 
     if not activate:
         return root

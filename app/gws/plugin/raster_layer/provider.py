@@ -68,7 +68,7 @@ class Object(gws.ServiceProvider):
                 with gws.lib.gdalx.open_raster(path, default_crs=default_crs) as gd:
                     es1.append(ImageEntry(path=path, bounds=gd.bounds()))
             except gws.lib.gdalx.Error as exc:
-                gws.log.warning(f'raster_provider: {path!r}: ERROR: ({exc})')
+                self.root.config_warning(f'raster_provider: {path!r}: cannot open: ({exc})')
 
         if not es1:
             return []
@@ -80,7 +80,7 @@ class Object(gws.ServiceProvider):
             if e.bounds.crs == crs:
                 es2.append(e)
                 continue
-            gws.log.warning(f'raster_provider: {e.path!r}: ERROR: wrong crs {e.bounds.crs}, must be {crs}')
+            self.root.config_warning(f'raster_provider: {e.path!r}: wrong crs {e.bounds.crs}, must be {crs}')
 
         return es2
 

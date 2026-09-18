@@ -75,6 +75,7 @@ class Object(gws.Map):
         self.wrapX = self.cfg('wrapX', default=False)
 
         p = self.cfg('zoom')
+        gws.gis.zoom.warn_deprecated_options(p, self.root)
         self.resolutions = gws.gis.zoom.resolutions_from_config(p, crs=self.bounds.crs)
         self.initResolution = gws.gis.zoom.init_resolution(p, self.resolutions, crs=self.bounds.crs)
 

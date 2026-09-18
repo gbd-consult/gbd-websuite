@@ -106,6 +106,8 @@ class Object(gws.WebSite):
     def configure(self):
         self.hostnames = self.cfg('hostnames') or []
         p = self.cfg('host')
+        if p:
+            self.root.config_warning('"web.site.host" is deprecated, use "web.site.hostnames"')
         if p and p != '*':
             self.hostnames = [p]
         
@@ -120,6 +122,8 @@ class Object(gws.WebSite):
         self.permissionsPolicy = self.cfg('permissionsPolicy')
         self.xFrameOptions = self.cfg('xFrameOptions')
         # deprecated
+        if self.cfg('errorPage'):
+            self.root.config_warning('"web.site.errorPage" is deprecated')
         self.errorPage = self.create_child_if_configured(gws.ext.object.template, self.cfg('errorPage'))
 
         p = self.cfg('root')
@@ -129,7 +133,7 @@ class Object(gws.WebSite):
             self.staticRoot = gws.WebDocumentRoot(dir=DEFAULT_WEB_DIR)
         else:
             # note: web root must exist
-            gws.log.warning(f'web root {DEFAULT_WEB_DIR!r} does not exist, using temporary directory')
+            self.root.config_warning(f'web root {DEFAULT_WEB_DIR!r} does not exist, using temporary directory')
             self.staticRoot = gws.WebDocumentRoot(dir=gws.u.ensure_dir(gws.c.TMP_DIR + '/web'))
 
         p = self.cfg('assets')
@@ -146,6 +150,8 @@ class Object(gws.WebSite):
         if not p:
             # deprecated
             p = self.cfg('rewrite')
+            if p:
+                self.root.config_warning('"web.site.rewrite" is deprecated, use "web.site.rewriteRules"')
         if not p:
             p = []
         for c in p:

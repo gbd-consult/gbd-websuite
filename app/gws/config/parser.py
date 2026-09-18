@@ -104,7 +104,10 @@ def _parse_app_dict(dct: dict, path, pp: '_Parser'):
     # the timezone must be set before everything else
     tz = dct.get('server', {}).get('timeZone', '')
     if tz:
-        gws.lib.datetimex.set_local_time_zone(tz)
+        if gws.lib.datetimex.is_valid_time_zone(tz):
+            gws.lib.datetimex.set_local_time_zone(tz)
+        else:
+            _register_error(pp.ctx, f'invalid time zone: {tz!r}', path=path)
     gws.log.info(f'local time zone="{gws.lib.datetimex.time_zone()}"')
 
     # remove 'projects' from the config, parse them later on
@@ -295,6 +298,15 @@ def _register_error(ctx: gws.ConfigContext, message: str, **kwargs):
     cei.message = message
     cei.update(kwargs)
     ctx.errors.append(cei)
+
+
+def _register_warning(ctx: gws.ConfigContext, message: str, **kwargs):
+    cei = kwargs.pop('cei', None) or gws.ConfigErrorInfo()
+    cei.message = message
+    cei.update(kwargs)
+    loc = f' in {cei.path!r}' if cei.path else ''
+    gws.log.warning(f'CONFIGURATION WARNING: {message}{loc}')
+    ctx.warnings.append(cei)
 
 
 def _register_syntax_error(ctx, path, src, message, line, context=10, cause=None):

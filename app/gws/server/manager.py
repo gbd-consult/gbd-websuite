@@ -91,12 +91,22 @@ class Object(gws.ServerManager):
         self.config.web = self._add_defaults(self.config.web, 'gws.server.core.WebConfig')
 
         # deprecated 'enabled' keys
+        if self.config.spool.enabled is not None:
+            self.root.config_warning('"server.spool.enabled" is deprecated, use "server.withSpool"')
         if self.config.spool.enabled is False:
             self.config.withSpool = False
+        if self.config.web.enabled is not None:
+            self.root.config_warning('"server.web.enabled" is deprecated, use "server.withWeb"')
         if self.config.web.enabled is False:
             self.config.withWeb = False
+        if self.config.monitor.enabled is not None:
+            self.root.config_warning('"server.monitor.enabled" is deprecated, use "server.withMonitor"')
         if self.config.monitor.enabled is False:
             self.config.withMonitor = False
+        if self.config.mapproxy is not None:
+            self.root.config_warning('"server.mapproxy" is deprecated and ignored')
+        if self.config.withMapproxy is not None:
+            self.root.config_warning('"server.withMapproxy" is deprecated and ignored')
 
         self.configure_environment()
         self.configure_templates()

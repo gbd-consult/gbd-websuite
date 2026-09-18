@@ -907,6 +907,8 @@ class Root:
     """Specs runtime."""
     configErrors: list
     """List of configuration errors."""
+    configWarnings: list
+    """List of configuration warnings."""
 
     nodes: list['Node']
     uidMap: dict[str, 'Node']
@@ -926,6 +928,14 @@ class Root:
 
     def activate(self):
         return tree_impl.root_activate(self)
+
+    def config_warning(self, message: str):
+        """Register a configuration warning.
+
+        The warning is logged immediately and reported again after the configuration is complete.
+        The object stack is only available when called from ``configure`` or ``post_configure``.
+        """
+        return tree_impl.root_config_warning(self, message)
 
     def find_all(self, classref: Optional[ClassRef] = None) -> list['Node']:
         """Find all objects that match a specific class.
@@ -2267,6 +2277,7 @@ class ConfigContext(Data):
     specs: SpecRuntime
     readOptions: set[SpecReadOption]
     errors: list[ConfigErrorInfo]
+    warnings: list[ConfigErrorInfo]
     paths: set[str]
 
 
@@ -2277,6 +2288,7 @@ class ConfigResult(Data):
     root: Optional['Root']
     config: Optional['Config']
     errors: list[ConfigErrorInfo]
+    warnings: list[ConfigErrorInfo]
     info: str
 ################################################################################
 

@@ -36,6 +36,7 @@ class ConfigContext(Data):
     specs: SpecRuntime
     readOptions: set[SpecReadOption]
     errors: list[ConfigErrorInfo]
+    warnings: list[ConfigErrorInfo]
     paths: set[str]
 
 
@@ -46,4 +47,5 @@ class ConfigResult(Data):
     root: Optional['Root']
     config: Optional['Config']
     errors: list[ConfigErrorInfo]
+    warnings: list[ConfigErrorInfo]
     info: str

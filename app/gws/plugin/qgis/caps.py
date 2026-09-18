@@ -389,7 +389,7 @@ def qgis_extent(layer_el: gws.XmlElement, layer_crs: gws.Crs):
                 gws.log.debug(f'qgis_extent: {uid}: extent: {ext}')
                 return ext
 
-    gws.log.warning(f'qgis_extent: {uid}: NOT FOUND')
+    gws.log.warning(f'qgis_extent: {uid}: no extent defined')
 
 
 # layer trees:

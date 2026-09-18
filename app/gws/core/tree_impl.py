@@ -105,6 +105,7 @@ def root_init(self, specs):
     self.app = None
     self.permissions = {}
     self.configErrors = []
+    self.configWarnings = []
     self.configStack = []
     self.configPaths = []
     self.nodes = []
@@ -139,6 +140,7 @@ def root_post_initialize(self):
         except Exception as exc:
             log.exception()
             register_config_error(self, exc)
+    self.configStack = []
 
 
 def root_activate(self):
@@ -357,7 +359,20 @@ def register_config_error(self, exc):
         msg = getattr(exc, 'message', None) or str(exc.args[0])
     except:
         msg = repr(exc)
-    cei = Data(message=msg, stack=[])
+    self.configErrors.append(config_info(self, msg))
+
+
+def root_config_warning(self, message):
+    cei = config_info(self, message)
+    loc = ''
+    if cei.stack:
+        loc = ' in ' + config_location_repr(cei.stack[0])
+    log.warning(f'CONFIGURATION WARNING: {message}{loc}')
+    self.configWarnings.append(cei)
+
+
+def config_info(self, message):
+    cei = Data(message=message, stack=[])
     for node in reversed(self.configStack):
         cei.stack.append(
             # @TODO actually this is a ConfigLocation object
@@ -368,7 +383,19 @@ def register_config_error(self, exc):
                 propName='',
             )
         )
-    self.configErrors.append(cei)
+    return cei
+
+
+def config_location_repr(loc):
+    p = [
+        loc.objectType,
+        repr(loc.objectName) if loc.objectName else None,
+        f'uid={loc.objectUid}' if loc.objectUid else None,
+    ]
+    p = '<' + ' '.join(u.compact(p)) + '>'
+    if loc.propName:
+        p = f'{loc.propName!r} {p}'
+    return p
 
 
 def super_invoke(node, method):

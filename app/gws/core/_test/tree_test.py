@@ -26,6 +26,14 @@ class Z(Y):
     def configure(self):
         u.log.write('Z')
 
+class W(gws.Node):
+    def configure(self):
+        self.root.config_warning('warning_1')
+
+class V(gws.Node):
+    def configure(self):
+        self.create_child(W, gws.Config(uid='w1'))
+
 # @formatter:on
 
 
@@ -42,6 +50,8 @@ def root():
     r.specs.register_object(gws.ext.object.helper, 'X', X)
     r.specs.register_object(gws.ext.object.helper, 'Y', Y)
     r.specs.register_object(gws.ext.object.helper, 'Z', Z)
+    r.specs.register_object(gws.ext.object.helper, 'W', W)
+    r.specs.register_object(gws.ext.object.helper, 'V', V)
 
     yield r
 
@@ -166,3 +176,13 @@ def test_find_descendants(root: gws.Root):
 
     assert a.find_descendants(gws.ext.object.action) == [b1, b3]
     assert a.find_descendants() == [a1, a2, b1, b2, b3]
+
+
+def test_config_warning(root: gws.Root):
+    root.create(V, uid='v1')
+
+    assert not root.configErrors
+    ws = [w for w in root.configWarnings if w.message == 'warning_1']
+    assert len(ws) == 1
+    assert [loc.objectUid for loc in ws[0].stack] == ['w1', 'v1']
+    assert ws[0].stack[0].objectType == 'gws.ext.object.helper.W'

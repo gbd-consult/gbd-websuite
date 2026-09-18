@@ -58,11 +58,24 @@ _ZI_ALL = set(zoneinfo.available_timezones())
 # Time zones
 
 
+def is_valid_time_zone(tz: str) -> bool:
+    """Check if a time zone string is valid.
+
+    Args:
+        tz: Time zone string (e.g. 'Europe/Berlin')
+    """
+
+    return tz in _ZI_CACHE or tz in _ZI_ALL
+
+
 def set_local_time_zone(tz: str):
     """Set the local time zone for the system.
 
     Args:
         tz: Time zone string (e.g. 'Europe/Berlin')
+
+    Raises:
+        Error: If the time zone is invalid.
     """
     new_zi = time_zone(tz)
     cur_zi = _zone_info_from_localtime()

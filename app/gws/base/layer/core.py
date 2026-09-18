@@ -149,6 +149,9 @@ class Object(gws.Layer):
     parentResolutions: list[float]
 
     def configure(self):
+        if self.cfg('grid') is not None:
+            self.root.config_warning('"layer.grid" is deprecated and ignored')
+
         self.clientOptions = self.cfg('clientOptions') or gws.Data()
         self.cssSelector = self.cfg('cssSelector')
 
@@ -215,13 +218,18 @@ class Object(gws.Layer):
     def configure_bounds(self):
         """Bounds in the map CRS: the WGS extent clipped to the parent extent and to the CRS."""
 
-        ext = gws.lib.extent.intersection(self.wgsExtent, self.parentWgsExtent)
-        if ext:
-            ext = self.mapCrs.clip_wgs_extent(ext)
-        if not ext:
-            gws.log.warning(f'layer {self!r}: extent outside of the parent extent wgs={self.wgsExtent} parent={self.parentWgsExtent}')
-            ext = self.mapCrs.clip_wgs_extent(self.parentWgsExtent)
-        self.bounds = gws.Bounds(crs=self.mapCrs, extent=gws.lib.extent.transform_from_wgs(ext, self.mapCrs))
+        extent = gws.lib.extent.intersection(self.wgsExtent, self.parentWgsExtent)
+        if extent:
+            extent = self.mapCrs.clip_wgs_extent(extent)
+        if extent is None:
+            self.root.config_warning(f'layer extent outside of the parent extent wgs={self.wgsExtent}')
+            extent = self.mapCrs.clip_wgs_extent(self.parentWgsExtent)
+        if extent is None:
+            raise gws.ConfigurationError(f'layer extent could not be determined wgs={self.wgsExtent}')
+        self.bounds = gws.Bounds(
+            crs=self.mapCrs,
+            extent=gws.lib.extent.transform_from_wgs(extent, self.mapCrs),
+        )
         return True
 
     def configure_zoom_bounds(self):
@@ -256,6 +264,7 @@ class Object(gws.Layer):
     def configure_resolutions(self):
         p = self.cfg('zoom')
         if p:
+            gws.gis.zoom.warn_deprecated_options(p, self.root)
             self.resolutions = gws.gis.zoom.resolutions_for_layer(p, self.cfg('_parentResolutions'), self.mapCrs)
             if not self.resolutions:
                 raise gws.Error(f'layer {self!r}: no resolutions, config={p!r} parent={self.parentResolutions!r}')
@@ -330,7 +339,7 @@ class Object(gws.Layer):
         for crs in self.root.app.supported_crs():
             ext = crs.clip_wgs_extent(self.wgsExtent)
             if not ext:
-                gws.log.warning(f'layer {self!r}: extent {self.wgsExtent} is incompatible with {crs!r}')
+                self.root.config_warning(f'extent {self.wgsExtent} is incompatible with {crs!r}')
                 continue
             cache = gws.MapCache(**vars(cache_proto))
             if cache_srids and crs.srid not in cache_srids:

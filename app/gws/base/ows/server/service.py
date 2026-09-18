@@ -144,7 +144,7 @@ class Object(gws.OwsService):
     def post_configure_host(self):
         site = self.root.app.webMgr.site
         if not site.canonicalHost and not site.hostnames:
-            gws.log.warning(f'{self}: neither "web.site.canonicalHost" nor "web.site.hostnames" is set, service urls will reflect the request host')
+            self.root.config_warning('neither "web.site.canonicalHost" nor "web.site.hostnames" is set, service urls will reflect the request host')
 
     def post_configure_root_layer(self):
         self.rootLayer = None

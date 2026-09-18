@@ -21,6 +21,8 @@ class Object(gws.WebManager):
         if not p:
             # deprecated
             cfgs = self.cfg('sites') or []
+            if cfgs:
+                self.root.config_warning('"web.sites" is deprecated, use "web.site"')
             if len(cfgs) > 1:
                 raise gws.ConfigurationError('multiple web sites are not supported')
             p = cfgs[0] if cfgs else gws.Config()
