@@ -1,3 +1,7 @@
+## Version 8.4.16
+
+- fixed default rewrite rule for projects
+
 ## Version 8.4.15
 
 - fixed issue with legend rendering for certain layers
