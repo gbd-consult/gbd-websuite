@@ -24,26 +24,11 @@ def _color(col, row, z):
     return (col % 256, row % 256, z, 255)
 
 
-def _matrices(crs, max_level):
-    sg = gws.lib.grid.for_crs(crs)
-    ms = []
-    for z in range(max_level + 1):
-        nx, ny = gws.lib.grid.tile_count_for_level(sg, z)
-        ms.append(gws.TileMatrix(
-            identifier=str(z),
-            resolution=gws.lib.grid.resolution_for_level(sg, z),
-            x=sg.extent[0],
-            y=sg.extent[3],
-            width=nx,
-            height=ny,
-            tileWidth=sg.tileSize,
-            tileHeight=sg.tileSize,
-            extent=sg.extent,
-        ))
-    return ms
+def _tms(crs, max_level):
+    return gws.lib.grid.matrix_set_for_grid(gws.lib.grid.for_crs(crs), max_level)
 
 
-def _windowed_matrices(crs, max_level):
+def _windowed_tms(crs, max_level):
     """Matrices covering only the north-west quarter of the default grid."""
 
     sg = gws.lib.grid.for_crs(crs)
@@ -64,15 +49,15 @@ def _windowed_matrices(crs, max_level):
             tileHeight=sg.tileSize,
             extent=(x0, ym, xm, y1),
         ))
-    return ms
+    return gws.TileMatrixSet(identifier='', crs=crs, matrices=ms)
 
 
 class FakeTile(tile.Object):
     def __init__(self, opts, source_srid, max_level=20, windowed=False):
         super().__init__(opts)
         self.sourceCrs = gws.lib.crs.get(source_srid)
-        fn = _windowed_matrices if windowed else _matrices
-        self.sourceMatrices = fn(self.sourceCrs, max_level)
+        fn = _windowed_tms if windowed else _tms
+        self.sourceTms = fn(self.sourceCrs, max_level)
         self.fetches = []
 
     def fetch_tile_as_bytes(self, tm, col, row):
@@ -107,8 +92,7 @@ def _grabber(srid=3857, source_srid=None, **kwargs):
 
 
 GRID_3857 = gws.lib.grid.for_crs(gws.lib.crs.get(3857))
-M = _matrices(gws.lib.crs.get(3857), 20)
-HALF = 20037508.342789244
+M = _tms(gws.lib.crs.get(3857), 20).matrices
 
 
 def _tile_extent(mt):
@@ -117,42 +101,6 @@ def _tile_extent(mt):
 
 def _rgba(img):
     return np.array(img.img.convert('RGBA'))
-
-
-##
-
-
-def test_matrix_resolution():
-    assert abs(M[0].resolution - 156543.03392804097) < 1e-6
-    assert abs(M[12].resolution - 156543.03392804097 / 4096) < 1e-9
-
-
-def test_matrix_range():
-    gr = _grabber()
-    assert gr._matrix_range_for_extent(M[0], M[0].extent) == (0, 0, 0, 0, 0)
-    assert gr._matrix_range_for_extent(M[1], (0, 0, HALF, HALF)) == (1, 0, 1, 0, 0)
-    assert gr._matrix_range_for_extent(M[1], (-1e5, -1e5, 1e5, 1e5)) == (0, 0, 1, 1, 0)
-    assert gr._matrix_range_for_extent(M[12], _tile_extent((2124, 1364, 12))) == (2124, 1364, 2124, 1364, 0)
-    assert gr._matrix_range_for_extent(M[1], (HALF + 1, 0, HALF + 2, 1)) is None
-    assert gr._matrix_range_for_extent(M[1], (0, -HALF - 2, 1, -HALF - 1)) is None
-    assert gr._matrix_range_for_extent(M[1], (-HALF - 10, -HALF - 10, HALF + 10, HALF + 10)) == (0, 0, 1, 1, 0)
-
-
-def test_matrix_range_extent():
-    gr = _grabber()
-    assert gr._matrix_extent_for_range(M[1], (1, 0, 1, 0, 0)) == (0, 0, HALF, HALF)
-    e = gr._matrix_extent_for_range(M[12], (2124, 1364, 2125, 1365, 0))
-    assert e == gws.lib.grid.extent_for_range(GRID_3857, (2124, 1364, 2125, 1365, 12))
-
-
-def test_matrix_for_resolution_never_upscales():
-    gr = _grabber()
-    r5 = M[5].resolution
-    assert gr._matrix_for_resolution(r5).identifier == '5'
-    assert gr._matrix_for_resolution(r5 * 1.5).identifier == '5'
-    assert gr._matrix_for_resolution(r5 * 0.9).identifier == '6'
-    assert gr._matrix_for_resolution(r5 * 2).identifier == '4'
-    assert gr._matrix_for_resolution(M[20].resolution / 10).identifier == '20'
 
 
 ##
@@ -203,7 +151,7 @@ def test_box_beyond_source_max_level_uses_finest_matrix():
 
 def test_windowed_matrix_serves_tiles_inside_the_window():
     gr = _grabber(windowed=True)
-    assert abs(gr.sourceMatrices[11].resolution - M[12].resolution) < 1e-9
+    assert abs(gr.sourceTms.matrices[11].resolution - M[12].resolution) < 1e-9
     img = gr.get_tile_as_image((100, 200, 12))
     assert gr.fetches == [(12, 100, 200)]
     assert (_rgba(img) == _color(100, 200, 12)).all()
@@ -228,7 +176,7 @@ def test_cross_crs_tile_is_warped_from_buffered_source_tiles():
     assert all(f[0] == 12 for f in gr.fetches)
 
     src = gws.lib.extent.transform(gws.lib.grid.extent_for_tile(gr.grid, (x0, y0, z)), gr.targetCrs, gr.sourceCrs)
-    c0, r0, c1, r1, _ = gr._matrix_range_for_extent(M[12], src)
+    c0, r0, c1, r1, _ = gws.lib.grid.matrix_range_for_extent(M[12], src)
     assert {(c, r) for _, c, r in gr.fetches} >= {(c, r) for c in range(c0, c1 + 1) for r in range(r0, r1 + 1)}
 
 
@@ -260,7 +208,7 @@ def test_fetch_tile_not_implemented_raises():
         def __init__(self, opts):
             super().__init__(opts)
             self.sourceCrs = self.targetCrs
-            self.sourceMatrices = M
+            self.sourceTms = _tms(self.sourceCrs, 20)
 
     gr = NoFetchTile(_opts())
     with u.raises(NotImplementedError):

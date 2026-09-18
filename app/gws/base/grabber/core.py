@@ -1,5 +1,6 @@
 """Base raster grabber."""
 
+import math
 import os
 
 import gws
@@ -181,19 +182,35 @@ class Object(gws.Grabber):
             return
         return src_extent
 
-    def warp_image(self, img: gws.Image, src_extent: gws.Extent, target_extent: gws.Extent, w: int, h: int) -> gws.Image:
-        """Warp a source image onto a target extent and pixel size."""
+    def warp_image(self, img: gws.Image, src_bounds: gws.Bounds, target_bounds: gws.Bounds, w: int, h: int) -> gws.Image:
+        """Warp an image covering the source bounds onto the target bounds and pixel size."""
 
-        with gws.lib.gdalx.open_from_image(img, gws.Bounds(crs=self.sourceCrs, extent=src_extent)) as ds:
+        same_crs = src_bounds.crs == target_bounds.crs
+        src_res = gws.lib.extent.w(src_bounds.extent) / img.size()[0]
+        target_res = gws.lib.extent.w(target_bounds.extent) / w
+
+        # Pixels copied 1:1 within the same CRS use 'nearest', so that a sub-pixel offset
+        # between the source and target grids does not blur the image.
+        resample_alg = 'bilinear'
+        if same_crs and math.isclose(src_res, target_res, rel_tol=gws.lib.grid.RESOLUTION_TOLERANCE):
+            resample_alg = 'nearest'
+
+        # GDAL widens the bilinear kernel by the ratio of the source window to the destination chunk.
+        # Cross-CRS, with a source covering e.g. the whole mercator world, the window estimate can fail
+        # and fall back to the whole image, and the kernel then averages a strip of source pixels (diagonal smear).
+        # Pinning the scale keeps a 2x2 kernel. Same-CRS the estimate is correct, so leave it alone.
+        warp_options = [] if same_crs else ['XSCALE=1', 'YSCALE=1']
+
+        with gws.lib.gdalx.open_from_image(img, src_bounds) as ds:
             return ds.warp_to_image(
                 dict(
-                    dstSRS=self.targetCrs.epsg,
-                    outputBounds=target_extent,
-                    outputBoundsSRS=self.targetCrs.epsg,
+                    dstSRS=target_bounds.crs.epsg,
+                    outputBounds=target_bounds.extent,
+                    outputBoundsSRS=target_bounds.crs.epsg,
                     width=w,
                     height=h,
-                    resampleAlg='bilinear',
-                    warpOptions=['XSCALE=1', 'YSCALE=1'],
+                    resampleAlg=resample_alg,
+                    warpOptions=warp_options,
                 )
             )
 
@@ -288,17 +305,13 @@ class Object(gws.Grabber):
             mosaic.paste(img, ((tx - x0) * ts, (ty - y0) * ts))
 
         mosaic_extent = gws.lib.grid.extent_for_range(self.grid, mtr)
-        with gws.lib.gdalx.open_from_image(mosaic, gws.Bounds(crs=self.targetCrs, extent=mosaic_extent)) as ds:
-            return None, ds.warp_to_image(
-                dict(
-                    dstSRS=self.targetCrs.epsg,
-                    outputBounds=extent,
-                    outputBoundsSRS=self.targetCrs.epsg,
-                    width=w,
-                    height=h,
-                    resampleAlg='bilinear',
-                )
-            )
+        return None, self.warp_image(
+            mosaic,
+            gws.Bounds(crs=self.targetCrs, extent=mosaic_extent),
+            gws.Bounds(crs=self.targetCrs, extent=extent),
+            w,
+            h,
+        )
 
     def _valid_tiles_in_range(self, mtr: gws.MapTileRange) -> list[gws.MapTile]:
         """Return the tiles of a range that lie within the served levels and extent."""

@@ -18,7 +18,7 @@ class Object(gws.base.grabber.tile.Object):
         self.urlTemplate = urlTemplate
 
         self.sourceCrs = self.tms.crs
-        self.sourceMatrices = self.tms.matrices
+        self.sourceTms = self.tms
 
     def fetch_tile_as_bytes(self, tm, col, row):
         return self.serviceProvider.get_tile(self.urlTemplate, tm.identifier, col, row)

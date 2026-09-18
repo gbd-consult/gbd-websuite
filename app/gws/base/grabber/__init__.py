@@ -37,7 +37,7 @@ extend one of two base classes:
   in-process MapServer for raster and MBTiles layers). Subclasses implement
   ``fetch_box_as_bytes`` and ``fetch_box_as_image``, one source request each.
 - `tile.Object` for sources addressed as tile pyramids (tile services, WMTS).
-  Subclasses provide ``sourceMatrices`` and ``fetch_tile_as_bytes``.
+  Subclasses provide ``sourceTms`` and ``fetch_tile_as_bytes``.
 
 Fetching and composing
 ----------------------

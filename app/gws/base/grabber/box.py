@@ -106,7 +106,13 @@ class Object(core.Object):
             sh = math.ceil(sh / factor)
 
         img = self._fetch_and_compose_box(src_extent, sw, sh, params)
-        return self.warp_image(img, src_extent, extent, w, h)
+        return self.warp_image(
+            img,
+            gws.Bounds(crs=self.sourceCrs, extent=src_extent),
+            gws.Bounds(crs=self.targetCrs, extent=extent),
+            w,
+            h,
+        )
 
     def fetch_box_as_bytes(self, bounds: gws.Bounds, w: int, h: int, params: dict | None = None) -> bytes:
         """Fetch a box from the source with exactly one request, as encoded bytes."""
