@@ -1,5 +1,6 @@
-"""GBD Geoservices finder.
-"""
+"""GBD Geoservices finder."""
+
+import os
 
 import gws
 import gws.base.search
@@ -12,23 +13,12 @@ _DEFAULT_TEMPLATES = [
     gws.Config(
         subject='feature.teaser',
         type='html',
-        text='''
-            <p class="uiLink">{title | html}</p>
-        '''
+        path=os.path.dirname(__file__) + '/templates/feature_teaser.cx.html',
     ),
     gws.Config(
         subject='feature.description',
         type='html',
-        text='''
-            <p class="head2">{title | html}</p>
-            <table>
-            @for k, v in feature.attributes
-                @with v 
-                    <tr><td>{k}</td><td>{v | html}</td></tr>
-                @end
-            @end
-            </table>
-        '''
+        path=os.path.dirname(__file__) + '/templates/feature_description.cx.html',
     ),
 ]
 
@@ -38,6 +28,7 @@ class Config(gws.base.search.finder.Config):
 
     apiKey: str
     """API key."""
+
 
 class Object(gws.base.search.finder.Object):
     supportsKeywordSearch = True

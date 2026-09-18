@@ -10,6 +10,9 @@ Es wird im Großraum Düsseldorf nach Punkten von Interesse bzw Adressen gesucht
 """
 
 client.addElements+ { tag "Sidebar.Search" }
+client.addElements+ { tag "Altbar.Search" }
+
+client.options.sidebarActiveTab "Sidebar.Layers"
 
 actions+ { type "search" }
 
@@ -22,14 +25,37 @@ finders+ {
 map {
     center {demo_point_duesseldorf_3857}
     extent [
-        {demo_point_duesseldorf_3857[0] - 30000}
-        {demo_point_duesseldorf_3857[1] - 30000}
-        {demo_point_duesseldorf_3857[0] + 30000}
-        {demo_point_duesseldorf_3857[1] + 30000}
+        {demo_point_duesseldorf_3857[0] - 300000}
+        {demo_point_duesseldorf_3857[1] - 300000}
+        {demo_point_duesseldorf_3857[0] + 300000}
+        {demo_point_duesseldorf_3857[1] + 300000}
     ]
     zoom.initScale 1000000
-    zoom.maxScale  1000000
-    zoom.minScale  2000
+    zoom.minScale  200
 }
 
-{demo_osm_background}
+map.layers+ {
+    title "Hintergrundkarte"
+    type "group"
+    clientOptions.expanded true
+    clientOptions.exclusive true
+
+    
+    @let THEMES = [
+        "default",
+        "dark",
+        "high-contrast",
+        "minimal",
+        "satellite"
+    ]
+    @for theme in THEMES
+        layers+ {
+            title "Thema {theme}"
+            type "tile"
+            display "client"
+            clientOptions.hidden {theme != "default"}
+            provider.url "https://geoservices.gbd-consult.de/xyz/{theme}/{{z}}/{{x}}/{{y}}.png"
+            metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+        }
+    @end
+}
