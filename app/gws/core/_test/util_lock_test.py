@@ -7,6 +7,8 @@ import time
 import gws
 import gws.test.util as u
 
+_mp = multiprocessing.get_context('fork')
+
 
 @u.fixture(autouse=True)
 def locks_dir():
@@ -25,8 +27,8 @@ def _hold_and_crash(uid):
 
 
 def _start_holder(uid, seconds):
-    queue = multiprocessing.Queue()
-    proc = multiprocessing.Process(target=_hold, args=(uid, queue, seconds))
+    queue = _mp.Queue()
+    proc = _mp.Process(target=_hold, args=(uid, queue, seconds))
     proc.start()
     pid = queue.get(timeout=5)
     return proc, pid
@@ -76,7 +78,7 @@ def test_hard_lock_waits_for_release():
 
 
 def test_lock_survives_holder_crash():
-    proc = multiprocessing.Process(target=_hold_and_crash, args=('lock_5',))
+    proc = _mp.Process(target=_hold_and_crash, args=('lock_5',))
     proc.start()
     proc.join()
     with gws.u.server_lock('lock_5', 0):

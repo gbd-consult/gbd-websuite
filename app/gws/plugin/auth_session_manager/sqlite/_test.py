@@ -4,6 +4,8 @@ import gws
 import gws.lib.osx as osx
 import gws.test.util as u
 
+_mp = multiprocessing.get_context('fork')
+
 DB_PATH = u.option('BASE_DIR') + '/sess'
 
 if u.option('HOST_OS') == 'darwin':
@@ -198,7 +200,7 @@ def test_concurrency():
     ps = []
 
     for n in range(num_processes):
-        p = multiprocessing.Process(target=_session_mp_worker, args=[n, num_loops])
+        p = _mp.Process(target=_session_mp_worker, args=[n, num_loops])
         ps.append(p)
         p.start()
 
