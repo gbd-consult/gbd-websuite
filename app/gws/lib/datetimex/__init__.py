@@ -31,6 +31,7 @@ import re
 import zoneinfo
 
 import pendulum
+import pendulum._helpers
 import pendulum.helpers
 import pendulum.parsing
 import pendulum.parsing.exceptions
@@ -544,17 +545,17 @@ def difference(d1: dt.date, d2: Optional[dt.date] = None) -> Diff:
         d2: The second date. If None, the current date and time is used.
     """
 
-    iv = pendulum.Interval(_datetime(d1), _datetime(d2), absolute=False)
+    pd = _precise_diff(d1, d2)
     df = Diff()
 
-    df.years = iv.years
-    df.months = iv.months
-    df.weeks = iv.weeks
-    df.days = iv.remaining_days
-    df.hours = iv.hours
-    df.minutes = iv.minutes
-    df.seconds = iv.remaining_seconds
-    df.microseconds = iv.microseconds
+    df.years = pd.years
+    df.months = pd.months
+    df.weeks = _sign(pd.days) * (abs(pd.days) // 7)
+    df.days = _sign(pd.days) * (abs(pd.days) % 7)
+    df.hours = pd.hours
+    df.minutes = pd.minutes
+    df.seconds = pd.seconds
+    df.microseconds = pd.microseconds
 
     return df
 
@@ -567,19 +568,33 @@ def total_difference(d1: dt.date, d2: Optional[dt.date] = None) -> Diff:
         d2: Second date (default current date/time)
     """
 
-    iv = pendulum.Interval(_datetime(d1), _datetime(d2), absolute=False)
+    pd = _precise_diff(d1, d2)
+    total = (_utc(_datetime(d2)) - _utc(_datetime(d1))).total_seconds()
     df = Diff()
 
-    df.years = iv.in_years()
-    df.months = iv.in_months()
-    df.weeks = iv.in_weeks()
-    df.days = iv.in_days()
-    df.hours = iv.in_hours()
-    df.minutes = iv.in_minutes()
-    df.seconds = iv.in_seconds()
+    df.years = pd.years
+    df.months = pd.years * 12 + pd.months
+    df.weeks = _sign(pd.total_days) * (abs(pd.total_days) // 7)
+    df.days = pd.total_days
+    df.hours = int(total / 3600)
+    df.minutes = int(total / 60)
+    df.seconds = int(total)
     df.microseconds = df.seconds * 1_000_000
 
     return df
+
+
+def _precise_diff(d1, d2):
+    # NB pendulum's compiled `precise_diff` is broken, use the pure python version
+    return pendulum._helpers.precise_diff(_datetime(d1), _datetime(d2))
+
+
+def _utc(d: dt.datetime) -> dt.datetime:
+    return d.astimezone(dt.timezone.utc)
+
+
+def _sign(n: int) -> int:
+    return -1 if n < 0 else 1
 
 
 # Wrappers for useful pendulum utilities
