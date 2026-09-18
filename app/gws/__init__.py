@@ -5039,7 +5039,10 @@ class Application(Node):
     """Full version string for display purposes."""
 
     def supported_crs(self) -> list['Crs']:
-        """All CRS used by maps, overview maps and OWS services, computed on first call."""
+        """All CRS used by maps, overview maps and OWS services, plus registered ones, computed on first call."""
+
+    def register_supported_crs(self, crs: 'Crs'):
+        """Register an additional supported CRS (must be called during configuration)."""
 
     defaultPrinter: 'Printer'
     """Default printer object."""

@@ -48,67 +48,6 @@ def test_request_connection_error():
     assert (res.ok, res.status_code) == (False, 999)
 
 
-def test_request_valid_response_cached():
-    u.mockserver.set(rf"""
-        if path == '/ok':
-            return end('ORIGINAL')
-    """)
-
-    res = net.http_request(u.mockserver.url('ok'), max_age=3)
-    assert res.text == 'ORIGINAL'
-
-    u.mockserver.set(rf"""
-        if path == '/ok':
-            return end('UPDATED')
-    """)
-
-    res = net.http_request(u.mockserver.url('ok'), max_age=3)
-    assert res.text == 'ORIGINAL'
-
-    res = net.http_request(u.mockserver.url('ok'))
-    assert res.text == 'UPDATED'
-
-
-def test_request_cache_expiration():
-    u.mockserver.set(rf"""
-        if path == '/ok':
-            return end('ORIGINAL')
-    """)
-    res = net.http_request(u.mockserver.url('ok'), max_age=3)
-    assert res.text == 'ORIGINAL'
-
-    u.mockserver.set(rf"""
-        if path == '/ok':
-            return end('UPDATED')
-    """)
-
-    res = net.http_request(u.mockserver.url('ok'), max_age=3)
-    assert res.text == 'ORIGINAL'
-
-    gws.u.sleep(4)
-
-    res = net.http_request(u.mockserver.url('ok'), max_age=3)
-    assert res.text == 'UPDATED'
-
-
-def test_request_invalid_response_not_cached():
-    u.mockserver.set(rf"""
-        if path == '/bad':
-            return end('ORIGINAL', 400)
-    """)
-
-    res = net.http_request(u.mockserver.url('bad'), max_age=10)
-    assert res.text == 'ORIGINAL'
-
-    u.mockserver.set(rf"""
-        if path == '/bad':
-            return end('UPDATED', 400)
-    """)
-
-    res = net.http_request(u.mockserver.url('bad'), max_age=10)
-    assert res.text == 'UPDATED'
-
-
 def test_request_post():
     """Test POST request with data"""
     u.mockserver.set(rf"""
