@@ -1,3 +1,17 @@
+## Version 8.5.1
+
+- MapProxy replaced by the built-in raster subsystem: raster layers are fetched, reprojected and cached in-process
+- one global tile grid per CRS for all layers and the WMTS service; layer `grid`, `server.mapproxy` and `withMapproxy` are ignored
+- `cache.maxLevel` refers to the global grid and defaults to 18; small explicit values need adjusting
+- added `cache.name` and `cache.crs` options
+- uncached layers keep tiles for 60 seconds, so a viewport is rendered once per block
+- raster layers are available in every CRS their extent intersects
+- added `display: client` for WMTS layers
+- reworked the cache CLI (`gws cache status|seed|drop`)
+- HTTP client uses keep-alive connections
+- fixed the bbox axis order for box requests in lat/lon maps
+- fixed race conditions in directory creation and ephemeral cleanup; file writes are atomic
+
 ## Version 8.5.0
 
 - minor bugs fixes and improvements
