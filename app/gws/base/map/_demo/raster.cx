@@ -1,0 +1,102 @@
+uid "map_raster"
+
+title "Darstellung von Rasterlayer"
+
+metadata.keywords [ "tile" "wms" "wmts" "raster" ]
+
+metadata.abstract """
+Rasterlayer aus verschiedenen Quellen (WMTS, WMS, GeoTIFF, Kachel-Dienste),
+alle auf dem Server gerendert und nach EPSG:25832 umprojiziert.
+"""
+
+map {
+    crs 25832
+    extent [-1455000 4763000 2645000 8139000]
+    center {demo_point_duesseldorf_25832}
+    zoom.initScale 60000
+    zoom.maxScale 4000000
+}
+
+map.layers+ {
+    title "NRW ALKIS (WMS)"
+    type "wmsflat"
+    provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
+    sourceLayers.names [
+        "adv_alkis_gewaesser"
+        "adv_alkis_vegetation"
+        "adv_alkis_verkehr"
+        "adv_alkis_gebaeude"
+        "adv_alkis_flurstuecke"
+    ]
+    metadata.attribution "© <a href='http://www.geobasis.nrw.de'>Geobasis NRW</a>"
+    clientOptions.hidden true
+    withCache false
+}
+
+map.layers+ {
+    title "basemap.de (WMTS)"
+    type "wmts"
+    provider.url "https://sgx.geodatenzentrum.de/wmts_basemapde/1.0.0/WMTSCapabilities.xml"
+    provider.forceCrs 25832
+    sourceLayers.names ["de_basemapde_web_raster_farbe"]
+    metadata.attribution "© <a href='https://basemap.de'>basemap.de</a> / BKG"
+    clientOptions.hidden true
+    withCache false
+}
+
+map.layers+ {
+    title "Sentinel-2 (GeoTIFF)"
+    type "raster"
+    provider.paths ["/gws-extern/demos/S2A_32ULB_20250811_TCI.tif"]
+    metadata.attribution "Contains modified Copernicus Sentinel data 2025"
+    clientOptions.hidden true
+    withCache false
+}
+
+map.layers+ {
+    title "Open Street Map"
+    type "tile"
+    provider.url "https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png"
+    metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+    clientOptions.hidden false
+    withCache false
+}
+
+printers+ {
+    title "A4"
+    template {
+       type "html"
+       text """
+            @@page width="297" height="210" margin="5"
+            <center>
+            <h1>A4 - {{dpi}} dpi</h1>
+            @@map
+            </center>
+       """
+       mapSize [ "280mm" "180mm" ]
+   }
+   qualityLevels [
+       { dpi  90 name "screen" }
+       { dpi 150 name "gut" }
+       { dpi 300 name "hoch" }
+   ]
+}
+printers+ {
+   title "A2"
+   template {
+       type "html"
+       text """
+            @@page width="594" height="420" margin="5"
+            <center>
+            <h1>A2 - {{dpi}} dpi</h1>
+            @@map
+            </center>
+       """
+       mapSize [ "560mm" "400mm" ]
+   }
+   qualityLevels [
+       { dpi  90 name "screen" }
+       { dpi 150 name "gut" }
+       { dpi 300 name "hoch" }
+   ]
+}
