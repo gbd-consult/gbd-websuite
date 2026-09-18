@@ -44,7 +44,7 @@ class Config(gws.base.ows.client.provider.Config):
     bottomFirst: bool = False
     """True if layers are listed from bottom to top."""
     maxRequestPixels: int = 4096
-    """Max pixel size of a single map request."""
+    """Max pixel size of a single map request. (added in 8.5)"""
 
 
 class Object(gws.base.ows.client.provider.Object):

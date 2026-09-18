@@ -28,7 +28,7 @@ class Config(server.service.Config):
     """WMTS Service configuration"""
 
     grids: Optional[list[gws.lib.grid.Config]]
-    """Tile matrix grids, one per CRS. A supported CRS without a grid uses the default grid."""
+    """Tile matrix grids, one per CRS. A supported CRS without a grid uses the default grid. (added in 8.5)"""
 
 
 _DEFAULT_TEMPLATES = [

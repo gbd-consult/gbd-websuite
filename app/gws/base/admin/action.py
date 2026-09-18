@@ -8,7 +8,7 @@ gws.ext.new.action('admin')
 
 
 class Config(gws.base.action.Config):
-    """Admin action configuration."""
+    """Admin action configuration. (added in 8.5)"""
 
     pass
 

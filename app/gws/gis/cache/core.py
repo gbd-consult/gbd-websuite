@@ -12,17 +12,17 @@ class LayerConfig(gws.Config):
     """Layer cache configuration."""
 
     name: str = ''
-    """Cache directory name. (new in 8.5)"""
+    """Cache directory name. (added in 8.5)"""
     maxAge: gws.Duration = '7d'
     """Cache max. age."""
     maxLevel: int = 18
     """Max. zoom level to cache, on the global tile grid (18 is 0.6 m/px, about 1:2000). (changed in 8.5)"""
     requestBuffer: int = 64
-    """Pixel buffer for source requests."""
+    """Pixel buffer for source requests. (changed in 8.5)"""
     requestTiles: int = 4
-    """Number of tiles to request at once."""
+    """Number of tiles to request at once. (changed in 8.5)"""
     crs: Optional[list[gws.CrsName]]
-    """CRS to cache tiles in. By default, tiles are cached in all supported CRS."""
+    """CRS to cache tiles in. By default, tiles are cached in all supported CRS. (added in 8.5)"""
 
 
 class GlobalConfig(gws.Config):

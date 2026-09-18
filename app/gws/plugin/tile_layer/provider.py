@@ -19,13 +19,13 @@ class Config(gws.Config):
     """Tile provider configuration."""
     
     maxLevel: int = 19
-    """Max zoom level the source provides."""
+    """Max zoom level the source provides. (added in 8.5)"""
     maxRequests: int = 0
     """Max concurrent requests to this source."""
     url: gws.Url
     """Rest url with placeholders {x}, {y} and {z}."""
     grid: Optional[gws.lib.grid.Config]
-    """Source grid."""
+    """Source grid. (changed in 8.5)"""
 
 
 class Object(gws.ServiceProvider):
