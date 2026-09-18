@@ -15,8 +15,8 @@ class LayerConfig(gws.Config):
     """Cache directory name. (new in 8.5)"""
     maxAge: gws.Duration = '7d'
     """Cache max. age."""
-    maxLevel: int = 6
-    """Max. zoom level to cache."""
+    maxLevel: int = 18
+    """Max. zoom level to cache, on the global tile grid (18 is 0.6 m/px, about 1:2000). (changed in 8.5)"""
     requestBuffer: int = 64
     """Pixel buffer for source requests."""
     requestTiles: int = 4
