@@ -1,6 +1,6 @@
 uid "map_raster"
 
-title "Darstellung von Rasterlayer"
+title "Darstellung von Rasterlayern"
 
 metadata.keywords [ "tile" "wms" "wmts" "raster" ]
 
