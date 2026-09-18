@@ -125,8 +125,11 @@ class Object(gws.Application):
     _developerOptions: dict
 
     _supportedCrs: list[gws.Crs]
+    _registeredCrs: set[gws.Crs]
 
     def configure(self):
+        self._registeredCrs = set()
+
         self.version = self.root.specs.version
         self.versionString = f'GWS version {self.version}'
 
@@ -238,9 +241,14 @@ class Object(gws.Application):
             if p.uid == uid:
                 return p
 
+    def register_supported_crs(self, crs):
+        self._registeredCrs.add(crs)
+        if hasattr(self, '_supportedCrs'):
+            del self._supportedCrs
+
     def supported_crs(self):
         if not hasattr(self, '_supportedCrs'):
-            crs_set = set()
+            crs_set = set(self._registeredCrs)
             for m in self.root.find_all(gws.ext.object.map):
                 crs_set.add(m.bounds.crs)
             for s in self.root.find_all(gws.ext.object.owsService):
