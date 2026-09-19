@@ -49,7 +49,7 @@ class Config(gws.Config):
     """Frequency for checking project changes."""
 
 
-class Object(gws.OwsProvider):
+class Object(gws.OwsServiceProvider):
     store: project.Store
     printTemplates: list[caps_module.PrintTemplate]
 
@@ -287,7 +287,7 @@ class Object(gws.OwsProvider):
 
     ##
 
-    def leaf_config(self, source_layers):
+    def create_leaf_layer_config(self, source_layers):
         simple_cfg = {
             'type': 'qgisflat',
             '_defaultProvider': self,

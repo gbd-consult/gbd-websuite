@@ -7,13 +7,13 @@ from . import provider
 
 
 class Object(gws.base.grabber.tile.Object):
-    serviceProvider: provider.Object
+    provider: provider.Object
     tms: gws.TileMatrixSet
     urlTemplate: str
 
-    def __init__(self, opts: gws.base.grabber.Options, serviceProvider: provider.Object, tms: gws.TileMatrixSet, urlTemplate: str):
+    def __init__(self, opts: gws.base.grabber.Options, provider: provider.Object, tms: gws.TileMatrixSet, urlTemplate: str):
         super().__init__(opts)
-        self.serviceProvider = serviceProvider
+        self.provider = provider
         self.tms = tms
         self.urlTemplate = urlTemplate
 
@@ -21,4 +21,4 @@ class Object(gws.base.grabber.tile.Object):
         self.sourceTms = self.tms
 
     def fetch_tile_as_bytes(self, tm, col, row):
-        return self.serviceProvider.get_tile(self.urlTemplate, tm.identifier, col, row)
+        return self.provider.get_tile(self.urlTemplate, tm.identifier, col, row)

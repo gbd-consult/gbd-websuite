@@ -87,15 +87,15 @@ def configure_source_layers_for(
     return True
 
 
-def configure_service_provider_for(obj: gws.Node, cls: type) -> bool:
+def configure_provider_for(obj: gws.Node, cls: type) -> bool:
     p = obj.cfg('provider')
     if p:
-        obj.serviceProvider = obj.root.create_shared(cls, p)
+        obj.provider = obj.root.create_shared(cls, p)
         return True
 
     p = obj.cfg('_defaultProvider')
     if p and isinstance(p, cls):
-        obj.serviceProvider = p
+        obj.provider = p
         return True
 
     raise gws.Error(f'no provider {cls!r} found for {obj!r}')

@@ -23,7 +23,7 @@ class Config(gws.base.model.Config):
 
 
 class Object(gws.base.ows.client.model.Object):
-    serviceProvider: provider.Object
+    provider: provider.Object
 
     def configure_provider(self):
-        return gws.config.util.configure_service_provider_for(self, provider.Object)
+        return gws.config.util.configure_provider_for(self, provider.Object)

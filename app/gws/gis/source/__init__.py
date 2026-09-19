@@ -31,7 +31,7 @@ class LayerFilter(gws.Data):
     """If true, match only visible layers."""
 
 
-def layer_matches(sl: gws.SourceLayer, f: LayerFilter) -> bool:
+def layer_matches(sl: gws.SourceLayer, f: Optional[LayerFilter]) -> bool:
     """Check if a source layer matches the filter"""
 
     if not f:

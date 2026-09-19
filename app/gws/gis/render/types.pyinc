@@ -81,7 +81,7 @@ class LayerRenderInputType(Enum):
     """Layer render input type."""
 
     box = 'box'
-    xyz = 'xyz'
+    tile = 'tile'
     svg = 'svg'
 
 

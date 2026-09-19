@@ -62,7 +62,7 @@ class Config(gws.Config):
     """Service url."""
 
 
-class Object(gws.OwsProvider):
+class Object(gws.OwsServiceProvider):
     def configure(self):
         self.alwaysXY = self.cfg('alwaysXY', default=False)
         self.forceCrs = gws.lib.crs.get(self.cfg('forceCrs'))

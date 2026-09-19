@@ -24,10 +24,10 @@ class Config(gws.base.search.finder.Config):
 
 class Object(gws.base.ows.client.finder.Object):
     supportsGeometrySearch = True
-    serviceProvider: provider.Object
+    provider: provider.Object
 
     def configure_provider(self):
-        return gws.config.util.configure_service_provider_for(self, provider.Object)
+        return gws.config.util.configure_provider_for(self, provider.Object)
 
     def can_run(self, search, user):
         return (

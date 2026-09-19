@@ -27,7 +27,7 @@ class Config(gws.base.layer.Config):
 
 
 class Object(gws.base.layer.image.Object):
-    serviceProvider: provider.Object
+    provider: provider.Object
     sourceLayers: list[gws.SourceLayer]
     sourceCrs: gws.Crs
 
@@ -37,31 +37,41 @@ class Object(gws.base.layer.image.Object):
     def configure(self):
         self.configure_layer()
 
+    def create_cache_name(self, cache):
+        return gws.u.sha256([
+            self.provider.cache_hash(),
+            [sl.name for sl in self.imageLayers],
+            vars(self.imageFormat),
+            list(self.wgsExtent),
+            cache.requestBuffer,
+            cache.requestTiles,
+        ])[: gws.base.layer.image.CACHE_NAME_LENGTH]
+
     def create_grabber(self, opts):
-        return grabber.Object(opts, serviceProvider=self.serviceProvider, sourceLayers=self.imageLayers, sourceCrs=self.sourceCrs)
+        return grabber.Object(opts, provider=self.provider, sourceLayers=self.imageLayers, sourceCrs=self.sourceCrs)
 
     def configure_provider(self):
-        return gws.config.util.configure_service_provider_for(self, provider.Object)
+        return gws.config.util.configure_provider_for(self, provider.Object)
 
     def configure_sources(self):
         if super().configure_sources():
             return True
 
-        gws.u.require(self.serviceProvider, 'failed to configure service provider')
+        gws.u.require(self.provider, 'failed to configure service provider')
 
         self.configure_source_layers()
         if not self.sourceLayers:
-            raise gws.Error(f'layer {self!r}: no source layers found for {self.serviceProvider.url!r}')
+            raise gws.Error(f'layer {self!r}: no source layers found for {self.provider.url!r}')
 
         self.imageLayers = gws.gis.source.filter_layers(self.sourceLayers, is_image=True)
         self.searchLayers = gws.gis.source.filter_layers(self.sourceLayers, is_queryable=True)
 
-        self.sourceCrs = self.serviceProvider.forceCrs or gws.lib.crs.best_match(
+        self.sourceCrs = self.provider.forceCrs or gws.lib.crs.best_match(
             self.mapCrs,
             gws.gis.source.combined_crs_list(self.sourceLayers))
 
     def configure_source_layers(self):
-        return gws.config.util.configure_source_layers_for(self, self.serviceProvider.sourceLayers)
+        return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers)
 
     def configure_models(self):
         return gws.config.util.configure_models_for(self, with_default=True)
@@ -71,7 +81,7 @@ class Object(gws.base.layer.image.Object):
             gws.ext.object.model,
             cfg,
             type='wms',
-            _defaultProvider=self.serviceProvider,
+            _defaultProvider=self.provider,
             _defaultSourceLayers=self.sourceLayers
         )
 
@@ -117,6 +127,6 @@ class Object(gws.base.layer.image.Object):
             gws.ext.object.finder,
             cfg,
             type='wms',
-            _defaultProvider=self.serviceProvider,
+            _defaultProvider=self.provider,
             _defaultSourceLayers=self.searchLayers
         )

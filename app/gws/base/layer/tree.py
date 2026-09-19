@@ -1,6 +1,7 @@
 """Structures and utilities for tree layers."""
 
-from typing import Optional, Callable
+from typing import Optional, cast
+from collections.abc import Callable
 
 import gws
 import gws.gis.source
@@ -27,37 +28,65 @@ class Config(gws.Config):
     """Source layers to exclude."""
     flattenLayers: Optional[FlattenConfig]
     """Flatten the layer hierarchy."""
-    autoLayers: Optional[list[core.AutoLayersOptions]]
+    autoLayers: Optional[list[core.AutoLayersConfig]]
     """Custom configurations for automatically created layers."""
 
 
-class TreeConfigArgs(gws.Data):
+class _TreeConfigArgs(gws.Data):
     root: gws.Root
     source_layers: list[gws.SourceLayer]
     roots_slf: gws.gis.source.LayerFilter
     exclude_slf: gws.gis.source.LayerFilter
     flatten_config: FlattenConfig
-    auto_layers: list[core.AutoLayersOptions]
-    leaf_layer_maker: Callable
+    auto_layers: list[core.AutoLayersConfig]
+    create_leaf_layer_config: Callable
 
 
-def layer_configs_from_layer(layer: core.Object, source_layers: list[gws.SourceLayer], leaf_layer_maker: Callable) -> list[gws.Config]:
+def configure_group_layers_for(layer: core.Object, source_layers: list[gws.SourceLayer], create_leaf_layer_config: Callable) -> bool:
+    """Create child layers of a group layer from a list of source layers."""
+
+    configs = _layer_configs_from_layer(layer, source_layers, create_leaf_layer_config)
+    create_group_layers(layer, configs)
+    return True
+
+
+def create_group_layers(layer: core.Object, layer_configs: list):
+    """Create child layers of a group layer from their configs."""
+
+    layer.layers = []
+
+    for cfg in layer_configs:
+        cfg = gws.u.merge(
+            cfg,
+            _parentWgsExtent=layer.wgsExtent,
+            _mapCrs=layer.mapCrs,
+            _parentResolutions=layer.resolutions,
+        )
+        la = cast(gws.Layer, layer.create_child(gws.ext.object.layer, cfg))
+        if la:
+            layer.layers.append(la)
+
+    if not layer.layers:
+        raise gws.Error(f'group is empty: {layer}')
+
+
+def _layer_configs_from_layer(layer: core.Object, source_layers: list[gws.SourceLayer], create_leaf_layer_config: Callable) -> list[gws.Config]:
     """Generate a config tree from a list of source layers and the main layer config."""
 
-    return layer_configs_from_args(
-        TreeConfigArgs(
+    return _layer_configs_from_args(
+        _TreeConfigArgs(
             root=layer.root,
             source_layers=source_layers,
             roots_slf=layer.cfg('rootLayers'),
             exclude_slf=layer.cfg('excludeLayers'),
             flatten_config=layer.cfg('flattenLayers'),
             auto_layers=layer.cfg('autoLayers', default=[]),
-            leaf_layer_maker=leaf_layer_maker,
+            create_leaf_layer_config=create_leaf_layer_config,
         )
     )
 
 
-def layer_configs_from_args(tca: TreeConfigArgs) -> list[gws.Config]:
+def _layer_configs_from_args(tca: _TreeConfigArgs) -> list[gws.Config]:
     """Generate a config tree from a list of source layers."""
 
     # by default, take top-level layers as roots
@@ -90,7 +119,7 @@ def layer_configs_from_args(tca: TreeConfigArgs) -> list[gws.Config]:
     return layer_configs
 
 
-def _config(tca: TreeConfigArgs, sl: gws.SourceLayer, depth: int):
+def _config(tca: _TreeConfigArgs, sl: gws.SourceLayer, depth: int):
     cfg = _base_config(tca, sl, depth)
     if not cfg:
         return None
@@ -109,31 +138,31 @@ def _config(tca: TreeConfigArgs, sl: gws.SourceLayer, depth: int):
 
     for cc in tca.auto_layers:
         if gws.gis.source.layer_matches(sl, cc.applyTo):
-            cfg = gws.u.deep_merge(cfg, cc.config)
+            cfg = _deep_merge(cfg, cc.config)
 
     return gws.u.compact(cfg)
 
 
-def _base_config(tca: TreeConfigArgs, sl: gws.SourceLayer, depth: int):
+def _base_config(tca: _TreeConfigArgs, sl: gws.SourceLayer, depth: int):
     # source layer excluded by the filter
     if tca.exclude_slf and gws.gis.source.layer_matches(sl, tca.exclude_slf):
         return None
 
     # leaf layer
     if not sl.isGroup:
-        return tca.leaf_layer_maker([sl])
+        return tca.create_leaf_layer_config([sl])
 
     # flattened group layer
     # NB use the absolute level to compute flatness, could also use relative (=depth)
     if tca.flatten_config and sl.aLevel >= tca.flatten_config.level:
         if tca.flatten_config.useGroups:
-            return tca.leaf_layer_maker([sl])
+            return tca.create_leaf_layer_config([sl])
 
         slf = gws.gis.source.LayerFilter(isImage=True)
         leaves = gws.gis.source.filter_layers([sl], slf)
         if not leaves:
             return None
-        return tca.leaf_layer_maker(leaves)
+        return tca.create_leaf_layer_config(leaves)
 
     # ordinary group layer
     layer_cfgs = gws.u.compact(_config(tca, sub, depth + 1) for sub in sl.layers)
@@ -143,3 +172,16 @@ def _base_config(tca: TreeConfigArgs, sl: gws.SourceLayer, depth: int):
         'type': 'group',
         'layers': layer_cfgs,
     }
+
+
+def _deep_merge(x, y):
+    if (gws.u.is_dict(x) or gws.u.is_data_object(x)) and (gws.u.is_dict(y) or gws.u.is_data_object(y)):
+        xd = gws.u.to_dict(x)
+        yd = gws.u.to_dict(y)
+        d = {k: _deep_merge(xd.get(k), yd.get(k)) for k in xd.keys() | yd.keys()}
+        return d if gws.u.is_dict(x) else type(x)(d)
+
+    if gws.u.is_list(x) and gws.u.is_list(y):
+        return gws.u.compact(x) + gws.u.compact(y)
+
+    return y if y is not None else x

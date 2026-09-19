@@ -15,7 +15,7 @@ class Config(gws.Config):
     """path to a GeoJSON file"""
 
 
-class Object(gws.ServiceProvider):
+class Object(gws.Node):
     path: str
     _records: list[gws.FeatureRecord]
 

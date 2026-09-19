@@ -28,7 +28,7 @@ class Config(gws.Config):
     """Source grid. (changed in 8.5)"""
 
 
-class Object(gws.ServiceProvider):
+class Object(gws.Node):
     url: gws.Url
     grid: gws.MapGrid
     maxLevel: int

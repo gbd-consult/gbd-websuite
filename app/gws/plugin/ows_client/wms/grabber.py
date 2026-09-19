@@ -7,18 +7,18 @@ from . import provider
 
 
 class Object(gws.base.grabber.box.Object):
-    serviceProvider: provider.Object
+    provider: provider.Object
     sourceLayers: list[gws.SourceLayer]
 
-    def __init__(self, opts: gws.base.grabber.Options, serviceProvider: provider.Object, sourceLayers: list[gws.SourceLayer], sourceCrs: gws.Crs):
+    def __init__(self, opts: gws.base.grabber.Options, provider: provider.Object, sourceLayers: list[gws.SourceLayer], sourceCrs: gws.Crs):
         super().__init__(opts)
-        self.serviceProvider = serviceProvider
+        self.provider = provider
         self.sourceLayers = sourceLayers
         self.sourceCrs = sourceCrs
-        self.maxRequestPixels = self.serviceProvider.maxRequestPixels
+        self.maxRequestPixels = self.provider.maxRequestPixels
 
     def fetch_box_as_bytes(self, bounds, w, h, params=None):
-        return self.serviceProvider.get_map(
+        return self.provider.get_map(
             bounds,
             w,
             h,

@@ -22,23 +22,23 @@ class Config(gws.base.layer.Config):
 
 class Object(gws.base.layer.vector.Object):
     path: str
-    serviceProvider: provider.Object
+    provider: provider.Object
 
     def configure(self):
         self.configure_layer()
-        for rec in self.serviceProvider.load_records():
+        for rec in self.provider.load_records():
             if rec.shape:
                 self.geometryType = rec.shape.type
                 self.geometryCrs = rec.shape.crs
                 break
 
     def configure_provider(self):
-        return gws.config.util.configure_service_provider_for(self, provider.Object)
+        return gws.config.util.configure_provider_for(self, provider.Object)
 
     def configure_extent(self):
         if super().configure_extent():
             return True
-        recs = self.serviceProvider.load_records()
+        recs = self.provider.load_records()
         if recs:
             bs = [rec.shape.bounds() for rec in recs if rec.shape]
             if bs:
@@ -55,7 +55,7 @@ class Object(gws.base.layer.vector.Object):
             gws.ext.object.model,
             cfg,
             type=self.extType,
-            _defaultProvider=self.serviceProvider
+            _defaultProvider=self.provider
         )
     
     def configure_search(self):
@@ -69,5 +69,5 @@ class Object(gws.base.layer.vector.Object):
             gws.ext.object.finder,
             cfg,
             type='geojson',
-            _defaultProvider=self.serviceProvider,
+            _defaultProvider=self.provider,
         )

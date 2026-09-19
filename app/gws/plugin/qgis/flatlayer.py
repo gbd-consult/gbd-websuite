@@ -25,7 +25,7 @@ class Config(gws.base.layer.Config):
 
 
 class Object(gws.base.layer.image.Object):
-    serviceProvider: provider.Object
+    provider: provider.Object
     sqlFilters: dict
     imageLayers: list[gws.SourceLayer]
     searchLayers: list[gws.SourceLayer]
@@ -36,25 +36,25 @@ class Object(gws.base.layer.image.Object):
 
     def create_cache_name(self, cache):
         return gws.u.sha256([
-            self.serviceProvider.cache_hash(),
+            self.provider.cache_hash(),
             self.render_params(gws.LayerRenderInput()),
             vars(self.imageFormat),
             list(self.wgsExtent),
             cache.requestBuffer,
             cache.requestTiles,
-        ])[: gws.base.layer.core.CACHE_NAME_LENGTH]
+        ])[: gws.base.layer.image.CACHE_NAME_LENGTH]
 
     def create_grabber(self, opts):
-        return grabber.Object(opts, serviceProvider=self.serviceProvider, params=self.render_params(gws.LayerRenderInput()))
+        return grabber.Object(opts, provider=self.provider, params=self.render_params(gws.LayerRenderInput()))
 
     def configure_provider(self):
-        return gws.config.util.configure_service_provider_for(self, provider.Object)
+        return gws.config.util.configure_provider_for(self, provider.Object)
 
     def configure_sources(self):
         if super().configure_sources():
             return True
 
-        gws.u.require(self.serviceProvider, 'failed to configure service provider')
+        gws.u.require(self.provider, 'failed to configure service provider')
 
         self.configure_source_layers()
         self.imageLayers = gws.gis.source.filter_layers(self.sourceLayers, is_image=True)
@@ -63,7 +63,7 @@ class Object(gws.base.layer.image.Object):
     def configure_source_layers(self):
         return gws.config.util.configure_source_layers_for(
             self,
-            self.serviceProvider.sourceLayers,
+            self.provider.sourceLayers,
             is_image=True,
             is_visible=True,
         )
@@ -76,14 +76,14 @@ class Object(gws.base.layer.image.Object):
             gws.ext.object.model,
             cfg,
             type='qgis',
-            _defaultProvider=self.serviceProvider,
+            _defaultProvider=self.provider,
             _defaultSourceLayers=self.searchLayers,
         )
 
     def configure_extent(self):
         if super().configure_extent():
             return True
-        self.wgsExtent = self.serviceProvider.wgsExtent
+        self.wgsExtent = self.provider.wgsExtent
         return True
 
     def configure_zoom_bounds(self):
@@ -106,13 +106,13 @@ class Object(gws.base.layer.image.Object):
         if not self.cfg('withLegend'):
             return True
         cc = self.cfg('legend')
-        options = gws.u.merge(self.serviceProvider.defaultLegendOptions, cc.options if cc else {})
+        options = gws.u.merge(self.provider.defaultLegendOptions, cc.options if cc else {})
         self.legend = self.create_child(
             gws.ext.object.legend,
             cc,
             type='qgis',
             options=options,
-            _defaultProvider=self.serviceProvider,
+            _defaultProvider=self.provider,
             _defaultSourceLayers=self.imageLayers,
         )
         return True
@@ -139,7 +139,7 @@ class Object(gws.base.layer.image.Object):
             gws.ext.object.finder,
             cfg,
             type='qgis',
-            _defaultProvider=self.serviceProvider,
+            _defaultProvider=self.provider,
             _defaultSourceLayers=self.searchLayers,
         )
 

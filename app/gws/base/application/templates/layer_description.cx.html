@@ -6,6 +6,6 @@
     <div class="text2">{s | html | nl2p}</div>
 @end
 
-@if layer.legend
-    <p class="legend"><img src="{layer.url_path('legend')}"/></p>
+@if layer.hasLegend
+    <p class="legend"><img src="{layer.url_path_for('legend')}"/></p>
 @end

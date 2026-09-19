@@ -25,8 +25,9 @@ the area of use of the CRS. Tiles outside the range are transparent.
 Grabbers and layers
 -------------------
 
-A layer holds one grabber per CRS the application supports (``layer.grabbers``,
-keyed by SRID), created in ``post_configure_grabbers`` via the layer type's
+An image layer holds one grabber per CRS the application supports
+(``layer.grabbers``, keyed by SRID), created in
+``base.layer.image.Object.post_configure_grabbers`` via the layer type's
 ``create_grabber``. A layer whose extent does not intersect a CRS gets no
 grabber for it. Grabbers are plain objects, not nodes.
 

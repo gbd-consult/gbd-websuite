@@ -276,7 +276,7 @@ Die CSS Klasse muss dann in "styles.css" (oder einer anderen CSS Datei) definier
 
 ### Layer flags
 
-%reference_de 'gws.base.layer.core.ClientOptions'
+%reference_de 'gws.base.layer.core.ClientConfig'
 
 Neben der UI-Konfiguration kann jede Kartenebene eine Reihe von booleschen Optionen haben, die dem Client mitteilen, wie diese Ebene angezeigt werden soll.
 

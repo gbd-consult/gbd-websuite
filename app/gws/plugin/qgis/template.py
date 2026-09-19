@@ -61,7 +61,7 @@ class _HtmlBlock(gws.Data):
 
 
 class Object(gws.base.template.Object):
-    serviceProvider: provider.Object
+    provider: provider.Object
     qgisTemplate: caps.PrintTemplate
     mapPosition: gws.UomSize
     cssPath: str
@@ -73,7 +73,7 @@ class Object(gws.base.template.Object):
         self._load()
 
     def configure_provider(self):
-        return gws.config.util.configure_service_provider_for(self, provider.Object)
+        return gws.config.util.configure_provider_for(self, provider.Object)
 
     def render(self, tri):
         # @TODO reload only if changed
@@ -138,12 +138,12 @@ class Object(gws.base.template.Object):
 
     def _find_template_by_index(self, idx):
         try:
-            return self.serviceProvider.printTemplates[idx]
+            return self.provider.printTemplates[idx]
         except IndexError:
             raise gws.Error(f'print template #{idx} not found')
 
     def _find_template_by_title(self, title):
-        for tpl in self.serviceProvider.printTemplates:
+        for tpl in self.provider.printTemplates:
             if tpl.title == title:
                 return tpl
         raise gws.Error(f'print template {title!r} not found')
@@ -204,10 +204,10 @@ class Object(gws.base.template.Object):
             'FORMAT': 'pdf',
             'TEMPLATE': self.qgisTemplate.title,
             'TRANSPARENT': 'true',
-            'MAP': self.serviceProvider.server_project_path(),
+            'MAP': self.provider.server_project_path(),
         }
 
-        qgis_project = self.serviceProvider.qgis_project()
+        qgis_project = self.provider.qgis_project()
         changed = self._render_html_blocks(tri, qgis_project)
         project_copy_path = ''
 
@@ -229,7 +229,7 @@ class Object(gws.base.template.Object):
                 'MAP0:SCALE': mro.view.scale,
             })
 
-        res = self.serviceProvider.call_server(params)
+        res = self.provider.call_server(params)
         gws.u.write_file_b(out_path, res.content)
 
         if project_copy_path:

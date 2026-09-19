@@ -38,7 +38,7 @@ class GetBoxRequest(gws.Request):
     compositeLayerUids: Optional[list[str]]
 
 
-class GetXyzRequest(gws.Request):
+class GetTileRequest(gws.Request):
     layerUid: str
     x: int
     y: int
@@ -95,15 +95,15 @@ class Object(gws.base.action.Object):
         mime, content = self._get_box(req, p)
         return gws.ContentResponse(mime=mime, content=content)
 
-    @gws.ext.command.api('mapGetXYZ')
-    def api_get_xyz(self, req: gws.WebRequester, p: GetXyzRequest) -> ImageResponse:
-        """Get an XYZ tile"""
-        mime, content = self._get_xyz(req, p)
+    @gws.ext.command.api('mapGetTile')
+    def api_get_tile(self, req: gws.WebRequester, p: GetTileRequest) -> ImageResponse:
+        """Get a tile"""
+        mime, content = self._get_tile(req, p)
         return ImageResponse(mime=mime, content=content)
 
-    @gws.ext.command.get('mapGetXYZ')
-    def http_get_xyz(self, req: gws.WebRequester, p: GetXyzRequest) -> gws.ContentResponse:
-        mime, content = self._get_xyz(req, p)
+    @gws.ext.command.get('mapGetTile')
+    def http_get_tile(self, req: gws.WebRequester, p: GetTileRequest) -> gws.ContentResponse:
+        mime, content = self._get_tile(req, p)
         return gws.ContentResponse(mime=mime, content=content)
 
     @gws.ext.command.api('mapGetLegend')
@@ -190,10 +190,10 @@ class Object(gws.base.action.Object):
 
         return self._empty_pixel
 
-    def _get_xyz(self, req: gws.WebRequester, p: GetXyzRequest):
+    def _get_tile(self, req: gws.WebRequester, p: GetTileRequest):
         layer = req.user.require_layer(p.layerUid)
         lri = gws.LayerRenderInput(
-            type=gws.LayerRenderInputType.xyz,
+            type=gws.LayerRenderInputType.tile,
             targetCrs=layer.mapCrs,
             user=req.user,
             x=p.x,
@@ -205,7 +205,7 @@ class Object(gws.base.action.Object):
             lri.extraParams['compositeLayerUids'] = p.compositeLayerUids
         lro = None
 
-        gws.debug.time_start(f'RENDER_XYZ layer={p.layerUid} lri={lri!r}')
+        gws.debug.time_start(f'RENDER_TILE layer={p.layerUid} lri={lri!r}')
         try:
             lro = layer.render(lri)
         except Exception:
@@ -221,7 +221,7 @@ class Object(gws.base.action.Object):
         # so they will be subsequently served directly by nginx
 
         # if content and gws.u.is_public_object(layer) and layer.has_cache:
-        #     path = layer.url_path('tile')
+        #     path = layer.url_path_for('tile')
         #     path = path.replace('{x}', str(p.x))
         #     path = path.replace('{y}', str(p.y))
         #     path = path.replace('{z}', str(p.z))

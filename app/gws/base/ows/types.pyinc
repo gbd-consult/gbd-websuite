@@ -119,8 +119,8 @@ class OwsService(Node):
         """True if layer can be used in this service."""
 
 
-class OwsProvider(ServiceProvider):
-    """OWS services Provider."""
+class OwsServiceProvider(Node):
+    """OWS service used as a data provider."""
 
     alwaysXY: bool
     authorization: Optional['OwsAuthorization']

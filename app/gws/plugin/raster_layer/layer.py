@@ -30,7 +30,8 @@ class Config(gws.base.layer.Config):
 
 
 class Object(gws.base.layer.image.Object):
-    serviceProvider: provider.Object
+    provider: provider.Object
+    msOptions: gws.MapServerLayerOptions
     entries: list[provider.ImageEntry]
 
     def configure(self):
@@ -45,7 +46,7 @@ class Object(gws.base.layer.image.Object):
 
     def create_cache_name(self, cache):
         return gws.u.sha256([
-            self.serviceProvider.cache_hash(),
+            self.provider.cache_hash(),
             [e.path for e in self.entries],
             self.cfg('processing', default=[]),
             self.cfg('transparentColor') or '',
@@ -55,21 +56,21 @@ class Object(gws.base.layer.image.Object):
             list(self.wgsExtent),
             cache.requestBuffer,
             cache.requestTiles,
-        ])[: gws.base.layer.core.CACHE_NAME_LENGTH]
+        ])[: gws.base.layer.image.CACHE_NAME_LENGTH]
 
     def create_grabber(self, opts):
         return grabber.Object(opts, msOptions=self.msOptions)
 
     def configure_provider(self):
-        gws.config.util.configure_service_provider_for(self, provider.Object)
+        gws.config.util.configure_provider_for(self, provider.Object)
         
-        default_crs = self.serviceProvider.crs or self.mapCrs
-        self.entries = self.serviceProvider.enumerate_images(default_crs)
+        default_crs = self.provider.crs or self.mapCrs
+        self.entries = self.provider.enumerate_images(default_crs)
         if not self.entries:
             raise gws.ConfigurationError('no images found')
 
         self.msOptions.crs = self.entries[0].bounds.crs
-        self.msOptions.tileIndex = self.serviceProvider.make_tile_index(
+        self.msOptions.tileIndex = self.provider.make_tile_index(
             self.entries,
             file_name=f'raster_layer_{self.uid}',
         )

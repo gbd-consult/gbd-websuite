@@ -8,16 +8,16 @@ from . import provider
 
 
 class Object(gws.base.grabber.tile.Object):
-    serviceProvider: provider.Object
+    provider: provider.Object
 
-    def __init__(self, opts: gws.base.grabber.Options, serviceProvider: provider.Object):
+    def __init__(self, opts: gws.base.grabber.Options, provider: provider.Object):
         super().__init__(opts)
-        self.serviceProvider = serviceProvider
+        self.provider = provider
 
-        sg = self.serviceProvider.grid
+        sg = self.provider.grid
 
         self.sourceCrs = sg.crs
-        self.sourceTms = gws.lib.grid.matrix_set_for_grid(sg, self.serviceProvider.maxLevel)
+        self.sourceTms = gws.lib.grid.matrix_set_for_grid(sg, self.provider.maxLevel)
 
     def fetch_tile_as_bytes(self, tm, col, row):
-        return self.serviceProvider.get_tile(col, row, int(tm.identifier))
+        return self.provider.get_tile(col, row, int(tm.identifier))

@@ -26,7 +26,7 @@ class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
 
 
 class Object(gws.base.layer.group.Object):
-    serviceProvider: provider.Object
+    provider: provider.Object
     compositeRender: bool = False
     sqlFilters: dict
 
@@ -35,28 +35,41 @@ class Object(gws.base.layer.group.Object):
         self.sqlFilters = self.cfg('sqlFilters', default={})
         if self.compositeRender:
             self.canRenderBox = True
-            self.canRenderXyz = True
+            self.canRenderTile = True
+
+    def post_configure(self):
+        if self.compositeRender:
+            gws.base.layer.image.Object.post_configure_grabbers(self)
+
+    def create_cache_name(self, cache):
+        return gws.u.sha256([
+            self.provider.cache_hash(),
+            vars(self.imageFormat),
+            list(self.wgsExtent),
+            cache.requestBuffer,
+            cache.requestTiles,
+        ])[: gws.base.layer.image.CACHE_NAME_LENGTH]
 
     def create_grabber(self, opts):
-        if not self.cfg('compositeRender'):
-            return
-        return grabber.Object(opts, serviceProvider=self.serviceProvider, params={})
+        return grabber.Object(opts, provider=self.provider, params={})
+
+    def configure_provider(self):
+        return gws.config.util.configure_provider_for(self, provider.Object)
 
     def configure_group(self):
-        gws.config.util.configure_service_provider_for(self, provider.Object)
-
-        configs = gws.base.layer.tree.layer_configs_from_layer(
+        if super().configure_group():
+            return True
+        gws.base.layer.tree.configure_group_layers_for(
             self,
-            self.serviceProvider.sourceLayers,
-            self.serviceProvider.leaf_config,
+            self.provider.sourceLayers,
+            self.provider.create_leaf_layer_config,
         )
-
-        self.configure_group_layers(configs)
+        return True
 
     def configure_metadata(self):
         if super().configure_metadata():
             return True
-        self.metadata = self.serviceProvider.metadata
+        self.metadata = self.provider.metadata
         return True
 
     def props(self, user):
@@ -77,27 +90,29 @@ class Object(gws.base.layer.group.Object):
         p = gws.u.merge(
             p,
             type='compositeBox',
-            url=self.url_path('box'),
+            url=self.url_path_for('box'),
             layers=[_to_leaf(la) for la in p['layers']],
         )
         if self.displayMode == gws.LayerDisplayMode.tile:
             p.type = 'compositeTile'
-            p.url = self.url_path('tile').replace('/z/', '/compositeLayerUids/{c}/z/')
+            p.url = self.url_path_for('tile').replace('/z/', '/compositeLayerUids/{c}/z/')
         return p
 
     def render_box(self, lri):
-        if self.compositeRender:
-            lri.renderParams = self.composite_render_params(lri)
-            if not lri.renderParams:
-                return
-        return super().render_box(lri)
+        if not self.compositeRender:
+            return
+        lri.renderParams = self.composite_render_params(lri)
+        if not lri.renderParams:
+            return
+        return gws.base.layer.image.Object.render_box(self, lri)
 
     def render_tile(self, lri):
-        if self.compositeRender:
-            lri.renderParams = self.composite_render_params(lri)
-            if not lri.renderParams:
-                return
-        return super().render_tile(lri)
+        if not self.compositeRender:
+            return
+        lri.renderParams = self.composite_render_params(lri)
+        if not lri.renderParams:
+            return
+        return gws.base.layer.image.Object.render_tile(self, lri)
 
     def composite_render_params(self, lri: gws.LayerRenderInput) -> Optional[dict]:
         leaves = dict(lri.extraParams or {}).get('compositeLayerUids', [])
@@ -107,7 +122,7 @@ class Object(gws.base.layer.group.Object):
         layers = []
         filters = []
 
-        for la in self.descendants():
+        for la in self.find_descendants(gws.ext.object.layer):
             if la.uid not in leaves:
                 continue
             if not lri.user.can_read(la):

@@ -6,7 +6,7 @@ import gws.lib.bounds
 import gws.lib.extent
 import gws.gis.source
 
-from . import core
+from . import core, tree
 
 gws.ext.new.layer('group')
 
@@ -26,19 +26,16 @@ class Object(core.Object):
     isGroup = True
 
     def configure(self):
-        self.configure_group()
-        if not self.layers:
-            raise gws.Error(f'group is empty: {self}')
         self.configure_layer()
 
         self.canRenderBox = any(la.canRenderBox for la in self.layers)
-        self.canRenderXyz = any(la.canRenderXyz for la in self.layers)
+        self.canRenderTile = any(la.canRenderTile for la in self.layers)
         self.canRenderSvg = any(la.canRenderSvg for la in self.layers)
 
     def configure_group(self):
         p = self.cfg('layers')
         if p:
-            self.configure_group_layers(p)
+            tree.create_group_layers(self, p)
             return True
 
     def configure_extent(self):

@@ -1,4 +1,4 @@
-"""Layer OWS controller."""
+"""Layer OWS binding."""
 
 from typing import Optional
 
@@ -26,7 +26,7 @@ class Config(gws.Config):
     """OWS-specific models."""
 
 
-class Object(gws.LayerOws):
+class Object(gws.LayerOwsBinding):
     def configure(self):
         self.allowedServiceUids = self.cfg('allowedServices', default=[])
         self.deniedServiceUids = self.cfg('deniedServices', default=[])

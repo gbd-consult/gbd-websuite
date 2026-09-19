@@ -103,6 +103,13 @@ class Object(gws.base.ows.client.provider.Object):
 
     DEFAULT_GET_FEATURE_LIMIT = 100
 
+    def create_leaf_layer_config(self, source_layers):
+        return dict(
+            type='wmsflat',
+            _defaultProvider=self,
+            _defaultSourceLayers=source_layers,
+        )
+
     def get_features(self, search, source_layers):
         v3 = self.version >= '1.3'
 

@@ -26,7 +26,7 @@ class ImageEntry(gws.Data):
     bounds: gws.Bounds
 
 
-class Object(gws.ServiceProvider):
+class Object(gws.Node):
     paths: list[str]
     crs: Optional[gws.Crs]
 

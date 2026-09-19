@@ -20,7 +20,7 @@ class Config(gws.base.search.finder.Config):
 
 class Object(gws.base.search.finder.Object):
     supportsGeometrySearch = True
-    serviceProvider: provider.Object
+    provider: provider.Object
 
     def configure(self):
         self.configure_provider()
@@ -28,7 +28,7 @@ class Object(gws.base.search.finder.Object):
         self.configure_templates()
 
     def configure_provider(self):
-        return gws.config.util.configure_service_provider_for(self, provider.Object)
+        return gws.config.util.configure_provider_for(self, provider.Object)
 
     def configure_models(self):
         return gws.config.util.configure_models_for(self, with_default=True)
@@ -38,5 +38,5 @@ class Object(gws.base.search.finder.Object):
             gws.ext.object.model,
             cfg,
             type=self.extType,
-            _defaultProvider=self.serviceProvider,
+            _defaultProvider=self.provider,
         )

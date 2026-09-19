@@ -47,7 +47,7 @@ class Props(gws.base.layer.core.Props):
 
 
 class Object(gws.base.layer.image.Object):
-    serviceProvider: provider.Object
+    provider: provider.Object
     sourceLayers: list[gws.SourceLayer]
 
     activeLayer: gws.SourceLayer
@@ -64,7 +64,7 @@ class Object(gws.base.layer.image.Object):
     def create_cache_name(self, cache):
         return gws.u.sha256(
             [
-                self.serviceProvider.cache_hash(),
+                self.provider.cache_hash(),
                 self.activeLayer.name,
                 self.activeStyle.name,
                 self.activeTms.identifier,
@@ -73,18 +73,18 @@ class Object(gws.base.layer.image.Object):
                 cache.requestBuffer,
                 cache.requestTiles,
             ]
-        )[: gws.base.layer.core.CACHE_NAME_LENGTH]
+        )[: gws.base.layer.image.CACHE_NAME_LENGTH]
 
     def create_grabber(self, opts):
         return grabber.Object(
             opts,
-            serviceProvider=self.serviceProvider,
+            provider=self.provider,
             tms=self.activeTms,
-            urlTemplate=self.serviceProvider.tile_url_template(self.activeLayer, self.activeTms, self.activeStyle),
+            urlTemplate=self.provider.tile_url_template(self.activeLayer, self.activeTms, self.activeStyle),
         )
 
     def configure_provider(self):
-        return gws.config.util.configure_service_provider_for(self, provider.Object)
+        return gws.config.util.configure_provider_for(self, provider.Object)
 
     def props(self, user):
         p = super().props(user)
@@ -95,7 +95,7 @@ class Object(gws.base.layer.image.Object):
         return gws.u.merge(
             p,
             type='wmts',
-            url=self.serviceProvider.tile_url_template(self.activeLayer, tms, self.activeStyle),
+            url=self.provider.tile_url_template(self.activeLayer, tms, self.activeStyle),
             tileMatrixSet=TileMatrixSetProps(
                 origin=(m0.x, m0.y),
                 resolutions=[tm.resolution for tm in tms.matrices],
@@ -108,7 +108,7 @@ class Object(gws.base.layer.image.Object):
         if super().configure_sources():
             return True
 
-        gws.u.require(self.serviceProvider, 'failed to configure service provider')
+        gws.u.require(self.provider, 'failed to configure service provider')
 
         self.configure_source_layers()
         if not self.sourceLayers:
@@ -119,15 +119,15 @@ class Object(gws.base.layer.image.Object):
         self.configure_style()
 
     def configure_source_layers(self):
-        return gws.config.util.configure_source_layers_for(self, self.serviceProvider.sourceLayers, is_image=True)
+        return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers, is_image=True)
 
     def configure_tms(self):
-        crs = self.serviceProvider.forceCrs
+        crs = self.provider.forceCrs
         if not crs:
             crs = gws.lib.crs.best_match(self.mapCrs, [tms.crs for tms in self.activeLayer.tileMatrixSets])
         tms_list = [tms for tms in self.activeLayer.tileMatrixSets if tms.crs == crs]
         if not tms_list:
-            raise gws.Error(f'no TMS for {crs} in {self.serviceProvider.url}')
+            raise gws.Error(f'no TMS for {crs} in {self.provider.url}')
         self.activeTms = tms_list[0]
 
     def configure_style(self):
@@ -190,7 +190,7 @@ class Object(gws.base.layer.image.Object):
     def configure_metadata(self):
         if super().configure_metadata():
             return True
-        self.metadata = self.serviceProvider.metadata
+        self.metadata = self.provider.metadata
         return True
 
     ##

@@ -21,7 +21,6 @@ class _Task(gws.Data):
 
 
 class Object(gws.ServerMonitor):
-    watchPaths: set[str]
     enabled: bool
     frequency: int
     watcher: gws.lib.watcher.Watcher

@@ -30,7 +30,7 @@ class Config(gws.base.layer.Config):
 
 
 class Object(gws.base.layer.vector.Object):
-    serviceProvider: provider.Object
+    provider: provider.Object
     sourceLayers: list[gws.SourceLayer]
     sourceCrs: gws.Crs
 
@@ -40,19 +40,19 @@ class Object(gws.base.layer.vector.Object):
             raise gws.Error(f'wfsflat requires a single source layer')
 
     def configure_provider(self):
-        return gws.config.util.configure_service_provider_for(self, provider.Object)
+        return gws.config.util.configure_provider_for(self, provider.Object)
 
     def configure_sources(self):
         if super().configure_sources():
             return True
 
-        gws.u.require(self.serviceProvider, 'failed to configure service provider')
+        gws.u.require(self.provider, 'failed to configure service provider')
 
         self.configure_source_layers()
         return True
 
     def configure_source_layers(self):
-        return gws.config.util.configure_source_layers_for(self, self.serviceProvider.sourceLayers)
+        return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers)
 
     def configure_models(self):
         return gws.config.util.configure_models_for(self, with_default=True)
@@ -62,7 +62,7 @@ class Object(gws.base.layer.vector.Object):
             gws.ext.object.model,
             cfg,
             type='wfs',
-            _defaultProvider=self.serviceProvider,
+            _defaultProvider=self.provider,
             _defaultSourceLayers=self.sourceLayers
         )
 
@@ -90,6 +90,6 @@ class Object(gws.base.layer.vector.Object):
             gws.ext.object.finder,
             cfg,
             type='wfs',
-            _defaultProvider=self.serviceProvider,
+            _defaultProvider=self.provider,
             _defaultSourceLayers=self.sourceLayers
         )

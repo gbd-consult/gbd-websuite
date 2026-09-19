@@ -38,7 +38,7 @@ class Object(gws.ModelManager):
                     res[model.uid] = model
 
         if project.map:
-            for la in project.map.rootLayer.descendants():
+            for la in project.map.rootLayer.find_descendants(gws.ext.object.layer):
                 _collect(la)
 
         _collect(project)

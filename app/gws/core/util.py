@@ -240,35 +240,6 @@ def merge(*args, **kwargs) -> Union[dict, 'Data']:
     return type(args[0])(m)
 
 
-def deep_merge(x, y, concat_lists=True):
-    """Deeply merge dicts/Datas into a nested dict/Data.
-    Latter vales overwrite former ones unless None.
-
-    Args:
-        x: dict or Data.
-        y: dict or Data.
-        concat_lists: if true, list will be concatenated, otherwise merged
-
-    Returns:
-        A new object (dict or Data).
-    """
-
-    if (is_dict(x) or is_data_object(x)) and (is_dict(y) or is_data_object(y)):
-        xd = to_dict(x)
-        yd = to_dict(y)
-        d = {k: deep_merge(xd.get(k), yd.get(k), concat_lists) for k in xd.keys() | yd.keys()}
-        return d if is_dict(x) else type(x)(d)
-
-    if is_list(x) and is_list(y):
-        xc = compact(x)
-        yc = compact(y)
-        if concat_lists:
-            return xc + yc
-        return [deep_merge(x1, y1, concat_lists) for x1, y1 in zip(xc, yc)]
-
-    return y if y is not None else x
-
-
 def compact(x):
     """Remove all None values from a collection."""
 

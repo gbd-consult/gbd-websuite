@@ -55,6 +55,13 @@ class Object(gws.base.ows.client.provider.Object):
 
     DEFAULT_GET_FEATURE_LIMIT = 100
 
+    def create_leaf_layer_config(self, source_layers):
+        return dict(
+            type='wfsflat',
+            _defaultProvider=self,
+            _defaultSourceLayers=source_layers,
+        )
+
     def get_features(self, search, source_layers):
         """Perform the WFS GetFeature operation.
 

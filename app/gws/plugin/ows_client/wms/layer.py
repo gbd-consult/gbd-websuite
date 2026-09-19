@@ -17,31 +17,23 @@ class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
 
 
 class Object(gws.base.layer.group.Object):
-    serviceProvider: provider.Object
+    provider: provider.Object
 
     def configure_group(self):
-        self.configure_provider()
-
-        def leaf_layer_maker(source_layers):
-            return dict(
-                type='wmsflat',
-                _defaultProvider=self.serviceProvider,
-                _defaultSourceLayers=source_layers,
-            )
-
-        configs = gws.base.layer.tree.layer_configs_from_layer(
+        if super().configure_group():
+            return True
+        gws.base.layer.tree.configure_group_layers_for(
             self,
-            self.serviceProvider.sourceLayers,
-            leaf_layer_maker,
+            self.provider.sourceLayers,
+            self.provider.create_leaf_layer_config,
         )
-
-        self.configure_group_layers(configs)
+        return True
 
     def configure_provider(self):
-        return gws.config.util.configure_service_provider_for(self, provider.Object)
+        return gws.config.util.configure_provider_for(self, provider.Object)
 
     def configure_metadata(self):
         if super().configure_metadata():
             return True
-        self.metadata = self.serviceProvider.metadata
+        self.metadata = self.provider.metadata
         return True

@@ -12,7 +12,7 @@ class Config(gws.Config):
 
 
 
-class Object(gws.ServiceProvider):
+class Object(gws.Node):
     path: str
 
     def configure(self):

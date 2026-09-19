@@ -86,7 +86,6 @@ class Object(gws.Node):
     title: str
     type: str
     mimeType: str
-    usedKeys: set[str]
 
     def configure(self):
         self.type = self.cfg('type') or 'csv'

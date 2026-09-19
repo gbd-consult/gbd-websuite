@@ -26,7 +26,8 @@ class Config(gws.base.layer.Config):
 
 
 class Object(gws.base.layer.image.Object):
-    serviceProvider: provider.Object
+    provider: provider.Object
+    msOptions: gws.MapServerLayerOptions
 
     def configure(self):
         self.msOptions = gws.MapServerLayerOptions(
@@ -37,8 +38,8 @@ class Object(gws.base.layer.image.Object):
         self.configure_layer()
 
     def configure_provider(self):
-        gws.config.util.configure_service_provider_for(self, provider.Object)
-        self.msOptions.path = self.serviceProvider.path
+        gws.config.util.configure_provider_for(self, provider.Object)
+        self.msOptions.path = self.provider.path
 
     def configure_extent(self):
         with gws.lib.gdalx.open_raster(self.msOptions.path) as gd:
@@ -51,14 +52,14 @@ class Object(gws.base.layer.image.Object):
 
     def create_cache_name(self, cache):
         return gws.u.sha256([
-            self.serviceProvider.cache_hash(),
+            self.provider.cache_hash(),
             self.cfg('processing', default=[]),
             self.cfg('transparentColor') or '',
             vars(self.imageFormat),
             list(self.wgsExtent),
             cache.requestBuffer,
             cache.requestTiles,
-        ])[: gws.base.layer.core.CACHE_NAME_LENGTH]
+        ])[: gws.base.layer.image.CACHE_NAME_LENGTH]
 
     def create_grabber(self, opts):
         return grabber.Object(opts, msOptions=self.msOptions)

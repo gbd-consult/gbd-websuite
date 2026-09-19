@@ -22,23 +22,32 @@ class Config(gws.base.layer.Config):
 
 
 class Object(gws.base.layer.image.Object):
-    serviceProvider: provider.Object
+    provider: provider.Object
 
     canRenderInClient = True
 
     def configure(self):
         self.configure_layer()
 
+    def create_cache_name(self, cache):
+        return gws.u.sha256([
+            self.provider.cache_hash(),
+            vars(self.imageFormat),
+            list(self.wgsExtent),
+            cache.requestBuffer,
+            cache.requestTiles,
+        ])[: gws.base.layer.image.CACHE_NAME_LENGTH]
+
     def create_grabber(self, opts):
-        return grabber.Object(opts, serviceProvider=self.serviceProvider)
+        return grabber.Object(opts, provider=self.provider)
 
     def configure_provider(self):
-        return gws.config.util.configure_service_provider_for(self, provider.Object)
+        return gws.config.util.configure_provider_for(self, provider.Object)
 
     def configure_extent(self):
         if super().configure_extent():
             return True
-        grid = self.serviceProvider.grid
+        grid = self.provider.grid
         ext = gws.lib.extent.transform_to_wgs(grid.extent, grid.crs)
         if gws.lib.extent.is_valid_wgs(ext):
             self.wgsExtent = grid.crs.clip_wgs_extent(ext) or grid.crs.wgsMaxExtent
@@ -51,5 +60,5 @@ class Object(gws.base.layer.image.Object):
     def props(self, user):
         p = super().props(user)
         if self.displayMode == gws.LayerDisplayMode.client:
-            return gws.u.merge(p, type='xyz', url=self.serviceProvider.url)
+            return gws.u.merge(p, type='xyz', url=self.provider.url)
         return p

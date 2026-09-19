@@ -7,17 +7,17 @@ from . import provider
 
 
 class Object(gws.base.grabber.box.Object):
-    serviceProvider: provider.Object
+    provider: provider.Object
     params: dict
 
-    def __init__(self, opts: gws.base.grabber.Options, serviceProvider: provider.Object, params: dict):
+    def __init__(self, opts: gws.base.grabber.Options, provider: provider.Object, params: dict):
         super().__init__(opts)
-        self.serviceProvider = serviceProvider
+        self.provider = provider
         self.params = params
         self.sourceCrs = self.targetCrs
 
     def fetch_box_as_bytes(self, bounds, w, h, params=None):
-        return self.serviceProvider.get_map(
+        return self.provider.get_map(
             bounds,
             w,
             h,

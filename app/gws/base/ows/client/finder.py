@@ -9,7 +9,7 @@ class Object(gws.base.search.finder.Object):
     """Generic OWS Finder."""
 
     supportsGeometrySearch = True
-    serviceProvider: gws.OwsProvider
+    provider: gws.OwsServiceProvider
     sourceLayers: list[gws.SourceLayer]
 
     def configure(self):
@@ -22,14 +22,14 @@ class Object(gws.base.search.finder.Object):
         pass
 
     def configure_sources(self):
-        gws.u.require(self.serviceProvider, 'failed to configure service provider')
+        gws.u.require(self.provider, 'failed to configure service provider')
 
         self.configure_source_layers()
         if not self.sourceLayers:
-            raise gws.Error(f'no queryable layers in {self.serviceProvider}')
+            raise gws.Error(f'no queryable layers in {self.provider}')
 
     def configure_source_layers(self):
-        return gws.config.util.configure_source_layers_for(self, self.serviceProvider.sourceLayers, is_queryable=True)
+        return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers, is_queryable=True)
 
     def configure_models(self):
         return gws.config.util.configure_models_for(self, with_default=True)
@@ -39,6 +39,6 @@ class Object(gws.base.search.finder.Object):
             gws.ext.object.model,
             cfg,
             type=self.extType,
-            _defaultProvider=self.serviceProvider,
+            _defaultProvider=self.provider,
             _defaultSourceLayers=self.sourceLayers
         )

@@ -9,25 +9,6 @@ class LayerDisplayMode(Enum):
     """Draw a layer in the client."""
 
 
-class LayerClientOptions(Data):
-    """Client options for a layer."""
-
-    expanded: bool
-    """A layer is expanded in the list view."""
-    unlisted: bool
-    """A layer is hidden in the list view."""
-    selected: bool
-    """A layer is initially selected."""
-    hidden: bool
-    """A layer is initially hidden."""
-    unfolded: bool
-    """A layer is not listed, but its children are."""
-    exclusive: bool
-    """Only one of this layer children is visible at a time."""
-    treeClassName: str
-    """CSS class name for the layer tree item."""
-
-
 class FeatureLoadingStrategy(Enum):
     """Loading strategy for features."""
 
@@ -39,76 +20,93 @@ class FeatureLoadingStrategy(Enum):
     """Load features on demand."""
 
 
-class LayerOws(Node):
-    """Layer OWS controller."""
+class LayerOwsBinding(Node):
+    """Binding of a layer to OWS services: access, names and models."""
 
     allowedServiceUids: list[str]
+    """UIDs of services which can use this layer; empty means any."""
     deniedServiceUids: list[str]
+    """UIDs of services which can not use this layer."""
     featureName: str
+    """Name for features in this layer."""
     geometryName: str
+    """Name for geometries in this layer."""
     layerName: str
+    """Name for this layer in OWS services."""
     models: list['Model']
+    """OWS-specific models."""
     xmlNamespace: Optional['XmlNamespace']
-
-
-class ServiceProvider(Node):
-    """Map material source shared by layers, grabbers, models and finders."""
-
-    def cache_hash(self) -> str:
-        """Hash of the source binding, stable across restarts; keys the tile cache."""
+    """XML namespace for feature and layer names."""
 
 
 class Layer(Node):
     """Layer object."""
 
+    bounds: Bounds
+    """Bounds in the map CRS: the WGS extent clipped to the parent extent and to the CRS."""
     canRenderBox: bool
+    """The layer can render a single image for an arbitrary extent."""
+    canRenderInClient: bool
+    """The layer can be drawn by the client directly from its source (``display: client``)."""
     canRenderSvg: bool
-    canRenderXyz: bool
-
+    """The layer can render its features as SVG."""
+    canRenderTile: bool
+    """The layer can render tiles in a fixed grid."""
+    cssSelector: str
+    """CSS selector for feature styling."""
+    displayMode: LayerDisplayMode
+    """How the client displays the layer."""
+    finders: list['Finder']
+    """Search providers."""
     grabbers: dict[int, 'Grabber']
     """Grabbers by CRS code, one for each CRS the application supports."""
-
-    isEnabledForOws: bool
-    isGroup: bool
-    isSearchable: bool
-
     hasLegend: bool
-
-    bounds: Bounds
-    zoomBounds: Bounds
-    wgsExtent: Extent
-    mapCrs: 'Crs'
-    clientOptions: LayerClientOptions
-    displayMode: LayerDisplayMode
-    loadingStrategy: FeatureLoadingStrategy
+    """The layer has a legend."""
     imageFormat: ImageFormat
-    opacity: float
-    resolutions: list[float]
-    title: str
-
-    metadata: 'Metadata'
-    legend: Optional['Legend']
-    legendUrl: str
-
-    finders: list['Finder']
-    templates: list['Template']
-    models: list['Model']
-    ows: 'LayerOws'
-
-    msOptions: Optional['MapServerLayerOptions']
-
+    """Image format for box and tile rendering."""
+    isEnabledForOws: bool
+    """The layer can be used by OWS services."""
+    isGroup: bool
+    """The layer is a group of other layers."""
+    isSearchable: bool
+    """The layer has at least one search provider."""
     layers: list['Layer']
-
+    """Child layers."""
+    legend: Optional['Legend']
+    """Legend object."""
+    loadingStrategy: FeatureLoadingStrategy
+    """How the client loads features."""
+    mapCrs: 'Crs'
+    """CRS of the map this layer belongs to."""
+    metadata: 'Metadata'
+    """Layer metadata."""
+    models: list['Model']
+    """Data models."""
+    opacity: float
+    """Layer opacity, 0 to 1."""
+    ows: 'LayerOwsBinding'
+    """Binding to OWS services."""
+    resolutions: list[float]
+    """Resolutions the layer is visible at, in map units per pixel."""
     sourceLayers: list['SourceLayer']
+    """Source layers this layer is built from."""
+    templates: list['Template']
+    """Layer templates."""
+    title: str
+    """Layer title."""
+    wgsExtent: Extent
+    """Layer extent in WGS84."""
+    zoomBounds: Bounds
+    """Bounds the client zooms to for this layer; defaults to ``bounds``."""
 
-    def render(self, lri: LayerRenderInput) -> Optional['LayerRenderOutput']: ...
+    def find_features(self, search: 'SearchQuery', user: 'User') -> list['Feature']:
+        """Find features in the layer's readable model."""
 
-    def find_features(self, search: 'SearchQuery', user: 'User') -> list['Feature']: ...
+    def render(self, lri: LayerRenderInput) -> Optional['LayerRenderOutput']:
+        """Render a box, a tile or an SVG fragment, depending on the input type."""
 
-    def render_legend(self, args: Optional[dict] = None) -> Optional['LegendRenderOutput']: ...
+    def render_legend(self, args: Optional[dict] = None) -> Optional['LegendRenderOutput']:
+        """Render the legend; without ``args`` the output is cached for the server lifetime."""
 
-    def url_path(self, kind: str) -> str: ...
-
-    def ancestors(self) -> list['Layer']: ...
-
-    def descendants(self) -> list['Layer']: ...
+    def url_path_for(self, kind: str) -> str:
+        """URL path for ``box``, ``tile``, ``legend`` or ``features`` requests to this layer."""

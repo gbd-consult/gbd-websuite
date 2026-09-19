@@ -49,7 +49,7 @@ class Config(gws.base.legend.Config):
 
 
 class Object(gws.base.legend.Object):
-    serviceProvider: provider.Object
+    provider: provider.Object
     sourceLayers: list[gws.SourceLayer]
     params: dict
 
@@ -59,14 +59,14 @@ class Object(gws.base.legend.Object):
         self.configure_params()
 
     def configure_provider(self):
-        return gws.config.util.configure_service_provider_for(self, provider.Object)
+        return gws.config.util.configure_provider_for(self, provider.Object)
 
     def configure_sources(self):
-        gws.u.require(self.serviceProvider, 'failed to configure service provider')
+        gws.u.require(self.provider, 'failed to configure service provider')
         self.configure_source_layers()
 
     def configure_source_layers(self):
-        return gws.config.util.configure_source_layers_for(self, self.serviceProvider.sourceLayers)
+        return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers)
 
     def configure_params(self):
         defaults = dict(
@@ -80,16 +80,16 @@ class Object(gws.base.legend.Object):
             TRANSPARENT=True,
         )
         opts = gws.u.to_upper_dict(self.cfg('options', default={}))
-        self.params = self.serviceProvider.server_params(gws.u.merge(_DEFAULT_LEGEND_PARAMS, defaults, opts))
+        self.params = self.provider.server_params(gws.u.merge(_DEFAULT_LEGEND_PARAMS, defaults, opts))
 
     ##
 
     def render(self, args=None):
         def _get():
-            return self.serviceProvider.call_server(self.params).content
+            return self.provider.call_server(self.params).content
 
         content = gws.u.get_cached_object(
-            f'legend_{gws.u.sha256([self.serviceProvider.url, self.params])}',
+            f'legend_{gws.u.sha256([self.provider.url, self.params])}',
             self.cacheMaxAge,
             _get,
         )

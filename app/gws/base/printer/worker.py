@@ -20,7 +20,6 @@ class Object(gws.base.job.worker.Object):
     tri: gws.TemplateRenderInput
     printer: gws.Printer
     template: gws.Template
-    tmpDir: str
     contentPath: str
 
     @classmethod

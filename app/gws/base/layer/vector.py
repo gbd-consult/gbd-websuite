@@ -15,7 +15,7 @@ class Object(core.Object):
 
     # @TODO rasterize vector layers
     canRenderBox = False
-    canRenderXyz = False
+    canRenderTile = False
     canRenderSvg = True
 
     geometryType: Optional[gws.GeometryType] = None
@@ -25,7 +25,7 @@ class Object(core.Object):
         return gws.u.merge(
             super().props(user),
             type='vector',
-            url=self.url_path('features'),
+            url=self.url_path_for('features'),
             geometryType=self.geometryType
         )
 

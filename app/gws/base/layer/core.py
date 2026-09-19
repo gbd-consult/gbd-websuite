@@ -5,24 +5,21 @@ from typing import Optional, cast
 import gws
 import gws.base.model
 import gws.config.util
-import gws.lib.crs
 import gws.lib.grid
-import gws.lib.image
 import gws.lib.extent
 import gws.gis.source
 import gws.gis.zoom
 import gws.base.metadata
-import gws.base.grabber
 import gws.lib.mime
 import gws.lib.image
 import gws.gis.cache
 
 from . import ows
 
-DEFAULT_TILE_SIZE = 256
+DEFAULT_IMAGE_FORMAT = gws.ImageFormat(name='png8', mimeTypes=['image/png'], options={'mode': 'P'})
 
 
-class AutoLayersOptions(gws.ConfigWithAccess):
+class AutoLayersConfig(gws.ConfigWithAccess):
     """Configuration for automatic layers."""
 
     applyTo: Optional[gws.gis.source.LayerFilter]
@@ -31,7 +28,7 @@ class AutoLayersOptions(gws.ConfigWithAccess):
     """Configuration for the matching layers."""
 
 
-class ClientOptions(gws.Data):
+class ClientConfig(gws.Data):
     """Client options for a layer."""
 
     expanded: bool = False
@@ -50,12 +47,31 @@ class ClientOptions(gws.Data):
     """CSS class name for the layer tree item."""
 
 
+class ClientOptions(gws.Data):
+    """Client options for a layer."""
+
+    exclusive: bool
+    """Only one of this layer children is visible at a time."""
+    expanded: bool
+    """A layer is expanded in the list view."""
+    hidden: bool
+    """A layer is initially hidden."""
+    selected: bool
+    """A layer is initially selected."""
+    treeClassName: str
+    """CSS class name for the layer tree item."""
+    unfolded: bool
+    """A layer is not listed, but its children are."""
+    unlisted: bool
+    """A layer is hidden in the list view."""
+
+
 class Config(gws.ConfigWithAccess):
     """Layer configuration"""
 
     cache: Optional[gws.gis.cache.LayerConfig]
     """Cache configuration."""
-    clientOptions: Optional[ClientOptions]
+    clientOptions: Optional[ClientConfig]
     """Options for the layer display in the client."""
     cssSelector: str = ''
     """Css selector for feature layers."""
@@ -102,7 +118,7 @@ class Config(gws.ConfigWithAccess):
 
 
 class Props(gws.Props):
-    clientOptions: gws.LayerClientOptions
+    clientOptions: ClientOptions
     cssSelector: str
     displayMode: str
     extent: Optional[gws.Extent]
@@ -121,23 +137,15 @@ class Props(gws.Props):
     url: str = ''
 
 
-_DEFAULT_IMAGE_FORMAT = gws.lib.image.FormatConfig(name='png8', mimeTypes=['image/png'], options={'mode': 'P'})
-
-CACHE_NAME_LENGTH = 12
-
-
 class Object(gws.Layer):
     parent: gws.Layer
 
-    clientOptions: gws.LayerClientOptions
-    cssSelector: str
+    clientOptions: ClientOptions
 
     canRenderBox = False
     canRenderSvg = False
-    canRenderXyz = False
-
+    canRenderTile = False
     canRenderInClient = False
-    """The layer can be drawn by the client directly from its source (``display: client``)."""
 
     isEnabledForOws = False
     isGroup = False
@@ -163,8 +171,10 @@ class Object(gws.Layer):
         self.opacity = self.cfg('opacity')
         self.title = self.cfg('title')
 
-        p = self.cfg('imageFormat') or _DEFAULT_IMAGE_FORMAT
-        self.imageFormat = gws.ImageFormat(name=p.name, mimeTypes=p.mimeTypes, options=p.options or {})
+        self.imageFormat = DEFAULT_IMAGE_FORMAT
+        p = self.cfg('imageFormat')
+        if p:
+            self.imageFormat = gws.ImageFormat(name=p.name, mimeTypes=p.mimeTypes, options=p.options or {})
 
         self.parentWgsExtent = self.cfg('_parentWgsExtent')
         self.parentResolutions = self.cfg('_parentResolutions')
@@ -181,7 +191,6 @@ class Object(gws.Layer):
 
         self.metadata = gws.base.metadata.new()
         self.legend = None
-        self.legendUrl = ''
 
         self.layers = []
         self.sourceLayers = []
@@ -193,6 +202,7 @@ class Object(gws.Layer):
 
         self.configure_provider()
         self.configure_sources()
+        self.configure_group()
         self.configure_models()
         self.configure_extent()
         self.configure_bounds()
@@ -205,6 +215,9 @@ class Object(gws.Layer):
         self.configure_ows()
 
     ##
+
+    def configure_group(self):
+        pass
 
     def configure_extent(self):
         p = self.cfg('extent')
@@ -281,20 +294,6 @@ class Object(gws.Layer):
     def configure_templates(self):
         return gws.config.util.configure_templates_for(self)
 
-    def configure_group_layers(self, layer_configs):
-        ls = []
-
-        for cfg in layer_configs:
-            cfg = gws.u.merge(
-                cfg,
-                _parentWgsExtent=self.wgsExtent,
-                _mapCrs=self.mapCrs,
-                _parentResolutions=self.resolutions,
-            )
-            ls.append(self.create_child(gws.ext.object.layer, cfg))
-
-        self.layers = gws.u.compact(ls)
-
     def configure_ows(self):
         self.isEnabledForOws = self.cfg('withOws', default=True)
         self.ows = self.create_child(ows.Object, self.cfg('ows'), _defaultName=gws.u.to_uid(self.title))
@@ -307,92 +306,9 @@ class Object(gws.Layer):
 
         self.zoomBounds = self.zoomBounds or self.bounds
 
-        if self.legend:
-            self.legendUrl = self.url_path('legend')
-
-        self.post_configure_grabbers()
-
-    def post_configure_grabbers(self):
-        if not (self.canRenderBox or self.canRenderXyz):
-            return
-
-        p = cast(
-            gws.gis.cache.LayerConfig,
-            self.cfg('cache') or self.root.specs.read({}, 'gws.gis.cache.core.LayerConfig'),
-        )
-        cache_proto = gws.MapCache(
-            name=p.name,
-            maxAge=p.maxAge,
-            maxLevel=p.maxLevel,
-            requestBuffer=p.requestBuffer,
-            requestTiles=p.requestTiles,
-        )
-        if not self.cfg('withCache'):
-            cache_proto.maxAge = 0
-        if not cache_proto.name:
-            cache_proto.name = self.create_cache_name(cache_proto)
-
-        cache_srids = []
-        if p.crs:
-            cache_srids = [gws.lib.crs.require(c).srid for c in p.crs]
-
-        for crs in self.root.app.supported_crs():
-            ext = crs.clip_wgs_extent(self.wgsExtent)
-            if not ext:
-                self.root.config_warning(f'extent {self.wgsExtent} is incompatible with {crs!r}')
-                continue
-            cache = gws.MapCache(**vars(cache_proto))
-            if cache_srids and crs.srid not in cache_srids:
-                cache.maxAge = 0
-            cache.name += f'_{crs.srid}'
-
-            opts = gws.base.grabber.Options(
-                crs=crs,
-                cache=cache,
-                extent=gws.lib.extent.transform_from_wgs(ext, crs),
-                imageFormat=self.imageFormat,
-            )
-
-            gr = self.create_grabber(opts)
-            if gr:
-                self.grabbers[crs.srid] = gr
-
-    def create_cache_name(self, cache: gws.MapCache) -> str:
-        prov = getattr(self, 'serviceProvider', None)
-        return gws.u.sha256(
-            [
-                prov.cache_hash() if prov else '',
-                [sl.name for sl in self.sourceLayers],
-                vars(self.imageFormat),
-                list(self.wgsExtent),
-                cache.requestBuffer,
-                cache.requestTiles,
-            ]
-        )[:CACHE_NAME_LENGTH]
-
-    def create_grabber(self, opts: gws.base.grabber.Options) -> Optional[gws.Grabber]:
-        pass
-
     ##
 
-    # @TODO use Node.find_ancestors
-
-    def ancestors(self):
-        ls = []
-        p = self.parent
-        while isinstance(p, Object):
-            ls.append(p)
-            p = p.parent
-        return ls
-
-    def descendants(self):
-        ls = []
-        for la in self.layers:
-            ls.append(la)
-            ls.extend(la.descendants())
-        return ls
-
-    def url_path(self, kind):
+    def url_path_for(self, kind):
         ext = gws.lib.mime.extension_for(self.imageFormat.mimeTypes[0])
         url_path_suffix = '/gws.' + ext
 
@@ -400,11 +316,12 @@ class Object(gws.Layer):
         if kind == 'box':
             return gws.u.action_url_path('mapGetBox', layerUid=self.uid) + url_path_suffix
         if kind == 'tile':
-            return gws.u.action_url_path('mapGetXYZ', layerUid=self.uid) + '/z/{z}/x/{x}/y/{y}' + url_path_suffix
+            return gws.u.action_url_path('mapGetTile', layerUid=self.uid) + '/z/{z}/x/{x}/y/{y}' + url_path_suffix
         if kind == 'legend':
             return gws.u.action_url_path('mapGetLegend', layerUid=self.uid) + url_path_suffix
         if kind == 'features':
             return gws.u.action_url_path('mapGetFeatures', layerUid=self.uid)
+        raise gws.Error(f'invalid argument {kind=}')
 
     def props(self, user):
         p = Props(
@@ -428,11 +345,11 @@ class Object(gws.Layer):
 
         if self.displayMode == gws.LayerDisplayMode.tile:
             p.type = 'tile'
-            p.url = self.url_path('tile')
+            p.url = self.url_path_for('tile')
 
         if self.displayMode == gws.LayerDisplayMode.box:
             p.type = 'box'
-            p.url = self.url_path('box')
+            p.url = self.url_path_for('box')
 
         return p
 
@@ -442,65 +359,25 @@ class Object(gws.Layer):
     def render(self, lri):
         if lri.type == gws.LayerRenderInputType.box:
             return self.render_box(lri)
-        if lri.type == gws.LayerRenderInputType.xyz:
+        if lri.type == gws.LayerRenderInputType.tile:
             return self.render_tile(lri)
         if lri.type == gws.LayerRenderInputType.svg:
             return self.render_svg(lri)
 
-    def grabber_for(self, lri: gws.LayerRenderInput) -> Optional[gws.Grabber]:
-        crs = lri.targetCrs or self.mapCrs
-        return self.grabbers.get(crs.srid)
+    def render_box(self, lri):
+        pass
 
     def render_tile(self, lri):
-        gr = self.grabber_for(lri)
-        if not gr:
-            return
-        return gws.LayerRenderOutput(
-            content=gr.get_tile_as_bytes((lri.x, lri.y, lri.z), lri.renderParams),
-        )
-
-    def render_box(self, lri):
-        gr = self.grabber_for(lri)
-        if not gr:
-            return
-
-        params = lri.renderParams
-        w, h = lri.view.pxSize
-
-        if not lri.view.rotation:
-            content = gr.get_box_as_bytes(lri.view.bounds.extent, w, h, params)
-            return gws.LayerRenderOutput(content=content)
-
-        circ = gws.lib.extent.circumsquare(lri.view.bounds.extent)
-        d = gws.u.to_rounded_int(gws.lib.extent.diagonal((0, 0, w, h)))
-
-        content = gr.get_box_as_bytes(circ, d, d, params)
-
-        img = gws.lib.image.from_bytes(content)
-        img.rotate(-lri.view.rotation).crop(
-            (
-                d / 2 - w / 2,
-                d / 2 - h / 2,
-                d / 2 + w / 2,
-                d / 2 + h / 2,
-            )
-        )
-
-        content = img.to_bytes(self.imageFormat.mimeTypes[0], self.imageFormat.options)
-        return gws.LayerRenderOutput(content=content)
+        pass
 
     def render_svg(self, lri):
         pass
 
-    def render_legend(self, args=None) -> Optional[gws.LegendRenderOutput]:
+    def render_legend(self, args=None):
         if not self.legend:
-            return None
+            return
 
-        def _get():
-            out = self.legend.render()
-            return out
-
+        legend = self.legend
         if not args:
-            return gws.u.get_server_global('legend_' + self.uid, _get)
-
-        return self.legend.render(args)
+            return gws.u.get_server_global('legend_' + self.uid, legend.render)
+        return legend.render(args)
