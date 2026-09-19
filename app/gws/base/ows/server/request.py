@@ -78,7 +78,6 @@ class Object:
         self.version = self.requested_version('VERSION,ACCEPTVERSIONS')
 
         self.alwaysXY = False
-        self.isSoap = False
         self.pxSize = 0, 0
         self.resolution = 0
         self.resX = 0

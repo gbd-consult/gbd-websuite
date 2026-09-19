@@ -203,7 +203,9 @@ def wgs_extent(layer_el: gws.XmlElement) -> Optional[gws.Extent]:
 
     el = layer_el.findfirst('EX_GeographicBoundingBox', 'WGS84BoundingBox', 'LatLonBoundingBox')
     if el:
-        return gws.lib.extent.from_list(_parse_bbox(el))
+        bbox = _parse_bbox(el)
+        if bbox:
+            return gws.lib.extent.from_list(bbox)
 
 
 def supported_crs(layer_el: gws.XmlElement, extra_crs_ids: list[str] = None) -> list[gws.Crs]:
