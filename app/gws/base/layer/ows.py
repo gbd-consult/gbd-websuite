@@ -47,13 +47,13 @@ class Object(gws.LayerOwsBinding):
         p = self.cfg(key)
         if not p:
             return
-        xmlns, pname = gws.lib.xmlx.namespace.split_name(p)
-        if xmlns:
-            self.xmlNamespace = self._namespace(xmlns)
+        _, prefix, pname = gws.lib.xmlx.namespace.parse_name(p)
+        if prefix:
+            self.xmlNamespace = self._namespace(prefix)
         return pname
 
-    def _namespace(self, xmlns):
-        ns = self.root.app.helper('xml').namespace(xmlns)
+    def _namespace(self, prefix):
+        ns = gws.lib.xmlx.namespace.find_by_prefix(prefix)
         if not ns:
-            raise gws.ConfigurationError(f'unknown XML namespace {xmlns!r}')
+            raise gws.ConfigurationError(f'unknown XML namespace {prefix!r}')
         return ns

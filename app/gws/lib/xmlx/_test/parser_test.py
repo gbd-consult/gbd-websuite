@@ -71,8 +71,8 @@ def test_namespaces_are_stripped():
 def test_namespace_declarations_are_kept():
     s = '<ns:a xmlns:ns="http://ns1"><b xmlns="http://ns2" xmlns:other="http://ns3"><c/></b></ns:a>'
     doc = xmlx.parser.from_string(s)
-    assert [(n.xmlns, n.uri) for n in doc.namespaces] == [('ns', 'http://ns1')]
-    assert [(n.xmlns, n.uri) for n in doc[0].namespaces] == [('', 'http://ns2'), ('other', 'http://ns3')]
+    assert [(n.prefix, n.uri) for n in doc.namespaces] == [('ns', 'http://ns1')]
+    assert [(n.prefix, n.uri) for n in doc[0].namespaces] == [('', 'http://ns2'), ('other', 'http://ns3')]
     assert doc[0][0].namespaces == []
 
 

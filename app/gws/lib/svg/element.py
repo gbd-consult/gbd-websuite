@@ -45,7 +45,7 @@ def normalize_fragment(fragment: list[gws.XmlElement]) -> list[gws.XmlElement]:
 
 def _svg_tag(*args):
     el = xmlx.tag('svg', *args)
-    el.namespaces.append(_SVG_NAMESPACE)
+    el.declare(_SVG_NAMESPACE)
     return el
 
 

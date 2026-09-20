@@ -106,3 +106,51 @@ def test_valid_DescribeFeatureType(root: gws.Root):
     )
     gws.u.write_file_b(f'{gws.c.VAR_DIR}/wfs_DescribeFeatureType.xml', s.get_data())
     assert gws.lib.xmlx.validator.validate(s.get_data())
+
+
+def test_custom_namespace_prefix(root: gws.Root):
+    ns = 'xmlns(x_1,http://localhost/_/owsXml/namespace/demo)'
+
+    s = u.http.get(
+        root,
+        '/_/owsService',
+        query_string={
+            'request': 'GetCapabilities',
+            'serviceUid': 'WFS_1',
+            'projectUid': 'PROJECT_1',
+            'version': '2.0.2',
+            'NAMESPACES': ns,
+        },
+    )
+    xml = gws.lib.xmlx.from_string(s.get_data())
+    assert [n.uri for n in xml.namespaces if n.prefix == 'x_1'] == ['http://localhost/_/owsXml/namespace/demo']
+    assert xml.textof('{http://www.opengis.net/wfs/2.0}FeatureTypeList/{http://www.opengis.net/wfs/2.0}FeatureType/{http://www.opengis.net/wfs/2.0}Name') == 'x_1:layer_1'
+
+    s = u.http.get(
+        root,
+        '/_/owsService',
+        query_string={
+            'request': 'GetFeature',
+            'serviceUid': 'WFS_1',
+            'projectUid': 'PROJECT_1',
+            'version': '2.0.2',
+            'NAMESPACES': ns,
+            'TYPENAMES': 'x_1:layer_1',
+        },
+    )
+    xml = gws.lib.xmlx.from_string(s.get_data())
+    assert xml.name == 'FeatureCollection'
+    assert xml.find('{http://www.opengis.net/wfs/2.0}member/{http://localhost/_/owsXml/namespace/demo}layer_1') is not None
+
+    s = u.http.get(
+        root,
+        '/_/owsService',
+        query_string={
+            'request': 'GetFeature',
+            'serviceUid': 'WFS_1',
+            'projectUid': 'PROJECT_1',
+            'version': '2.0.2',
+            'TYPENAMES': 'x_1:layer_1',
+        },
+    )
+    assert s.status_code == 400

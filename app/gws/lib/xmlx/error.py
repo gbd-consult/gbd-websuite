@@ -4,20 +4,20 @@ import gws
 
 
 class Error(gws.Error):
-    pass
+    """Base class for XML errors."""
 
 
 class ParseError(Error):
-    pass
+    """Malformed input, forbidden constructs (entity declarations) or undecodable bytes."""
 
 
 class WriteError(Error):
-    pass
+    """Invalid or prefixed element or attribute name in a tree being serialized."""
 
 
 class NamespaceError(Error):
-    pass
+    """Unknown or conflicting namespace."""
 
 
 class BuildError(Error):
-    pass
+    """Invalid argument to ``tag()``."""

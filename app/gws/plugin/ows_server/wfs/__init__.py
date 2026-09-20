@@ -235,7 +235,7 @@ class Object(server.service.Object):
         lcs = []
         for name in tns:
             for lc in sr.layerCapsList:
-                if server.layer_caps.feature_name_matches(lc, name, sr.customXmlns):
+                if server.layer_caps.feature_name_matches(lc, name, sr.customNamespacePrefixes):
                     lcs.append(lc)
         if not lcs:
             raise server.error.LayerNotDefined()

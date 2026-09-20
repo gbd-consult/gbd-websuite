@@ -60,11 +60,11 @@ def shape_to_element(
     opts.swapxy = (shape.crs.axis_for_format(crs_format) == gws.Axis.yx) and not always_xy
     opts.precision = coordinate_precision if coordinate_precision is not None else gws.lib.uom.DEFAULT_PRECISION[shape.crs.uom]
 
-    opts.xmlns = ''
+    opts.clarkPrefix = ''
     ns = None
     if with_xmlns:
-        ns = namespace or (xmlx.namespace.ns.GML_2 if opts.version == 2 else xmlx.namespace.ns.GML)
-        opts.xmlns = '{' + ns.uri + '}'
+        ns = namespace or (xmlx.namespace.c.GML_2 if opts.version == 2 else xmlx.namespace.c.GML)
+        opts.clarkPrefix = '{' + ns.uri + '}'
 
     geom: shapely.geometry.base.BaseGeometry = getattr(shape, 'geom')
     fn = _tag2 if opts.version == 2 else _tag3
@@ -75,31 +75,31 @@ def shape_to_element(
 
     el = fn(geom, opts)
     if ns and with_inline_xmlns:
-        el.namespaces.append(ns)
+        el.declare(ns)
 
     return el
 
 
 def _point2(geom, opts):
-    return tag(f'{opts.xmlns}Point', opts.crsName, _coordinates(geom, opts))
+    return tag(f'{opts.clarkPrefix}Point', opts.crsName, _coordinates(geom, opts))
 
 
 def _point3(geom, opts):
-    return tag(f'{opts.xmlns}Point', opts.crsName, _pos(geom, opts))
+    return tag(f'{opts.clarkPrefix}Point', opts.crsName, _pos(geom, opts))
 
 
 def _linestring2(geom, opts):
-    return tag(f'{opts.xmlns}LineString', opts.crsName, _coordinates(geom, opts))
+    return tag(f'{opts.clarkPrefix}LineString', opts.crsName, _coordinates(geom, opts))
 
 
 def _linestring3(geom, opts):
     return tag(
-        f'{opts.xmlns}Curve',
+        f'{opts.clarkPrefix}Curve',
         opts.crsName,
         tag(
-            f'{opts.xmlns}segments',
+            f'{opts.clarkPrefix}segments',
             tag(
-                f'{opts.xmlns}LineStringSegment',
+                f'{opts.clarkPrefix}LineStringSegment',
                 _pos_list(geom, opts),
             ),
         ),
@@ -108,20 +108,20 @@ def _linestring3(geom, opts):
 
 def _polygon2(geom, opts):
     return tag(
-        f'{opts.xmlns}Polygon',
+        f'{opts.clarkPrefix}Polygon',
         opts.crsName,
         tag(
-            f'{opts.xmlns}outerBoundaryIs',
+            f'{opts.clarkPrefix}outerBoundaryIs',
             tag(
-                f'{opts.xmlns}LinearRing',
+                f'{opts.clarkPrefix}LinearRing',
                 _coordinates(geom.exterior, opts),
             ),
         ),
         [
             tag(
-                f'{opts.xmlns}innerBoundaryIs',
+                f'{opts.clarkPrefix}innerBoundaryIs',
                 tag(
-                    f'{opts.xmlns}LinearRing',
+                    f'{opts.clarkPrefix}LinearRing',
                     _coordinates(interior, opts),
                 ),
             )
@@ -132,20 +132,20 @@ def _polygon2(geom, opts):
 
 def _polygon3(geom, opts):
     return tag(
-        f'{opts.xmlns}Polygon',
+        f'{opts.clarkPrefix}Polygon',
         opts.crsName,
         tag(
-            f'{opts.xmlns}exterior',
+            f'{opts.clarkPrefix}exterior',
             tag(
-                f'{opts.xmlns}LinearRing',
+                f'{opts.clarkPrefix}LinearRing',
                 _pos_list(geom.exterior, opts),
             ),
         ),
         [
             tag(
-                f'{opts.xmlns}interior',
+                f'{opts.clarkPrefix}interior',
                 tag(
-                    f'{opts.xmlns}LinearRing',
+                    f'{opts.clarkPrefix}LinearRing',
                     _pos_list(interior, opts),
                 ),
             )
@@ -155,43 +155,43 @@ def _polygon3(geom, opts):
 
 
 def _multipoint2(geom, opts):
-    return tag(f'{opts.xmlns}MultiPoint', opts.crsName, [tag(f'{opts.xmlns}pointMember', _tag2(p, opts)) for p in geom.geoms])
+    return tag(f'{opts.clarkPrefix}MultiPoint', opts.crsName, [tag(f'{opts.clarkPrefix}pointMember', _tag2(p, opts)) for p in geom.geoms])
 
 
 def _multipoint3(geom, opts):
-    return tag(f'{opts.xmlns}MultiPoint', opts.crsName, [tag(f'{opts.xmlns}pointMember', _tag3(p, opts)) for p in geom.geoms])
+    return tag(f'{opts.clarkPrefix}MultiPoint', opts.crsName, [tag(f'{opts.clarkPrefix}pointMember', _tag3(p, opts)) for p in geom.geoms])
 
 
 def _multilinestring2(geom, opts):
-    return tag(f'{opts.xmlns}MultiLineString', opts.crsName, [tag(f'{opts.xmlns}lineStringMember', _tag2(p, opts)) for p in geom.geoms])
+    return tag(f'{opts.clarkPrefix}MultiLineString', opts.crsName, [tag(f'{opts.clarkPrefix}lineStringMember', _tag2(p, opts)) for p in geom.geoms])
 
 
 def _multilinestring3(geom, opts):
-    return tag(f'{opts.xmlns}MultiCurve', opts.crsName, [tag(f'{opts.xmlns}curveMember', _tag3(p, opts)) for p in geom.geoms])
+    return tag(f'{opts.clarkPrefix}MultiCurve', opts.crsName, [tag(f'{opts.clarkPrefix}curveMember', _tag3(p, opts)) for p in geom.geoms])
 
 
 def _multipolygon2(geom, opts):
-    return tag(f'{opts.xmlns}MultiPolygon', opts.crsName, [tag(f'{opts.xmlns}polygonMember', _tag2(p, opts)) for p in geom.geoms])
+    return tag(f'{opts.clarkPrefix}MultiPolygon', opts.crsName, [tag(f'{opts.clarkPrefix}polygonMember', _tag2(p, opts)) for p in geom.geoms])
 
 
 def _multipolygon3(geom, opts):
-    return tag(f'{opts.xmlns}MultiSurface', opts.crsName, [tag(f'{opts.xmlns}surfaceMember', _tag3(p, opts)) for p in geom.geoms])
+    return tag(f'{opts.clarkPrefix}MultiSurface', opts.crsName, [tag(f'{opts.clarkPrefix}surfaceMember', _tag3(p, opts)) for p in geom.geoms])
 
 
 def _geometrycollection2(geom, opts):
-    return tag(f'{opts.xmlns}MultiGeometry', opts.crsName, [tag(f'{opts.xmlns}geometryMember', _tag2(p, opts)) for p in geom.geoms])
+    return tag(f'{opts.clarkPrefix}MultiGeometry', opts.crsName, [tag(f'{opts.clarkPrefix}geometryMember', _tag2(p, opts)) for p in geom.geoms])
 
 
 def _geometrycollection3(geom, opts):
-    return tag(f'{opts.xmlns}MultiGeometry', opts.crsName, [tag(f'{opts.xmlns}geometryMember', _tag3(p, opts)) for p in geom.geoms])
+    return tag(f'{opts.clarkPrefix}MultiGeometry', opts.crsName, [tag(f'{opts.clarkPrefix}geometryMember', _tag3(p, opts)) for p in geom.geoms])
 
 
 def _pos(geom, opts):
-    return tag(f'{opts.xmlns}pos', {'srsDimension': 2}, _pos_list_content(geom, opts))
+    return tag(f'{opts.clarkPrefix}pos', {'srsDimension': 2}, _pos_list_content(geom, opts))
 
 
 def _pos_list(geom, opts):
-    return tag(f'{opts.xmlns}posList', {'srsDimension': 2}, _pos_list_content(geom, opts))
+    return tag(f'{opts.clarkPrefix}posList', {'srsDimension': 2}, _pos_list_content(geom, opts))
 
 
 def _pos_list_content(geom, opts):
@@ -218,7 +218,7 @@ def _coordinates(geom, opts):
             x, y = y, x
         cs.append(str(x) + ',' + str(y))
 
-    return tag(f'{opts.xmlns}coordinates', {'decimal': '.', 'cs': ',', 'ts': ' '}, ' '.join(cs))
+    return tag(f'{opts.clarkPrefix}coordinates', {'decimal': '.', 'cs': ',', 'ts': ' '}, ' '.join(cs))
 
 
 _FNS_2 = {

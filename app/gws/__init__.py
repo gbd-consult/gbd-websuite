@@ -1599,9 +1599,7 @@ class Style:
 class XmlNamespace(Data):
     """XML namespace."""
 
-    uid: str
-    """Unique ID of a well-known namespace (``OWS_11``), empty for custom and document-derived namespaces."""
-    xmlns: str
+    prefix: str
     """Default prefix for this Namespace, empty for a default namespace declaration."""
     uri: Url
     """Namespace uri."""
@@ -1617,26 +1615,26 @@ class XmlOptions(Data):
     removeNamespaces: bool = False
     """Strip namespaces when parsing: tags and attributes are local names, declarations are dropped."""
 
-    customXmlns: Optional[dict[str, str]] = None
-    """A mapping of namespace uris to custom prefixes."""
+    customNamespacePrefixes: Optional[dict[str, str]] = None
+    """Serialization: prefixes to use instead of the default ones (namespace uri -> prefix)."""
 
     defaultNamespace: Optional['XmlNamespace'] = None
-    """Default namespace to use for serialization."""
+    """Serialization: elements in this namespace are written without a prefix."""
 
     doctype: Optional[str] = None
-    """Document type definition (DTD) to use for serialization."""
+    """Serialization: document type definition (DTD), written after the XML declaration."""
 
     compactWhitespace: bool = False
-    """Remove all whitespace outside of tags and elements."""
+    """Collapse whitespace in text content (parsing and serialization)."""
 
     withNamespaceDeclarations: bool = False
-    """Include the namespace declarations."""
+    """Serialization: declare all namespaces used in the tree on the root element."""
 
     withSchemaLocations: bool = False
-    """Include schema locations."""
+    """Serialization: add ``xsi:schemaLocation`` for declared namespaces that have a schema location."""
 
     withXmlDeclaration: bool = False
-    """Include the xml declaration."""
+    """Serialization: write the ``<?xml ...?>`` declaration."""
 
 
 class XmlElement(Iterable):
@@ -1646,7 +1644,8 @@ class XmlElement(Iterable):
 
     ``tag`` is either a local name (``Point``) or a Clark name (``{http://www.opengis.net/gml/3.2}Point``);
     ``name`` is always the local name. Prefixed names never occur in a tree: ``tag()`` resolves ``ID:name``
-    to a Clark name, the parser resolves prefixes against the document's declarations.
+    to a Clark name, the parser resolves prefixes against the document's declarations. The element itself
+    (constructor, ``add()``, ``set()``) takes names as they are; it has no namespace map to resolve against.
     """
 
     tag: str
@@ -1665,7 +1664,7 @@ class XmlElement(Iterable):
     """Dictionary of element attributes."""
 
     namespaces: list[XmlNamespace]
-    """Namespaces declared on this element (``xmlns == ''`` for the default namespace)."""
+    """Namespaces declared on this element (``prefix == ''`` for the default namespace)."""
 
     def __len__(self) -> int: ...
 
@@ -1683,7 +1682,7 @@ class XmlElement(Iterable):
         """Appends subelements from a sequence object with zero or more elements."""
 
     def find(self, path: str) -> Optional['XmlElement']:
-        """Finds first matching element by tag name or path."""
+        """Finds first matching element by tag name or path (ElementTree syntax, names local or Clark)."""
 
     def require(self, path: str) -> 'XmlElement':
         """Finds first matching element and raises an error if not found."""
@@ -1732,13 +1731,18 @@ class XmlElement(Iterable):
     def add(self, tag: str, attrib: Optional[dict] = None, **extra) -> 'XmlElement':
         """Creates a new element and adds it as a child.
 
+        Names are taken as they are (local or Clark); ``ID:name`` resolution is done by ``tag()`` only.
+
         Args:
-            tag: XML tag.
+            tag: XML tag, local or Clark name.
             attrib: XML attributes ``{key, value}``.
         """
 
     def children(self) -> list['XmlElement']:
         """Returns the children of the current element."""
+
+    def declare(self, *namespaces: XmlNamespace):
+        """Adds namespace declarations to this element (``xmlns`` attributes on output), skipping those already declared."""
 
     def findfirst(self, *paths) -> Optional['XmlElement']:
         """Given a list of paths, returns the first matching element."""
@@ -1779,7 +1783,7 @@ class XmlElement(Iterable):
         """
 
     def to_dict(self) -> dict:
-        """Creates a dictionary from an XmlElement object."""
+        """Creates a dictionary (``tag``, ``attrib``, ``text``, ``tail``, ``children``) from the element tree."""
 ################################################################################
 
 

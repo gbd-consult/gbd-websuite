@@ -9,7 +9,7 @@ def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
         tag('WMTS:Capabilities', doc(ta)),
-        default_namespace=xmlx.namespace.ns.WMTS,
+        default_namespace=xmlx.namespace.c.WMTS,
     )
 
 
@@ -45,11 +45,8 @@ def contents(ta: server.TemplateArgs):
 
 def layer(ta: server.TemplateArgs, lc: server.LayerCaps):
     yield tag('OWS_11:Title', lc.title)
-
     yield tag('OWS_11:Abstract', lc.layer.metadata.abstract)
-
     yield tpl.ows_wgs84_bounding_box(lc)
-
     yield tag('OWS_11:Identifier', lc.layerName)
 
     yield tag(

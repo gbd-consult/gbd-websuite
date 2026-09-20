@@ -58,7 +58,7 @@ class Object(gws.base.action.Object):
 
         for la in self.root.find_all(gws.ext.object.layer):
             layer = cast(gws.Layer, la)
-            if req.user.can_read(layer) and layer.ows.xmlNamespace and layer.ows.xmlNamespace.xmlns == s:
+            if req.user.can_read(layer) and layer.ows.xmlNamespace and layer.ows.xmlNamespace.prefix == s:
                 lcs.append(layer_caps.for_layer(layer, req.user))
 
         if not lcs:

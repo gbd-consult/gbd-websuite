@@ -29,7 +29,7 @@ class TemplateArgs(gws.TemplateArgs):
     project: gws.Project
     request: 'Object'
     layerCapsList: list[core.LayerCaps]
-    sr: 'Object'
+    serviceRequest: 'Object'
     service: gws.OwsService
     serviceUrl: str
     url_for: Callable
@@ -57,7 +57,7 @@ class Object:
     targetCrs: gws.Crs
     version: str
     xmlElement: Optional[gws.XmlElement]
-    customXmlns: dict
+    customNamespacePrefixes: dict
     """Custom namespace prefixes (uri -> prefix) requested with the ``NAMESPACES`` parameter."""
 
     def __init__(
@@ -92,7 +92,7 @@ class Object:
             if s and s > self.service.updateSequence:
                 raise error.InvalidUpdateSequence()
 
-        self.customXmlns = self.requested_xmlns_replacements()
+        self.customNamespacePrefixes = self.requested_xmlns_replacements()
 
     def require_project(self):
         return self.load_project(required=True)

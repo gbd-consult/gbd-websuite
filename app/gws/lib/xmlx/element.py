@@ -1,6 +1,6 @@
 """XmlElement implementation."""
 
-from typing import Optional
+from typing import Iterable, Optional, cast
 import xml.etree.ElementPath as ElementPath
 
 import gws
@@ -9,18 +9,23 @@ from . import error, namespace, serializer
 
 
 class XmlElement(gws.XmlElement):
+    """XML element, see ``gws.XmlElement`` for the documented interface."""
+
     def __init__(self, tag: str, attrib: Optional[dict] = None, **extra):
-        self.tag = namespace.resolve_name(tag)
-        self.name = namespace.unqualify_name(tag)
+        self.tag = tag
+        self.name = namespace.plain_name(tag)
         self.text = ''
         self.tail = ''
-        self.attrib = {}
         self.namespaces = []
         self._children = []
-        for k, v in {**(attrib or {}), **extra}.items():
-            self.set(k, v)
 
-    # ElementTree.Element implementations, copied from Python 3.11 ElementTree.py
+        self.attrib = {}
+        if attrib:
+            self.attrib.update(attrib)
+        if extra:
+            self.attrib.update(extra)
+
+    # ElementTree.Element implementations, copied from ElementTree.py
 
     def __repr__(self):
         return f'<{self.__class__.__name__} {self.tag!r} at {id(self):#x}>'
@@ -62,16 +67,16 @@ class XmlElement(gws.XmlElement):
         self._children.remove(subelement)
 
     def find(self, path):
-        return ElementPath.find(self, path)
+        return cast(Optional[gws.XmlElement], ElementPath.find(self, path))
 
     def findtext(self, path, default=''):
-        return ElementPath.findtext(self, path, default)
+        return cast(str, ElementPath.findtext(self, path, default))
 
     def findall(self, path):
-        return ElementPath.findall(self, path)
+        return cast(list[gws.XmlElement], ElementPath.findall(self, path))
 
     def iterfind(self, path):
-        return ElementPath.iterfind(self, path)
+        return cast(Iterable[gws.XmlElement], ElementPath.iterfind(self, path))
 
     def clear(self):
         self.attrib = {}
@@ -83,7 +88,7 @@ class XmlElement(gws.XmlElement):
         return self.attrib.get(key, default)
 
     def set(self, key, value):
-        self.attrib[namespace.resolve_name(key)] = value
+        self.attrib[key] = value
 
     def keys(self):
         return self.attrib.keys()
@@ -94,8 +99,6 @@ class XmlElement(gws.XmlElement):
     def iter(self, tag=None):
         if tag == '*':
             tag = None
-        if tag is not None:
-            tag = namespace.resolve_name(tag)
         if tag is None or self.tag == tag:
             yield self
         for e in self._children:
@@ -117,8 +120,7 @@ class XmlElement(gws.XmlElement):
         return True
 
     def __iter__(self):
-        for c in self._children:
-            yield c
+        return iter(self._children)
 
     def require(self, path):
         el = self.find(path)
@@ -155,6 +157,11 @@ class XmlElement(gws.XmlElement):
         el = self.__class__(tag, attrib or {}, **extra)
         self.append(el)
         return el
+
+    def declare(self, *namespaces):
+        for ns in namespaces:
+            if not any(n.uri == ns.uri and n.prefix == ns.prefix for n in self.namespaces):
+                self.namespaces.append(ns)
 
     def findfirst(self, *paths):
         if not paths:

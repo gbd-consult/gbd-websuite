@@ -17,18 +17,18 @@ def main(ta: server.TemplateArgs):
         return tpl.to_xml_response(
             ta,
             tag('WMS_Capabilities', doc(ta)),
-            default_namespace=xmlx.namespace.ns.WMS,
+            default_namespace=xmlx.namespace.c.WMS,
         )
 
     if ta.intVersion == 110:
-        return tpl.to_xml_response_with_doctype(
+        return tpl.to_xml_response(
             ta,
             tag('WMT_MS_Capabilities', doc(ta)),
             doctype=_DOCTYPE_110,
         )
 
     if ta.intVersion == 111:
-        return tpl.to_xml_response_with_doctype(
+        return tpl.to_xml_response(
             ta,
             tag('WMT_MS_Capabilities', doc(ta)),
             doctype=_DOCTYPE_111,
@@ -118,7 +118,7 @@ def request_caps(ta):
             if ta.intVersion == 110:
                 continue
         # NB QGIS wants a space after ';'
-        yield tag(verb, [tag('Format', f.replace(';', '; ')) for f in op.formats], url)
+        yield tag(str(verb), [tag('Format', f.replace(';', '; ')) for f in op.formats], url)
 
 
 def layer(ta, lc: server.LayerCaps):

@@ -1,3 +1,5 @@
+"""Value conversion and escaping for XML output."""
+
 import gws.lib.datetimex as dtx
 
 

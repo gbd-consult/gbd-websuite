@@ -16,7 +16,7 @@ def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
         tag('WFS:ListStoredQueriesResponse', doc(ta)),
-        namespaces=tpl.namespaces_from_caps(ta),
+        extra_namespaces=tpl.namespaces_from_caps(ta),
     )
 
 
@@ -26,7 +26,7 @@ def doc(ta):
         {'id': gws.plugin.ows_server.wfs.STORED_QUERY_GET_FEATURE_BY_ID},
         tag('WFS:Title', 'Get Feature By Identifier'),
         [
-            tag('WFS:ReturnFeatureType', lc.featureNameQ)
+            tag('WFS:ReturnFeatureType', tpl.feature_name(ta, lc))
             for lc in ta.layerCapsList
         ]
     )

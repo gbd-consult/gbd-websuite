@@ -23,8 +23,6 @@ class Config(gws.ConfigWithAccess):
     defaultFeatureCount: int = 1000
     """Default number of features per page."""
     extent: Optional[gws.Extent]
-    """Service extent."""
-    extent: Optional[gws.Extent]
     """Service extent, in extentCrs or the first supported CRS."""
     extentCrs: Optional[gws.CrsName]
     """Service extent CRS."""
@@ -242,7 +240,7 @@ class Object(gws.OwsService):
             return self.template_response(sr, gws.lib.mime.XML, **kwargs)
 
         args = request.TemplateArgs(
-            sr=sr,
+            serviceRequest=sr,
             service=self,
             serviceUrl=sr.req.canonical_url_for(self.url_path(sr)),
             url_for=sr.req.canonical_url_for,

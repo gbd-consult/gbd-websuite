@@ -10,66 +10,66 @@ import gws.lib.datetimex as dtx
 import gws.lib.xmlx as xmlx
 import gws.base.ows.server as server
 
-from . import core, service
+from . import core, layer_caps, service
 from gws.lib.xmlx import tag
-
-OWS = 'OWS_11'
-"""Default OWS namespace uid for the ``ows_*`` helpers."""
-
 
 # OGC 06-121r9 Table 34
 # Ordered sequence of two double values in decimal degrees, with longitude before latitude
-def ows_wgs84_bounding_box(lc: core.LayerCaps, ows: str = OWS):
+def ows_wgs84_bounding_box(lc: core.LayerCaps, ns: str = 'OWS_11'):
     return tag(
-        f'{ows}:WGS84BoundingBox',
-        tag(f'{ows}:LowerCorner', coord_dms(lc.layer.wgsExtent[0]), ' ', coord_dms(lc.layer.wgsExtent[1])),
-        tag(f'{ows}:UpperCorner', coord_dms(lc.layer.wgsExtent[2]), ' ', coord_dms(lc.layer.wgsExtent[3])),
+        f'{ns}:WGS84BoundingBox',
+        tag(f'{ns}:LowerCorner', coord_dms(lc.layer.wgsExtent[0]), ' ', coord_dms(lc.layer.wgsExtent[1])),
+        tag(f'{ns}:UpperCorner', coord_dms(lc.layer.wgsExtent[2]), ' ', coord_dms(lc.layer.wgsExtent[3])),
     )
 
 
 # OGC 06-121r3 sec 7.4.4
-def ows_service_identification(ta: server.TemplateArgs, ows: str = OWS):
+def ows_service_identification(ta: server.TemplateArgs, ns: str = 'OWS_11'):
     md = ta.service.metadata
 
     return tag(
-        f'{ows}:ServiceIdentification',
-        tag(f'{ows}:Title', md.title),
-        tag(f'{ows}:Abstract', md.abstract),
-        ows_keywords(md, ows),
-        tag(f'{ows}:ServiceType', ta.service.protocol),
-        tag(f'{ows}:ServiceTypeVersion', ta.version),
-        tag(f'{ows}:Fees', md.fees) if md.fees else None,
-        tag(f'{ows}:AccessConstraints', md.accessConstraints) if md.accessConstraints else None,
+        f'{ns}:ServiceIdentification',
+        tag(f'{ns}:Title', md.title),
+        tag(f'{ns}:Abstract', md.abstract),
+        ows_keywords(md, ns),
+        tag(f'{ns}:ServiceType', ta.service.protocol),
+        tag(f'{ns}:ServiceTypeVersion', ta.version),
+        tag(f'{ns}:Fees', md.fees) if md.fees else None,
+        tag(f'{ns}:AccessConstraints', md.accessConstraints) if md.accessConstraints else None,
     )
 
 
 # OGC 06-121r3 sec 7.4.5
-def ows_service_provider(ta: server.TemplateArgs, ows: str = OWS):
+def ows_service_provider(ta: server.TemplateArgs, ns: str = 'OWS_11'):
     md = ta.service.metadata
 
     return tag(
-        f'{ows}:ServiceProvider',
-        tag(f'{ows}:ProviderName', md.contactProviderName),
-        tag(f'{ows}:ProviderSite', {'XLINK:href': md.contactProviderSite}),
+        f'{ns}:ServiceProvider',
+        tag(f'{ns}:ProviderName', md.contactProviderName),
+        tag(f'{ns}:ProviderSite', {'XLINK:href': md.contactProviderSite}),
         tag(
-            f'{ows}:ServiceContact',
-            tag(f'{ows}:IndividualName', md.contactPerson),
-            tag(f'{ows}:PositionName', md.contactPosition),
+            f'{ns}:ServiceContact',
+            tag(f'{ns}:IndividualName', md.contactPerson),
+            tag(f'{ns}:PositionName', md.contactPosition),
             tag(
-                f'{ows}:ContactInfo',
-                tag(f'{ows}:Phone', tag(f'{ows}:Voice', md.contactPhone), tag(f'{ows}:Facsimile', md.contactFax)),
+                f'{ns}:ContactInfo',
                 tag(
-                    f'{ows}:Address',
-                    tag(f'{ows}:DeliveryPoint', md.contactAddress),
-                    tag(f'{ows}:City', md.contactCity),
-                    tag(f'{ows}:AdministrativeArea', md.contactArea),
-                    tag(f'{ows}:PostalCode', md.contactZip),
-                    tag(f'{ows}:Country', md.contactCountry),
-                    tag(f'{ows}:ElectronicMailAddress', md.contactEmail),
+                    f'{ns}:Phone',
+                    tag(f'{ns}:Voice', md.contactPhone),
+                    tag(f'{ns}:Facsimile', md.contactFax),
                 ),
-                tag(f'{ows}:OnlineResource', {'XLINK:href': md.contactUrl}),
+                tag(
+                    f'{ns}:Address',
+                    tag(f'{ns}:DeliveryPoint', md.contactAddress),
+                    tag(f'{ns}:City', md.contactCity),
+                    tag(f'{ns}:AdministrativeArea', md.contactArea),
+                    tag(f'{ns}:PostalCode', md.contactZip),
+                    tag(f'{ns}:Country', md.contactCountry),
+                    tag(f'{ns}:ElectronicMailAddress', md.contactEmail),
+                ),
+                tag(f'{ns}:OnlineResource', {'XLINK:href': md.contactUrl}),
             ),
-            tag(f'{ows}:Role', md.contactRole),
+            tag(f'{ns}:Role', md.contactRole),
         ),
     )
 
@@ -79,15 +79,21 @@ def ows_service_provider(ta: server.TemplateArgs, ows: str = OWS):
 # A URL prefix is defined as a string including... mandatory question mark
 
 
-def ows_service_url(ta: server.TemplateArgs, get=True, post=False, ows: str = OWS):
+def ows_service_url(ta: server.TemplateArgs, get=True, post=False, ns: str = 'OWS_11'):
     if get:
-        yield tag(f'{ows}:DCP/{ows}:HTTP/{ows}:Get', {'XLINK:type': 'simple', 'XLINK:href': ta.serviceUrl + '?'})
+        yield tag(
+            f'{ns}:DCP/{ns}:HTTP/{ns}:Get',
+            {'XLINK:type': 'simple', 'XLINK:href': ta.serviceUrl + '?'},
+        )
     if post:
-        yield tag(f'{ows}:DCP/{ows}:HTTP/{ows}:Post', {'XLINK:type': 'simple', 'XLINK:href': ta.serviceUrl})
+        yield tag(
+            f'{ns}:DCP/{ns}:HTTP/{ns}:Post',
+            {'XLINK:type': 'simple', 'XLINK:href': ta.serviceUrl},
+        )
 
 
-def ows_value(value, ows: str = OWS):
-    return tag(f'{ows}:Value', value)
+def ows_value(value, ns: str = 'OWS_11'):
+    return tag(f'{ns}:Value', value)
 
 
 def online_resource(url):
@@ -105,37 +111,39 @@ def dcp_service_url(ta: server.TemplateArgs):
 
 
 def legend_url_nested(ta: server.TemplateArgs, lc: core.LayerCaps, size=None):
-    name = xmlx.namespace.unqualify_name(lc.layerNameQ)
     return tag(
         'LegendURL',
         {'width': size[0], 'height': size[1]} if size else {},
         tag('Format', 'image/png'),
-        online_resource(f'{ta.serviceUrl}?request=GetLegendGraphic&layer={name}'),
+        online_resource(f'{ta.serviceUrl}?request=GetLegendGraphic&layer={lc.layerName}'),
     )
 
 
 def legend_url(ta: server.TemplateArgs, lc: core.LayerCaps, size=None):
-    name = xmlx.namespace.unqualify_name(lc.layerNameQ)
     return tag(
         'LegendURL',
         {
             'format': 'image/png',
-            'XLINK:href': f'{ta.serviceUrl}?request=GetLegendGraphic&layer={name}',
+            'XLINK:href': f'{ta.serviceUrl}?request=GetLegendGraphic&layer={lc.layerName}',
         },
     )
 
 
-def ows_keywords(md: gws.Metadata, ows: str = OWS):
-    return [_ows_keyword_group(kg, ows) for kg in gws.base.metadata.keyword_groups(md)]
+def feature_name(ta: server.TemplateArgs, lc: core.LayerCaps) -> str:
+    return layer_caps.qualified_feature_name(lc, ta.serviceRequest.customNamespacePrefixes)
 
 
-def _ows_keyword_group(kg: gws.base.metadata.KeywordGroup, ows: str):
+def ows_keywords(md: gws.Metadata, ns: str = 'OWS_11'):
+    return [_ows_keyword_group(kg, ns) for kg in gws.base.metadata.keyword_groups(md)]
+
+
+def _ows_keyword_group(kg: gws.base.metadata.KeywordGroup, ns: str):
     tags = []
     for kw in kg.keywords:
-        tags.append(tag(f'{ows}:Keyword', kw))
+        tags.append(tag(f'{ns}:Keyword', kw))
     if kg.codeSpace:
-        tags.append(tag(f'{ows}:Type', {'codeSpace': kg.codeSpace}, kg.typeName))
-    return tag(f'{ows}:Keywords', tags)
+        tags.append(tag(f'{ns}:Type', {'codeSpace': kg.codeSpace}, kg.typeName))
+    return tag(f'{ns}:Keywords', tags)
 
 
 def wms_keywords(md: gws.Metadata, with_vocabulary: bool = False):
@@ -201,7 +209,7 @@ def wfs_feature_collection(ta: server.TemplateArgs):
             tag(
                 'WFS:member',
                 tag(
-                    xmlx.namespace.clark_name(m.layerCaps.featureName, m.layerCaps.xmlNamespace) if m.layerCaps else 'WFS:feature',
+                    xmlx.namespace.full_name(m.layerCaps.featureName, m.layerCaps.xmlNamespace) if m.layerCaps else 'WFS:feature',
                     {'GML:id': gml_format_uid(ta, m.feature.uid())},
                     wfs_feature_collection_member(ta, m),
                 ),
@@ -231,7 +239,7 @@ def wfs_feature_collection_member(ta: server.TemplateArgs, m: server.FeatureColl
     geom = None
     for name, val in m.feature.attributes.items():
         if m.layerCaps:
-            name = xmlx.namespace.clark_name(name, m.layerCaps.xmlNamespace)
+            name = xmlx.namespace.full_name(name, m.layerCaps.xmlNamespace)
         if isinstance(val, gws.Shape):
             geom = tag(name, gml_format_value(ta, val))
         else:
@@ -259,7 +267,7 @@ def gml_format_value(ta, val):
         return gws.lib.gml.shape_to_element(
             val,
             version=ta.gmlVersion,
-            always_xy=ta.sr.alwaysXY,
+            always_xy=ta.serviceRequest.alwaysXY,
             with_inline_xmlns=True,
         )
     return str(val)
@@ -360,7 +368,8 @@ def to_xml_response(
     ta: server.TemplateArgs,
     el: gws.XmlElement,
     default_namespace: Optional[gws.XmlNamespace] = None,
-    namespaces: Optional[list[gws.XmlNamespace]] = None,
+    extra_namespaces: Optional[list[gws.XmlNamespace]] = None,
+    doctype: Optional[str] = None,
 ) -> gws.ContentResponse:
     """Create an XML response.
 
@@ -368,47 +377,32 @@ def to_xml_response(
         ta: Template arguments.
         el: Root element.
         default_namespace: Default namespace of the document.
-        namespaces: Namespaces to declare on the root in addition to those used by elements and attributes,
+        extra_namespaces: Namespaces to declare on the root in addition to those used by elements and attributes,
             e.g. for QName values.
+        doctype: DTD for DTD-based formats (WMS 1.1.x). These have no namespace declarations on the root;
+            ``xlink`` is declared inline where it is used (as per the DTD's #FIXED xmlns:xlink).
     """
 
-    if namespaces:
-        el.namespaces.extend(namespaces)
+    if extra_namespaces:
+        el.declare(*extra_namespaces)
 
-    if ta.sr.isSoap:
+    if doctype:
+        xlink = xmlx.namespace.c.XLINK
+        xlink_uri = '{' + xlink.uri + '}'
+        for e in el.iter():
+            if any(k.startswith(xlink_uri) for k in e.attrib):
+                e.declare(xlink)
+
+    if ta.serviceRequest.isSoap:
         el = tag('SOAP:Envelope', tag('SOAP:Header'), tag('SOAP:Body', el))
-
-    opts = gws.XmlOptions(
-        defaultNamespace=default_namespace,
-        withNamespaceDeclarations=True,
-        withSchemaLocations=True,
-        withXmlDeclaration=True,
-        customXmlns=ta.sr.customXmlns,
-    )
-
-    return cast(service.Object, ta.sr.service).xml_response(el, opts)
-
-
-def to_xml_response_with_doctype(
-    ta: server.TemplateArgs,
-    el: gws.XmlElement,
-    doctype: str,
-) -> gws.ContentResponse:
-    if ta.sr.isSoap:
-        el = tag('SOAP:Envelope', tag('SOAP:Header'), tag('SOAP:Body', el))
-
-    # DTD-based formats have no namespace declarations on the root,
-    # declare xlink inline where it is used (as per the DTD's #FIXED xmlns:xlink)
-    xlink = xmlx.namespace.ns.XLINK
-    xlink_prefix = '{' + xlink.uri + '}'
-    for e in el.iter():
-        if any(k.startswith(xlink_prefix) for k in e.attrib):
-            e.namespaces.append(xlink)
 
     opts = gws.XmlOptions(
         doctype=doctype,
-        withNamespaceDeclarations=False,
-        withSchemaLocations=False,
+        defaultNamespace=default_namespace,
+        withNamespaceDeclarations=not doctype,
+        withSchemaLocations=not doctype,
         withXmlDeclaration=True,
+        customNamespacePrefixes=ta.serviceRequest.customNamespacePrefixes,
     )
-    return cast(service.Object, ta.sr.service).xml_response(el, opts)
+
+    return cast(service.Object, ta.serviceRequest.service).xml_response(el, opts)

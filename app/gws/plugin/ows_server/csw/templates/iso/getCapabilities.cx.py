@@ -5,26 +5,24 @@ import gws.base.ows.server.templatelib as tpl
 import gws.lib.xmlx
 from gws.lib.xmlx import tag
 
-OWS = 'OWS_0'
-
 def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
         tag('CSW:Capabilities', {'version': ta.version}, caps(ta)),
-        namespaces=[gws.lib.xmlx.namespace.ns.GML_3_1, gws.lib.xmlx.namespace.ns.GMD],
+        extra_namespaces=[gws.lib.xmlx.namespace.c.GML_3_1, gws.lib.xmlx.namespace.c.GMD],
     )
 
 
 def caps(ta: server.TemplateArgs):
-    yield tpl.ows_service_identification(ta, ows=OWS)
-    yield tpl.ows_service_provider(ta, ows=OWS)
+    yield tpl.ows_service_identification(ta, ns='OWS_0')
+    yield tpl.ows_service_provider(ta, ns='OWS_0')
 
     yield tag(
         'OWS_0:OperationsMetadata',
         tag(
             'OWS_0:Operation',
             {'name': 'GetCapabilities'},
-            tpl.ows_service_url(ta, ows=OWS),
+            tpl.ows_service_url(ta, ns='OWS_0'),
             tag(
                 'OWS_0:Parameter',
                 {'name': 'sections'},
@@ -37,7 +35,7 @@ def caps(ta: server.TemplateArgs):
         tag(
             'OWS_0:Operation',
             {'name': 'DescribeRecord'},
-            tpl.ows_service_url(ta, ows=OWS),
+            tpl.ows_service_url(ta, ns='OWS_0'),
             tag('OWS_0:Parameter', {'name': 'typeName'}, tag('OWS_0:Value', 'gmd:MD_Metadata')),
             tag('OWS_0:Parameter', {'name': 'outputFormat'}, tag('OWS_0:Value', 'application/xml')),
             tag('OWS_0:Parameter', {'name': 'schemaLanguage'}, tag('OWS_0:Value', 'http://www.w3.org/XML/Schema')),
@@ -49,7 +47,7 @@ def caps(ta: server.TemplateArgs):
         tag(
             'OWS_0:Operation',
             {'name': 'GetRecords'},
-            tpl.ows_service_url(ta, post=True, ows=OWS),
+            tpl.ows_service_url(ta, post=True, ns='OWS_0'),
             tag('OWS_0:Parameter', {'name': 'typeName'}, tag('OWS_0:Value', 'gmd:MD_Metadata')),
             tag('OWS_0:Parameter', {'name': 'outputFormat'}, tag('OWS_0:Value', 'application/xml')),
             tag('OWS_0:Parameter', {'name': 'outputSchema'}, tag('OWS_0:Value', 'http://www.opengis.net/cat/csw/2.0.2')),

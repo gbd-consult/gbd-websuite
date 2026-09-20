@@ -32,15 +32,6 @@ def for_layer(layer: gws.Layer, user: gws.User, service: Optional[gws.OwsService
 
     lc.xmlNamespace = layer.ows.xmlNamespace
 
-    if lc.xmlNamespace:
-        lc.layerNameQ = xmlx.namespace.qualify_name(lc.layerName, lc.xmlNamespace)
-        lc.featureNameQ = xmlx.namespace.qualify_name(lc.featureName, lc.xmlNamespace)
-        lc.geometryNameQ = xmlx.namespace.qualify_name(lc.geometryName, lc.xmlNamespace)
-    else:
-        lc.layerNameQ = lc.layerName
-        lc.featureNameQ = lc.featureName
-        lc.geometryNameQ = lc.geometryName
-
     lc.hasLegend = layer.hasLegend
     lc.isSearchable = layer.isSearchable
 
@@ -62,28 +53,33 @@ def for_layer(layer: gws.Layer, user: gws.User, service: Optional[gws.OwsService
 
 
 def layer_name_matches(lc: core.LayerCaps, name: str) -> bool:
-    """Check if the layer name in the caps matches the given name."""
+    """Check if the layer name in the caps matches the given name, ignoring a prefix."""
 
-    if ':' in name:
-        return name == lc.layerNameQ
-    else:
-        return name == lc.layerName
+    return xmlx.namespace.plain_name(name) == lc.layerName
+
+def feature_prefix(lc: core.LayerCaps, custom_namespace_prefixes: dict) -> str:
+    """The prefix of the feature type, custom prefixes (WFS ``NAMESPACES``) applied, empty if the layer has no namespace."""
+
+    ns = lc.xmlNamespace
+    if not ns:
+        return ''
+    return custom_namespace_prefixes.get(ns.uri, ns.prefix)
 
 
-def feature_name_matches(lc: core.LayerCaps, name: str, xmlns_replacements: dict) -> bool:
-    """Check if the feature name in the caps matches the given name."""
+def qualified_feature_name(lc: core.LayerCaps, custom_namespace_prefixes: dict) -> str:
+    """The feature type name as a QName (``prefix:name``), for use in text content."""
 
-    if name == lc.featureNameQ:
-        return True
+    prefix = feature_prefix(lc, custom_namespace_prefixes)
+    return prefix + ':' + lc.featureName if prefix else lc.featureName
 
-    if ':' not in name:
-        return name == lc.featureName
 
-    custom_xmlns, name = xmlx.namespace.split_name(name)
-    if name == lc.featureName and lc.xmlNamespace and lc.xmlNamespace.uri in xmlns_replacements:
-        return xmlns_replacements[lc.xmlNamespace.uri] == custom_xmlns
+def feature_name_matches(lc: core.LayerCaps, name: str, custom_namespace_prefixes: dict) -> bool:
+    """Check if the feature name in the caps matches the given name, which may be a QName."""
 
-    return False
+    _, prefix, pname = xmlx.namespace.parse_name(name)
+    if pname != lc.featureName:
+        return False
+    return not prefix or prefix == feature_prefix(lc, custom_namespace_prefixes)
 
 
 def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> tuple[gws.XmlElement, gws.XmlOptions]:
@@ -98,8 +94,8 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> tuple[gws.XmlElemen
             raise gws.NotFoundError(f'xml_schema: {lc.layer.uid}: no model')
         if not ns:
             ns = lc.xmlNamespace
-        elif lc.xmlNamespace.xmlns != ns.xmlns:
-            raise gws.NotFoundError(f'xml_schema: {lc.layer.uid}: wrong xmlns: {ns.xmlns=} {lc.xmlNamespace.xmlns=}')
+        elif lc.xmlNamespace.prefix != ns.prefix:
+            raise gws.NotFoundError(f'xml_schema: {lc.layer.uid}: wrong xmlns: {ns.prefix=} {lc.xmlNamespace.prefix=}')
 
     if not ns:
         raise gws.NotFoundError('xml_schema: no xmlns found')
@@ -113,11 +109,11 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> tuple[gws.XmlElemen
             'elementFormDefault': 'qualified',
         },
     )
-    schema.namespaces.append(ns)
+    schema.declare(ns)
 
     if ns.extendsGml:
-        gml = xmlx.namespace.ns.GML
-        schema.namespaces.append(gml)
+        gml = xmlx.namespace.c.GML
+        schema.declare(gml)
         schema.append(tag('XSD:import', {'namespace': gml.uri, 'schemaLocation': gml.schemaLocation}))
 
     seen = set()
@@ -158,7 +154,7 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> tuple[gws.XmlElemen
 
         atts = {
             'name': lc.featureName,
-            'type': ns.xmlns + ':' + type_name,
+            'type': ns.prefix + ':' + type_name,
         }
         if ns.extendsGml:
             atts['substitutionGroup'] = 'gml:AbstractFeature'

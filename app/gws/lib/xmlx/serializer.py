@@ -3,7 +3,7 @@
 Element and attribute names are local (``Point``) or Clark names (``{uri}Point``); a prefixed name is an error.
 An element in the default namespace (the nearest ``xmlns`` declaration, or ``defaultNamespace``) is written unprefixed.
 Otherwise the prefix comes from the nearest enclosing declaration (``XmlElement.namespaces``), or from the namespace table,
-renamed via ``customXmlns``. With ``withNamespaceDeclarations``, all namespaces used in the tree are declared on the root.
+renamed via ``customNamespacePrefixes``. With ``withNamespaceDeclarations``, all namespaces used in the tree are declared on the root.
 """
 
 from typing import Optional
@@ -16,6 +16,8 @@ from . import error, namespace, util
 
 
 class Serializer:
+    """Serializes an element tree to a string, see ``XmlElement.to_string``."""
+
     def __init__(self, el: gws.XmlElement, opts: Optional[gws.XmlOptions]):
         self.root = el
         self.buf = []
@@ -23,13 +25,12 @@ class Serializer:
         self.opts = opts or gws.XmlOptions()
         self.defaultNamespace = self.opts.defaultNamespace
 
-        # uri -> custom prefix
-        self.renames = self.opts.customXmlns or {}
+        self.ns_renames = self.opts.customNamespacePrefixes or {}
+        self.ns_stack = []
 
-        # namespace lists of the enclosing elements
-        self.stack = []
+    def to_string(self) -> str:
+        """Returns the XML string."""
 
-    def to_string(self):
         if self.opts.withXmlDeclaration or self.opts.doctype:
             self.buf.append(_XML_DECL)
             if self.opts.doctype:
@@ -46,7 +47,7 @@ class Serializer:
     ##
 
     def _el_to_string(self, el, namespaces, is_root=False):
-        self.stack.append(namespaces)
+        self.ns_stack.append(namespaces)
 
         tag = self._element_name(el.tag)
         atts = self._process_atts(el.attrib)
@@ -56,21 +57,21 @@ class Serializer:
         if atts:
             open_tag += ' ' + ' '.join(f'{k}="{v}"' for k, v in atts.items())
 
-        s = self._text_to_string(el.text)
-        if s or len(el) > 0:
+        txt = self._text_to_string(el.text)
+        if txt or len(el) > 0:
             self.buf.append(f'<{open_tag}>')
-            self.buf.append(s)
-            for c in el:
-                self._el_to_string(c, c.namespaces)
+            self.buf.append(txt)
+            for child in el:
+                self._el_to_string(child, child.namespaces)
             self.buf.append(f'</{tag}>')
         else:
             self.buf.append(f'<{open_tag}/>')
 
-        s = self._text_to_string(el.tail)
-        if s:
-            self.buf.append(s)
+        txt = self._text_to_string(el.tail)
+        if txt:
+            self.buf.append(txt)
 
-        self.stack.pop()
+        self.ns_stack.pop()
 
     def _process_atts(self, attrib):
         atts = {}
@@ -87,13 +88,12 @@ class Serializer:
             return {}
         return namespace.declarations(
             namespaces,
-            self.renames,
+            self.ns_renames,
             with_schema_locations=is_root and self.opts.withSchemaLocations,
         )
 
     def _element_name(self, name):
-        uri, pname = namespace.split_clark_name(name)
-        self._check_name(pname, name)
+        uri, pname = self._parse_name(name)
 
         if not uri:
             return pname
@@ -104,18 +104,25 @@ class Serializer:
         return self._prefix(uri, name) + ':' + pname
 
     def _attribute_name(self, name):
-        uri, pname = namespace.split_clark_name(name)
-        self._check_name(pname, name)
+        uri, pname = self._parse_name(name)
 
         if not uri:
             return pname
 
         return self._prefix(uri, name) + ':' + pname
 
+    def _parse_name(self, name):
+        uri, prefix, pname = namespace.parse_name(name)
+        if prefix:
+            raise error.WriteError(f'prefixed name {name!r}')
+        if not re.fullmatch(_NAME_RE, pname):
+            raise error.WriteError(f'invalid XML name {name!r}')
+        return uri, pname
+
     def _default_uri(self):
-        for nss in reversed(self.stack):
+        for nss in reversed(self.ns_stack):
             for ns in nss:
-                if ns.xmlns == '':
+                if ns.prefix == '':
                     return ns.uri
         if self.defaultNamespace:
             return self.defaultNamespace.uri
@@ -125,24 +132,25 @@ class Serializer:
         if uri == namespace.XML_URI:
             return namespace.XML
 
-        for nss in reversed(self.stack):
+        for nss in reversed(self.ns_stack):
             for ns in nss:
-                if ns.uri == uri and ns.xmlns:
-                    return self._output_prefix(ns)
+                if ns.uri == uri and ns.prefix:
+                    return self._final_prefix(ns)
 
         ns = namespace.find_by_uri(uri)
         if ns:
-            return self._output_prefix(ns)
+            return self._final_prefix(ns)
 
         if uri.startswith(namespace.ADHOC):
-            return uri[len(namespace.ADHOC):]
+            return uri.removeprefix(namespace.ADHOC)
 
         raise error.NamespaceError(f'unknown namespace in {name!r}')
 
-    def _output_prefix(self, ns):
-        p = self.renames.get(ns.uri, ns.xmlns)
-        self._check_name(p, p)
-        return p
+    def _final_prefix(self, ns) -> str:
+        pfx = self.ns_renames.get(ns.uri) or ns.prefix
+        if not re.fullmatch(_NAME_RE, pfx):
+            raise error.WriteError(f'invalid XML prefix {pfx!r}')
+        return pfx
 
     def _collect_namespaces(self, root_ns):
         # namespaces to declare on the root: its own, the default one and those used in the tree
@@ -150,13 +158,13 @@ class Serializer:
 
         nss = list(root_ns)
 
-        if self.defaultNamespace and all(ns.xmlns != '' for ns in nss):
+        if self.defaultNamespace and all(ns.prefix != '' for ns in nss):
             nss.append(namespace.new('', self.defaultNamespace.uri, self.defaultNamespace.schemaLocation))
 
         def declared(uri, scopes, for_attribute):
             for lst in scopes:
                 for ns in lst:
-                    if ns.uri == uri and (ns.xmlns or not for_attribute):
+                    if ns.uri == uri and (ns.prefix or not for_attribute):
                         return True
             return False
 
@@ -171,10 +179,10 @@ class Serializer:
             nss.append(ns)
 
         def walk(el, scopes):
-            uri, _ = namespace.split_clark_name(el.tag)
+            uri, _, _ = namespace.parse_name(el.tag)
             resolve(uri, el.tag, scopes, False)
             for key in el.attrib:
-                uri, _ = namespace.split_clark_name(key)
+                uri, _, _ = namespace.parse_name(key)
                 resolve(uri, key, scopes, True)
             for c in el:
                 walk(c, scopes + [c.namespaces] if c.namespaces else scopes)
@@ -183,16 +191,12 @@ class Serializer:
 
         seen = {}
         for ns in nss:
-            p = self.renames.get(ns.uri, ns.xmlns)
-            if p in seen and seen[p] != ns.uri:
-                raise error.NamespaceError(f'namespace prefix {p!r} is used for {seen[p]!r} and {ns.uri!r}')
-            seen[p] = ns.uri
+            pfx = self.ns_renames.get(ns.uri) or ns.prefix
+            if pfx in seen and seen[pfx] != ns.uri:
+                raise error.NamespaceError(f'namespace prefix {pfx!r} is used for {seen[pfx]!r} and {ns.uri!r}')
+            seen[pfx] = ns.uri
 
         return nss
-
-    def _check_name(self, s, name):
-        if not re.fullmatch(_NAME_RE, s):
-            raise error.WriteError(f'invalid XML name {name!r}')
 
     def _text_to_string(self, arg):
         s, ok = util.atom_to_string(arg)
@@ -215,8 +219,8 @@ _XML_DECL = '<?xml version="1.0" encoding="UTF-8"?>'
 
 _NAME_START = (
     'A-Za-z_'
-    '\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D'
-    '\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\U00010000-\U000EFFFF'
+    '\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d'
+    '\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\U00010000-\U000effff'
 )
-_NAME_CHAR = _NAME_START + '\\-.0-9\u00B7\u0300-\u036F\u203F-\u2040'
+_NAME_CHAR = _NAME_START + '\\-.0-9\u00b7\u0300-\u036f\u203f-\u2040'
 _NAME_RE = f'[{_NAME_START}][{_NAME_CHAR}]*'

@@ -46,7 +46,7 @@ def from_string(inp: str | bytes, opts: Optional[gws.XmlOptions] = None) -> gws.
 
 
 def _parse(inp, opts: Optional[gws.XmlOptions] = None) -> gws.XmlElement:
-    inp2 = _decode_input(inp)
+    inp = _decode_input(inp)
     target = _ParserTarget(opts or gws.XmlOptions())
 
     parser = pyexpat.ParserCreate()
@@ -57,7 +57,7 @@ def _parse(inp, opts: Optional[gws.XmlOptions] = None) -> gws.XmlElement:
     parser.EntityDeclHandler = target.entity_decl
 
     try:
-        parser.Parse(inp2, True)
+        parser.Parse(inp, True)
     except pyexpat.ExpatError as exc:
         raise error.ParseError(exc.args[0]) from exc
 
@@ -76,37 +76,38 @@ class _ParserTarget:
 
     def make(self, tag: str, attrib: dict) -> element.XmlElement:
         if self.opts.removeNamespaces:
-            el = element.XmlElement(namespace.unqualify_name(tag))
+            el = element.XmlElement(namespace.plain_name(tag))
             for key, val in attrib.items():
-                prefix, pname = namespace.split_name(key)
+                _, prefix, pname = namespace.parse_name(key)
                 if key == namespace.XMLNS or prefix == namespace.XMLNS:
                     continue
                 el.attrib[pname] = val
             return el
 
-        el = element.XmlElement('')
+        namespaces = []
+        atts = {}
         to_resolve = []
 
         for key, val in attrib.items():
-            prefix, pname = namespace.split_name(key)
+            _, prefix, pname = namespace.parse_name(key)
             if key == namespace.XMLNS:
-                el.namespaces.append(namespace.new('', val))
+                namespaces.append(namespace.new('', val))
             elif prefix == namespace.XMLNS:
-                el.namespaces.append(namespace.new(pname, val))
+                namespaces.append(namespace.new(pname, val))
             elif prefix == '':
-                el.attrib[pname] = val
+                atts[pname] = val
             else:
                 to_resolve.append((prefix, pname, val))
 
-        if el.namespaces:
-            self.scopes.append(el.namespaces)
+        if namespaces:
+            self.scopes.append(namespaces)
 
         for prefix, pname, val in to_resolve:
-            el.attrib[namespace.clark_name(pname, self.uri_for(prefix))] = val
+            atts[namespace.full_name(pname, self.uri_for(prefix))] = val
 
-        prefix, pname = namespace.split_name(tag)
-        el.tag = namespace.clark_name(pname, self.uri_for(prefix))
-        el.name = pname
+        _, prefix, pname = namespace.parse_name(tag)
+        el = element.XmlElement(namespace.full_name(pname, self.uri_for(prefix)), atts)
+        el.namespaces = namespaces
 
         return el
 
@@ -115,7 +116,7 @@ class _ParserTarget:
             return namespace.XML_URI
         for scope in reversed(self.scopes):
             for ns in scope:
-                if ns.xmlns == prefix:
+                if ns.prefix == prefix:
                     return ns.uri
         return '' if prefix == '' else namespace.ADHOC + prefix
 
@@ -162,9 +163,7 @@ def _decode_input(inp) -> str:
 
 
 def _decode_bytes_input(inp: bytes) -> str:
-    if inp.startswith(_BOM):
-        inp = inp[len(_BOM):]
-    inp = inp.strip()
+    inp = inp.removeprefix(_BOM).strip()
 
     declared = ''
 
@@ -197,8 +196,7 @@ def _decode_bytes_input(inp: bytes) -> str:
 
 
 def _decode_str_input(inp: str) -> str:
-    inp = inp.lstrip('﻿').strip()
-
+    inp = inp.lstrip('\ufeff').strip()
     if inp.startswith('<?xml'):
         try:
             end = inp.index('?>')

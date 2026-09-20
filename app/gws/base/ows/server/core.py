@@ -24,11 +24,8 @@ class LayerCaps(gws.Data):
     isSearchable: bool
 
     layerName: str
-    layerNameQ: str
     featureName: str
-    featureNameQ: str
     geometryName: str
-    geometryNameQ: str
 
     maxScale: int
     minScale: int

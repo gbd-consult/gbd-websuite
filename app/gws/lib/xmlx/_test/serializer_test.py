@@ -154,7 +154,7 @@ def test_to_string_with_default_namespace():
 
 def test_default_namespace_is_declared_with_schema_location():
     el = tag('WFS:a')
-    xml = el.to_string(gws.XmlOptions(defaultNamespace=xmlx.namespace.ns.WFS, withNamespaceDeclarations=True, withSchemaLocations=True))
+    xml = el.to_string(gws.XmlOptions(defaultNamespace=xmlx.namespace.c.WFS, withNamespaceDeclarations=True, withSchemaLocations=True))
     u.check.xml(xml, """
         <a xmlns="http://www.opengis.net/wfs/2.0"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -164,7 +164,7 @@ def test_default_namespace_is_declared_with_schema_location():
 
 def test_attributes_in_default_namespace_keep_prefix():
     el = tag('WFS:a', {'WFS:x': '1'})
-    opts = gws.XmlOptions(defaultNamespace=xmlx.namespace.ns.WFS, withNamespaceDeclarations=True)
+    opts = gws.XmlOptions(defaultNamespace=xmlx.namespace.c.WFS, withNamespaceDeclarations=True)
     u.check.xml(el.to_string(opts), '<a wfs:x="1" xmlns="http://www.opengis.net/wfs/2.0" xmlns:wfs="http://www.opengis.net/wfs/2.0"/>')
 
 
@@ -181,7 +181,7 @@ def test_adhoc_prefix_is_never_declared():
 def test_custom_prefixes():
     el = tag('WFS:a', tag('GML:b', {'GML:id': 'x'}))
     opts = gws.XmlOptions(
-        customXmlns={'http://www.opengis.net/gml/3.2': 'g', 'http://www.opengis.net/wfs/2.0': 'w'},
+        customNamespacePrefixes={'http://www.opengis.net/gml/3.2': 'g', 'http://www.opengis.net/wfs/2.0': 'w'},
         withNamespaceDeclarations=True,
     )
     u.check.xml(el.to_string(opts), """
@@ -198,7 +198,7 @@ def test_prefix_collision():
 
 
 def test_element_namespaces():
-    gml = xmlx.namespace.ns.GML
+    gml = xmlx.namespace.c.GML
     el = tag('a', tag('GML:Point', tag('GML:pos', '1 2')))
     el[0].namespaces.append(gml)
     u.check.xml(el.to_string(), """
@@ -223,15 +223,15 @@ def test_element_namespaces_override_table_prefix():
 
 
 def test_element_namespaces_with_custom_prefix():
-    gml = xmlx.namespace.ns.GML
+    gml = xmlx.namespace.c.GML
     el = tag('a', tag('GML:Point'))
     el[0].namespaces.append(gml)
-    opts = gws.XmlOptions(customXmlns={gml.uri: 'g'})
+    opts = gws.XmlOptions(customNamespacePrefixes={gml.uri: 'g'})
     u.check.xml(el.to_string(opts), '<a><g:Point xmlns:g="http://www.opengis.net/gml/3.2"/></a>')
 
 
 def test_element_namespaces_and_root_declarations():
-    gml = xmlx.namespace.ns.GML
+    gml = xmlx.namespace.c.GML
     el = tag('WFS:a', tag('GML:Point'))
     el[0].namespaces.append(gml)
     xml = el.to_string(gws.XmlOptions(withNamespaceDeclarations=True))
@@ -268,7 +268,7 @@ def test_parsed_undeclared_prefix_roundtrip():
 
 def test_parsed_document_with_custom_prefix():
     doc = xmlx.from_string('<a xmlns:x="http://x"><x:c/></a>')
-    assert doc.to_string(gws.XmlOptions(customXmlns={'http://x': 'y'})) == '<a xmlns:y="http://x"><y:c/></a>'
+    assert doc.to_string(gws.XmlOptions(customNamespacePrefixes={'http://x': 'y'})) == '<a xmlns:y="http://x"><y:c/></a>'
 
 
 def test_invalid_element_name():
@@ -290,7 +290,7 @@ def test_invalid_attribute_name():
 def test_invalid_custom_prefix():
     el = tag('WFS:a')
     with u.raises(xmlx.WriteError):
-        el.to_string(gws.XmlOptions(customXmlns={'http://www.opengis.net/wfs/2.0': 'bad prefix'}))
+        el.to_string(gws.XmlOptions(customNamespacePrefixes={'http://www.opengis.net/wfs/2.0': 'bad prefix'}))
 
 
 def test_non_ascii_names():

@@ -72,7 +72,7 @@ def test_with_default_namespace():
 
     xml = el.to_string(
         gws.XmlOptions(
-            defaultNamespace=xmlx.namespace.ns.WFS,
+            defaultNamespace=xmlx.namespace.c.WFS,
             withNamespaceDeclarations=True,
         )
     )
@@ -153,9 +153,11 @@ def test_keywords():
     u.check.xml(el.to_string(), '<root foo="bar"/>')
 
 
+def test_data_object_is_attributes():
+    assert tag('root', gws.Data(x=1)).attrib == {'x': 1}
+
+
 def test_invalid_argument():
-    with u.raises(xmlx.BuildError):
-        tag('root', gws.Data(x=1))
     with u.raises(xmlx.BuildError):
         tag('root', object())
 
@@ -168,9 +170,9 @@ def test_invalid_name():
 
 
 def test_unknown_namespace_id():
-    with u.raises(xmlx.NamespaceError):
+    with u.raises(xmlx.BuildError):
         tag('gml:Point')
-    with u.raises(xmlx.NamespaceError):
+    with u.raises(xmlx.BuildError):
         tag('a', {'gml:id': 1})
 
 

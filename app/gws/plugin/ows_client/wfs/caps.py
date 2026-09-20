@@ -23,7 +23,7 @@ def _feature_type(type_el):
     sl = gws.SourceLayer()
 
     sl.name = type_el.textof('Name')
-    sl.title = type_el.textof('Title') or xmlx.namespace.unqualify_name(sl.name)
+    sl.title = type_el.textof('Title') or xmlx.namespace.plain_name(sl.name)
     sl.metadata = u.element_metadata(type_el)
     sl.isQueryable = True
     sl.supportedCrs = u.supported_crs(type_el) or [gws.lib.crs.WGS84]

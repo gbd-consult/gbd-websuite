@@ -1,4 +1,8 @@
-"""Schema validator."""
+"""Schema validator (tests only).
+
+Validates a document against the schemas listed in its ``xsi:schemaLocation`` using lxml.
+Schemas are downloaded and cached under ``gws.c.CACHE_DIR``.
+"""
 
 import re
 import os
@@ -11,13 +15,17 @@ from . import util
 
 
 class Error(gws.Error):
+    """Validation or schema error, with ``message`` and ``lineno``."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.message = args[0]
         self.lineno = args[1]
 
 
-def validate(xml: str | bytes):
+def validate(xml: str | bytes) -> bool:
+    """Validate a document against its ``xsi:schemaLocation`` schemas, raise ``Error`` if invalid."""
+
     try:
         parser = lxml.etree.XMLParser(resolve_entities=False, no_network=True)
         parser.resolvers.add(_CachingResolver())
