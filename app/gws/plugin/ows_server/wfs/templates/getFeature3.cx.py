@@ -9,4 +9,5 @@ def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
         tpl.wfs_feature_collection(ta),
+        namespaces=tpl.namespaces_from_feature_collection(ta),
     )

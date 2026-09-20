@@ -1,9 +1,14 @@
-"""XML parser."""
+"""XML parser.
 
-from typing import Optional, cast
+A permissive expat-based parser. Namespaces are stripped: element and attribute names are local names,
+namespace declarations are kept in ``XmlElement.namespaces``. Undeclared prefixes are accepted.
+Comments and processing instructions are dropped. Entity declarations are rejected.
+"""
+
+from typing import Optional
 
 import re
-import xml.etree.ElementTree
+import pyexpat
 
 import gws
 
@@ -39,61 +44,47 @@ def from_string(inp: str | bytes, opts: Optional[gws.XmlOptions] = None) -> gws.
 
 def _parse(inp, opts: Optional[gws.XmlOptions] = None) -> gws.XmlElement:
     inp2 = _decode_input(inp)
-    parser = xml.etree.ElementTree.XMLParser(target=_ParserTarget(opts or gws.XmlOptions()))
+    target = _ParserTarget(opts or gws.XmlOptions())
+
+    parser = pyexpat.ParserCreate()
+    parser.buffer_text = True
+    parser.StartElementHandler = target.start
+    parser.EndElementHandler = target.end
+    parser.CharacterDataHandler = target.data
+    parser.EntityDeclHandler = target.entity_decl
+
     try:
-        parser.feed(inp2)
-        return cast(gws.XmlElement, parser.close())
-    except xml.etree.ElementTree.ParseError as exc:
+        parser.Parse(inp2, True)
+    except pyexpat.ExpatError as exc:
         raise error.ParseError(exc.args[0]) from exc
+
+    if target.root is None:
+        raise error.ParseError('no root element')
+
+    return target.root
 
 
 class _ParserTarget:
     def __init__(self, opts: gws.XmlOptions):
         self.stack = []
         self.root = None
-        self.buf = []
         self.opts = opts
 
-    def convert_name(self, s: str) -> str:
-        xmlns, uri, pname = namespace.split_name(s)
-        pname = pname.lower() if self.opts.caseInsensitive else pname
-        if self.opts.removeNamespaces:
-            return pname
-        if not xmlns and not uri:
-            return pname
-        if uri:
-            return '{' + uri + '}' + pname
-        return pname
+    def make(self, tag: str, attrib: dict) -> element.XmlElement:
+        el = element.XmlElement(namespace.unqualify_name(tag))
 
-    def make(self, tag: str, attrib: dict) -> gws.XmlElement:
-        attrib2 = {}
+        for key, val in attrib.items():
+            prefix, pname = namespace.split_name(key)
+            if key == namespace.XMLNS:
+                el.namespaces[''] = _adhoc_namespace('', val)
+            elif prefix == namespace.XMLNS:
+                el.namespaces[pname] = _adhoc_namespace(pname, val)
+            else:
+                el.attrib[pname] = val
 
-        if attrib:
-            for name, val in attrib.items():
-                attrib2[self.convert_name(name)] = val
-
-        el = element.XmlElement(self.convert_name(tag), attrib2)
         return el
 
-    def flush(self):
-        if not self.buf:
-            return
-
-        text = ''.join(self.buf)
-        self.buf = []
-
-        if self.opts.compactWhitespace:
-            text = ' '.join(text.strip().split())
-
-        if text:
-            top = self.stack[-1]
-            if len(top) > 0:
-                top[-1].tail = text
-            else:
-                top.text = text
-
     def start(self, tag: str, attrib: dict):
-        self.flush()
         el = self.make(tag, attrib)
         if self.stack:
             self.stack[-1].append(el)
@@ -102,21 +93,39 @@ class _ParserTarget:
         self.stack.append(el)
 
     def end(self, tag):
-        self.flush()
         self.stack.pop()
 
-    def data(self, data):
-        self.buf.append(data)
+    def data(self, text):
+        if not self.stack:
+            return
+        if self.opts.compactWhitespace:
+            text = ' '.join(text.strip().split())
+        if not text:
+            return
+        top = self.stack[-1]
+        if len(top) > 0:
+            top[-1].tail += text
+        else:
+            top.text += text
 
-    def close(self):
-        return self.root
+    def entity_decl(self, *args):
+        raise error.ParseError('entity declarations are not allowed')
+
+
+def _adhoc_namespace(prefix: str, uri: str) -> gws.XmlNamespace:
+    return gws.XmlNamespace(
+        uid=prefix,
+        xmlns=prefix,
+        uri=uri,
+        schemaLocation='',
+        extendsGml=False,
+    )
 
 
 def _decode_input(inp) -> str:
-    # the problem is, we can receive a document
-    # that is declared ISO-8859-1, but actually is UTF and vice versa.
-    # therefore, don't let expat do the decoding, always give it a `str`
-    # and remove the xml decl with the (possibly incorrect) encoding
+    # A document can be declared ISO-8859-1, but actually be UTF-8 and vice versa.
+    # Therefore, don't let expat do the decoding, always give it a `str`
+    # and remove the xml declaration with the (possibly incorrect) encoding.
 
     if isinstance(inp, bytes):
         return _decode_bytes_input(inp)
@@ -126,26 +135,28 @@ def _decode_input(inp) -> str:
 
 
 def _decode_bytes_input(inp: bytes) -> str:
+    if inp.startswith(_BOM):
+        inp = inp[len(_BOM):]
     inp = inp.strip()
 
-    encodings = []
+    declared = ''
 
     if inp.startswith(b'<?xml'):
         try:
             end = inp.index(b'?>')
         except ValueError:
             raise error.ParseError('invalid XML declaration')
-
-        head = inp[:end].decode('ascii').lower()
+        head = inp[:end].decode('ascii', errors='replace').lower()
         m = re.search(r'encoding\s*=\s*(\S+)', head)
         if m:
-            encodings.append(m.group(1).strip('\'"'))
+            declared = m.group(1).strip('\'"')
         inp = inp[end + 2 :]
 
-    # try the declared encoding, if any, then utf8, then latin
+    # UTF-8 is strict and fails on non-UTF-8 input, Latin-1 never fails.
 
-    if 'utf-8' not in encodings:
-        encodings.append('utf-8')
+    encodings = ['utf-8']
+    if declared and declared not in encodings:
+        encodings.append(declared)
     if 'iso-8859-1' not in encodings:
         encodings.append('iso-8859-1')
 
@@ -159,7 +170,7 @@ def _decode_bytes_input(inp: bytes) -> str:
 
 
 def _decode_str_input(inp: str) -> str:
-    inp = inp.strip()
+    inp = inp.lstrip('﻿').strip()
 
     if inp.startswith('<?xml'):
         try:
@@ -169,3 +180,6 @@ def _decode_str_input(inp: str) -> str:
         return inp[end + 2 :]
 
     return inp
+
+
+_BOM = b'\xef\xbb\xbf'

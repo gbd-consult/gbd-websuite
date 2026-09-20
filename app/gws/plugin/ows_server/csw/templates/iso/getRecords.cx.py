@@ -6,20 +6,21 @@ import gws.base.ows.server.templatelib as tpl
 import gws.lib.datetimex
 import gws.lib.xmlx
 import gws.plugin.ows_server.csw.templates.iso.record as rec
+from gws.lib.xmlx import tag
 
 
 def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
-        ('csw:GetRecordsResponse', {'version': ta.version}, doc(ta)),
+        tag('csw:GetRecordsResponse', {'version': ta.version}, doc(ta)),
     )
 
 
 def doc(ta: server.TemplateArgs):
     mdc = ta.metadataCollection
 
-    yield 'csw:SearchStatus', {'timestamp': mdc.timestamp}
-    yield (
+    yield tag('csw:SearchStatus', {'timestamp': mdc.timestamp})
+    yield tag(
         'csw:SearchResults',
         {
             'elementSet': 'full',

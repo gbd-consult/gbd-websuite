@@ -6,6 +6,7 @@ import gws
 import gws.lib.extent
 import gws.gis.zoom
 import gws.lib.xmlx as xmlx
+from gws.lib.xmlx import tag
 
 from . import core
 
@@ -78,9 +79,9 @@ def feature_name_matches(lc: core.LayerCaps, name: str, xmlns_replacements: dict
     if ':' not in name:
         return name == lc.featureName
 
-    custom_xmlns, _, name = xmlx.namespace.split_name(name)
-    if name == lc.featureName and lc.xmlNamespace and lc.xmlNamespace.uid in xmlns_replacements:
-        return xmlns_replacements[lc.xmlNamespace.uid] == custom_xmlns
+    custom_xmlns, name = xmlx.namespace.split_name(name)
+    if name == lc.featureName and lc.xmlNamespace and lc.xmlNamespace.uri in xmlns_replacements:
+        return xmlns_replacements[lc.xmlNamespace.uri] == custom_xmlns
 
     return False
 
@@ -107,32 +108,32 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> tuple[gws.XmlElemen
     opts.namespaces = {}
     opts.namespaces[ns.xmlns] = ns
 
-    tag = [
+    schema = tag(
         'xsd:schema',
         {
             'targetNamespace': ns.uri,
             'elementFormDefault': 'qualified',
         },
-    ]
+    )
 
     if ns.extendsGml:
         gml = xmlx.namespace.require('gml')
         opts.namespaces[gml.xmlns] = gml
-        tag.append(['xsd:import', {'namespace': gml.uri, 'schemaLocation': gml.schemaLocation}])
+        schema.append(tag('xsd:import', {'namespace': gml.uri, 'schemaLocation': gml.schemaLocation}))
 
     seen = set()
-    
+
     for lc in lcs:
         if lc.featureName in seen:
             continue
         seen.add(lc.featureName)
-        
+
         elements = []
 
         for f in gws.u.require(lc.model).fields:
             if user.can_read(f):
                 elements.append(
-                    [
+                    tag(
                         'xsd:element',
                         {
                             'maxOccurs': '1',
@@ -141,21 +142,20 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> tuple[gws.XmlElemen
                             'name': f.name,
                             'type': _xsd_type(f),
                         },
-                    ]
+                    )
                 )
 
         type_name = f'{lc.featureName}Type'
 
-        type_def = []
-        type_def.append('xsd:complexContent')
         if ns.extendsGml:
-            type_def.append(
-                ['xsd:extension', {'base': 'gml:AbstractFeatureType'}, ['xsd:sequence', elements]],
+            type_def = tag(
+                'xsd:complexContent',
+                tag('xsd:extension', {'base': 'gml:AbstractFeatureType'}, tag('xsd:sequence', elements)),
             )
         else:
-            type_def.append(['xsd:sequence', elements])
+            type_def = tag('xsd:complexContent', tag('xsd:sequence', elements))
 
-        tag.append(['xsd:complexType', {'name': type_name}, type_def])
+        schema.append(tag('xsd:complexType', {'name': type_name}, type_def))
 
         atts = {
             'name': lc.featureName,
@@ -164,9 +164,9 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> tuple[gws.XmlElemen
         if ns.extendsGml:
             atts['substitutionGroup'] = 'gml:AbstractFeature'
 
-        tag.append(['xsd:element', atts])
+        schema.append(tag('xsd:element', atts))
 
-    return xmlx.tag(*tag), opts
+    return schema, opts
 
 
 def _xsd_type(f: gws.ModelField) -> str:

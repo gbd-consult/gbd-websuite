@@ -85,6 +85,6 @@ def test_shape_to_element_with_inline_xmlns():
     xml = writer.shape_to_element(p, with_inline_xmlns=True).to_string(opts)
     u.check.xml(xml, """
         <gml:Point srsName="urn:ogc:def:crs:EPSG::3857" xmlns:gml="http://www.opengis.net/gml/3.2">
-            <gml:pos srsDimension="2" xmlns:gml="http://www.opengis.net/gml/3.2">12.35 5.68</gml:pos>
+            <gml:pos srsDimension="2">12.35 5.68</gml:pos>
         </gml:Point>
     """)

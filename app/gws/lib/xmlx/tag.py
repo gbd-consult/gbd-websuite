@@ -7,16 +7,17 @@ or a slash separated list of tag names, in which case nested elements are create
 
 The remaining ``*args`` are interpreted as follows:
 
-- a simple string or number value - appended to the text content of the Element
-- an `XmlElement` - appended as a child to the Element
+- a string, number, bool, date or datetime - appended to the text content of the Element
+- an ``XmlElement`` - appended as a child to the Element
 - a dict - attributes of the Element are updated from this dict
-- a list, tuple or a generator - used as arguments to ``tag`` to create a child tag
+- ``None`` - ignored
+- any other iterable (list, tuple, generator) - its items are interpreted by the same rules
 
 If keyword arguments are given, they are added to the Element's attributes.
 
 **Example:** ::
 
-    tag('geometry/gml:Point', {'gml:id': 'xy'}, ['gml:coordinates', '12.345,56.789'], srsName=3857)
+    tag('geometry/gml:Point', {'gml:id': 'xy'}, tag('gml:coordinates', '12.345,56.789'), srsName=3857)
 
 creates the following element: ::
 
@@ -28,7 +29,7 @@ creates the following element: ::
 
 """
 
-import re
+import collections.abc
 
 import gws
 
@@ -40,7 +41,10 @@ def tag(name: str, *args, **kwargs) -> gws.XmlElement:
 
     stack = []
 
-    for n in _split_name(name):
+    for n in name.split('/'):
+        n = n.strip()
+        if not n:
+            raise error.BuildError(f'invalid tag name: {name!r}')
         el = element.XmlElement(n)
         if stack:
             stack[-1].append(el)
@@ -65,8 +69,7 @@ def _add(el: gws.XmlElement, arg):
     if arg is None:
         return
 
-    if hasattr(arg, 'tag'):
-        # mimic ElementTree.iselement
+    if isinstance(arg, gws.XmlElement):
         el.append(arg)
         return
 
@@ -81,16 +84,12 @@ def _add(el: gws.XmlElement, arg):
                 el.set(k, v)
         return
 
-    if isinstance(arg, (list, tuple)):
-        _add_list(el, arg)
+    if isinstance(arg, collections.abc.Iterable) and not isinstance(arg, gws.Data):
+        for a in arg:
+            _add(el, a)
         return
 
-    try:
-        ls = list(arg)
-    except Exception as exc:
-        raise error.BuildError(f'invalid argument: in {el.tag!r}, {arg=}') from exc
-
-    _add_list(el, ls)
+    raise error.BuildError(f'invalid argument: in {el.tag!r}, {arg=}')
 
 
 def _add_text(el, s):
@@ -100,32 +99,3 @@ def _add_text(el, s):
         el.text = (el.text or '') + s
     else:
         el[-1].tail = (el[-1].tail or '') + s
-
-
-def _add_list(el, ls):
-    if not ls:
-        return
-    if isinstance(ls[0], str):
-        _add(el, tag(*ls))
-        return
-    for arg in ls:
-        _add(el, arg)
-
-
-def _split_name(name):
-    if '{' not in name:
-        return [s.strip() for s in name.split('/')]
-
-    parts = []
-    ns = ''
-
-    for n, s in re.findall(r'({.+?})|([^/{}]+)', name):
-        if n:
-            ns = n.strip()
-        else:
-            s = s.strip()
-            if s:
-                parts.append(ns + s)
-                ns = ''
-
-    return parts

@@ -119,14 +119,14 @@ class Matcher:
 
 def from_fes_string(src: str) -> gws.SearchFilter:
     try:
-        el = xmlx.from_string(src, gws.XmlOptions(removeNamespaces=True))
+        el = xmlx.from_string(src)
     except Exception as exc:
         raise Error('invalid XML') from exc
     return from_fes_element(el)
 
 
 def from_fes_element(el: gws.XmlElement) -> gws.SearchFilter:
-    op = el.lcName
+    op = el.name.lower()
     sub = el.children()
 
     if op == 'filter':

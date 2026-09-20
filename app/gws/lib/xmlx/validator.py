@@ -52,7 +52,7 @@ def _extract_schema_locations(xml: str | bytes) -> dict:
     d = {}
 
     parts = attr.strip().split()
-    while parts:
+    while len(parts) >= 2:
         namespace = parts.pop(0)
         location = parts.pop(0)
         d[namespace] = location

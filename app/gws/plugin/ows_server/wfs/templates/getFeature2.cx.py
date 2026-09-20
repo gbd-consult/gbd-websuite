@@ -12,5 +12,6 @@ def main(ta: server.TemplateArgs):
         tpl.wfs_feature_collection(ta),
         namespaces={
             'gml': xmlx.namespace.require('gml2'),
+            **tpl.namespaces_from_feature_collection(ta),
         },
     )

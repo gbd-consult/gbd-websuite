@@ -459,9 +459,9 @@ def _visibility_presets(root_el: gws.XmlElement):
     for el in root_el.findall('visibility-presets/visibility-preset'):
         ls = []
         for la in el.findall('layer'):
-            if la.attr('visible') == '1':
-                ls.append(la.attr('id'))
-        d[el.attr('name')] = ls
+            if la.get('visible') == '1':
+                ls.append(la.get('id'))
+        d[el.get('name')] = ls
 
     return d
 
@@ -684,8 +684,8 @@ def _parse_property_tag(el: gws.XmlElement) -> tuple[str, Any]:
     name = el.tag
     is_opt = el.tag == 'Option'
 
-    if is_opt and el.attr('name'):
-        name = el.attr('name') or ''
+    if is_opt and el.get('name'):
+        name = el.get('name') or ''
 
     if not typ or typ == 'Map':
         d = {}
@@ -712,19 +712,19 @@ def _parse_property_tag(el: gws.XmlElement) -> tuple[str, Any]:
         return name, val
 
     if typ == 'QString':
-        val = el.attr('value') if is_opt else el.text
+        val = el.get('value') if is_opt else el.text
         return name, val
 
     if typ == 'bool':
-        val = el.attr('value') if is_opt else el.text
+        val = el.get('value') if is_opt else el.text
         return name, (val or '').lower() == 'true'
 
     if typ == 'int':
-        val = el.attr('value') if is_opt else el.text
+        val = el.get('value') if is_opt else el.text
         return name, _parse_int(val)
 
     if typ == 'double':
-        val = el.attr('value') if is_opt else el.text
+        val = el.get('value') if is_opt else el.text
         return name, _parse_float(val)
 
     return '', None

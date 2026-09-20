@@ -11,15 +11,16 @@ import gws.lib.xmlx as xmlx
 import gws.base.ows.server as server
 
 from . import core, service
+from gws.lib.xmlx import tag
 
 
 # OGC 06-121r9 Table 34
 # Ordered sequence of two double values in decimal degrees, with longitude before latitude
 def ows_wgs84_bounding_box(lc: core.LayerCaps):
-    return (
+    return tag(
         'ows:WGS84BoundingBox',
-        ('ows:LowerCorner', coord_dms(lc.layer.wgsExtent[0]), ' ', coord_dms(lc.layer.wgsExtent[1])),
-        ('ows:UpperCorner', coord_dms(lc.layer.wgsExtent[2]), ' ', coord_dms(lc.layer.wgsExtent[3])),
+        tag('ows:LowerCorner', coord_dms(lc.layer.wgsExtent[0]), ' ', coord_dms(lc.layer.wgsExtent[1])),
+        tag('ows:UpperCorner', coord_dms(lc.layer.wgsExtent[2]), ' ', coord_dms(lc.layer.wgsExtent[3])),
     )
 
 
@@ -27,15 +28,15 @@ def ows_wgs84_bounding_box(lc: core.LayerCaps):
 def ows_service_identification(ta: server.TemplateArgs):
     md = ta.service.metadata
 
-    return (
+    return tag(
         'ows:ServiceIdentification',
-        ('ows:Title', md.title),
-        ('ows:Abstract', md.abstract),
+        tag('ows:Title', md.title),
+        tag('ows:Abstract', md.abstract),
         ows_keywords(md),
-        ('ows:ServiceType', ta.service.protocol),
-        ('ows:ServiceTypeVersion', ta.version),
-        ('ows:Fees', md.fees) if md.fees else None,
-        ('ows:AccessConstraints', md.accessConstraints) if md.accessConstraints else None,
+        tag('ows:ServiceType', ta.service.protocol),
+        tag('ows:ServiceTypeVersion', ta.version),
+        tag('ows:Fees', md.fees) if md.fees else None,
+        tag('ows:AccessConstraints', md.accessConstraints) if md.accessConstraints else None,
     )
 
 
@@ -43,29 +44,29 @@ def ows_service_identification(ta: server.TemplateArgs):
 def ows_service_provider(ta: server.TemplateArgs):
     md = ta.service.metadata
 
-    return (
+    return tag(
         'ows:ServiceProvider',
-        ('ows:ProviderName', md.contactProviderName),
-        ('ows:ProviderSite', {'xlink:href': md.contactProviderSite}),
-        (
+        tag('ows:ProviderName', md.contactProviderName),
+        tag('ows:ProviderSite', {'xlink:href': md.contactProviderSite}),
+        tag(
             'ows:ServiceContact',
-            ('ows:IndividualName', md.contactPerson),
-            ('ows:PositionName', md.contactPosition),
-            (
+            tag('ows:IndividualName', md.contactPerson),
+            tag('ows:PositionName', md.contactPosition),
+            tag(
                 'ows:ContactInfo',
-                ('ows:Phone', ('ows:Voice', md.contactPhone), ('ows:Facsimile', md.contactFax)),
-                (
+                tag('ows:Phone', tag('ows:Voice', md.contactPhone), tag('ows:Facsimile', md.contactFax)),
+                tag(
                     'ows:Address',
-                    ('ows:DeliveryPoint', md.contactAddress),
-                    ('ows:City', md.contactCity),
-                    ('ows:AdministrativeArea', md.contactArea),
-                    ('ows:PostalCode', md.contactZip),
-                    ('ows:Country', md.contactCountry),
-                    ('ows:ElectronicMailAddress', md.contactEmail),
+                    tag('ows:DeliveryPoint', md.contactAddress),
+                    tag('ows:City', md.contactCity),
+                    tag('ows:AdministrativeArea', md.contactArea),
+                    tag('ows:PostalCode', md.contactZip),
+                    tag('ows:Country', md.contactCountry),
+                    tag('ows:ElectronicMailAddress', md.contactEmail),
                 ),
-                ('ows:OnlineResource', {'xlink:href': md.contactUrl}),
+                tag('ows:OnlineResource', {'xlink:href': md.contactUrl}),
             ),
-            ('ows:Role', md.contactRole),
+            tag('ows:Role', md.contactRole),
         ),
     )
 
@@ -77,17 +78,17 @@ def ows_service_provider(ta: server.TemplateArgs):
 
 def ows_service_url(ta: server.TemplateArgs, get=True, post=False):
     if get:
-        yield 'ows:DCP/ows:HTTP/ows:Get', {'xlink:type': 'simple', 'xlink:href': ta.serviceUrl + '?'}
+        yield tag('ows:DCP/ows:HTTP/ows:Get', {'xlink:type': 'simple', 'xlink:href': ta.serviceUrl + '?'})
     if post:
-        yield 'ows:DCP/ows:HTTP/ows:Post', {'xlink:type': 'simple', 'xlink:href': ta.serviceUrl}
+        yield tag('ows:DCP/ows:HTTP/ows:Post', {'xlink:type': 'simple', 'xlink:href': ta.serviceUrl})
 
 
 def ows_value(value):
-    return 'ows:Value', value
+    return tag('ows:Value', value)
 
 
 def online_resource(url):
-    return 'OnlineResource', {'xlink:type': 'simple', 'xlink:href': url}
+    return tag('OnlineResource', {'xlink:type': 'simple', 'xlink:href': url})
 
 
 # OGC 01-068r3, 6.2.2
@@ -97,22 +98,22 @@ def online_resource(url):
 
 
 def dcp_service_url(ta: server.TemplateArgs):
-    return 'DCPType/HTTP/Get', online_resource(ta.serviceUrl + '?')
+    return tag('DCPType/HTTP/Get', online_resource(ta.serviceUrl + '?'))
 
 
 def legend_url_nested(ta: server.TemplateArgs, lc: core.LayerCaps, size=None):
     name = xmlx.namespace.unqualify_name(lc.layerNameQ)
-    return (
+    return tag(
         'LegendURL',
         {'width': size[0], 'height': size[1]} if size else {},
-        ('Format', 'image/png'),
+        tag('Format', 'image/png'),
         online_resource(f'{ta.serviceUrl}?request=GetLegendGraphic&layer={name}'),
     )
 
 
 def legend_url(ta: server.TemplateArgs, lc: core.LayerCaps, size=None):
     name = xmlx.namespace.unqualify_name(lc.layerNameQ)
-    return (
+    return tag(
         'LegendURL',
         {
             'format': 'image/png',
@@ -128,10 +129,10 @@ def ows_keywords(md: gws.Metadata):
 def _ows_keyword_group(kg: gws.base.metadata.KeywordGroup):
     tags = []
     for kw in kg.keywords:
-        tags.append(('ows:Keyword', kw))
+        tags.append(tag('ows:Keyword', kw))
     if kg.codeSpace:
-        tags.append(('ows:Type', {'codeSpace': kg.codeSpace}, kg.typeName))
-    return 'ows:Keywords', tags
+        tags.append(tag('ows:Type', {'codeSpace': kg.codeSpace}, kg.typeName))
+    return tag('ows:Keywords', tags)
 
 
 def wms_keywords(md: gws.Metadata, with_vocabulary: bool = False):
@@ -139,18 +140,18 @@ def wms_keywords(md: gws.Metadata, with_vocabulary: bool = False):
     for kg in gws.base.metadata.keyword_groups(md):
         for kw in kg.keywords:
             if kg.codeSpace and with_vocabulary:
-                tags.append(('Keyword', kw, {'vocabulary': kg.codeSpace}))
+                tags.append(tag('Keyword', kw, {'vocabulary': kg.codeSpace}))
             else:
-                tags.append(('Keyword', kw))
-    return 'KeywordList', tags
+                tags.append(tag('Keyword', kw))
+    return tag('KeywordList', tags)
 
 
 def lon_lat_envelope(lc: core.LayerCaps):
-    return (
+    return tag(
         'lonLatEnvelope',
         {'srsName': 'urn:ogc:def:crs:OGC:1.3:CRS84'},
-        ('gml:pos', coord_dms(lc.layer.wgsExtent[0]), ' ', coord_dms(lc.layer.wgsExtent[1])),
-        ('gml:pos', coord_dms(lc.layer.wgsExtent[2]), ' ', coord_dms(lc.layer.wgsExtent[3])),
+        tag('gml:pos', coord_dms(lc.layer.wgsExtent[0]), ' ', coord_dms(lc.layer.wgsExtent[1])),
+        tag('gml:pos', coord_dms(lc.layer.wgsExtent[2]), ' ', coord_dms(lc.layer.wgsExtent[3])),
     )
 
 
@@ -167,7 +168,7 @@ def meta_links_nested(ta: server.TemplateArgs, md: gws.Metadata):
 
 def meta_url_nested(ta: server.TemplateArgs, ml: gws.MetadataLink, name: str):
     if ml:
-        yield name, {'type': ml.type}, ('Format', ml.format), online_resource(ta.url_for(ml.url))
+        yield tag(name, {'type': ml.type}, tag('Format', ml.format), online_resource(ta.url_for(ml.url)))
 
 
 # Simple format (WFS 2)
@@ -186,15 +187,15 @@ def meta_links_simple(ta: server.TemplateArgs, md: gws.Metadata):
 
 def meta_url_simple(ta: server.TemplateArgs, ml: gws.MetadataLink, name: str):
     if ml:
-        yield name, {'xlink:href': ta.url_for(ml.url), 'about': ml.about}
+        yield tag(name, {'xlink:href': ta.url_for(ml.url), 'about': ml.about})
 
 
 def wfs_feature_collection(ta: server.TemplateArgs):
-    return (
+    return tag(
         'wfs:FeatureCollection',
         wfs_feature_collection_attributes(ta),
         [
-            (
+            tag(
                 f'wfs:member/{m.layerCaps.featureNameQ if m.layerCaps else "wfs:feature"}',
                 {'gml:id': gml_format_uid(ta, m.feature.uid())},
                 wfs_feature_collection_member(ta, m),
@@ -205,10 +206,10 @@ def wfs_feature_collection(ta: server.TemplateArgs):
 
 
 def wfs_value_collection(ta: server.TemplateArgs):
-    return (
+    return tag(
         'wfs:ValueCollection',
         wfs_feature_collection_attributes(ta),
-        [('wfs:member', gml_format_value(ta, val)) for val in ta.featureCollection.values],
+        [tag('wfs:member', gml_format_value(ta, val)) for val in ta.featureCollection.values],
     )
 
 
@@ -226,9 +227,9 @@ def wfs_feature_collection_member(ta: server.TemplateArgs, m: server.FeatureColl
         if m.layerCaps:
             name = xmlx.namespace.qualify_name(name, m.layerCaps.xmlNamespace)
         if isinstance(val, gws.Shape):
-            geom = name, gml_format_value(ta, val)
+            geom = tag(name, gml_format_value(ta, val))
         else:
-            yield name, gml_format_value(ta, val)
+            yield tag(name, gml_format_value(ta, val))
     # QGIS wants geometry as the last element
     if geom:
         yield geom
@@ -267,55 +268,55 @@ def gml_format_value(ta, val):
 def inspire_extended_capabilities(ta: server.TemplateArgs):
     md = ta.service.metadata
     return [
-        (
+        tag(
             'inspire_common:ResourceLocator',
-            ('inspire_common:URL', ta.serviceUrl),
-            ('inspire_common:MediaType', 'application/xml'),
+            tag('inspire_common:URL', ta.serviceUrl),
+            tag('inspire_common:MediaType', 'application/xml'),
         ),
-        ('inspire_common:ResourceType', md.inspireResourceType),
-        ('inspire_common:TemporalReference/inspire_common:DateOfPublication', iso_date(md.dateCreated)),
-        (
+        tag('inspire_common:ResourceType', md.inspireResourceType),
+        tag('inspire_common:TemporalReference/inspire_common:DateOfPublication', iso_date(md.dateCreated)),
+        tag(
             'inspire_common:Conformity',
-            (
+            tag(
                 'inspire_common:Specification',
                 # {'xsi:type': 'inspire_common:citationInspireInteroperabilityRegulation'},
-                (
+                tag(
                     'inspire_common:Title',
                     'COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the European Parliament and of the Council as regards interoperability of spatial data sets and services',
                 ),
-                ('inspire_common:DateOfPublication', '2010-12-08'),
-                ('inspire_common:URI', 'OJ:L:2010:323:0011:0102:EN:PDF'),
-                (
+                tag('inspire_common:DateOfPublication', '2010-12-08'),
+                tag('inspire_common:URI', 'OJ:L:2010:323:0011:0102:EN:PDF'),
+                tag(
                     'inspire_common:ResourceLocator',
-                    ('inspire_common:URL', 'http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:EN:PDF'),
-                    ('inspire_common:MediaType', 'application/pdf'),
+                    tag('inspire_common:URL', 'http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:EN:PDF'),
+                    tag('inspire_common:MediaType', 'application/pdf'),
                 ),
             ),
-            ('inspire_common:Degree', md.inspireDegreeOfConformity),
+            tag('inspire_common:Degree', md.inspireDegreeOfConformity),
         ),
-        (
+        tag(
             'inspire_common:MetadataPointOfContact',
-            ('inspire_common:OrganisationName', md.contactOrganization),
-            ('inspire_common:EmailAddress', md.contactEmail),
+            tag('inspire_common:OrganisationName', md.contactOrganization),
+            tag('inspire_common:EmailAddress', md.contactEmail),
         ),
-        ('inspire_common:MetadataDate', iso_date(md.dateCreated)),
-        ('inspire_common:SpatialDataServiceType', md.inspireSpatialDataServiceType),
-        ('inspire_common:MandatoryKeyword/inspire_common:KeywordValue', md.inspireMandatoryKeyword),
-        (
+        tag('inspire_common:MetadataDate', iso_date(md.dateCreated)),
+        tag('inspire_common:SpatialDataServiceType', md.inspireSpatialDataServiceType),
+        tag('inspire_common:MandatoryKeyword/inspire_common:KeywordValue', md.inspireMandatoryKeyword),
+        tag(
             'inspire_common:Keyword',
-            (
+            tag(
                 'inspire_common:OriginatingControlledVocabulary',
-                ('inspire_common:Title', 'INSPIRE themes'),
-                ('inspire_common:DateOfPublication', '2008-06-01'),
+                tag('inspire_common:Title', 'INSPIRE themes'),
+                tag('inspire_common:DateOfPublication', '2008-06-01'),
             ),
-            ('inspire_common:KeywordValue', md.inspireThemeNameEn),
+            tag('inspire_common:KeywordValue', md.inspireThemeNameEn),
         ),
-        (
+        tag(
             'inspire_common:SupportedLanguages',
-            ('inspire_common:DefaultLanguage/inspire_common:Language', md.languageBib),
-            ('inspire_common:SupportedLanguage/inspire_common:Language', md.languageBib),
+            tag('inspire_common:DefaultLanguage/inspire_common:Language', md.languageBib),
+            tag('inspire_common:SupportedLanguage/inspire_common:Language', md.languageBib),
         ),
-        ('inspire_common:ResponseLanguage/inspire_common:Language', md.languageBib),
+        tag('inspire_common:ResponseLanguage/inspire_common:Language', md.languageBib),
     ]
 
 
@@ -343,18 +344,25 @@ def namespaces_from_caps(ta: server.TemplateArgs) -> dict[str, gws.XmlNamespace]
     return {lc.xmlNamespace.xmlns: lc.xmlNamespace for lc in ta.layerCapsList if lc.xmlNamespace is not None}
 
 
+def namespaces_from_feature_collection(ta: server.TemplateArgs) -> dict[str, gws.XmlNamespace]:
+    d = {}
+    for m in ta.featureCollection.members:
+        if m.layerCaps and m.layerCaps.xmlNamespace:
+            d[m.layerCaps.xmlNamespace.xmlns] = m.layerCaps.xmlNamespace
+    return d
+
+
 def to_xml_response(
     ta: server.TemplateArgs,
-    tag,
+    el: gws.XmlElement,
     namespaces: Optional[dict[str, gws.XmlNamespace]] = None,
     default_namespace: Optional[gws.XmlNamespace] = None,
 ) -> gws.ContentResponse:
     if ta.sr.isSoap:
-        tag = ['soap:Envelope', ('soap:Header', ''), ('soap:Body', tag)]
+        el = tag('soap:Envelope', tag('soap:Header'), tag('soap:Body', el))
         namespaces = namespaces or {}
         namespaces['soap'] = xmlx.namespace.require('soap')
 
-    el = xmlx.tag(*tag)
     opts = gws.XmlOptions(
         namespaces=namespaces,
         defaultNamespace=default_namespace,
@@ -369,13 +377,19 @@ def to_xml_response(
 
 def to_xml_response_with_doctype(
     ta: server.TemplateArgs,
-    tag,
+    el: gws.XmlElement,
     doctype: str,
 ) -> gws.ContentResponse:
     if ta.sr.isSoap:
-        tag = ['soap:Envelope', ('soap:Header', ''), ('soap:Body', tag)]
+        el = tag('soap:Envelope', tag('soap:Header'), tag('soap:Body', el))
 
-    el = xmlx.tag(*tag)
+    # DTD-based formats have no namespace declarations on the root,
+    # declare xlink inline where it is used (as per the DTD's #FIXED xmlns:xlink)
+    xlink = xmlx.namespace.require('xlink')
+    for e in el.iter():
+        if any(k.startswith('xlink:') for k in e.attrib):
+            e.namespaces['xlink'] = xlink
+
     opts = gws.XmlOptions(
         doctype=doctype,
         withNamespaceDeclarations=False,

@@ -2,12 +2,13 @@ import gws
 import gws.lib.xmlx as xmlx
 import gws.base.ows.server as server
 import gws.base.ows.server.templatelib as tpl
+from gws.lib.xmlx import tag
 
 
 def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
-        ('Capabilities', doc(ta)),
+        tag('Capabilities', doc(ta)),
         namespaces={
             'ows': xmlx.namespace.require('ows11'),
         },
@@ -24,60 +25,60 @@ def doc(ta: server.TemplateArgs):
     yield tpl.ows_service_identification(ta)
     yield tpl.ows_service_provider(ta)
 
-    yield (
+    yield tag(
         'ows:OperationsMetadata',
-        ('ows:Operation', {'name': 'GetCapabilities'}, tpl.ows_service_url(ta)),
-        ('ows:Operation', {'name': 'GetTile'}, tpl.ows_service_url(ta)),
-        ('ows:Operation', {'name': 'GetLegendGraphic'}, tpl.ows_service_url(ta)),
+        tag('ows:Operation', {'name': 'GetCapabilities'}, tpl.ows_service_url(ta)),
+        tag('ows:Operation', {'name': 'GetTile'}, tpl.ows_service_url(ta)),
+        tag('ows:Operation', {'name': 'GetLegendGraphic'}, tpl.ows_service_url(ta)),
     )
 
-    yield 'Contents', contents(ta)
+    yield tag('Contents', contents(ta))
 
     # OGC 07-057r7 Annex D
     if ta.service.metadata.serviceMetadataURL:
-        yield 'ServiceMetadataURL', {'xlink:href': ta.service.metadata.serviceMetadataURL}
+        yield tag('ServiceMetadataURL', {'xlink:href': ta.service.metadata.serviceMetadataURL})
 
 
 def contents(ta: server.TemplateArgs):
     for lc in ta.layerCapsList:
-        yield 'Layer', layer(ta, lc)
+        yield tag('Layer', layer(ta, lc))
     for tms in ta.tileMatrixSets:
-        yield 'TileMatrixSet', tile_matrix_set(ta, tms)
+        yield tag('TileMatrixSet', tile_matrix_set(ta, tms))
 
 
 def layer(ta: server.TemplateArgs, lc: server.LayerCaps):
-    yield 'ows:Title', lc.title
+    yield tag('ows:Title', lc.title)
 
-    yield 'ows:Abstract', lc.layer.metadata.abstract
+    yield tag('ows:Abstract', lc.layer.metadata.abstract)
 
     yield tpl.ows_wgs84_bounding_box(lc)
 
-    yield 'ows:Identifier', lc.layerName
+    yield tag('ows:Identifier', lc.layerName)
 
-    yield (
+    yield tag(
         'Style',
-        ('ows:Identifier', 'default'),
+        tag('ows:Identifier', 'default'),
         tpl.legend_url(ta, lc) if lc.hasLegend else '',
     )
 
-    yield 'Format', 'image/png'
+    yield tag('Format', 'image/png')
 
     for tms in ta.tileMatrixSets:
-        yield 'TileMatrixSetLink/TileMatrixSet', tms.identifier
+        yield tag('TileMatrixSetLink/TileMatrixSet', tms.identifier)
 
 
 def tile_matrix_set(ta: server.TemplateArgs, tms: gws.TileMatrixSet):
-    yield 'ows:Identifier', tms.identifier
-    yield 'ows:SupportedCRS', tms.crs.epsg
+    yield tag('ows:Identifier', tms.identifier)
+    yield tag('ows:SupportedCRS', tms.crs.epsg)
 
     for tm in tms.matrices:
-        yield (
+        yield tag(
             'TileMatrix',
-            ('ows:Identifier', tm.identifier),
-            ('ScaleDenominator', tm.scale),
-            ('TopLeftCorner', tm.x, ' ', tm.y),
-            ('TileWidth', tm.tileWidth),
-            ('TileHeight', tm.tileHeight),
-            ('MatrixWidth', tm.width),
-            ('MatrixHeight', tm.height),
+            tag('ows:Identifier', tm.identifier),
+            tag('ScaleDenominator', tm.scale),
+            tag('TopLeftCorner', tm.x, ' ', tm.y),
+            tag('TileWidth', tm.tileWidth),
+            tag('TileHeight', tm.tileHeight),
+            tag('MatrixWidth', tm.width),
+            tag('MatrixHeight', tm.height),
         )

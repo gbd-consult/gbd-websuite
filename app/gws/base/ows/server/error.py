@@ -32,7 +32,7 @@ class Error(gws.Error):
             ns = xmlx.namespace.require('ows11')
             xml = xmlx.tag(
                 'ExceptionReport',
-                (
+                xmlx.tag(
                     'Exception',
                     {'exceptionCode': self.code, 'locator': self.locator},
                     self.message,
@@ -44,7 +44,7 @@ class Error(gws.Error):
             ns = xmlx.namespace.require('ogc')
             xml = xmlx.tag(
                 'ServiceExceptionReport',
-                (
+                xmlx.tag(
                     'ServiceException',
                     {'code': self.code},
                     self.message,

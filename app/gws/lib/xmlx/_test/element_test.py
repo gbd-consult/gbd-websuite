@@ -15,7 +15,6 @@ def test_init():
     e = _make('test')
     assert e.tag == 'test'
     assert e.name == 'test'
-    assert e.lcName == 'test'
     assert e.text == ''
     assert e.tail == ''
     assert e.attrib == {}
@@ -215,7 +214,7 @@ def test_get_set():
     e = _make('test')
 
     # Test get with default
-    assert e.get('nonexistent') is None
+    assert e.get('nonexistent') == ''
     assert e.get('nonexistent', 'default') == 'default'
 
     # Test set and get
@@ -317,10 +316,19 @@ def test_children():
     assert child2 in children
 
 
-def test_has():
+def test_hasattr():
     e = _make('test', {'attr1': 'value1'})
-    assert e.has('attr1') is True
-    assert e.has('nonexistent') is False
+    assert e.hasattr('attr1') is True
+    assert e.hasattr('nonexistent') is False
+
+
+def test_isa():
+    e = _make('gml:Point')
+    assert e.name == 'Point'
+    assert e.isa('Point') is True
+    assert e.isa('point') is True
+    assert e.isa('Box', 'POINT') is True
+    assert e.isa('Box') is False
 
 
 def test_add():
@@ -333,11 +341,11 @@ def test_add():
     assert child.attrib == {'attr': 'value', 'extra': 'extra_value'}
 
 
-def test_attr():
+def test_get_default():
     e = _make('test', {'attr1': 'value1'})
-    assert e.attr('attr1') == 'value1'
-    assert e.attr('nonexistent') == ''
-    assert e.attr('nonexistent', 'default') == 'default'
+    assert e.get('attr1') == 'value1'
+    assert e.get('nonexistent') == ''
+    assert e.get('nonexistent', 'default') == 'default'
 
 
 def test_findfirst():
@@ -381,7 +389,7 @@ def test_textof():
     assert text == 'text1'
 
     no_text = parent.textof('nonexistent')
-    assert no_text is None
+    assert no_text == ''
 
 
 def test_textlist():

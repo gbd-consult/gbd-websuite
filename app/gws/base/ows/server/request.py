@@ -58,6 +58,7 @@ class Object:
     version: str
     xmlElement: Optional[gws.XmlElement]
     customXmlns: dict
+    """Custom namespace prefixes (uri -> prefix) requested with the ``NAMESPACES`` parameter."""
 
     def __init__(
         self,
@@ -273,13 +274,7 @@ class Object:
         d = {}
 
         for xmlns, uri in re.findall(r'xmlns\((.+?),(.+?)\)', s):
-            ns = gws.lib.xmlx.namespace.find_by_uri(uri)
-            if not ns:
-                gws.log.debug(f'namespace not found: {uri=}')
-                raise error.InvalidParameterValue('NAMESPACES')
-            if ns.xmlns == xmlns:
-                continue
-            d[ns.uid] = xmlns
+            d[uri.strip()] = xmlns.strip()
 
         return d
 

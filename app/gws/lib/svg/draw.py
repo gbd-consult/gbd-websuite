@@ -106,7 +106,7 @@ def soup_to_fragment(view: gws.MapView, points: list[gws.Point], tags: list) -> 
     A soup has two components:
 
     - a list of points, in the map coordinate system
-    - a list of tuples suitable for `xmlx.tag` input (tag-name, {atts}, child1, child2....)
+    - a list of tuples (tag-name, {atts}, child1, child2....), where children are tuples of the same form or strings
 
     The idea is to represent client-side svg drawings (e.g. dimensions) in a resolution-independent way
 
@@ -160,11 +160,15 @@ def soup_to_fragment(view: gws.MapView, points: list[gws.Point], tags: list) -> 
                 res.append(arg)
         return res
 
+    def soup_tag(ls):
+        args = [soup_tag(a) if isinstance(a, (list, tuple)) else a for a in ls[1:]]
+        return xmlx.tag(ls[0], *args)
+
     els = []
 
     try:
         for tag in tags:
-            els.append(xmlx.tag(*eval_funcs(tag)))
+            els.append(soup_tag(eval_funcs(tag)))
     except Exception as exc:
         raise gws.Error('invalid soup') from exc
 
@@ -261,7 +265,7 @@ def _marker(uid, sv: gws.StyleValues) -> gws.XmlElement:
             'cy': size2,
             'r': size2,
         })
-        content = 'circle', atts
+        content = xmlx.tag('circle', atts)
 
     if content:
         return xmlx.tag('marker', {
@@ -352,18 +356,18 @@ def _label_text(cx, cy, label, sv: gws.StyleValues) -> gws.XmlElement:
 
     spans = []
     for s in reversed(lines):
-        spans.append(['tspan', {'x': lx, 'y': ly}, s])
+        spans.append(xmlx.tag('tspan', {'x': lx, 'y': ly}, s))
         ly -= (em_height + line_height)
 
     tags = []
 
-    tags.append(('text', atts, *reversed(spans)))
+    tags.append(xmlx.tag('text', atts, *reversed(spans)))
 
     # @TODO a hack to emulate 'paint-order' which wkhtmltopdf doesn't seem to support
     # place a copy without the stroke above the text
     if atts.get('stroke'):
         no_stroke_atts = {k: v for k, v in atts.items() if not k.startswith('stroke')}
-        tags.append(('text', no_stroke_atts, *reversed(spans)))
+        tags.append(xmlx.tag('text', no_stroke_atts, *reversed(spans)))
 
     # @TODO label backgrounds don't really work
     if sv.label_background:
@@ -384,7 +388,7 @@ def _label_text(cx, cy, label, sv: gws.StyleValues) -> gws.XmlElement:
             'fill': sv.label_background,
         }
 
-        tags.insert(0, ('rect', ratts))
+        tags.insert(0, xmlx.tag('rect', ratts))
 
     # a hack to move labels forward: emit a (non-supported) z-index attribute
     # and sort elements by it later on (see `fragment_to_element`)
@@ -407,8 +411,8 @@ def _parse_icon(icon, dpi) -> Optional[tuple[gws.XmlElement, float, float]]:
     if not svg:
         return
 
-    w = svg.attr('width')
-    h = svg.attr('height')
+    w = svg.get('width')
+    h = svg.get('height')
 
     if not w or not h:
         gws.log.error(f'xml_icon: width and height required')

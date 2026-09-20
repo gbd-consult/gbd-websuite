@@ -9,10 +9,6 @@ class XmlNamespace(Data):
     """Namespace uri."""
     schemaLocation: Url
     """Namespace schema location."""
-    version: str
-    """Namespace version."""
-    isDefault: bool
-    """Is this the default namespace for the given xmlns prefix."""
     extendsGml: bool
     """Namespace schema extends the GML3 schema."""
 
@@ -24,7 +20,7 @@ class XmlOptions(Data):
     """Mapping of prefixes to namespaces."""
 
     customXmlns: Optional[dict[str, str]] = None
-    """A mapping of namespace ids to custom prefixes."""
+    """A mapping of namespace uris to custom prefixes."""
 
     defaultNamespace: Optional['XmlNamespace'] = None
     """Default namespace to use for serialization."""
@@ -34,12 +30,6 @@ class XmlOptions(Data):
 
     compactWhitespace: bool = False
     """Remove all whitespace outside of tags and elements."""
-
-    removeNamespaces: bool = False
-    """Remove all namespace references."""
-
-    foldTags: bool = False
-    """If true, folds nested tag names into ``parent/child`` names."""
 
     withNamespaceDeclarations: bool = False
     """Include the namespace declarations."""
@@ -54,11 +44,17 @@ class XmlOptions(Data):
 class XmlElement(Iterable):
     """XML Element.
 
-    Extends ``ElementTree.Element`` (https://docs.python.org/3/library/xml.etree.elementtree.html#element-objects).
+    Implements a subset of the ``ElementTree.Element`` API.
+
+    Parsed elements carry no namespaces: ``tag`` is the local name. Built elements may have a prefixed ``tag`` (``gml:Point``);
+    ``name`` is always the local name.
     """
 
     tag: str
-    """Tag name, with an optional namespace in the Clark notation."""
+    """Tag name, with an optional ``prefix:``."""
+
+    name: str
+    """Element name (tag without a prefix)."""
 
     text: str
     """Text before first subelement."""
@@ -69,14 +65,8 @@ class XmlElement(Iterable):
     attrib: dict
     """Dictionary of element attributes."""
 
-    name: str
-    """Element name (tag without a namespace)."""
-
-    lcName: str
-    """Element name (tag without a namespace) in lower case."""
-
-    caseInsensitive: bool
-    """Element is case-insensitive."""
+    namespaces: dict[str, XmlNamespace]
+    """Namespaces declared on this element (prefix -> namespace, ``''`` for the default namespace)."""
 
     def __len__(self) -> int: ...
 
@@ -102,10 +92,10 @@ class XmlElement(Iterable):
     def findall(self, path: str) -> list['XmlElement']:
         """Finds all matching subelements by name or path."""
 
-    def findtext(self, path: str, default: Optional[str] = None) -> str:
+    def findtext(self, path: str, default: str = '') -> str:
         """Finds text for first matching element by name or path."""
 
-    def get(self, key: str, default='') -> str:
+    def get(self, key: str, default: str = '') -> str:
         """Gets the element attribute named key."""
 
     def insert(self, index: int, subelement: 'XmlElement'):
@@ -117,7 +107,7 @@ class XmlElement(Iterable):
     def iter(self, tag: Optional[str] = None) -> Iterable['XmlElement']:
         """Creates a tree iterator."""
 
-    def iterfind(self, path: Optional[str] = None) -> Iterable['XmlElement']:
+    def iterfind(self, path: str) -> Iterable['XmlElement']:
         """Returns an iterable of all matching subelements by name or path."""
 
     def itertext(self) -> Iterable[str]:
@@ -134,11 +124,11 @@ class XmlElement(Iterable):
 
     # extensions
 
-    def attr(self, key: str, default='') -> str:
-        """Alias for 'get'."""
-
     def hasattr(self, key: str) -> bool:
         """Check if an attribute exists."""
+
+    def isa(self, *names: str) -> bool:
+        """Check if the element name matches one of the given names, case-insensitively."""
 
     def add(self, tag: str, attrib: Optional[dict] = None, **extra) -> 'XmlElement':
         """Creates a new element and adds it as a child.
@@ -179,9 +169,6 @@ class XmlElement(Iterable):
             A dict tag name -> text.
         """
 
-    def remove_namespaces(self) -> 'XmlElement':
-        """Removes all namespace references from the element and its children."""
-
     def to_string(self, opts: Optional[XmlOptions] = None) -> str:
         """Converts the Element object to a string.
 
@@ -194,10 +181,3 @@ class XmlElement(Iterable):
 
     def to_dict(self) -> dict:
         """Creates a dictionary from an XmlElement object."""
-
-    def to_list(self, opts: Optional[XmlOptions] = None) -> list:
-        """Parse an XML element into a list of arguments (reverse of `gws.lib.xmlx.tag`).
-
-        Args:
-            opts: XML options for serialization.
-        """

@@ -5,27 +5,23 @@ import xml.etree.ElementPath as ElementPath
 
 import gws
 
-from . import namespace, serializer
+from . import error, namespace, serializer
 
 
 class XmlElement(gws.XmlElement):
     def __init__(self, tag: str, attrib: Optional[dict] = None, **extra):
         self.tag = tag
+        self.name = namespace.unqualify_name(tag)
         self.text = ''
         self.tail = ''
         self.attrib = {**(attrib or {}), **extra}
+        self.namespaces = {}
         self._children = []
-
-        # extensions
-
-        pname = namespace.unqualify_name(tag)
-        self.name = pname
-        self.lcName = pname.lower()
 
     # ElementTree.Element implementations, copied from Python 3.11 ElementTree.py
 
     def __repr__(self):
-        return '<%s %r at %#x>' % (self.__class__.__name__, self.tag, id(self))
+        return f'<{self.__class__.__name__} {self.tag!r} at {id(self):#x}>'
 
     def makeelement(self, tag, attrib):
         return self.__class__(tag, attrib)
@@ -34,6 +30,7 @@ class XmlElement(gws.XmlElement):
         elem = self.__class__(self.tag, self.attrib)
         elem.text = self.text
         elem.tail = self.tail
+        elem.namespaces = dict(self.namespaces)
         elem._children = list(self._children)
         return elem
 
@@ -62,24 +59,25 @@ class XmlElement(gws.XmlElement):
     def remove(self, subelement):
         self._children.remove(subelement)
 
-    def find(self, path, namespaces=None):
-        return ElementPath.find(self, path, namespaces)
+    def find(self, path):
+        return ElementPath.find(self, path)
 
-    def findtext(self, path, default=None, namespaces=None):
-        return ElementPath.findtext(self, path, default, namespaces)
+    def findtext(self, path, default=''):
+        return ElementPath.findtext(self, path, default)
 
-    def findall(self, path, namespaces=None):
-        return ElementPath.findall(self, path, namespaces)
+    def findall(self, path):
+        return ElementPath.findall(self, path)
 
-    def iterfind(self, path, namespaces=None):
-        return ElementPath.iterfind(self, path, namespaces)
+    def iterfind(self, path):
+        return ElementPath.iterfind(self, path)
 
     def clear(self):
         self.attrib = {}
+        self.namespaces = {}
         self._children = []
         self.text = self.tail = ''
 
-    def get(self, key, default=None):
+    def get(self, key, default=''):
         return self.attrib.get(key, default)
 
     def set(self, key, value):
@@ -100,9 +98,6 @@ class XmlElement(gws.XmlElement):
             yield from e.iter(tag)
 
     def itertext(self):
-        tag = self.tag
-        if not isinstance(tag, str) and tag is not None:
-            return
         t = self.text
         if t:
             yield t
@@ -121,36 +116,32 @@ class XmlElement(gws.XmlElement):
         for c in self._children:
             yield c
 
-    def require(self, path, namespaces=None):
-        el = self.find(path, namespaces)
+    def require(self, path):
+        el = self.find(path)
         if el is None:
-            raise gws.Error(f'XmlElement: required element not found: {path!r}')
+            raise error.Error(f'XmlElement: required element not found: {path!r}')
         return el
 
     def children(self):
         return self._children
 
-    def has(self, key):
+    def hasattr(self, key):
         return key in self.attrib
+
+    def isa(self, *names):
+        n = self.name.lower()
+        return any(n == s.lower() for s in names)
 
     def to_dict(self):
         return {
             'tag': self.tag,
-            'attrib': self.attrib,
+            'attrib': dict(self.attrib),
             'text': self.text,
             'tail': self.tail,
-            'children': [c.to_dict() for c in self.children()],
+            'children': [c.to_dict() for c in self._children],
         }
 
-    def to_list(self, opts=None):
-        ser = serializer.Serializer(self, opts=opts)
-        return ser.to_list()
-
     def to_string(self, opts=None):
-        ser = serializer.Serializer(self, opts=opts)
-        return ser.to_string()
-
-    def to_str(self, opts=None):
         ser = serializer.Serializer(self, opts=opts)
         return ser.to_string()
 
@@ -161,9 +152,6 @@ class XmlElement(gws.XmlElement):
         self.append(el)
         return el
 
-    def attr(self, key, default=''):
-        return self.get(key, default)
-
     def findfirst(self, *paths):
         if not paths:
             return self._children[0] if len(self._children) > 0 else None
@@ -171,12 +159,14 @@ class XmlElement(gws.XmlElement):
             el = self.find(path)
             if el is not None:
                 return el
+        return None
 
     def textof(self, *paths):
         for path in paths:
             el = self.find(path)
             if el is not None and el.text:
                 return el.text
+        return ''
 
     def textlist(self, *paths, deep=False):
         ls = self._collect_tags_and_text(paths, deep)
@@ -185,17 +175,6 @@ class XmlElement(gws.XmlElement):
     def textdict(self, *paths, deep=False):
         ls = self._collect_tags_and_text(paths, deep)
         return dict(ls)
-
-    def remove_namespaces(self):
-        self.tag = namespace.unqualify_name(self.tag)
-        attrib = {}
-        for k, v in self.attrib.items():
-            nk = namespace.unqualify_name(k)
-            attrib[nk] = v
-        self.attrib = attrib
-        for c in self._children:
-            c.remove_namespaces()
-        return self
 
     def _collect_tags_and_text(self, paths, deep):
         def walk(el):

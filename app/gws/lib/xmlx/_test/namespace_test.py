@@ -6,81 +6,42 @@ import gws.test.util as u
 import gws.lib.xmlx as xmlx
 
 
-def test_find_by_uri():
-    uri = 'http://www.opengis.net/gml'
-    ns = xmlx.namespace.find_by_uri(uri)
-    assert ns and ns.uid == 'gml2'
-
-
 def test_get():
-    xmlns = 'gml'
-    ns = xmlx.namespace.get(xmlns)
-    assert ns and ns.uid == 'gml'
+    ns = xmlx.namespace.get('gml')
+    assert ns and ns.uid == 'gml' and ns.xmlns == 'gml' and ns.uri == 'http://www.opengis.net/gml/3.2'
+
+    ns = xmlx.namespace.get('gml2')
+    assert ns and ns.uid == 'gml2' and ns.xmlns == 'gml' and ns.uri == 'http://www.opengis.net/gml'
+
+    ns = xmlx.namespace.get('ows11')
+    assert ns and ns.xmlns == 'ows' and ns.uri == 'http://www.opengis.net/ows/1.1'
+
+    assert xmlx.namespace.get('nonexistent') is None
 
 
-# def test_register():
-#     ns = gws.XmlNamespace(uid='foo', xmlns='bar', uri='http://www.foobar.de')
-#     xmlx.namespace.register(ns)
-#     assert ns.uid in xmlx.namespace._INDEX.uid
-#     assert ns.xmlns in xmlx.namespace._INDEX.xmlns
-#     assert ns.uri in xmlx.namespace._INDEX.uri
-
-
-def test_split_name_empty():
-    name = ''
-    assert xmlx.namespace.split_name(name) == ('', '', '')
+def test_require():
+    assert xmlx.namespace.require('wfs').uri == 'http://www.opengis.net/wfs/2.0'
+    with u.raises(xmlx.NamespaceError):
+        xmlx.namespace.require('nonexistent')
 
 
 def test_split_name():
-    name = '{http://example.com/namespace}element'
-    assert xmlx.namespace.split_name(name) == ('', 'http://example.com/namespace', 'element')
-
-
-def test_split_name_colon():
-    name = 'somens:tag'
-    assert xmlx.namespace.split_name(name) == ('somens', '', 'tag')
-
-
-def test_split_name_else():
-    name = 'name'
-    assert xmlx.namespace.split_name(name) == ('', '', 'name')
-
-
-def test_extract_xmlns():
-    ns = 'gml:tag'
-    assert xmlx.namespace.extract(ns) == (xmlx.namespace.find_by_xmlns('gml'), 'tag')
-
-
-def test_extract_uri():
-    uri = '{http://www.opengis.net/gml}tag'
-    assert xmlx.namespace.extract(uri) == (xmlx.namespace.find_by_uri('http://www.opengis.net/gml'), 'tag')
-
-
-def test_extract_else():
-    name = 'foo'
-    assert xmlx.namespace.extract(name) == (None, 'foo')
+    assert xmlx.namespace.split_name('') == ('', '')
+    assert xmlx.namespace.split_name('name') == ('', 'name')
+    assert xmlx.namespace.split_name('somens:tag') == ('somens', 'tag')
 
 
 def test_qualify_name():
-    name = 'gml:foo'
     ns = xmlx.namespace.get('soap')
-    assert xmlx.namespace.qualify_name(name, ns, replace=False) == 'gml:foo'
-
-
-def test_qualify_name_replace():
-    name = 'gml:foo'
-    ns = xmlx.namespace.get('soap')
-    assert xmlx.namespace.qualify_name(name, ns, replace=True) == 'soap:foo'
-
-
-def test_qualify_name_else():
-    name = 'foo'
-    ns = None
-    assert xmlx.namespace.qualify_name(name, ns) == 'foo'
+    assert xmlx.namespace.qualify_name('gml:foo', ns, replace=False) == 'gml:foo'
+    assert xmlx.namespace.qualify_name('gml:foo', ns, replace=True) == 'soap:foo'
+    assert xmlx.namespace.qualify_name('foo', ns) == 'soap:foo'
+    assert xmlx.namespace.qualify_name('foo', None) == 'foo'
 
 
 def test_unqualify_name():
     assert xmlx.namespace.unqualify_name('name') == 'name'
+    assert xmlx.namespace.unqualify_name('gml:name') == 'name'
 
 
 def test_declarations_default():

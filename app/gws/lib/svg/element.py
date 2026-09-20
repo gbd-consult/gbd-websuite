@@ -235,7 +235,7 @@ _DENIED_VALUE_PREFIXES = (
 
 
 def _normalize(el: gws.XmlElement) -> Optional[gws.XmlElement]:
-    name = _CANONICAL_TAGS.get(el.lcName)
+    name = _CANONICAL_TAGS.get(el.name.lower())
     if name:
         return xmlx.tag(
             name,

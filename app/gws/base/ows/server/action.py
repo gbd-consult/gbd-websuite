@@ -54,16 +54,15 @@ class Object(gws.base.action.Object):
         s = p.namespace
         if s.endswith('.xsd'):
             s = s[:-4]
-        ns = gws.lib.xmlx.namespace.get(s)
-        if not ns:
-            raise gws.NotFoundError(f'namespace not found: {p.namespace=}')
-
         lcs = []
 
         for la in self.root.find_all(gws.ext.object.layer):
             layer = cast(gws.Layer, la)
-            if req.user.can_read(layer) and layer.ows.xmlNamespace and layer.ows.xmlNamespace.xmlns == ns.xmlns:
+            if req.user.can_read(layer) and layer.ows.xmlNamespace and layer.ows.xmlNamespace.xmlns == s:
                 lcs.append(layer_caps.for_layer(layer, req.user))
+
+        if not lcs:
+            raise gws.NotFoundError(f'namespace not found: {p.namespace=}')
 
         el, opts = layer_caps.xml_schema(lcs, req.user)
         if not el:

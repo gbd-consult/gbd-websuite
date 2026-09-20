@@ -22,7 +22,7 @@ def test_fragment_to_element_basic():
 
     # Verify the result                                                                                                                                                                
     assert svg.name == 'svg'
-    assert svg.attr('xmlns') == 'http://www.w3.org/2000/svg'
+    assert svg.get('xmlns') == 'http://www.w3.org/2000/svg'
     assert len(svg.children()) == 2
     assert svg.children()[0].name == 'circle'
     assert svg.children()[1].name == 'rect'
@@ -37,9 +37,9 @@ def test_fragment_to_element_with_attributes():
     svg = svg_element.fragment_to_element([circle], custom_atts)
 
     # Verify attributes were applied                                                                                                                                                   
-    assert svg.attr('width') == '100'
-    assert svg.attr('height') == '100'
-    assert svg.attr('viewBox') == '0 0 100 100'
+    assert svg.get('width') == '100'
+    assert svg.get('height') == '100'
+    assert svg.get('viewBox') == '0 0 100 100'
 
 
 def test_fragment_to_element_z_index_sorting():
@@ -132,9 +132,9 @@ def test_normalize_element_allowed_attributes():
 
     # Verify allowed attributes are preserved                                                                                                                                          
     circle = result.children()[0]
-    assert circle.attr('fill') == 'blue'
-    assert circle.attr('stroke') == 'black'
-    assert circle.attr('stroke-width') == '2'
+    assert circle.get('fill') == 'blue'
+    assert circle.get('stroke') == 'black'
+    assert circle.get('stroke-width') == '2'
 
 
 def test_normalize_element_disallowed_attributes():
@@ -158,9 +158,9 @@ def test_normalize_element_disallowed_attributes():
 
     # Verify disallowed attributes are removed                                                                                                                                         
     circle = result.children()[0]
-    assert circle.attr('fill') == 'blue'
-    assert circle.attr('onmouseover') == ''
-    assert circle.attr('onclick') == ''
+    assert circle.get('fill') == 'blue'
+    assert circle.get('onmouseover') == ''
+    assert circle.get('onclick') == ''
 
 
 def test_normalize_element_url_attributes():
@@ -182,8 +182,8 @@ def test_normalize_element_url_attributes():
 
     # Verify URL attributes are removed                                                                                                                                                
     circle = result.children()[0]
-    assert circle.attr('fill') == ''
-    assert circle.attr('stroke') == 'black'
+    assert circle.get('fill') == ''
+    assert circle.get('stroke') == 'black'
 
 
 def test_normalize_element_nested_structure():
@@ -245,7 +245,7 @@ def test_normalize_element_data_url():
 
     # Verify data URL is removed
     circle = result.children()[0]
-    assert circle.attr('fill') == ''
+    assert circle.get('fill') == ''
 
 
 def test_normalize_element_canonical_names():
@@ -282,11 +282,11 @@ def test_normalize_element_url_references():
 
     rect = svg_element.normalize_element(svg).children()[0]
 
-    assert rect.attr('fill') == 'url(#grad)'
-    assert rect.attr('clip-path') == 'url(#clip)'
-    assert rect.attr('stroke') == ''
-    assert rect.attr('mask') == ''
-    assert rect.attr('marker-start') == ''
+    assert rect.get('fill') == 'url(#grad)'
+    assert rect.get('clip-path') == 'url(#clip)'
+    assert rect.get('stroke') == ''
+    assert rect.get('mask') == ''
+    assert rect.get('marker-start') == ''
 
 
 def test_normalize_element_gradient():
@@ -331,12 +331,12 @@ def test_normalize_element_invalid_values():
 
     circle = svg_element.normalize_element(svg).children()[0]
 
-    assert circle.attr('cy') == '2'
-    assert circle.attr('cx') == ''
-    assert circle.attr('id') == ''
-    assert circle.attr('class') == ''
-    assert circle.attr('transform') == ''
-    assert circle.attr('font-family') == ''
+    assert circle.get('cy') == '2'
+    assert circle.get('cx') == ''
+    assert circle.get('id') == ''
+    assert circle.get('class') == ''
+    assert circle.get('transform') == ''
+    assert circle.get('font-family') == ''
 
 
 def test_normalize_element_text_content():

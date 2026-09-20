@@ -17,7 +17,7 @@ class NamespaceConfig(gws.Config):
     schemaLocation: Optional[gws.Url]
     """Namespace schema location."""
     version: str = ''
-    """Namespace version."""
+    """Namespace version. (deprecated in 8.5)"""
     extendsGml: bool = True
     """Namespace schema extends the GML3 schema."""
 
@@ -41,20 +41,24 @@ class Object(gws.Node):
         """Add a custom namespace for XML generation."""
 
         xmlns = cfg.get('xmlns')
+        if cfg.get('version'):
+            self.root.config_warning(f'"xml.namespaces.version" is deprecated and ignored (namespace {xmlns!r})')
         ns = gws.XmlNamespace(
             xmlns=xmlns,
             uid=cfg.get('uid') or xmlns,
             uri=cfg.get('uri'),
             schemaLocation=cfg.get('schemaLocation') or '',
-            version=cfg.get('version') or '',
-            extendsGml=cfg.get('extendsGml') or True,
+            extendsGml=cfg.get('extendsGml', True),
         )
 
-        gws.lib.xmlx.namespace.register(ns)
         self.namespaces.append(ns)
 
         return ns
 
-    def activate(self):
+    def namespace(self, xmlns: str) -> Optional[gws.XmlNamespace]:
+        """Find a namespace by its prefix, custom namespaces first, then well-known ones."""
+
         for ns in self.namespaces:
-            gws.lib.xmlx.namespace.register(ns)
+            if ns.xmlns == xmlns:
+                return ns
+        return gws.lib.xmlx.namespace.get(xmlns)

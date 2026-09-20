@@ -1,4 +1,8 @@
+"""XML serializer."""
+
 from typing import Optional
+
+import re
 
 import gws
 
@@ -13,12 +17,20 @@ class Serializer:
         self.opts = opts or gws.XmlOptions()
         self.defaultNamespace = self.opts.defaultNamespace
 
-        self.nsIndexXmlns = {}
-        self.nsIndexUri = {}
-        if self.opts.namespaces:
-            for xmlns, ns in self.opts.namespaces.items():
-                self.nsIndexXmlns[xmlns] = ns
-                self.nsIndexUri[ns.uri] = ns
+        # uri -> custom prefix
+        self.renames = self.opts.customXmlns or {}
+
+        # prefix -> namespace, declared by the caller
+        self.rootMap = dict(self.opts.namespaces or {})
+
+        # prefix -> namespace, resolved from the well-known table while serializing
+        self.usedMap = {}
+
+        # element-level namespace maps of the enclosing elements
+        self.stack = []
+
+        # prefixes used by attributes, these must be declared even if they map to the default namespace
+        self.attributePrefixes = set()
 
     def to_string(self):
         if self.opts.withXmlDeclaration or self.opts.doctype:
@@ -30,42 +42,16 @@ class Serializer:
 
         return ''.join(self.buf)
 
-    def to_list(self):
-        return self._el_to_list(self.root)
-
     ##
 
-    def _el_to_list(self, el):
-        name = self._make_name(el.tag)
-        attr = {self._make_name(k): v for k, v in el.attrib.items()}
-        text = (el.text or '').strip()
-        tail = (el.tail or '').strip()
-
-        sub = [self._el_to_list(c) for c in el]
-
-        if self.opts.foldTags and len(sub) == 1 and (not attr and not text and not tail):
-            # single wrapper tag, create 'tag/subtag
-            inner = sub[0]
-            inner[0] = name + '/' + inner[0]
-            return inner
-
-        if len(sub) == 1:
-            sub = sub[0]
-
-        res = [name, attr, text, sub, tail]
-        return [x for x in res if x]
-
     def _el_to_string(self, el, is_root=False):
+        self.stack.append(el.namespaces)
+
         open_pos = len(self.buf)
         self.buf.append('')
 
-        open_tag = self._make_name(el.tag)
-        close_tag = open_tag
-
-        if el.attrib:
-            atts = self._process_atts(el.attrib)
-        else:
-            atts = {}
+        tag = self._element_name(el.tag)
+        atts = self._process_atts(el.attrib)
 
         s = self._text_to_string(el.text)
         if s:
@@ -74,51 +60,23 @@ class Serializer:
         for c in el:
             self._el_to_string(c)
 
-        if is_root and self.opts.withNamespaceDeclarations:
-            atts.update(self._namespace_declarations())
+        atts.update(self._namespace_declarations(el, is_root))
 
+        open_tag = tag
         if atts:
             open_tag += ' ' + ' '.join(f'{k}="{v}"' for k, v in atts.items())
 
         if len(self.buf) > open_pos + 1:
             self.buf[open_pos] = f'<{open_tag}>'
-            self.buf.append(f'</{close_tag}>')
+            self.buf.append(f'</{tag}>')
         else:
-            self.buf[open_pos] += f'<{open_tag}/>'
+            self.buf[open_pos] = f'<{open_tag}/>'
 
         s = self._text_to_string(el.tail)
         if s:
             self.buf.append(s)
 
-    # def _process_root_atts(self, attrib):
-    #     atts = {}
-
-    #     for key, val in attrib.items():
-    #         if key == namespace.XMLNS:
-    #             if self.opts.removeNamespaces:
-    #                 continue
-    #             ns = namespace.find_by_uri(val)
-    #             if not ns:
-    #                 raise error.NamespaceError(f'unknown default namespace {val!r}')
-    #             self.defaultNamespace = ns
-    #             continue
-
-    #         if key.startswith(namespace.XMLNS + ':'):
-    #             if self.opts.removeNamespaces:
-    #                 continue
-    #             ns = namespace.find_by_uri(val)
-    #             if not ns:
-    #                 raise error.NamespaceError(f'unknown namespace {val!r} for {key!r}')
-    #             self.namespaceMap[key.split(':')[1]] = ns
-    #             continue
-
-    #         if val is None:
-    #             continue
-    #         n = self._make_name(key)
-    #         if n:
-    #             atts[n] = self._value_to_string(val)
-
-    #     return atts
+        self.stack.pop()
 
     def _process_atts(self, attrib):
         atts = {}
@@ -126,29 +84,93 @@ class Serializer:
         for key, val in attrib.items():
             if val is None:
                 continue
-            n = self._make_name(key)
-            if n:
-                atts[n] = self._value_to_string(val)
+            atts[self._attribute_name(key)] = self._value_to_string(val)
 
         return atts
 
-    def _namespace_declarations(self):
-        xmlns_to_ns = {}
+    def _namespace_declarations(self, el, is_root):
+        decls = {}
 
-        if self.defaultNamespace:
-            xmlns_to_ns[''] = self.defaultNamespace
+        if is_root and self.opts.withNamespaceDeclarations:
+            if self.defaultNamespace:
+                decls[''] = self.defaultNamespace
+            decls.update(self.rootMap)
+            decls.update(self.usedMap)
 
-        for xmlns, ns in self.nsIndexXmlns.items():
-            if self.defaultNamespace and ns.uid == self.defaultNamespace.uid:
+        decls.update(el.namespaces)
+
+        if not decls:
+            return {}
+
+        renamed = {}
+        for prefix, ns in decls.items():
+            if prefix == '':
+                renamed[''] = ns
                 continue
-            if self.opts.customXmlns and ns.uid in self.opts.customXmlns:
-                xmlns = self.opts.customXmlns[ns.uid]
-            xmlns_to_ns[xmlns] = ns
+            p = self._output_prefix(prefix, ns)
+            if self.defaultNamespace and ns.uri == self.defaultNamespace.uri and p not in self.attributePrefixes:
+                continue
+            renamed[p] = ns
 
         return namespace.declarations(
-            xmlns_to_ns,
-            with_schema_locations=self.opts.withSchemaLocations,
+            renamed,
+            with_schema_locations=is_root and self.opts.withSchemaLocations,
         )
+
+    def _element_name(self, name):
+        prefix, pname = namespace.split_name(name)
+        self._check_name(pname, name)
+
+        if not prefix:
+            return pname
+
+        ns = self._resolve(prefix, name)
+        if self.defaultNamespace and ns.uri == self.defaultNamespace.uri:
+            return pname
+
+        return self._output_prefix(prefix, ns) + ':' + pname
+
+    def _attribute_name(self, name):
+        prefix, pname = namespace.split_name(name)
+        self._check_name(pname, name)
+
+        if not prefix:
+            return pname
+
+        if prefix == namespace.XMLNS or prefix == namespace.XML:
+            self._check_name(prefix, name)
+            return name
+
+        ns = self._resolve(prefix, name)
+        p = self._output_prefix(prefix, ns)
+        self.attributePrefixes.add(p)
+        return p + ':' + pname
+
+    def _resolve(self, prefix, name):
+        ns = self.rootMap.get(prefix)
+        if ns:
+            return ns
+
+        for m in reversed(self.stack):
+            ns = m.get(prefix)
+            if ns:
+                return ns
+
+        ns = namespace.get(prefix)
+        if ns:
+            self.usedMap[prefix] = ns
+            return ns
+
+        raise error.NamespaceError(f'unknown namespace prefix in {name!r}')
+
+    def _output_prefix(self, prefix, ns):
+        p = self.renames.get(ns.uri, prefix)
+        self._check_name(p, p)
+        return p
+
+    def _check_name(self, s, name):
+        if not re.fullmatch(_NAME_RE, s):
+            raise error.WriteError(f'invalid XML name {name!r}')
 
     def _text_to_string(self, arg):
         s, ok = util.atom_to_string(arg)
@@ -164,37 +186,15 @@ class Serializer:
             s = str(arg)
         return util.escape_attribute(s)
 
-    def _make_name(self, name):
-        if self.opts.removeNamespaces:
-            return namespace.unqualify_name(name)
-
-        xmlns, uri, pname = namespace.split_name(name)
-        if not xmlns and not uri:
-            return pname
-
-        ns = None
-        if xmlns:
-            if xmlns == namespace.XMLNS:
-                return name
-            ns = self.nsIndexXmlns.get(xmlns) or namespace.find_by_xmlns(xmlns)
-        else:
-            ns = self.nsIndexUri.get(uri) or namespace.find_by_uri(uri)
-
-        if not ns:
-            raise error.NamespaceError(f'unknown namespace for {name!r}')
-
-        if self.defaultNamespace and ns.uid == self.defaultNamespace.uid:
-            return pname
-
-        xmlns = ns.xmlns or ns.uid
-        if self.opts.customXmlns and ns.uid in self.opts.customXmlns:
-            xmlns = self.opts.customXmlns[ns.uid]
-
-        self.nsIndexXmlns[xmlns] = ns
-        if uri:
-            self.nsIndexUri[uri] = ns
-        
-        return xmlns + ':' + pname
-
 
 _XML_DECL = '<?xml version="1.0" encoding="UTF-8"?>'
+
+# XML 1.0 (5th ed.) NCName, https://www.w3.org/TR/xml/#NT-Name
+
+_NAME_START = (
+    'A-Za-z_'
+    '\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D'
+    '\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\U00010000-\U000EFFFF'
+)
+_NAME_CHAR = _NAME_START + '\\-.0-9\u00B7\u0300-\u036F\u203F-\u2040'
+_NAME_RE = f'[{_NAME_START}][{_NAME_CHAR}]*'

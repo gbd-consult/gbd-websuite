@@ -1,26 +1,29 @@
+import datetime
+
 import gws
 import gws.test.util as u
 
 import gws.lib.xmlx as xmlx
+from gws.lib.xmlx import tag
 
 
 def test_simple():
-    tag = xmlx.tag('name', 'text', {'a1': 'A1', 'a2': 'A2'})
-    xml = tag.to_string()
+    el = tag('name', 'text', {'a1': 'A1', 'a2': 'A2'})
+    xml = el.to_string()
     assert xml == '<name a1="A1" a2="A2">text</name>'
 
 
 def test_nested():
-    el = xmlx.tag(
+    el = tag(
         'root',
         'text',
         {'a1': 'A1', 'a2': 'A2'},
-        [
+        tag(
             'nested',
-            ['deep', 'text2'],
+            tag('deep', 'text2'),
             'text3',
-            ['single', {'b': 'B1'}],
-        ],
+            tag('single', {'b': 'B1'}),
+        ),
     )
 
     xml = el.to_string()
@@ -37,10 +40,10 @@ def test_nested():
 
 
 def test_with_namespaces():
-    el = xmlx.tag(
+    el = tag(
         'root',
-        ['wms:foo'],
-        ['{http://www.opengis.net/wfs/2.0}bar'],
+        tag('wms:foo'),
+        tag('wfs:bar'),
     )
 
     xml = el.to_string()
@@ -49,8 +52,8 @@ def test_with_namespaces():
     xml = el.to_string(gws.XmlOptions(withNamespaceDeclarations=True))
 
     u.check.xml(xml, """
-        <root 
-            xmlns:wfs="http://www.opengis.net/wfs/2.0" 
+        <root
+            xmlns:wfs="http://www.opengis.net/wfs/2.0"
             xmlns:wms="http://www.opengis.net/wms">
             <wms:foo/>
             <wfs:bar/>
@@ -59,114 +62,114 @@ def test_with_namespaces():
 
 
 def test_with_default_namespace():
-    el = xmlx.tag(
+    el = tag(
         'root',
-        ['wms:foo'],
-        ['{http://www.opengis.net/wfs/2.0}bar'],
+        tag('wms:foo'),
+        tag('wfs:bar'),
     )
 
     xml = el.to_string(
         gws.XmlOptions(
+            defaultNamespace=xmlx.namespace.require('wfs'),
             withNamespaceDeclarations=True,
-            defaultNamespace=xmlx.namespace.require('wms'),
         )
     )
 
     u.check.xml(xml, """
-        <root 
-            xmlns="http://www.opengis.net/wms" 
-            xmlns:wfs="http://www.opengis.net/wfs/2.0">
-            <foo/>
-            <wfs:bar/>
+        <root
+            xmlns="http://www.opengis.net/wfs/2.0"
+            xmlns:wms="http://www.opengis.net/wms">
+            <wms:foo/>
+            <bar/>
         </root>
     """)
 
 
 def test_with_space():
-    el = xmlx.tag('1 / 2 / 3')
+    el = tag('a / b / c')
     u.check.xml(el.to_string(), """
-        <1>
-            <2>
-                <3/>
-            </2>
-        </1>
+        <a>
+            <b>
+                <c/>
+            </b>
+        </a>
     """)
 
 
 def test_text_str():
-    el = xmlx.tag('root', 'text')
+    el = tag('root', 'text')
     u.check.xml(el.to_string(), '<root>text</root>')
 
 
 def test_text_int():
-    el = xmlx.tag('root', 2)
+    el = tag('root', 2)
     u.check.xml(el.to_string(), '<root>2</root>')
 
 
-def test_append_tuple2():
-    el = xmlx.tag('root/nested', ('foo', 2))
-    u.check.xml(el.to_string(), """
-        <root>
-            <nested>
-                <foo>
-                    2
-                </foo>
-            </nested>
-        </root>
-    """)
+def test_text_bool_and_date():
+    el = tag('root', True, ' ', datetime.date(2020, 1, 2))
+    u.check.xml(el.to_string(), '<root>true 2020-01-02</root>')
 
 
-def test_append_tuple():
-    el = xmlx.tag('root/nested', ('foo', 'bar'))
-    u.check.xml(el.to_string(), """
-        <root>
-            <nested>
-                <foo>
-                    bar
-                </foo>
-            </nested>
-        </root>
-    """)
+def test_text_and_tail():
+    el = tag('root', 'a', tag('x'), 'b', tag('y'), 'c')
+    assert el.text == 'a'
+    assert el[0].tail == 'b'
+    assert el[1].tail == 'c'
+    u.check.xml(el.to_string(), '<root>a<x/>b<y/>c</root>')
 
 
 def test_child():
-    child = xmlx.tag('child')
-    el = xmlx.tag('root', child)
-    u.check.xml(el.to_string(), """
-        <root>
-            <child/>
-        </root>
-    """)
+    child = tag('child')
+    el = tag('root', child)
+    assert el[0] is child
+    u.check.xml(el.to_string(), '<root><child/></root>')
 
 
 def test_dict_attr():
-    attr = {'foo': 1, 'bar': 2}
-    el = xmlx.tag('root', attr)
-    u.check.xml(el.to_string(), '<root foo="1" bar="2"/>')
+    el = tag('root', {'a': 'b', 'c': None, 'd': 1})
+    u.check.xml(el.to_string(), '<root a="b" d="1"/>')
 
 
-def test_list():
-    list = ['foo', 'bar', 'foo2', 'bar2']
-    el = xmlx.tag('root', list)
-    u.check.xml(el.to_string(), """
-        <root>
-            <foo>
-                barfoo2bar2
-            </foo>
-        </root>
-    """)
+def test_iterables_are_spread():
+    el = tag('root', ['foo', 'bar'], (tag('x'), 'baz'), (tag(f'y{i}') for i in range(2)))
+    u.check.xml(el.to_string(), '<root>foobar<x/>baz<y0/><y1/></root>')
+
+
+def test_nested_iterables():
+    el = tag('root', [[tag('a'), [tag('b'), ['t']]]])
+    u.check.xml(el.to_string(), '<root><a/><b/>t</root>')
+
+
+def test_none_is_ignored():
+    el = tag('root', None, [None, tag('a'), None])
+    u.check.xml(el.to_string(), '<root><a/></root>')
 
 
 def test_keywords():
-    el = xmlx.tag('root', foo='bar')
+    el = tag('root', foo='bar')
     u.check.xml(el.to_string(), '<root foo="bar"/>')
 
 
+def test_invalid_argument():
+    with u.raises(xmlx.BuildError):
+        tag('root', gws.Data(x=1))
+    with u.raises(xmlx.BuildError):
+        tag('root', object())
+
+
+def test_invalid_name():
+    with u.raises(xmlx.BuildError):
+        tag('')
+    with u.raises(xmlx.BuildError):
+        tag('a//b')
+
+
 def test_tag():
-    el = xmlx.tag(
+    el = tag(
         'geometry/gml:Point',
         {'gml:id': 'xy'},
-        ['gml:coordinates', '12.345,56.789'],
+        tag('gml:coordinates', '12.345,56.789'),
         srsName=3857,
     )
     u.check.xml(el.to_string(), """
@@ -175,20 +178,4 @@ def test_tag():
                 <gml:coordinates>12.345,56.789</gml:coordinates>
             </gml:Point>
         </geometry>
-    """)
-
-
-def test_tag_uri():
-    el = xmlx.tag(
-        '{http://www.opengis.net/cat/csw/2.0.2}foo/nested',
-        {'gml:id': 'xy'},
-        ['gml:coordinates', '12.345,56.789'],
-        srsName=3857,
-    )
-    u.check.xml(el.to_string(), """
-        <csw:foo>
-            <nested gml:id="xy" srsName="3857">
-                <gml:coordinates>12.345,56.789</gml:coordinates>
-            </nested>
-        </csw:foo>
     """)
