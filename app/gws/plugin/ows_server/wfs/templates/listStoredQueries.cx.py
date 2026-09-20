@@ -15,18 +15,18 @@ from gws.lib.xmlx import tag
 def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
-        tag('wfs:ListStoredQueriesResponse', doc(ta)),
+        tag('WFS:ListStoredQueriesResponse', doc(ta)),
         namespaces=tpl.namespaces_from_caps(ta),
     )
 
 
 def doc(ta):
     yield tag(
-        'wfs:StoredQuery',
+        'WFS:StoredQuery',
         {'id': gws.plugin.ows_server.wfs.STORED_QUERY_GET_FEATURE_BY_ID},
-        tag('wfs:Title', 'Get Feature By Identifier'),
+        tag('WFS:Title', 'Get Feature By Identifier'),
         [
-            tag('wfs:ReturnFeatureType', lc.featureNameQ)
+            tag('WFS:ReturnFeatureType', lc.featureNameQ)
             for lc in ta.layerCapsList
         ]
     )

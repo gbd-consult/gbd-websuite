@@ -1,8 +1,11 @@
 """XML parser.
 
-A permissive expat-based parser. Namespaces are stripped: element and attribute names are local names,
-namespace declarations are kept in ``XmlElement.namespaces``. Undeclared prefixes are accepted.
-Comments and processing instructions are dropped. Entity declarations are rejected.
+A permissive expat-based parser. Comments and processing instructions are dropped. Entity declarations are rejected.
+
+With ``removeNamespaces``, element and attribute names are local names and declarations are dropped.
+Otherwise, names are resolved against the document's declarations to Clark names (``{uri}name``);
+the default namespace applies to elements only; an undeclared prefix ``p`` resolves to the URI ``adhoc:p``;
+declarations are kept in ``XmlElement.namespaces`` of the declaring element.
 """
 
 from typing import Optional
@@ -67,22 +70,54 @@ def _parse(inp, opts: Optional[gws.XmlOptions] = None) -> gws.XmlElement:
 class _ParserTarget:
     def __init__(self, opts: gws.XmlOptions):
         self.stack = []
+        self.scopes = []
         self.root = None
         self.opts = opts
 
     def make(self, tag: str, attrib: dict) -> element.XmlElement:
-        el = element.XmlElement(namespace.unqualify_name(tag))
+        if self.opts.removeNamespaces:
+            el = element.XmlElement(namespace.unqualify_name(tag))
+            for key, val in attrib.items():
+                prefix, pname = namespace.split_name(key)
+                if key == namespace.XMLNS or prefix == namespace.XMLNS:
+                    continue
+                el.attrib[pname] = val
+            return el
+
+        el = element.XmlElement('')
+        to_resolve = []
 
         for key, val in attrib.items():
             prefix, pname = namespace.split_name(key)
             if key == namespace.XMLNS:
-                el.namespaces[''] = _adhoc_namespace('', val)
+                el.namespaces.append(namespace.new('', val))
             elif prefix == namespace.XMLNS:
-                el.namespaces[pname] = _adhoc_namespace(pname, val)
-            else:
+                el.namespaces.append(namespace.new(pname, val))
+            elif prefix == '':
                 el.attrib[pname] = val
+            else:
+                to_resolve.append((prefix, pname, val))
+
+        if el.namespaces:
+            self.scopes.append(el.namespaces)
+
+        for prefix, pname, val in to_resolve:
+            el.attrib[namespace.clark_name(pname, self.uri_for(prefix))] = val
+
+        prefix, pname = namespace.split_name(tag)
+        el.tag = namespace.clark_name(pname, self.uri_for(prefix))
+        el.name = pname
 
         return el
+
+    def uri_for(self, prefix: str) -> str:
+        if prefix == namespace.XML:
+            return namespace.XML_URI
+        for scope in reversed(self.scopes):
+            for ns in scope:
+                if ns.xmlns == prefix:
+                    return ns.uri
+        return '' if prefix == '' else namespace.ADHOC + prefix
 
     def start(self, tag: str, attrib: dict):
         el = self.make(tag, attrib)
@@ -93,7 +128,9 @@ class _ParserTarget:
         self.stack.append(el)
 
     def end(self, tag):
-        self.stack.pop()
+        el = self.stack.pop()
+        if el.namespaces and not self.opts.removeNamespaces:
+            self.scopes.pop()
 
     def data(self, text):
         if not self.stack:
@@ -110,16 +147,6 @@ class _ParserTarget:
 
     def entity_decl(self, *args):
         raise error.ParseError('entity declarations are not allowed')
-
-
-def _adhoc_namespace(prefix: str, uri: str) -> gws.XmlNamespace:
-    return gws.XmlNamespace(
-        uid=prefix,
-        xmlns=prefix,
-        uri=uri,
-        schemaLocation='',
-        extendsGml=False,
-    )
 
 
 def _decode_input(inp) -> str:

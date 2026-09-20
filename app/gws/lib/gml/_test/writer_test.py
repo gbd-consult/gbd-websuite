@@ -60,7 +60,7 @@ def test_shape_to_element_xy():
 
 def test_shape_to_element_namespace():
     p = gws.base.shape.from_xy(12.34567, 5.6789, crs=gws.lib.crs.WEBMERCATOR)
-    ns = gws.lib.xmlx.namespace.get('wms')
+    ns = gws.lib.xmlx.namespace.get('WMS')
     xml = writer.shape_to_element(p, namespace=ns).to_string()
     u.check.xml(xml, """
         <wms:Point srsName="urn:ogc:def:crs:EPSG::3857">

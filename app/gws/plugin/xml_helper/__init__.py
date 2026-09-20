@@ -38,18 +38,22 @@ class Object(gws.Node):
             self.add_namespace(c)
 
     def add_namespace(self, cfg: NamespaceConfig) -> gws.XmlNamespace:
-        """Add a custom namespace for XML generation."""
+        """Add a custom namespace for XML generation and register it globally."""
 
         xmlns = cfg.get('xmlns')
         if cfg.get('version'):
             self.root.config_warning(f'"xml.namespaces.version" is deprecated and ignored (namespace {xmlns!r})')
-        ns = gws.XmlNamespace(
+        ns = gws.lib.xmlx.namespace.new(
             xmlns=xmlns,
-            uid=cfg.get('uid') or xmlns,
             uri=cfg.get('uri'),
             schemaLocation=cfg.get('schemaLocation') or '',
             extendsGml=cfg.get('extendsGml', True),
         )
+
+        try:
+            gws.lib.xmlx.namespace.register(ns)
+        except gws.lib.xmlx.Error as exc:
+            raise gws.ConfigurationError(str(exc)) from exc
 
         self.namespaces.append(ns)
 
@@ -58,7 +62,4 @@ class Object(gws.Node):
     def namespace(self, xmlns: str) -> Optional[gws.XmlNamespace]:
         """Find a namespace by its prefix, custom namespaces first, then well-known ones."""
 
-        for ns in self.namespaces:
-            if ns.xmlns == xmlns:
-                return ns
-        return gws.lib.xmlx.namespace.get(xmlns)
+        return gws.lib.xmlx.namespace.find_by_xmlns(xmlns)

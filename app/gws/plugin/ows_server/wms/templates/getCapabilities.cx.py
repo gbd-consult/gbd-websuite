@@ -17,7 +17,7 @@ def main(ta: server.TemplateArgs):
         return tpl.to_xml_response(
             ta,
             tag('WMS_Capabilities', doc(ta)),
-            default_namespace=xmlx.namespace.require('wms'),
+            default_namespace=xmlx.namespace.ns.WMS,
         )
 
     if ta.intVersion == 110:
@@ -100,9 +100,9 @@ def caps(ta):
 
     if ta.service.withInspireMeta:
         if ta.intVersion == 130:
-            yield tag('inspire_vs:ExtendedCapabilities', tpl.inspire_extended_capabilities(ta))
+            yield tag('INSPIRE_VS:ExtendedCapabilities', tpl.inspire_extended_capabilities(ta))
         else:
-            yield tag('VendorSpecificCapabilities/inspire_vs:ExtendedCapabilities', tpl.inspire_extended_capabilities(ta))
+            yield tag('VendorSpecificCapabilities/INSPIRE_VS:ExtendedCapabilities', tpl.inspire_extended_capabilities(ta))
 
     yield layer(ta, ta.layerCapsList[0])
 
@@ -114,7 +114,7 @@ def request_caps(ta):
         verb = op.verb
         if verb == gws.OwsVerb.GetLegendGraphic:
             if ta.intVersion == 130:
-                verb = 'sld:GetLegendGraphic'
+                verb = 'SLD:GetLegendGraphic'
             if ta.intVersion == 110:
                 continue
         # NB QGIS wants a space after ';'

@@ -29,7 +29,7 @@ class Error(gws.Error):
 
         if xmlns == 'ows':
             # OWS ExceptionReport, as per OGC 06-121r9, 8.5
-            ns = xmlx.namespace.require('ows11')
+            ns = xmlx.namespace.ns.OWS_11
             xml = xmlx.tag(
                 'ExceptionReport',
                 xmlx.tag(
@@ -41,7 +41,7 @@ class Error(gws.Error):
 
         elif xmlns == 'ogc':
             # OGC ServiceExceptionReport, as per OGC 06-042, H.2
-            ns = xmlx.namespace.require('ogc')
+            ns = xmlx.namespace.ns.OGC
             xml = xmlx.tag(
                 'ServiceExceptionReport',
                 xmlx.tag(

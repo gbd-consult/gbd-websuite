@@ -105,21 +105,20 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> tuple[gws.XmlElemen
         raise gws.NotFoundError('xml_schema: no xmlns found')
 
     opts = gws.XmlOptions()
-    opts.namespaces = {}
-    opts.namespaces[ns.xmlns] = ns
 
     schema = tag(
-        'xsd:schema',
+        'XSD:schema',
         {
             'targetNamespace': ns.uri,
             'elementFormDefault': 'qualified',
         },
     )
+    schema.namespaces.append(ns)
 
     if ns.extendsGml:
-        gml = xmlx.namespace.require('gml')
-        opts.namespaces[gml.xmlns] = gml
-        schema.append(tag('xsd:import', {'namespace': gml.uri, 'schemaLocation': gml.schemaLocation}))
+        gml = xmlx.namespace.ns.GML
+        schema.namespaces.append(gml)
+        schema.append(tag('XSD:import', {'namespace': gml.uri, 'schemaLocation': gml.schemaLocation}))
 
     seen = set()
 
@@ -134,7 +133,7 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> tuple[gws.XmlElemen
             if user.can_read(f):
                 elements.append(
                     tag(
-                        'xsd:element',
+                        'XSD:element',
                         {
                             'maxOccurs': '1',
                             'minOccurs': '0',
@@ -149,13 +148,13 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> tuple[gws.XmlElemen
 
         if ns.extendsGml:
             type_def = tag(
-                'xsd:complexContent',
-                tag('xsd:extension', {'base': 'gml:AbstractFeatureType'}, tag('xsd:sequence', elements)),
+                'XSD:complexContent',
+                tag('XSD:extension', {'base': 'gml:AbstractFeatureType'}, tag('XSD:sequence', elements)),
             )
         else:
-            type_def = tag('xsd:complexContent', tag('xsd:sequence', elements))
+            type_def = tag('XSD:complexContent', tag('XSD:sequence', elements))
 
-        schema.append(tag('xsd:complexType', {'name': type_name}, type_def))
+        schema.append(tag('XSD:complexType', {'name': type_name}, type_def))
 
         atts = {
             'name': lc.featureName,
@@ -164,7 +163,7 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> tuple[gws.XmlElemen
         if ns.extendsGml:
             atts['substitutionGroup'] = 'gml:AbstractFeature'
 
-        schema.append(tag('xsd:element', atts))
+        schema.append(tag('XSD:element', atts))
 
     return schema, opts
 

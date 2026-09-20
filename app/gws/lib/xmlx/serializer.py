@@ -1,4 +1,10 @@
-"""XML serializer."""
+"""XML serializer.
+
+Element and attribute names are local (``Point``) or Clark names (``{uri}Point``); a prefixed name is an error.
+An element in the default namespace (the nearest ``xmlns`` declaration, or ``defaultNamespace``) is written unprefixed.
+Otherwise the prefix comes from the nearest enclosing declaration (``XmlElement.namespaces``), or from the namespace table,
+renamed via ``customXmlns``. With ``withNamespaceDeclarations``, all namespaces used in the tree are declared on the root.
+"""
 
 from typing import Optional
 
@@ -20,17 +26,8 @@ class Serializer:
         # uri -> custom prefix
         self.renames = self.opts.customXmlns or {}
 
-        # prefix -> namespace, declared by the caller
-        self.rootMap = dict(self.opts.namespaces or {})
-
-        # prefix -> namespace, resolved from the well-known table while serializing
-        self.usedMap = {}
-
-        # element-level namespace maps of the enclosing elements
+        # namespace lists of the enclosing elements
         self.stack = []
-
-        # prefixes used by attributes, these must be declared even if they map to the default namespace
-        self.attributePrefixes = set()
 
     def to_string(self):
         if self.opts.withXmlDeclaration or self.opts.doctype:
@@ -38,39 +35,36 @@ class Serializer:
             if self.opts.doctype:
                 self.buf.append(f'<!DOCTYPE {self.opts.doctype}>')
 
-        self._el_to_string(self.root, is_root=True)
+        root_ns = list(self.root.namespaces)
+        if self.opts.withNamespaceDeclarations:
+            root_ns = self._collect_namespaces(root_ns)
+
+        self._el_to_string(self.root, root_ns, is_root=True)
 
         return ''.join(self.buf)
 
     ##
 
-    def _el_to_string(self, el, is_root=False):
-        self.stack.append(el.namespaces)
-
-        open_pos = len(self.buf)
-        self.buf.append('')
+    def _el_to_string(self, el, namespaces, is_root=False):
+        self.stack.append(namespaces)
 
         tag = self._element_name(el.tag)
         atts = self._process_atts(el.attrib)
-
-        s = self._text_to_string(el.text)
-        if s:
-            self.buf.append(s)
-
-        for c in el:
-            self._el_to_string(c)
-
-        atts.update(self._namespace_declarations(el, is_root))
+        atts.update(self._namespace_declarations(namespaces, is_root))
 
         open_tag = tag
         if atts:
             open_tag += ' ' + ' '.join(f'{k}="{v}"' for k, v in atts.items())
 
-        if len(self.buf) > open_pos + 1:
-            self.buf[open_pos] = f'<{open_tag}>'
+        s = self._text_to_string(el.text)
+        if s or len(el) > 0:
+            self.buf.append(f'<{open_tag}>')
+            self.buf.append(s)
+            for c in el:
+                self._el_to_string(c, c.namespaces)
             self.buf.append(f'</{tag}>')
         else:
-            self.buf[open_pos] = f'<{open_tag}/>'
+            self.buf.append(f'<{open_tag}/>')
 
         s = self._text_to_string(el.tail)
         if s:
@@ -88,85 +82,113 @@ class Serializer:
 
         return atts
 
-    def _namespace_declarations(self, el, is_root):
-        decls = {}
-
-        if is_root and self.opts.withNamespaceDeclarations:
-            if self.defaultNamespace:
-                decls[''] = self.defaultNamespace
-            decls.update(self.rootMap)
-            decls.update(self.usedMap)
-
-        decls.update(el.namespaces)
-
-        if not decls:
+    def _namespace_declarations(self, namespaces, is_root):
+        if not namespaces:
             return {}
-
-        renamed = {}
-        for prefix, ns in decls.items():
-            if prefix == '':
-                renamed[''] = ns
-                continue
-            p = self._output_prefix(prefix, ns)
-            if self.defaultNamespace and ns.uri == self.defaultNamespace.uri and p not in self.attributePrefixes:
-                continue
-            renamed[p] = ns
-
         return namespace.declarations(
-            renamed,
+            namespaces,
+            self.renames,
             with_schema_locations=is_root and self.opts.withSchemaLocations,
         )
 
     def _element_name(self, name):
-        prefix, pname = namespace.split_name(name)
+        uri, pname = namespace.split_clark_name(name)
         self._check_name(pname, name)
 
-        if not prefix:
+        if not uri:
             return pname
 
-        ns = self._resolve(prefix, name)
-        if self.defaultNamespace and ns.uri == self.defaultNamespace.uri:
+        if uri == self._default_uri():
             return pname
 
-        return self._output_prefix(prefix, ns) + ':' + pname
+        return self._prefix(uri, name) + ':' + pname
 
     def _attribute_name(self, name):
-        prefix, pname = namespace.split_name(name)
+        uri, pname = namespace.split_clark_name(name)
         self._check_name(pname, name)
 
-        if not prefix:
+        if not uri:
             return pname
 
-        if prefix == namespace.XMLNS or prefix == namespace.XML:
-            self._check_name(prefix, name)
-            return name
+        return self._prefix(uri, name) + ':' + pname
 
-        ns = self._resolve(prefix, name)
-        p = self._output_prefix(prefix, ns)
-        self.attributePrefixes.add(p)
-        return p + ':' + pname
+    def _default_uri(self):
+        for nss in reversed(self.stack):
+            for ns in nss:
+                if ns.xmlns == '':
+                    return ns.uri
+        if self.defaultNamespace:
+            return self.defaultNamespace.uri
+        return ''
 
-    def _resolve(self, prefix, name):
-        ns = self.rootMap.get(prefix)
+    def _prefix(self, uri, name):
+        if uri == namespace.XML_URI:
+            return namespace.XML
+
+        for nss in reversed(self.stack):
+            for ns in nss:
+                if ns.uri == uri and ns.xmlns:
+                    return self._output_prefix(ns)
+
+        ns = namespace.find_by_uri(uri)
         if ns:
-            return ns
+            return self._output_prefix(ns)
 
-        for m in reversed(self.stack):
-            ns = m.get(prefix)
-            if ns:
-                return ns
+        if uri.startswith(namespace.ADHOC):
+            return uri[len(namespace.ADHOC):]
 
-        ns = namespace.get(prefix)
-        if ns:
-            self.usedMap[prefix] = ns
-            return ns
+        raise error.NamespaceError(f'unknown namespace in {name!r}')
 
-        raise error.NamespaceError(f'unknown namespace prefix in {name!r}')
-
-    def _output_prefix(self, prefix, ns):
-        p = self.renames.get(ns.uri, prefix)
+    def _output_prefix(self, ns):
+        p = self.renames.get(ns.uri, ns.xmlns)
         self._check_name(p, p)
         return p
+
+    def _collect_namespaces(self, root_ns):
+        # namespaces to declare on the root: its own, the default one and those used in the tree
+        # and not declared on an enclosing element
+
+        nss = list(root_ns)
+
+        if self.defaultNamespace and all(ns.xmlns != '' for ns in nss):
+            nss.append(namespace.new('', self.defaultNamespace.uri, self.defaultNamespace.schemaLocation))
+
+        def declared(uri, scopes, for_attribute):
+            for lst in scopes:
+                for ns in lst:
+                    if ns.uri == uri and (ns.xmlns or not for_attribute):
+                        return True
+            return False
+
+        def resolve(uri, name, scopes, for_attribute):
+            if not uri or uri == namespace.XML_URI or uri.startswith(namespace.ADHOC):
+                return
+            if declared(uri, scopes, for_attribute):
+                return
+            ns = namespace.find_by_uri(uri)
+            if not ns:
+                raise error.NamespaceError(f'unknown namespace in {name!r}')
+            nss.append(ns)
+
+        def walk(el, scopes):
+            uri, _ = namespace.split_clark_name(el.tag)
+            resolve(uri, el.tag, scopes, False)
+            for key in el.attrib:
+                uri, _ = namespace.split_clark_name(key)
+                resolve(uri, key, scopes, True)
+            for c in el:
+                walk(c, scopes + [c.namespaces] if c.namespaces else scopes)
+
+        walk(self.root, [nss])
+
+        seen = {}
+        for ns in nss:
+            p = self.renames.get(ns.uri, ns.xmlns)
+            if p in seen and seen[p] != ns.uri:
+                raise error.NamespaceError(f'namespace prefix {p!r} is used for {seen[p]!r} and {ns.uri!r}')
+            seen[p] = ns.uri
+
+        return nss
 
     def _check_name(self, s, name):
         if not re.fullmatch(_NAME_RE, s):

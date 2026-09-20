@@ -5,89 +5,87 @@ import gws.base.ows.server.templatelib as tpl
 import gws.lib.xmlx
 from gws.lib.xmlx import tag
 
+OWS = 'OWS_0'
 
 def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
-        tag('csw:Capabilities', {'version': ta.version}, caps(ta)),
-        namespaces={
-            'ows': gws.lib.xmlx.namespace.require('ows0'),
-            'gml': gws.lib.xmlx.namespace.require('gml0'),
-        },
+        tag('CSW:Capabilities', {'version': ta.version}, caps(ta)),
+        namespaces=[gws.lib.xmlx.namespace.ns.GML_3_1, gws.lib.xmlx.namespace.ns.GMD],
     )
 
 
 def caps(ta: server.TemplateArgs):
-    yield tpl.ows_service_identification(ta)
-    yield tpl.ows_service_provider(ta)
+    yield tpl.ows_service_identification(ta, ows=OWS)
+    yield tpl.ows_service_provider(ta, ows=OWS)
 
     yield tag(
-        'ows:OperationsMetadata',
+        'OWS_0:OperationsMetadata',
         tag(
-            'ows:Operation',
+            'OWS_0:Operation',
             {'name': 'GetCapabilities'},
-            tpl.ows_service_url(ta),
+            tpl.ows_service_url(ta, ows=OWS),
             tag(
-                'ows:Parameter',
+                'OWS_0:Parameter',
                 {'name': 'sections'},
-                tag('ows:Value', 'ServiceIdentification'),
-                tag('ows:Value', 'ServiceProvider'),
-                tag('ows:Value', 'OperationsMetadata'),
-                tag('ows:Value', 'Filter_Capabilities'),
+                tag('OWS_0:Value', 'ServiceIdentification'),
+                tag('OWS_0:Value', 'ServiceProvider'),
+                tag('OWS_0:Value', 'OperationsMetadata'),
+                tag('OWS_0:Value', 'Filter_Capabilities'),
             ),
         ),
         tag(
-            'ows:Operation',
+            'OWS_0:Operation',
             {'name': 'DescribeRecord'},
-            tpl.ows_service_url(ta),
-            tag('ows:Parameter', {'name': 'typeName'}, tag('ows:Value', 'gmd:MD_Metadata')),
-            tag('ows:Parameter', {'name': 'outputFormat'}, tag('ows:Value', 'application/xml')),
-            tag('ows:Parameter', {'name': 'schemaLanguage'}, tag('ows:Value', 'http://www.w3.org/XML/Schema')),
-            tag('ows:Parameter', {'name': 'resultType'}, tag('ows:Value', 'hits'), tag('ows:Value', 'results')),
-            tag('ows:Parameter', {'name': 'ElementSetName'}, tag('ows:Value', 'full')),
-            tag('ows:Parameter', {'name': 'CONSTRAINTLANGUAGE'}, tag('ows:Value', 'FILTER')),
-            tag('ows:Parameter', {'name': 'version'}, tag('ows:Value', ta.version)),
+            tpl.ows_service_url(ta, ows=OWS),
+            tag('OWS_0:Parameter', {'name': 'typeName'}, tag('OWS_0:Value', 'gmd:MD_Metadata')),
+            tag('OWS_0:Parameter', {'name': 'outputFormat'}, tag('OWS_0:Value', 'application/xml')),
+            tag('OWS_0:Parameter', {'name': 'schemaLanguage'}, tag('OWS_0:Value', 'http://www.w3.org/XML/Schema')),
+            tag('OWS_0:Parameter', {'name': 'resultType'}, tag('OWS_0:Value', 'hits'), tag('OWS_0:Value', 'results')),
+            tag('OWS_0:Parameter', {'name': 'ElementSetName'}, tag('OWS_0:Value', 'full')),
+            tag('OWS_0:Parameter', {'name': 'CONSTRAINTLANGUAGE'}, tag('OWS_0:Value', 'FILTER')),
+            tag('OWS_0:Parameter', {'name': 'version'}, tag('OWS_0:Value', ta.version)),
         ),
         tag(
-            'ows:Operation',
+            'OWS_0:Operation',
             {'name': 'GetRecords'},
-            tpl.ows_service_url(ta, post=True),
-            tag('ows:Parameter', {'name': 'typeName'}, tag('ows:Value', 'gmd:MD_Metadata')),
-            tag('ows:Parameter', {'name': 'outputFormat'}, tag('ows:Value', 'application/xml')),
-            tag('ows:Parameter', {'name': 'outputSchema'}, tag('ows:Value', 'http://www.opengis.net/cat/csw/2.0.2')),
-            tag('ows:Parameter', {'name': 'resultType'}, tag('ows:Value', 'results')),
-            tag('ows:Parameter', {'name': 'ElementSetName'}, tag('ows:Value', 'full')),
-            tag('ows:Parameter', {'name': 'CONSTRAINTLANGUAGE'}, tag('ows:Value', 'FILTER')),
-            tag('ows:Parameter', {'name': 'version'}, tag('ows:Value', ta.version)),
+            tpl.ows_service_url(ta, post=True, ows=OWS),
+            tag('OWS_0:Parameter', {'name': 'typeName'}, tag('OWS_0:Value', 'gmd:MD_Metadata')),
+            tag('OWS_0:Parameter', {'name': 'outputFormat'}, tag('OWS_0:Value', 'application/xml')),
+            tag('OWS_0:Parameter', {'name': 'outputSchema'}, tag('OWS_0:Value', 'http://www.opengis.net/cat/csw/2.0.2')),
+            tag('OWS_0:Parameter', {'name': 'resultType'}, tag('OWS_0:Value', 'results')),
+            tag('OWS_0:Parameter', {'name': 'ElementSetName'}, tag('OWS_0:Value', 'full')),
+            tag('OWS_0:Parameter', {'name': 'CONSTRAINTLANGUAGE'}, tag('OWS_0:Value', 'FILTER')),
+            tag('OWS_0:Parameter', {'name': 'version'}, tag('OWS_0:Value', ta.version)),
         ),
         tag(
-            'ows:Constraint',
+            'OWS_0:Constraint',
             {'name': 'IsoProfiles'},
-            tag('ows:Value', 'http://www.isotc211.org/2005/gmd'),
+            tag('OWS_0:Value', 'http://www.isotc211.org/2005/gmd'),
         ),
-        tag('ows:ExtendedCapabilities/inspire_ds:ExtendedCapabilities', tpl.inspire_extended_capabilities(ta)),
+        tag('OWS_0:ExtendedCapabilities/INSPIRE_DS:ExtendedCapabilities', tpl.inspire_extended_capabilities(ta)),
     )
 
     yield tag(
-        'ogc:Filter_Capabilities',
+        'OGC:Filter_Capabilities',
         tag(
-            'ogc:Spatial_Capabilities',
-            tag('ogc:GeometryOperands/ogc:GeometryOperand', 'gml:Envelope'),
-            tag('ogc:SpatialOperators/ogc:SpatialOperator', {'name': 'BBOX'}),
+            'OGC:Spatial_Capabilities',
+            tag('OGC:GeometryOperands/OGC:GeometryOperand', 'gml:Envelope'),
+            tag('OGC:SpatialOperators/OGC:SpatialOperator', {'name': 'BBOX'}),
         ),
         tag(
-            'ogc:Scalar_Capabilities',
-            tag('ogc:LogicalOperators', ''),
+            'OGC:Scalar_Capabilities',
+            tag('OGC:LogicalOperators', ''),
             tag(
-                'ogc:ComparisonOperators',
-                tag('ogc:ComparisonOperator', 'EqualTo'),
-                tag('ogc:ComparisonOperator', 'NotEqualTo'),
-                tag('ogc:ComparisonOperator', 'NullCheck'),
+                'OGC:ComparisonOperators',
+                tag('OGC:ComparisonOperator', 'EqualTo'),
+                tag('OGC:ComparisonOperator', 'NotEqualTo'),
+                tag('OGC:ComparisonOperator', 'NullCheck'),
             ),
         ),
         tag(
-            'ogc:Id_Capabilities',
-            tag('ogc:EID',),
-            tag('ogc:FID',),
+            'OGC:Id_Capabilities',
+            tag('OGC:EID',),
+            tag('OGC:FID',),
         ),
     )

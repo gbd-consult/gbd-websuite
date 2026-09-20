@@ -2,7 +2,6 @@
 
 import gws.base.ows.server as server
 import gws.base.ows.server.templatelib as tpl
-import gws.lib.xmlx as xmlx
 
 
 def main(ta: server.TemplateArgs):
@@ -10,8 +9,4 @@ def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
         tpl.wfs_feature_collection(ta),
-        namespaces={
-            'gml': xmlx.namespace.require('gml2'),
-            **tpl.namespaces_from_feature_collection(ta),
-        },
     )

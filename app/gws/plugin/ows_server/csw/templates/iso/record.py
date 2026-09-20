@@ -11,15 +11,15 @@ ML_GMX_CODELISTS = 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xm
 def record(ta: server.TemplateArgs, md: gws.Metadata):
     def w_code(wrap, lst, value, text=None):
         return tag(
-            f'gmd:{wrap}/gmd:{lst}',
+            f'GMD:{wrap}/GMD:{lst}',
             {'codeList': ML_GMX_CODELISTS + '#' + lst, 'codeListValue': value},
             text or value,
         )
 
     def w_date(d, typ):
         return tag(
-            'gmd:date/gmd:CI_Date',
-            tag('gmd:date/gco:Date', tpl.iso_date(d)),
+            'GMD:date/GMD:CI_Date',
+            tag('GMD:date/GCO:Date', tpl.iso_date(d)),
             w_code(
                 'dateType',
                 'CI_DateTypeCode',
@@ -29,94 +29,94 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
 
     def w_lang():
         return tag(
-            'gmd:language/gmd:LanguageCode',
+            'GMD:language/GMD:LanguageCode',
             {'codeList': 'http://www.loc.gov/standards/iso639-2/', 'codeListValue': md.language3},
             md.languageName,
         )
 
     def w_bbox(ext):
         return tag(
-            'gmd:EX_GeographicBoundingBox',
-            tag('gmd:westBoundLongitude/gco:Decimal', tpl.coord_dms(ext[0])),
-            tag('gmd:eastBoundLongitude/gco:Decimal', tpl.coord_dms(ext[2])),
-            tag('gmd:southBoundLatitude/gco:Decimal', tpl.coord_dms(ext[1])),
-            tag('gmd:northBoundLatitude/gco:Decimal', tpl.coord_dms(ext[3])),
+            'GMD:EX_GeographicBoundingBox',
+            tag('GMD:westBoundLongitude/GCO:Decimal', tpl.coord_dms(ext[0])),
+            tag('GMD:eastBoundLongitude/GCO:Decimal', tpl.coord_dms(ext[2])),
+            tag('GMD:southBoundLatitude/GCO:Decimal', tpl.coord_dms(ext[1])),
+            tag('GMD:northBoundLatitude/GCO:Decimal', tpl.coord_dms(ext[3])),
         )
 
     def contact():
         yield tag(
-            'gmd:CI_ResponsibleParty',
-            tag('gmd:organisationName/gco:CharacterString', md.contactOrganization),
-            tag('gmd:positionName/gco:CharacterString', md.contactPosition),
+            'GMD:CI_ResponsibleParty',
+            tag('GMD:organisationName/GCO:CharacterString', md.contactOrganization),
+            tag('GMD:positionName/GCO:CharacterString', md.contactPosition),
             tag(
-                'gmd:contactInfo/gmd:CI_Contact',
+                'GMD:contactInfo/GMD:CI_Contact',
                 tag(
-                    'gmd:phone/gmd:CI_Telephone',
-                    tag('gmd:voice/gco:CharacterString', md.contactPhone),
-                    tag('gmd:facsimile/gco:CharacterString', md.contactFax),
+                    'GMD:phone/GMD:CI_Telephone',
+                    tag('GMD:voice/GCO:CharacterString', md.contactPhone),
+                    tag('GMD:facsimile/GCO:CharacterString', md.contactFax),
                 ),
                 tag(
-                    'gmd:address/gmd:CI_Address',
-                    tag('gmd:deliveryPoint/gco:CharacterString', md.contactAddress),
-                    tag('gmd:city/gco:CharacterString', md.contactCity),
-                    tag('gmd:administrativeArea/gco:CharacterString', md.contactArea),
-                    tag('gmd:postalCode/gco:CharacterString', md.contactZip),
-                    tag('gmd:country/gco:CharacterString', md.contactCountry),
-                    tag('gmd:electronicMailAddress/gco:CharacterString', md.contactEmail),
+                    'GMD:address/GMD:CI_Address',
+                    tag('GMD:deliveryPoint/GCO:CharacterString', md.contactAddress),
+                    tag('GMD:city/GCO:CharacterString', md.contactCity),
+                    tag('GMD:administrativeArea/GCO:CharacterString', md.contactArea),
+                    tag('GMD:postalCode/GCO:CharacterString', md.contactZip),
+                    tag('GMD:country/GCO:CharacterString', md.contactCountry),
+                    tag('GMD:electronicMailAddress/GCO:CharacterString', md.contactEmail),
                 ),
-                tag('gmd:onlineResource/gmd:CI_OnlineResource/gmd:linkage/gmd:URL', md.contactUrl),
+                tag('GMD:onlineResource/GMD:CI_OnlineResource/GMD:linkage/GMD:URL', md.contactUrl),
             ),
             w_code('role', 'CI_RoleCode', md.contactRole),
         )
 
     def identification():
         yield tag(
-            'gmd:citation/gmd:CI_Citation',
-            tag('gmd:title/gco:CharacterString', md.title),
+            'GMD:citation/GMD:CI_Citation',
+            tag('GMD:title/GCO:CharacterString', md.title),
             w_date(md.dateCreated, 'publication'),
             w_date(md.dateUpdated, 'revision'),
-            tag('gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString', md.catalogCitationUid),
+            tag('GMD:identifier/GMD:MD_Identifier/GMD:code/GCO:CharacterString', md.catalogCitationUid),
         )
 
-        yield tag('gmd:abstract/gco:CharacterString', md.abstract)
+        yield tag('GMD:abstract/GCO:CharacterString', md.abstract)
 
-        yield tag('gmd:pointOfContact', contact())
+        yield tag('GMD:pointOfContact', contact())
 
         if md.inspireSpatialScope:
             lst = 'http://inspire.ec.europa.eu/metadata-codelist/SpatialScope/'
             yield tag(
-                'gmd:descriptiveKeywords/gmd:MD_Keywords',
-                tag('gmd:keyword/gmx:Anchor', {'xlink:href': lst + md.inspireSpatialScope}, md.inspireSpatialScopeName),
+                'GMD:descriptiveKeywords/GMD:MD_Keywords',
+                tag('GMD:keyword/GMX:Anchor', {'XLINK:href': lst + md.inspireSpatialScope}, md.inspireSpatialScopeName),
                 tag(
-                    'gmd:thesaurusName/gmd:CI_Citation',
-                    tag('gmd:title/gmx:Anchor', {'xlink:href': lst + 'SpatialScope'}, 'Spatial scope'),
+                    'GMD:thesaurusName/GMD:CI_Citation',
+                    tag('GMD:title/GMX:Anchor', {'XLINK:href': lst + 'SpatialScope'}, 'Spatial scope'),
                     w_date('2019-05-22', 'publication'),
                 ),
             )
 
         if md.inspireTheme:
             yield tag(
-                'gmd:descriptiveKeywords/gmd:MD_Keywords',
-                tag('gmd:keyword/gco:CharacterString', md.inspireThemeNameEn),
+                'GMD:descriptiveKeywords/GMD:MD_Keywords',
+                tag('GMD:keyword/GCO:CharacterString', md.inspireThemeNameEn),
                 w_code('type', 'MD_KeywordTypeCode', 'theme'),
                 tag(
-                    'gmd:thesaurusName/gmd:CI_Citation',
-                    tag('gmd:title/gco:CharacterString', 'GEMET - INSPIRE themes, version 1.0'),
+                    'GMD:thesaurusName/GMD:CI_Citation',
+                    tag('GMD:title/GCO:CharacterString', 'GEMET - INSPIRE themes, version 1.0'),
                     w_date('2008-06-01', 'publication'),
                 ),
             )
 
         if md.keywords:
             yield tag(
-                'gmd:descriptiveKeywords/gmd:MD_Keywords',
-                [tag('gmd:keyword/gco:CharacterString', kw) for kw in md.keywords],
+                'GMD:descriptiveKeywords/GMD:MD_Keywords',
+                [tag('GMD:keyword/GCO:CharacterString', kw) for kw in md.keywords],
             )
 
         yield tag(
-            'gmd:resourceConstraints/gmd:MD_LegalConstraints',
+            'GMD:resourceConstraints/GMD:MD_LegalConstraints',
             w_code('useConstraints', 'MD_RestrictionCode', 'otherRestrictions'),
-            tag('gmd:otherConstraints/gco:CharacterString', md.accessConstraints),
-            tag('gmd:otherConstraints/gco:CharacterString', md.license),
+            tag('GMD:otherConstraints/GCO:CharacterString', md.accessConstraints),
+            tag('GMD:otherConstraints/GCO:CharacterString', md.license),
         )
 
         yield w_code(
@@ -127,7 +127,7 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
 
         if md.isoSpatialResolution:
             yield tag(
-                'gmd:spatialResolution/gmd:MD_Resolution/gmd:equivalentScale/gmd:MD_RepresentativeFraction/gmd:denominator/gco:Integer',
+                'GMD:spatialResolution/GMD:MD_Resolution/GMD:equivalentScale/GMD:MD_RepresentativeFraction/GMD:denominator/GCO:Integer',
                 md.isoSpatialResolution,
             )
 
@@ -136,96 +136,96 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
 
         if md.isoTopicCategories:
             for cat in md.isoTopicCategories:
-                yield tag('gmd:topicCategory/gmd:MD_TopicCategoryCode', cat)
+                yield tag('GMD:topicCategory/GMD:MD_TopicCategoryCode', cat)
 
         if md.wgsExtent:
-            yield tag('gmd:extent/gmd:EX_Extent/gmd:geographicElement', w_bbox(md.wgsExtent))
+            yield tag('GMD:extent/GMD:EX_Extent/GMD:geographicElement', w_bbox(md.wgsExtent))
 
         # @TODO
         # if md.bounding_polygon_element:
         #     yield (
-        #         'gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_BoundingPolygon/gmd:polygon',
+        #         'GMD:extent/GMD:EX_Extent/GMD:geographicElement/GMD:EX_BoundingPolygon/GMD:polygon',
         #         md.bounding_polygon_element
         #     )
 
         if md.temporalBegin:
             yield tag(
-                'gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod',
-                tag('gml:beginPosition', md.temporalBegin),
-                tag('gml:endPosition', md.temporalEnd),
+                'GMD:extent/GMD:EX_Extent/GMD:temporalElement/GMD:EX_TemporalExtent/GMD:extent/GML:TimePeriod',
+                tag('GML:beginPosition', md.temporalBegin),
+                tag('GML:endPosition', md.temporalEnd),
             )
 
     def distributionInfo():
         for link in md.metaLinks:
             if link.format:
                 yield tag(
-                    'gmd:distributionFormat/gmd:MD_Format',
-                    tag('gmd:name/gco:CharacterString', link.format),
-                    tag('gmd:version/gco:CharacterString', link.formatVersion),
+                    'GMD:distributionFormat/GMD:MD_Format',
+                    tag('GMD:name/GCO:CharacterString', link.format),
+                    tag('GMD:version/GCO:CharacterString', link.formatVersion),
                 )
 
         for link in md.metaLinks:
             yield tag(
-                'gmd:transferOptions/gmd:MD_DigitalTransferOptions',
+                'GMD:transferOptions/GMD:MD_DigitalTransferOptions',
                 tag(
-                    'gmd:onLine/gmd:CI_OnlineResource',
-                    tag('gmd:linkage/gmd:URL', ta.url_for(link.url)),
+                    'GMD:onLine/GMD:CI_OnlineResource',
+                    tag('GMD:linkage/GMD:URL', ta.url_for(link.url)),
                     w_code('function', 'CI_OnLineFunctionCode', link.function),
                 ),
             )
 
     def dataQualityInfo():
-        yield tag('gmd:scope/gmd:DQ_Scope', w_code('level', 'MD_ScopeCode', md.isoScope))
+        yield tag('GMD:scope/GMD:DQ_Scope', w_code('level', 'MD_ScopeCode', md.isoScope))
 
         if md.isoQualityConformanceQualityPass:
             yield tag(
-                'gmd:report/gmd:DQ_DomainConsistency/gmd:result/gmd:DQ_ConformanceResult',
+                'GMD:report/GMD:DQ_DomainConsistency/GMD:result/GMD:DQ_ConformanceResult',
                 tag(
-                    'gmd:specification/gmd:CI_Citation',
-                    tag('gmd:title/gco:CharacterString', md.isoQualityConformanceSpecificationTitle),
+                    'GMD:specification/GMD:CI_Citation',
+                    tag('GMD:title/GCO:CharacterString', md.isoQualityConformanceSpecificationTitle),
                     w_date(md.isoQualityConformanceSpecificationDate, 'publication'),
                 ),
-                tag('gmd:explanation/gco:CharacterString', md.isoQualityConformanceExplanation),
-                tag('gmd:pass/gco:Boolean', md.isoQualityConformanceQualityPass),
+                tag('GMD:explanation/GCO:CharacterString', md.isoQualityConformanceExplanation),
+                tag('GMD:pass/GCO:Boolean', md.isoQualityConformanceQualityPass),
             )
 
         if md.isoQualityLineageStatement:
             yield tag(
-                'gmd:lineage/gmd:LI_Lineage',
-                tag('gmd:statement/gco:CharacterString', md.isoQualityLineageStatement),
+                'GMD:lineage/GMD:LI_Lineage',
+                tag('GMD:statement/GCO:CharacterString', md.isoQualityLineageStatement),
                 tag(
-                    'gmd:source/gmd:LI_Source',
-                    tag('gmd:description/gco:CharacterString', md.isoQualityLineageSource),
-                    tag('gmd:scaleDenominator/gmd:MD_RepresentativeFraction/gmd:denominator/gco:Integer', md.isoQualityLineageSourceScale),
+                    'GMD:source/GMD:LI_Source',
+                    tag('GMD:description/GCO:CharacterString', md.isoQualityLineageSource),
+                    tag('GMD:scaleDenominator/GMD:MD_RepresentativeFraction/GMD:denominator/GCO:Integer', md.isoQualityLineageSourceScale),
                 ),
             )
 
     def content():
-        yield tag('gmd:fileIdentifier/gco:CharacterString', md.catalogUid)
+        yield tag('GMD:fileIdentifier/GCO:CharacterString', md.catalogUid)
 
         w_lang()
         yield w_code('characterSet', 'MD_CharacterSetCode', 'utf8')
 
         yield w_code('hierarchyLevel', 'MD_ScopeCode', md.isoScope)
-        yield tag('gmd:hierarchyLevelName/gco:CharacterString', md.isoScopeName)
+        yield tag('GMD:hierarchyLevelName/GCO:CharacterString', md.isoScopeName)
 
-        yield tag('gmd:contact', contact())
+        yield tag('GMD:contact', contact())
 
-        yield tag('gmd:dateStamp/gco:Date', tpl.iso_date(md.dateUpdated))
+        yield tag('GMD:dateStamp/GCO:Date', tpl.iso_date(md.dateUpdated))
 
-        yield tag('gmd:metadataStandardName/gco:CharacterString', 'ISO19115')
-        yield tag('gmd:metadataStandardVersion/gco:CharacterString', '2003/Cor.1:2006')
+        yield tag('GMD:metadataStandardName/GCO:CharacterString', 'ISO19115')
+        yield tag('GMD:metadataStandardVersion/GCO:CharacterString', '2003/Cor.1:2006')
 
         if md.crs:
             yield tag(
-                'gmd:referenceSystemInfo/gmd:MD_ReferenceSystem/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code/gco:CharacterString',
+                'GMD:referenceSystemInfo/GMD:MD_ReferenceSystem/GMD:referenceSystemIdentifier/GMD:RS_Identifier/GMD:code/GCO:CharacterString',
                 md.crs.uri,
             )
 
-        yield tag('gmd:identificationInfo/gmd:MD_DataIdentification', identification())
-        yield tag('gmd:distributionInfo/gmd:MD_Distribution', distributionInfo())
-        yield tag('gmd:dataQualityInfo/gmd:DQ_DataQuality', dataQualityInfo())
+        yield tag('GMD:identificationInfo/GMD:MD_DataIdentification', identification())
+        yield tag('GMD:distributionInfo/GMD:MD_Distribution', distributionInfo())
+        yield tag('GMD:dataQualityInfo/GMD:DQ_DataQuality', dataQualityInfo())
 
     ##
 
-    return tag('gmd:MD_Metadata', content())
+    return tag('GMD:MD_Metadata', content())

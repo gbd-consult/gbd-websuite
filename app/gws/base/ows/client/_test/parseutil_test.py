@@ -6,7 +6,7 @@ import gws.base.ows.client.parseutil as pu
 
 
 def _el(xml):
-    return xmlx.from_string(xml, gws.XmlOptions(compactWhitespace=True))
+    return xmlx.from_string(xml, gws.XmlOptions(compactWhitespace=True, removeNamespaces=True))
 
 
 def test_service_operations_wms():

@@ -1600,9 +1600,9 @@ class XmlNamespace(Data):
     """XML namespace."""
 
     uid: str
-    """Unique ID."""
+    """Unique ID of a well-known namespace (``OWS_11``), empty for custom and document-derived namespaces."""
     xmlns: str
-    """Default prefix for this Namespace."""
+    """Default prefix for this Namespace, empty for a default namespace declaration."""
     uri: Url
     """Namespace uri."""
     schemaLocation: Url
@@ -1614,8 +1614,8 @@ class XmlNamespace(Data):
 class XmlOptions(Data):
     """XML options for parsing and serialization."""
 
-    namespaces: Optional[dict[str, XmlNamespace]] = None
-    """Mapping of prefixes to namespaces."""
+    removeNamespaces: bool = False
+    """Strip namespaces when parsing: tags and attributes are local names, declarations are dropped."""
 
     customXmlns: Optional[dict[str, str]] = None
     """A mapping of namespace uris to custom prefixes."""
@@ -1642,18 +1642,18 @@ class XmlOptions(Data):
 class XmlElement(Iterable):
     """XML Element.
 
-    Implements a subset of the ``ElementTree.Element`` API (https://docs.python.org/3/library/xml.etree.elementtree.html#element-objects).
-    Not an ``ElementTree.Element`` subclass.
+    Implements a subset of the ``ElementTree.Element`` API.
 
-    Parsed elements carry no namespaces: ``tag`` is the local name. Built elements may have a prefixed ``tag`` (``gml:Point``);
-    ``name`` is always the local name.
+    ``tag`` is either a local name (``Point``) or a Clark name (``{http://www.opengis.net/gml/3.2}Point``);
+    ``name`` is always the local name. Prefixed names never occur in a tree: ``tag()`` resolves ``ID:name``
+    to a Clark name, the parser resolves prefixes against the document's declarations.
     """
 
     tag: str
-    """Tag name, with an optional ``prefix:``."""
+    """Tag name, local or Clark."""
 
     name: str
-    """Element name (tag without a prefix)."""
+    """Element name (tag without a namespace)."""
 
     text: str
     """Text before first subelement."""
@@ -1664,8 +1664,8 @@ class XmlElement(Iterable):
     attrib: dict
     """Dictionary of element attributes."""
 
-    namespaces: dict[str, XmlNamespace]
-    """Namespaces declared on this element (prefix -> namespace, ``''`` for the default namespace)."""
+    namespaces: list[XmlNamespace]
+    """Namespaces declared on this element (``xmlns == ''`` for the default namespace)."""
 
     def __len__(self) -> int: ...
 

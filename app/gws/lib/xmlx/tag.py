@@ -3,7 +3,8 @@
 This module provides a single function ``tag``, which creates an Xml Element from a list of arguments.
 
 The first argument to this function is interpreted as a tag name
-or a slash separated list of tag names, in which case nested elements are created.
+or a slash separated list of tag names, in which case nested elements are created
+(slashes inside the ``{uri}`` part of a Clark name do not separate).
 
 The remaining ``*args`` are interpreted as follows:
 
@@ -15,9 +16,12 @@ The remaining ``*args`` are interpreted as follows:
 
 If keyword arguments are given, they are added to the Element's attributes.
 
+Tag and attribute names are local names, Clark names (``{uri}name``) or ``ID:name``, where ``ID`` is the uid
+of a well-known namespace (``GML``, ``OWS_11``), which is resolved to a Clark name.
+
 **Example:** ::
 
-    tag('geometry/gml:Point', {'gml:id': 'xy'}, tag('gml:coordinates', '12.345,56.789'), srsName=3857)
+    tag('geometry/GML:Point', {'GML:id': 'xy'}, tag('GML:coordinates', '12.345,56.789'), srsName=3857)
 
 creates the following element: ::
 
@@ -41,7 +45,7 @@ def tag(name: str, *args, **kwargs) -> gws.XmlElement:
 
     stack = []
 
-    for n in name.split('/'):
+    for n in _split_path(name):
         n = n.strip()
         if not n:
             raise error.BuildError(f'invalid tag name: {name!r}')
@@ -63,6 +67,28 @@ def tag(name: str, *args, **kwargs) -> gws.XmlElement:
 
 
 ##
+
+
+def _split_path(name: str) -> list[str]:
+    # split on '/', but not inside the {uri} part of a Clark name
+
+    parts = []
+    buf = ''
+    in_uri = False
+
+    for c in name:
+        if c == '{':
+            in_uri = True
+        elif c == '}':
+            in_uri = False
+        if c == '/' and not in_uri:
+            parts.append(buf)
+            buf = ''
+        else:
+            buf += c
+
+    parts.append(buf)
+    return parts
 
 
 def _add(el: gws.XmlElement, arg):

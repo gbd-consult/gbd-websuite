@@ -74,7 +74,7 @@ class Object(gws.Node):
 
         res = gws.lib.net.http_request(source.url, params=dict(source.params or {}), verify=False)
         res.raise_if_failed()
-        xml = gws.lib.xmlx.from_string((res.text or '').strip())
+        xml = gws.lib.xmlx.from_string((res.text or '').strip(), gws.XmlOptions(removeNamespaces=True))
 
         rs = []
 

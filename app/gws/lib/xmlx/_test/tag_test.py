@@ -42,9 +42,11 @@ def test_nested():
 def test_with_namespaces():
     el = tag(
         'root',
-        tag('wms:foo'),
-        tag('wfs:bar'),
+        tag('WMS:foo'),
+        tag('WFS:bar'),
     )
+    assert el[0].tag == '{http://www.opengis.net/wms}foo'
+    assert el[0].name == 'foo'
 
     xml = el.to_string()
     u.check.xml(xml, '<root><wms:foo/><wfs:bar/></root>')
@@ -64,13 +66,13 @@ def test_with_namespaces():
 def test_with_default_namespace():
     el = tag(
         'root',
-        tag('wms:foo'),
-        tag('wfs:bar'),
+        tag('WMS:foo'),
+        tag('WFS:bar'),
     )
 
     xml = el.to_string(
         gws.XmlOptions(
-            defaultNamespace=xmlx.namespace.require('wfs'),
+            defaultNamespace=xmlx.namespace.ns.WFS,
             withNamespaceDeclarations=True,
         )
     )
@@ -165,11 +167,25 @@ def test_invalid_name():
         tag('a//b')
 
 
+def test_unknown_namespace_id():
+    with u.raises(xmlx.NamespaceError):
+        tag('gml:Point')
+    with u.raises(xmlx.NamespaceError):
+        tag('a', {'gml:id': 1})
+
+
+def test_clark_names():
+    el = tag('{http://x}a', {'{http://y}b': 1})
+    assert el.tag == '{http://x}a'
+    assert el.name == 'a'
+    assert el.attrib == {'{http://y}b': 1}
+
+
 def test_tag():
     el = tag(
-        'geometry/gml:Point',
-        {'gml:id': 'xy'},
-        tag('gml:coordinates', '12.345,56.789'),
+        'geometry/GML:Point',
+        {'GML:id': 'xy'},
+        tag('GML:coordinates', '12.345,56.789'),
         srsName=3857,
     )
     u.check.xml(el.to_string(), """

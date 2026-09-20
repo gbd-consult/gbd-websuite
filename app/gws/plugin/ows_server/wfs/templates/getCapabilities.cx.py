@@ -11,25 +11,21 @@ def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
         tag(
-            'WFS_Capabilities',
+            'WFS:WFS_Capabilities',
             {'version': ta.version},
             doc(ta),
         ),
-        namespaces={
-            'ows': gws.lib.xmlx.namespace.require('ows11'),
-            'gml': gws.lib.xmlx.namespace.require('gml2'),
-            **tpl.namespaces_from_caps(ta),
-        },
-        default_namespace=gws.lib.xmlx.namespace.require('wfs'),
+        default_namespace=gws.lib.xmlx.namespace.ns.WFS,
+        namespaces=[gws.lib.xmlx.namespace.ns.GML, *tpl.namespaces_from_caps(ta)],
     )
 
 
 def doc(ta: server.TemplateArgs):
     yield tpl.ows_service_identification(ta)
     yield tpl.ows_service_provider(ta)
-    yield tag('ows:OperationsMetadata', operations(ta))
-    yield tag('FeatureTypeList', feature_type_list(ta))
-    yield tag('fes:Filter_Capabilities', filters(ta))
+    yield tag('OWS_11:OperationsMetadata', operations(ta))
+    yield tag('WFS:FeatureTypeList', feature_type_list(ta))
+    yield tag('FES:Filter_Capabilities', filters(ta))
 
 
 def operations(ta: server.TemplateArgs):
@@ -37,37 +33,37 @@ def operations(ta: server.TemplateArgs):
 
     for op in ta.service.supportedOperations:
         yield tag(
-            'ows:Operation',
+            'OWS_11:Operation',
             {'name': op.verb},
             tpl.ows_service_url(ta),
             operation_params(ta, op),
         )
 
-    yield tag('ows:Parameter', {'name': 'version'}, tag('ows:AllowedValues', versions))
+    yield tag('OWS_11:Parameter', {'name': 'version'}, tag('OWS_11:AllowedValues', versions))
 
     yield (
-        constraint('ows:ImplementsBasicWFS', 'TRUE'),
-        constraint('ows:KVPEncoding', 'TRUE'),
-        constraint('ows:ImplementsTransactionalWFS', 'FALSE'),
-        constraint('ows:ImplementsLockingWFS', 'FALSE'),
-        constraint('ows:XMLEncoding', 'FALSE'),
-        constraint('ows:SOAPEncoding', 'FALSE'),
-        constraint('ows:ImplementsInheritance', 'FALSE'),
-        constraint('ows:ImplementsRemoteResolve', 'FALSE'),
-        constraint('ows:ImplementsResultPaging', 'TRUE'),
-        constraint('ows:ImplementsStandardJoins', 'FALSE'),
-        constraint('ows:ImplementsSpatialJoins', 'FALSE'),
-        constraint('ows:ImplementsTemporalJoins', 'FALSE'),
-        constraint('ows:ImplementsFeatureVersioning', 'FALSE'),
-        constraint('ows:ManageStoredQueries', 'FALSE'),
-        constraint('ows:CountDefault', ta.service.maxFeatureCount),
+        constraint('OWS_11:ImplementsBasicWFS', 'TRUE'),
+        constraint('OWS_11:KVPEncoding', 'TRUE'),
+        constraint('OWS_11:ImplementsTransactionalWFS', 'FALSE'),
+        constraint('OWS_11:ImplementsLockingWFS', 'FALSE'),
+        constraint('OWS_11:XMLEncoding', 'FALSE'),
+        constraint('OWS_11:SOAPEncoding', 'FALSE'),
+        constraint('OWS_11:ImplementsInheritance', 'FALSE'),
+        constraint('OWS_11:ImplementsRemoteResolve', 'FALSE'),
+        constraint('OWS_11:ImplementsResultPaging', 'TRUE'),
+        constraint('OWS_11:ImplementsStandardJoins', 'FALSE'),
+        constraint('OWS_11:ImplementsSpatialJoins', 'FALSE'),
+        constraint('OWS_11:ImplementsTemporalJoins', 'FALSE'),
+        constraint('OWS_11:ImplementsFeatureVersioning', 'FALSE'),
+        constraint('OWS_11:ManageStoredQueries', 'FALSE'),
+        constraint('OWS_11:CountDefault', ta.service.maxFeatureCount),
     )
 
     yield tag(
-        'ows:Constraint',
+        'OWS_11:Constraint',
         {'name': 'QueryExpressions'},
         tag(
-            'ows:AllowedValues',
+            'OWS_11:AllowedValues',
             tpl.ows_value('wfs:Query'),
         ),
     )
@@ -75,12 +71,12 @@ def operations(ta: server.TemplateArgs):
     if ta.service.withInspireMeta:
         md = ta.service.metadata
         yield tag(
-            'ows:ExtendedCapabilities/inspire_dls:ExtendedCapabilities',
+            'OWS_11:ExtendedCapabilities/INSPIRE_DLS:ExtendedCapabilities',
             tpl.inspire_extended_capabilities(ta),
             tag(
-                'inspire_dls:SpatialDataSetIdentifier',
+                'INSPIRE_DLS:SpatialDataSetIdentifier',
                 {'metadataURL': md.metaLinks[0].url if md.metaLinks else ''},
-                tag('inspire_common:Code', md.catalogUid),
+                tag('INSPIRE_COMMON:Code', md.catalogUid),
                 
             ),
         )
@@ -91,17 +87,17 @@ def operation_params(ta, op):
     formats = [tpl.ows_value(f) for f in op.formats]
 
     if op.verb == gws.OwsVerb.GetCapabilities:
-        yield tag('ows:Parameter', {'name': 'acceptVersions'}, tag('ows:AllowedValues', versions))
-        yield tag('ows:Parameter', {'name': 'acceptFormats'}, tag('ows:AllowedValues', formats))
+        yield tag('OWS_11:Parameter', {'name': 'acceptVersions'}, tag('OWS_11:AllowedValues', versions))
+        yield tag('OWS_11:Parameter', {'name': 'acceptFormats'}, tag('OWS_11:AllowedValues', formats))
     if op.verb == gws.OwsVerb.DescribeFeatureType:
-        yield tag('ows:Parameter', {'name': 'outputFormat'}, tag('ows:AllowedValues', formats))
+        yield tag('OWS_11:Parameter', {'name': 'outputFormat'}, tag('OWS_11:AllowedValues', formats))
     if op.verb == gws.OwsVerb.GetFeature:
-        yield tag('ows:Parameter', {'name': 'outputFormat'}, tag('ows:AllowedValues', formats))
+        yield tag('OWS_11:Parameter', {'name': 'outputFormat'}, tag('OWS_11:AllowedValues', formats))
         yield tag(
-            'ows:Parameter',
+            'OWS_11:Parameter',
             {'name': 'resultType'},
             tag(
-                'ows:AllowedValues',
+                'OWS_11:AllowedValues',
                 tpl.ows_value('results'),
                 tpl.ows_value('hits'),
             ),
@@ -114,19 +110,19 @@ def feature_type_list(ta: server.TemplateArgs):
         if lc.featureNameQ in seen:
             continue
         seen.add(lc.featureNameQ)
-        yield tag('FeatureType', feature_type(ta, lc))
+        yield tag('WFS:FeatureType', feature_type(ta, lc))
 
 
 def feature_type(ta: server.TemplateArgs, lc: server.LayerCaps):
-    yield tag('Name', lc.featureNameQ)
-    yield tag('Title', lc.layer.title)
-    yield tag('Abstract', lc.layer.metadata.abstract)
+    yield tag('WFS:Name', lc.featureNameQ)
+    yield tag('WFS:Title', lc.layer.title)
+    yield tag('WFS:Abstract', lc.layer.metadata.abstract)
 
     for n, b in enumerate(lc.bounds):
         if n == 0:
-            yield tag('DefaultCRS', b.crs.urn)
+            yield tag('WFS:DefaultCRS', b.crs.urn)
         else:
-            yield tag('OtherCRS', b.crs.urn)
+            yield tag('WFS:OtherCRS', b.crs.urn)
 
     yield tpl.ows_wgs84_bounding_box(lc)
     yield tpl.meta_links_simple(ta, lc.layer.metadata)
@@ -134,32 +130,32 @@ def feature_type(ta: server.TemplateArgs, lc: server.LayerCaps):
 
 def filters(ta: server.TemplateArgs):
     yield tag(
-        'fes:Conformance',
-        constraint('fes:ImplementsAdHocQuery', 'TRUE'),
-        constraint('fes:ImplementsMinSpatialFilter', 'TRUE'),
-        constraint('fes:ImplementsQuery', 'TRUE'),
-        constraint('fes:ImplementsResourceId', 'TRUE'),
-        constraint('fes:ImplementsMinStandardFilter', 'TRUE'),
-        constraint('fes:ImplementsMinTemporalFilter', 'TRUE'),
-        constraint('fes:ImplementsExtendedOperators', 'FALSE'),
-        constraint('fes:ImplementsFunctions', 'FALSE'),
-        constraint('fes:ImplementsMinimumXPath', 'FALSE'),
-        constraint('fes:ImplementsSorting', 'FALSE'),
-        constraint('fes:ImplementsSpatialFilter', 'FALSE'),
-        constraint('fes:ImplementsStandardFilter', 'FALSE'),
-        constraint('fes:ImplementsTemporalFilter', 'FALSE'),
-        constraint('fes:ImplementsVersionNav', 'FALSE'),
+        'FES:Conformance',
+        constraint('FES:ImplementsAdHocQuery', 'TRUE'),
+        constraint('FES:ImplementsMinSpatialFilter', 'TRUE'),
+        constraint('FES:ImplementsQuery', 'TRUE'),
+        constraint('FES:ImplementsResourceId', 'TRUE'),
+        constraint('FES:ImplementsMinStandardFilter', 'TRUE'),
+        constraint('FES:ImplementsMinTemporalFilter', 'TRUE'),
+        constraint('FES:ImplementsExtendedOperators', 'FALSE'),
+        constraint('FES:ImplementsFunctions', 'FALSE'),
+        constraint('FES:ImplementsMinimumXPath', 'FALSE'),
+        constraint('FES:ImplementsSorting', 'FALSE'),
+        constraint('FES:ImplementsSpatialFilter', 'FALSE'),
+        constraint('FES:ImplementsStandardFilter', 'FALSE'),
+        constraint('FES:ImplementsTemporalFilter', 'FALSE'),
+        constraint('FES:ImplementsVersionNav', 'FALSE'),
     )
 
-    yield tag('fes:Id_Capabilities/fes:ResourceIdentifier', {'name': 'fes:ResourceId'})
+    yield tag('FES:Id_Capabilities/FES:ResourceIdentifier', {'name': 'fes:ResourceId'})
 
     yield tag(
-        'fes:Spatial_Capabilities',
-        tag('fes:GeometryOperands/fes:GeometryOperand', {'name': 'gml:Envelope'}),
-        tag('fes:SpatialOperators/fes:SpatialOperator', {'name': 'BBOX'}),
+        'FES:Spatial_Capabilities',
+        tag('FES:GeometryOperands/FES:GeometryOperand', {'name': 'gml:Envelope'}),
+        tag('FES:SpatialOperators/FES:SpatialOperator', {'name': 'BBOX'}),
     )
 
 
 def constraint(name, value):
     ns, n = name.split(':')
-    return tag(ns + ':Constraint', {'name': n}, tag('ows:NoValues'), tag('ows:DefaultValue', value))
+    return tag(ns + ':Constraint', {'name': n}, tag('OWS_11:NoValues'), tag('OWS_11:DefaultValue', value))

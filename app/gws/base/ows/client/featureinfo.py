@@ -23,7 +23,7 @@ def _parse(text, default_crs, always_xy):
 
     if text.startswith('<'):
         try:
-            xml_el = xmlx.from_string(text)
+            xml_el = xmlx.from_string(text, gws.XmlOptions(removeNamespaces=True))
         except xmlx.Error as exc:
             raise Error(f'XML error') from exc
 

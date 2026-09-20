@@ -10,13 +10,15 @@ from . import error, namespace, serializer
 
 class XmlElement(gws.XmlElement):
     def __init__(self, tag: str, attrib: Optional[dict] = None, **extra):
-        self.tag = tag
+        self.tag = namespace.resolve_name(tag)
         self.name = namespace.unqualify_name(tag)
         self.text = ''
         self.tail = ''
-        self.attrib = {**(attrib or {}), **extra}
-        self.namespaces = {}
+        self.attrib = {}
+        self.namespaces = []
         self._children = []
+        for k, v in {**(attrib or {}), **extra}.items():
+            self.set(k, v)
 
     # ElementTree.Element implementations, copied from Python 3.11 ElementTree.py
 
@@ -30,7 +32,7 @@ class XmlElement(gws.XmlElement):
         elem = self.__class__(self.tag, self.attrib)
         elem.text = self.text
         elem.tail = self.tail
-        elem.namespaces = dict(self.namespaces)
+        elem.namespaces = list(self.namespaces)
         elem._children = list(self._children)
         return elem
 
@@ -73,7 +75,7 @@ class XmlElement(gws.XmlElement):
 
     def clear(self):
         self.attrib = {}
-        self.namespaces = {}
+        self.namespaces = []
         self._children = []
         self.text = self.tail = ''
 
@@ -81,7 +83,7 @@ class XmlElement(gws.XmlElement):
         return self.attrib.get(key, default)
 
     def set(self, key, value):
-        self.attrib[key] = value
+        self.attrib[namespace.resolve_name(key)] = value
 
     def keys(self):
         return self.attrib.keys()
@@ -92,6 +94,8 @@ class XmlElement(gws.XmlElement):
     def iter(self, tag=None):
         if tag == '*':
             tag = None
+        if tag is not None:
+            tag = namespace.resolve_name(tag)
         if tag is None or self.tag == tag:
             yield self
         for e in self._children:

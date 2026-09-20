@@ -42,26 +42,68 @@ def test_from_string_compact():
     assert _noempty(doc.to_dict()) == {'children': [{'tag': 'bar', 'text': 'abc', 'tail': 'y'}], 'tag': 'foo', 'text': 'x'}
 
 
+def test_namespaces_are_resolved():
+    s = '<ns:a xmlns:ns="http://ns1"><b xmlns="http://ns2" ns:x="1" y="2"><ns:c/><d/></b></ns:a>'
+    doc = xmlx.parser.from_string(s)
+    assert _noempty(doc.to_dict()) == {
+        'tag': '{http://ns1}a',
+        'children': [
+            {
+                'tag': '{http://ns2}b',
+                'attrib': {'{http://ns1}x': '1', 'y': '2'},
+                'children': [{'tag': '{http://ns1}c'}, {'tag': '{http://ns2}d'}],
+            }
+        ],
+    }
+    assert doc.name == 'a'
+    assert doc[0].name == 'b'
+
+
 def test_namespaces_are_stripped():
     s = '<ns:a xmlns:ns="http://ns1"><b xmlns="http://ns2" ns:x="1"><ns:c/></b></ns:a>'
-    doc = xmlx.parser.from_string(s)
+    doc = xmlx.parser.from_string(s, gws.XmlOptions(removeNamespaces=True))
     assert _noempty(doc.to_dict()) == {'tag': 'a', 'children': [{'tag': 'b', 'attrib': {'x': '1'}, 'children': [{'tag': 'c'}]}]}
     assert doc.name == 'a'
+    assert doc.namespaces == []
+    assert doc[0].namespaces == []
 
 
 def test_namespace_declarations_are_kept():
     s = '<ns:a xmlns:ns="http://ns1"><b xmlns="http://ns2" xmlns:other="http://ns3"><c/></b></ns:a>'
     doc = xmlx.parser.from_string(s)
-    assert {k: v.uri for k, v in doc.namespaces.items()} == {'ns': 'http://ns1'}
-    assert {k: v.uri for k, v in doc[0].namespaces.items()} == {'': 'http://ns2', 'other': 'http://ns3'}
-    assert doc[0][0].namespaces == {}
-    assert doc.namespaces['ns'].xmlns == 'ns'
+    assert [(n.xmlns, n.uri) for n in doc.namespaces] == [('ns', 'http://ns1')]
+    assert [(n.xmlns, n.uri) for n in doc[0].namespaces] == [('', 'http://ns2'), ('other', 'http://ns3')]
+    assert doc[0][0].namespaces == []
+
+
+def test_inner_declaration_wins():
+    s = '<a xmlns:p="http://ns1"><p:b xmlns:p="http://ns2"><p:c/></p:b><p:d/></a>'
+    doc = xmlx.parser.from_string(s)
+    assert doc[0].tag == '{http://ns2}b'
+    assert doc[0][0].tag == '{http://ns2}c'
+    assert doc[1].tag == '{http://ns1}d'
+
+
+def test_default_namespace_undeclared():
+    s = '<a xmlns="http://ns1"><b xmlns=""><c/></b></a>'
+    doc = xmlx.parser.from_string(s)
+    assert doc.tag == '{http://ns1}a'
+    assert doc[0].tag == 'b'
+    assert doc[0][0].tag == 'c'
 
 
 def test_undeclared_prefix_is_accepted():
     s = '<a><gml:b gml:x="1"/></a>'
     doc = xmlx.parser.from_string(s)
+    assert _noempty(doc.to_dict()) == {'tag': 'a', 'children': [{'tag': '{adhoc:gml}b', 'attrib': {'{adhoc:gml}x': '1'}}]}
+    doc = xmlx.parser.from_string(s, gws.XmlOptions(removeNamespaces=True))
     assert _noempty(doc.to_dict()) == {'tag': 'a', 'children': [{'tag': 'b', 'attrib': {'x': '1'}}]}
+
+
+def test_xml_prefix():
+    s = '<a xml:lang="de"/>'
+    doc = xmlx.parser.from_string(s)
+    assert doc.attrib == {'{http://www.w3.org/XML/1998/namespace}lang': 'de'}
 
 
 def test_doctype_is_accepted():

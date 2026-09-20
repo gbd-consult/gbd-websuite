@@ -40,7 +40,7 @@ def shape_to_element(
         version: GML version (2 or 3).
         coordinate_precision: The amount of decimal places.
         always_xy: If ``True``, coordinates are assumed to be always in the XY (lon/lat) order.
-        with_xmlns: If ``True`` add the "gml" namespace prefix.
+        with_xmlns: If ``True`` put the elements in the GML namespace.
         with_inline_xmlns: If ``True`` declare the namespace on the geometry element.
         namespace: Use this namespace (default "gml").
         crs_format: Crs format to use (default "url" for version 2 and "urn" for version 3).
@@ -63,8 +63,8 @@ def shape_to_element(
     opts.xmlns = ''
     ns = None
     if with_xmlns:
-        ns = namespace or xmlx.namespace.require('gml2' if opts.version == 2 else 'gml')
-        opts.xmlns = ns.xmlns + ':'
+        ns = namespace or (xmlx.namespace.ns.GML_2 if opts.version == 2 else xmlx.namespace.ns.GML)
+        opts.xmlns = '{' + ns.uri + '}'
 
     geom: shapely.geometry.base.BaseGeometry = getattr(shape, 'geom')
     fn = _tag2 if opts.version == 2 else _tag3
@@ -75,7 +75,7 @@ def shape_to_element(
 
     el = fn(geom, opts)
     if ns and with_inline_xmlns:
-        el.namespaces[ns.xmlns] = ns
+        el.namespaces.append(ns)
 
     return el
 

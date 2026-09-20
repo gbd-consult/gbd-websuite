@@ -124,7 +124,7 @@ def _decode_data_url(val, trusted) -> Optional[bytes]:
 
 def _parse_svg(val):
     try:
-        el = xmlx.from_string(val)
+        el = xmlx.from_string(val, gws.XmlOptions(removeNamespaces=True))
     except Exception as exc:
         raise Error('parse error', val) from exc
 

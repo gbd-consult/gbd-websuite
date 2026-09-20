@@ -12,16 +12,16 @@ from gws.lib.xmlx import tag
 def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
-        tag('csw:GetRecordsResponse', {'version': ta.version}, doc(ta)),
+        tag('CSW:GetRecordsResponse', {'version': ta.version}, doc(ta)),
     )
 
 
 def doc(ta: server.TemplateArgs):
     mdc = ta.metadataCollection
 
-    yield tag('csw:SearchStatus', {'timestamp': mdc.timestamp})
+    yield tag('CSW:SearchStatus', {'timestamp': mdc.timestamp})
     yield tag(
-        'csw:SearchResults',
+        'CSW:SearchResults',
         {
             'elementSet': 'full',
             'nextRecord': mdc.nextRecord,

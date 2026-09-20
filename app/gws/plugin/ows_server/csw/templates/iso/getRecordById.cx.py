@@ -10,7 +10,7 @@ def main(ta: server.TemplateArgs):
     return tpl.to_xml_response(
         ta,
         tag(
-            'csw:GetRecordByIdResponse',
+            'CSW:GetRecordByIdResponse',
             {'version': ta.version},
             rec.record(ta, ta.metadataCollection.members[0])
         ),

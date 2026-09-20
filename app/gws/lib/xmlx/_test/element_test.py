@@ -323,7 +323,7 @@ def test_hasattr():
 
 
 def test_isa():
-    e = _make('gml:Point')
+    e = _make('GML:Point')
     assert e.name == 'Point'
     assert e.isa('Point') is True
     assert e.isa('point') is True

@@ -3,6 +3,7 @@
 import gws
 import gws.config
 import gws.lib.vendor.slon
+import gws.lib.xmlx.namespace
 import gws.spec.runtime
 
 from . import auth, options
@@ -65,6 +66,7 @@ def gws_root(cfg: str = '', specs: gws.SpecRuntime = None, activate=True, defaul
 
     parsed_config = _to_data(gws.lib.vendor.slon.parse(cfg, as_object=True))
     specs = auth.register(specs or gws_specs())
+    gws.lib.xmlx.namespace.unregister_all()
     root = gws.config.initialize(specs, gws.Config(parsed_config))
 
     if root.configErrors:

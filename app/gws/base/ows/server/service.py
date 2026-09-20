@@ -181,7 +181,7 @@ class Object(gws.OwsService):
 
         if req.method == 'POST' and gws.lib.mime.get(req.contentType) == gws.lib.mime.XML:
             try:
-                xml = gws.lib.xmlx.from_string(req.text())
+                xml = gws.lib.xmlx.from_string(req.text(), gws.XmlOptions(removeNamespaces=True))
             except gws.lib.xmlx.Error:
                 raise gws.base.web.error.BadRequest()
 

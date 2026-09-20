@@ -22,7 +22,7 @@ def test_fragment_to_element_basic():
 
     # Verify the result                                                                                                                                                                
     assert svg.name == 'svg'
-    assert svg.get('xmlns') == 'http://www.w3.org/2000/svg'
+    assert svg.to_string().startswith('<svg xmlns="http://www.w3.org/2000/svg"')
     assert len(svg.children()) == 2
     assert svg.children()[0].name == 'circle'
     assert svg.children()[1].name == 'rect'

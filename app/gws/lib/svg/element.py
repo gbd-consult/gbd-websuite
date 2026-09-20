@@ -9,16 +9,14 @@ import gws.lib.xmlx as xmlx
 import gws.lib.mime
 import gws.lib.image
 
-_SVG_TAG_ATTS = {
-    'xmlns': 'http://www.w3.org/2000/svg',
-}
+_SVG_NAMESPACE = xmlx.namespace.new('', 'http://www.w3.org/2000/svg')
 
 
 def fragment_to_element(fragment: list[gws.XmlElement], atts: dict = None) -> gws.XmlElement:
     """Convert an SVG fragment to an SVG element."""
 
     fr = sorted(fragment, key=lambda el: el.attrib.get('z-index', 0))
-    return xmlx.tag('svg', _SVG_TAG_ATTS, atts, *fr)
+    return _svg_tag(atts, *fr)
 
 
 def fragment_to_image(fragment: list[gws.XmlElement], size: gws.Size, mime=gws.lib.mime.PNG) -> gws.lib.image.Image:
@@ -32,7 +30,7 @@ def normalize_element(el: gws.XmlElement) -> gws.XmlElement:
     """Remove unsafe stuff from an SVG element and normalize tag and attribute names."""
 
     children = gws.u.compact(_normalize(c) for c in el)
-    return xmlx.tag('svg', _SVG_TAG_ATTS, _normalize_atts(el.attrib), *children)
+    return _svg_tag(_normalize_atts(el.attrib), *children)
 
 
 def normalize_fragment(fragment: list[gws.XmlElement]) -> list[gws.XmlElement]:
@@ -43,6 +41,13 @@ def normalize_fragment(fragment: list[gws.XmlElement]) -> list[gws.XmlElement]:
 
 
 ##
+
+
+def _svg_tag(*args):
+    el = xmlx.tag('svg', *args)
+    el.namespaces.append(_SVG_NAMESPACE)
+    return el
+
 
 _ALLOWED_TAGS = {
     'circle',
