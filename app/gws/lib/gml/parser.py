@@ -45,26 +45,30 @@ def parse_envelope(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy: b
     if not crs:
         raise Error('no CRS declared for envelope')
 
-
     try:
-        coords = [None, None]
-        
-        if el.isa('Box'):
-            coords = _coords(el)
-
-        elif el.isa('Envelope'):
-            for coord_el in el:
-                if coord_el.isa('lowerCorner'):
-                    coords[0] = _coords_pos(coord_el)[0]
-                if coord_el.isa('upperCorner'):
-                    coords[1] = _coords_pos(coord_el)[0]
-
-        ext = gws.lib.extent.from_points(*coords)
-
+        ext = _parse_envelope_extent(el)
     except Exception as exc:
         raise Error('envelope parse error') from exc
 
     return gws.lib.bounds.from_extent(ext, crs, always_xy)
+
+
+def _parse_envelope_extent(el: gws.XmlElement) -> gws.Extent:
+    if el.isa('Box'):
+        a, b = _coords(el)
+        return gws.lib.extent.from_points(a, b)
+
+    if el.isa('Envelope'):
+        a = b = None
+        for coord_el in el:
+            if coord_el.isa('lowerCorner'):
+                a = _coords_pos(coord_el)[0]
+            if coord_el.isa('upperCorner'):
+                b = _coords_pos(coord_el)[0]
+        if a and b:
+            return gws.lib.extent.from_points(a, b)
+
+    raise ValueError('invalid envelope element')
 
 
 def is_geometry_element(el: gws.XmlElement) -> bool:
@@ -117,6 +121,7 @@ def parse_geometry(el: gws.XmlElement) -> dict:
 
 
 ##
+
 
 def _to_geom(el: gws.XmlElement):
     if el.isa('Point'):
@@ -214,7 +219,7 @@ def _coords_pos(el):
     x = s[0]
     y = s[1]
     # NB pos returns a list of points too!
-    return [[float(x), float(y)]]
+    return [(float(x), float(y))]
 
 
 def _coords_poslist(el):

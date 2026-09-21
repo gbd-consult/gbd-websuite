@@ -12,14 +12,6 @@ from gws.lib.xmlx import tag
 # @TODO PostGis options 2 and 4 (https://postgis.net/docs/ST_AsGML.html)
 
 
-class _Options(gws.Data):
-    version: int
-    precision: float
-    swapxy: bool
-    xmlns: str
-    crsName: dict
-
-
 DEFAULT_VERSION = 3
 
 
@@ -42,217 +34,191 @@ def shape_to_element(
         always_xy: If ``True``, coordinates are assumed to be always in the XY (lon/lat) order.
         with_xmlns: If ``True`` put the elements in the GML namespace.
         with_inline_xmlns: If ``True`` declare the namespace on the geometry element.
-        namespace: Use this namespace (default "gml").
+        namespace: Use this namespace (default "gml2" for version 2 and "gml3" for version 3).
         crs_format: Crs format to use (default "url" for version 2 and "urn" for version 3).
 
     Returns:
         A GML element.
     """
 
-    opts = _Options()
-    opts.version = int(version or DEFAULT_VERSION)
-    if opts.version not in {2, 3}:
+    v = int(version or DEFAULT_VERSION)
+    if v == 2:
+        cls = _Writer2
+    elif v == 3:
+        cls = _Writer3
+    else:
         raise gws.Error(f'unsupported GML version {version!r}')
 
-    crs_format = crs_format or (gws.CrsFormat.url if opts.version == 2 else gws.CrsFormat.urn)
-    opts.crsName = {'srsName': shape.crs.to_string(crs_format)}
-
-    opts.swapxy = (shape.crs.axis_for_format(crs_format) == gws.Axis.yx) and not always_xy
-    opts.precision = coordinate_precision if coordinate_precision is not None else gws.lib.uom.DEFAULT_PRECISION[shape.crs.uom]
-
-    opts.clarkPrefix = ''
-    ns = None
-    if with_xmlns:
-        ns = namespace or (xmlx.namespace.c.GML_2 if opts.version == 2 else xmlx.namespace.c.GML)
-        opts.clarkPrefix = '{' + ns.uri + '}'
+    wr = cls(shape, coordinate_precision, always_xy, with_xmlns, namespace, crs_format)
 
     geom: shapely.geometry.base.BaseGeometry = getattr(shape, 'geom')
-    fn = _tag2 if opts.version == 2 else _tag3
 
     # OGC 07-036r1 10.1.4.1
     # If no srsName attribute is given, the CRS shall be specified as part of the larger context this geometry element is part of...
     # NOTE It is expected that the attribute will be specified at the direct position level only in rare cases.
 
-    el = fn(geom, opts)
-    if ns and with_inline_xmlns:
-        el.declare(ns)
+    el = wr.element(geom)
+    if wr.ns and with_inline_xmlns:
+        el.declare(wr.ns)
 
     return el
 
 
-def _point2(geom, opts):
-    return tag(f'{opts.clarkPrefix}Point', opts.crsName, _coordinates(geom, opts))
-
-
-def _point3(geom, opts):
-    return tag(f'{opts.clarkPrefix}Point', opts.crsName, _pos(geom, opts))
-
-
-def _linestring2(geom, opts):
-    return tag(f'{opts.clarkPrefix}LineString', opts.crsName, _coordinates(geom, opts))
-
-
-def _linestring3(geom, opts):
-    return tag(
-        f'{opts.clarkPrefix}Curve',
-        opts.crsName,
-        tag(
-            f'{opts.clarkPrefix}segments',
-            tag(
-                f'{opts.clarkPrefix}LineStringSegment',
-                _pos_list(geom, opts),
-            ),
-        ),
-    )
-
-
-def _polygon2(geom, opts):
-    return tag(
-        f'{opts.clarkPrefix}Polygon',
-        opts.crsName,
-        tag(
-            f'{opts.clarkPrefix}outerBoundaryIs',
-            tag(
-                f'{opts.clarkPrefix}LinearRing',
-                _coordinates(geom.exterior, opts),
-            ),
-        ),
-        [
-            tag(
-                f'{opts.clarkPrefix}innerBoundaryIs',
-                tag(
-                    f'{opts.clarkPrefix}LinearRing',
-                    _coordinates(interior, opts),
-                ),
-            )
-            for interior in geom.interiors
-        ],
-    )
-
-
-def _polygon3(geom, opts):
-    return tag(
-        f'{opts.clarkPrefix}Polygon',
-        opts.crsName,
-        tag(
-            f'{opts.clarkPrefix}exterior',
-            tag(
-                f'{opts.clarkPrefix}LinearRing',
-                _pos_list(geom.exterior, opts),
-            ),
-        ),
-        [
-            tag(
-                f'{opts.clarkPrefix}interior',
-                tag(
-                    f'{opts.clarkPrefix}LinearRing',
-                    _pos_list(interior, opts),
-                ),
-            )
-            for interior in geom.interiors
-        ],
-    )
-
-
-def _multipoint2(geom, opts):
-    return tag(f'{opts.clarkPrefix}MultiPoint', opts.crsName, [tag(f'{opts.clarkPrefix}pointMember', _tag2(p, opts)) for p in geom.geoms])
-
-
-def _multipoint3(geom, opts):
-    return tag(f'{opts.clarkPrefix}MultiPoint', opts.crsName, [tag(f'{opts.clarkPrefix}pointMember', _tag3(p, opts)) for p in geom.geoms])
-
-
-def _multilinestring2(geom, opts):
-    return tag(f'{opts.clarkPrefix}MultiLineString', opts.crsName, [tag(f'{opts.clarkPrefix}lineStringMember', _tag2(p, opts)) for p in geom.geoms])
-
-
-def _multilinestring3(geom, opts):
-    return tag(f'{opts.clarkPrefix}MultiCurve', opts.crsName, [tag(f'{opts.clarkPrefix}curveMember', _tag3(p, opts)) for p in geom.geoms])
-
-
-def _multipolygon2(geom, opts):
-    return tag(f'{opts.clarkPrefix}MultiPolygon', opts.crsName, [tag(f'{opts.clarkPrefix}polygonMember', _tag2(p, opts)) for p in geom.geoms])
-
-
-def _multipolygon3(geom, opts):
-    return tag(f'{opts.clarkPrefix}MultiSurface', opts.crsName, [tag(f'{opts.clarkPrefix}surfaceMember', _tag3(p, opts)) for p in geom.geoms])
-
-
-def _geometrycollection2(geom, opts):
-    return tag(f'{opts.clarkPrefix}MultiGeometry', opts.crsName, [tag(f'{opts.clarkPrefix}geometryMember', _tag2(p, opts)) for p in geom.geoms])
-
-
-def _geometrycollection3(geom, opts):
-    return tag(f'{opts.clarkPrefix}MultiGeometry', opts.crsName, [tag(f'{opts.clarkPrefix}geometryMember', _tag3(p, opts)) for p in geom.geoms])
-
-
-def _pos(geom, opts):
-    return tag(f'{opts.clarkPrefix}pos', {'srsDimension': 2}, _pos_list_content(geom, opts))
-
-
-def _pos_list(geom, opts):
-    return tag(f'{opts.clarkPrefix}posList', {'srsDimension': 2}, _pos_list_content(geom, opts))
-
-
-def _pos_list_content(geom, opts):
-    cs = []
-
-    for x, y in geom.coords:
-        x = int(x) if opts.precision == 0 else round(x, opts.precision)
-        y = int(y) if opts.precision == 0 else round(y, opts.precision)
-        if opts.swapxy:
-            x, y = y, x
-        cs.append(str(x))
-        cs.append(str(y))
-
-    return ' '.join(cs)
-
-
-def _coordinates(geom, opts):
-    cs = []
-
-    for x, y in geom.coords:
-        x = int(x) if opts.precision == 0 else round(x, opts.precision)
-        y = int(y) if opts.precision == 0 else round(y, opts.precision)
-        if opts.swapxy:
-            x, y = y, x
-        cs.append(str(x) + ',' + str(y))
-
-    return tag(f'{opts.clarkPrefix}coordinates', {'decimal': '.', 'cs': ',', 'ts': ' '}, ' '.join(cs))
-
-
-_FNS_2 = {
-    'Point': _point2,
-    'LineString': _linestring2,
-    'Polygon': _polygon2,
-    'MultiPoint': _multipoint2,
-    'MultiLineString': _multilinestring2,
-    'MultiPolygon': _multipolygon2,
-    'GeometryCollection': _geometrycollection2,
-}
-
-_FNS_3 = {
-    'Point': _point3,
-    'LineString': _linestring3,
-    'Polygon': _polygon3,
-    'MultiPoint': _multipoint3,
-    'MultiLineString': _multilinestring3,
-    'MultiPolygon': _multipolygon3,
-    'GeometryCollection': _geometrycollection3,
+_METHODS = {
+    'Point': 'point',
+    'LineString': 'linestring',
+    'Polygon': 'polygon',
+    'MultiPoint': 'multipoint',
+    'MultiLineString': 'multilinestring',
+    'MultiPolygon': 'multipolygon',
+    'GeometryCollection': 'geometrycollection',
 }
 
 
-def _tag2(geom, opts):
-    typ = geom.geom_type
-    fn = _FNS_2.get(typ)
-    if fn:
-        return fn(geom, opts)
-    raise gws.Error(f'cannot convert geometry type {typ!r} to GML')
+class _Writer:
+    version: int
+    defaultCrsFormat: gws.CrsFormat
+    defaultNamespace: gws.XmlNamespace
+
+    precision: int
+    swap_xy: bool
+    crsName: dict
+    pfx: str
+    ns: Optional[gws.XmlNamespace]
+
+    def __init__(self, shape, coordinate_precision, always_xy, with_xmlns, namespace, crs_format):
+        crs_format = crs_format or self.defaultCrsFormat
+        self.crsName = {'srsName': shape.crs.to_string(crs_format)}
+
+        self.swap_xy = (shape.crs.axis_for_format(crs_format) == gws.Axis.yx) and not always_xy
+        
+        self.precision = gws.lib.uom.DEFAULT_PRECISION[shape.crs.uom]
+        if coordinate_precision is not None:
+            self.precision = coordinate_precision
+
+        self.ns = None
+        self.nsu = ''
+        if with_xmlns:
+            self.ns = namespace or self.defaultNamespace
+            self.nsu = '{' + self.ns.uri + '}'
+
+    def t(self, name, *args):
+        return tag(self.nsu + name, *args)
+
+    def element(self, geom):
+        typ = geom.geom_type
+        name = _METHODS.get(typ)
+        if name:
+            return getattr(self, name)(geom)
+        raise gws.Error(f'cannot convert geometry type {typ!r} to GML')
+
+    def multipoint(self, geom):
+        return self.t(
+            'MultiPoint',
+            self.crsName,
+            [self.t('pointMember', self.element(p)) for p in geom.geoms],
+        )
+
+    def geometrycollection(self, geom):
+        return self.t(
+            'MultiGeometry',
+            self.crsName,
+            [self.t('geometryMember', self.element(p)) for p in geom.geoms],
+        )
+
+    def round_coords(self, geom):
+        for x, y in geom.coords:
+            x = int(x) if self.precision == 0 else round(x, self.precision)
+            y = int(y) if self.precision == 0 else round(y, self.precision)
+            if self.swap_xy:
+                x, y = y, x
+            yield x, y
 
 
-def _tag3(geom, opts):
-    typ = geom.geom_type
-    fn = _FNS_3.get(typ)
-    if fn:
-        return fn(geom, opts)
-    raise gws.Error(f'cannot convert geometry type {typ!r} to GML')
+class _Writer2(_Writer):
+    version = 2
+    defaultCrsFormat = gws.CrsFormat.url
+    defaultNamespace = xmlx.namespace.c.GML_2
+
+    def point(self, geom):
+        return self.t('Point', self.crsName, self.coordinates(geom))
+
+    def linestring(self, geom):
+        return self.t('LineString', self.crsName, self.coordinates(geom))
+
+    def polygon(self, geom):
+        return self.t(
+            'Polygon',
+            self.crsName,
+            self.t('outerBoundaryIs', self.t('LinearRing', self.coordinates(geom.exterior))),
+            [self.t('innerBoundaryIs', self.t('LinearRing', self.coordinates(interior))) for interior in geom.interiors],
+        )
+
+    def multilinestring(self, geom):
+        return self.t(
+            'MultiLineString',
+            self.crsName,
+            [self.t('lineStringMember', self.element(p)) for p in geom.geoms],
+        )
+
+    def multipolygon(self, geom):
+        return self.t(
+            'MultiPolygon',
+            self.crsName,
+            [self.t('polygonMember', self.element(p)) for p in geom.geoms],
+        )
+
+    def coordinates(self, geom):
+        cs = [str(x) + ',' + str(y) for x, y in self.round_coords(geom)]
+        return self.t('coordinates', {'decimal': '.', 'cs': ',', 'ts': ' '}, ' '.join(cs))
+
+
+class _Writer3(_Writer):
+    version = 3
+    defaultCrsFormat = gws.CrsFormat.urn
+    defaultNamespace = xmlx.namespace.c.GML
+
+    def point(self, geom):
+        return self.t('Point', self.crsName, self.pos(geom))
+
+    def linestring(self, geom):
+        return self.t(
+            'Curve',
+            self.crsName,
+            self.t('segments', self.t('LineStringSegment', self.pos_list(geom))),
+        )
+
+    def polygon(self, geom):
+        return self.t(
+            'Polygon',
+            self.crsName,
+            self.t('exterior', self.t('LinearRing', self.pos_list(geom.exterior))),
+            [self.t('interior', self.t('LinearRing', self.pos_list(interior))) for interior in geom.interiors],
+        )
+
+    def multilinestring(self, geom):
+        return self.t(
+            'MultiCurve',
+            self.crsName,
+            [self.t('curveMember', self.element(p)) for p in geom.geoms],
+        )
+
+    def multipolygon(self, geom):
+        return self.t(
+            'MultiSurface',
+            self.crsName,
+            [self.t('surfaceMember', self.element(p)) for p in geom.geoms],
+        )
+
+    def pos(self, geom):
+        return self.t('pos', {'srsDimension': 2}, self.pos_list_content(geom))
+
+    def pos_list(self, geom):
+        return self.t('posList', {'srsDimension': 2}, self.pos_list_content(geom))
+
+    def pos_list_content(self, geom):
+        cs = []
+        for x, y in self.round_coords(geom):
+            cs.append(str(x))
+            cs.append(str(y))
+        return ' '.join(cs)
