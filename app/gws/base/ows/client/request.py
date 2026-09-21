@@ -1,7 +1,6 @@
 import gws
 import gws.lib.net
 
-from . import error
 
 _ows_error_strings = '<ServiceException', '<ServerException', '<ows:ExceptionReport'
 
@@ -28,11 +27,11 @@ def get_url(url: str, **kwargs) -> gws.lib.net.HTTPResponse:
         text_lower = text.lower()
         for err_string in _ows_error_strings:
             if err_string.lower() in text_lower:
-                raise error.Error(text)
+                raise gws.ExternalServiceError(text)
     try:
         res.raise_if_failed()
     except gws.lib.net.HTTPError as exc:
-        raise error.Error(f'network error: {url!r} -> {exc}') from exc
+        raise gws.ExternalServiceError(f'network error: {url!r} -> {exc}') from exc
     return res
 
 

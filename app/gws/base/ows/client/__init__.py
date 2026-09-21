@@ -1,5 +1,3 @@
-from .error import Error
-
 from . import (
     featureinfo,
     finder,
