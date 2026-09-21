@@ -221,6 +221,10 @@ class _PythonParser:
             tSupers=[self.type_from_name(s).uid for s in supers if not _builtin_name(s)],
         )
 
+        ext = self.gws_decorator(node, 'class')
+        if ext:
+            self.add(c=base.c.EXT, extName=ext, tTarget=typ.uid)
+
         for nn in self.nodes(node.body):
             cc = _cls(nn)
             if cc in {'Assign', 'AnnAssign'}:
@@ -343,10 +347,16 @@ class _PythonParser:
             ns = name.split(DOT)
 
             if kind == 'method':
-                if len(ns) == 5:
+                if len(ns) == 5 and name.startswith(base.v.EXT_COMMAND_PREFIX):
                     # gws.ext.command.api.mapGetBox
                     return name
                 raise ValueError(f'invalid function decorator {name!r}')
+
+            if kind == 'class':
+                if len(ns) == 5 and name.startswith((base.v.EXT_OBJECT_PREFIX, base.v.EXT_CONFIG_PREFIX, base.v.EXT_PROPS_PREFIX)):
+                    # gws.ext.object.layer.wms
+                    return name
+                raise ValueError(f'invalid class decorator {name!r}')
 
         return ''
 

@@ -1,13 +1,19 @@
 """Dummy decorators to support extension typing."""
 
+from typing import TypeVar
+
+T = TypeVar('T')
+
 
 class _classTag:
     extName = ''
 
-    def __init__(self, typ):
-        pass
+    def __init__(self, typ: str):
+        self.typ = typ
 
-    def __call__(self, target):
+    def __call__(self, target: T) -> T:
+        setattr(target, 'extName', self.extName + '.' + self.typ)
+        setattr(target, 'extType', self.typ)
         return target
 
 
