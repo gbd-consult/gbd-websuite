@@ -42,7 +42,7 @@ class Object(gws.base.job.worker.Object):
             state=gws.JobState.complete, 
             result=gws.PrintResult(
                 path=self.contentPath,
-                mime=gws.lib.mime.for_path(self.contentPath),
+                mimeType=gws.lib.mime.for_path(self.contentPath),
             ),
         )
 

@@ -90,13 +90,13 @@ class Object(gws.base.template.Object):
     def finalize(self, tri: gws.TemplateRenderInput, res: str, args: dict, main_engine: 'Engine'):
         self.notify(tri, 'finalize_print')
 
-        mime = tri.mimeOut
-        if not mime and self.mimeTypes:
-            mime = self.mimeTypes[0]
-        if not mime:
-            mime = gws.lib.mime.TXT
+        mime_type = tri.mimeOut
+        if not mime_type and self.mimeTypes:
+            mime_type = self.mimeTypes[0]
+        if not mime_type:
+            mime_type = gws.lib.mime.TXT
 
-        return gws.ContentResponse(mime=mime, content=res)
+        return gws.ContentResponse(mimeType=mime_type, content=res)
 
 
 ##

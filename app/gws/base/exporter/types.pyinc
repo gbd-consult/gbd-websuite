@@ -19,7 +19,7 @@ class ExportResult(Data):
     """Export result."""
 
     path: str
-    mime: str
+    mimeType: str
     numFiles: int
     numFeaturesTotal: int
     numFeaturesExported: int
@@ -50,7 +50,7 @@ class ExportRequest(Request):
 class ExportResponse(Response):
     content: str | bytes
     contentFilename: str
-    mime: str
+    mimeType: str
 
 
 class ExporterManager(Node):

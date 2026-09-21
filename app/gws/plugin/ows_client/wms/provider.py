@@ -69,7 +69,7 @@ class Object(gws.base.ows.client.provider.Object):
             self.cfg('bottomFirst', default=False),
         ])
 
-    def get_map(self, bounds: gws.Bounds, width: int, height: int, source_layers: list[gws.SourceLayer], mime: str) -> bytes:
+    def get_map(self, bounds: gws.Bounds, width: int, height: int, source_layers: list[gws.SourceLayer], mime_type: str) -> bytes:
         v3 = self.version >= '1.3'
 
         bbox = bounds.extent
@@ -86,7 +86,7 @@ class Object(gws.base.ows.client.provider.Object):
             'HEIGHT': height,
             'LAYERS': layer_names,
             'STYLES': [''] * len(layer_names),
-            'FORMAT': mime,
+            'FORMAT': mime_type,
             'TRANSPARENT': 'TRUE',
             'VERSION': self.version,
         }

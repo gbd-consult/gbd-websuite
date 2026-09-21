@@ -282,7 +282,7 @@ class ExportFlurstueckRequest(gws.Request):
 
 class ExportFlurstueckResponse(gws.Response):
     content: str
-    mime: str
+    mimeType: str
 
 
 ##
@@ -615,7 +615,7 @@ class Object(gws.base.action.Object):
 
         return ExportFlurstueckResponse(
             content=gws.u.read_file_b(args.path),
-            mime=exp.mimeType,
+            mimeType=exp.mimeType,
         )
 
     @gws.ext.command.api('alkisPrintFlurstueck')

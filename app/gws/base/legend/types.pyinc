@@ -5,7 +5,7 @@ class LegendRenderOutput(Data):
     image: 'Image'
     image_path: str
     size: Size
-    mime: str
+    mimeType: str
 
 
 class Legend(Node):

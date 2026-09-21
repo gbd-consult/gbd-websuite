@@ -29,8 +29,8 @@ def get_content(root: gws.Root, path: str) -> gws.ContentResponse:
         return _page(root, '', -1)
 
     if path in _ASSETS:
-        p, mime = _ASSETS[path]
-        return gws.ContentResponse(contentPath=p, mime=mime)
+        p, mime_type = _ASSETS[path]
+        return gws.ContentResponse(contentPath=p, mimeType=mime_type)
 
     m = re.match(r'^(\w+)/(\d+)/(\d+)/(\d+)\.\w+$', path)
     if m:
@@ -91,7 +91,7 @@ def _tile(root: gws.Root, name: str, z: int, x: int, y: int) -> gws.ContentRespo
     store = e.grabber.store
     p = store.path((x, y, z))
     if not os.path.isfile(p):
-        return gws.ContentResponse(status=204, content=b'', mime=gws.lib.mime.PNG)
+        return gws.ContentResponse(status=204, content=b'', mimeType=gws.lib.mime.PNG)
 
     img = gws.lib.image.from_path(p)
     img.add_box(_DECOR_COLOR)
@@ -101,7 +101,7 @@ def _tile(root: gws.Root, name: str, z: int, x: int, y: int) -> gws.ContentRespo
     x0, y0, x1, y1 = draw.multiline_textbbox((4, 3), text, font=font)
     draw.rectangle((x0 - 2, y0 - 1, x1 + 2, y1 + 1), fill=(255, 255, 255, 200))
     draw.multiline_text((4, 3), text, font=font, fill=_DECOR_COLOR)
-    return gws.ContentResponse(content=img.to_bytes(gws.lib.mime.PNG), mime=gws.lib.mime.PNG)
+    return gws.ContentResponse(content=img.to_bytes(gws.lib.mime.PNG), mimeType=gws.lib.mime.PNG)
 
 
 def _cache_config(e: core.Entry) -> dict:

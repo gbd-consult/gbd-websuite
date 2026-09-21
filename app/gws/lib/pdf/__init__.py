@@ -97,7 +97,7 @@ def to_image_path(
     in_path: str,
     out_path: str,
     size: gws.Size,
-    mime: str = gws.lib.mime.PNG,
+    mime_type: str = gws.lib.mime.PNG,
     page: int = 1,
 ) -> str:
     """Convert a pdf to an image.
@@ -106,19 +106,19 @@ def to_image_path(
         in_path: Path to the input pdf.
         out_path: Path to the output image.
         size: Size of the output image.
-        mime: Mime type of the output image. Must be either PNG or JPEG.
+        mime_type: Mime type of the output image. Must be either PNG or JPEG.
         page: Page number to convert (1-indexed). Defaults to 1.
 
     Returns:
         Path to the output image.
     """
 
-    if mime == gws.lib.mime.PNG:
+    if mime_type == gws.lib.mime.PNG:
         device = 'png16m'
-    elif mime == gws.lib.mime.JPEG:
+    elif mime_type == gws.lib.mime.JPEG:
         device = 'jpeg'
     else:
-        raise ValueError(f'invalid mime type {mime!r}')
+        raise ValueError(f'invalid mime type {mime_type!r}')
 
     w, h = size
     cmd = [

@@ -305,7 +305,7 @@ class ContentResponse(Response):
     """Name for the attachment, if provided, content will be served as an attachment."""
     contentPath: str
     """Local path with the content."""
-    mime: str
+    mimeType: str
     """Response mime type."""
     headers: dict
     """Additional headers."""
@@ -1308,7 +1308,7 @@ class Image:
             The rotated image object.
         """
 
-    def to_bytes(self, mime: Optional[str] = None, options: Optional[dict] = None) -> bytes:
+    def to_bytes(self, mime_type: Optional[str] = None, options: Optional[dict] = None) -> bytes:
         """Converts the image object to bytes.
 
         The ``options`` dict can contain any PIL save option
@@ -1322,25 +1322,25 @@ class Image:
         when converting from RGBA to RGB (default is white).
 
         Args:
-            mime: The mime type.
+            mime_type: The mime type.
             options: A dict of options.
 
         Returns:
             The image as bytes.
         """
 
-    def to_base64(self, mime: Optional[str] = None, options: Optional[dict] = None) -> str:
+    def to_base64(self, mime_type: Optional[str] = None, options: Optional[dict] = None) -> str:
         """Return the image content as a base64 encoded string."""
 
-    def to_data_url(self, mime: Optional[str] = None, options: Optional[dict] = None) -> str:
+    def to_data_url(self, mime_type: Optional[str] = None, options: Optional[dict] = None) -> str:
         """Return the image content as a base64-based data url."""
 
-    def to_path(self, path: str, mime: Optional[str] = None, options: Optional[dict] = None) -> str:
+    def to_path(self, path: str, mime_type: Optional[str] = None, options: Optional[dict] = None) -> str:
         """Saves the image object at a given path.
 
         Args:
             path: Image's path location.
-            mime: The mime type.
+            mime_type: The mime type.
             options: A dict of options.
 
         Returns:
@@ -3368,7 +3368,7 @@ class LegendRenderOutput(Data):
     image: 'Image'
     image_path: str
     size: Size
-    mime: str
+    mimeType: str
 
 
 class Legend(Node):
@@ -4189,7 +4189,7 @@ class PrintResult(Data):
     """Print result."""
 
     path: str
-    mime: str
+    mimeType: str
 
 
 class Printer(Node):
@@ -4527,9 +4527,9 @@ class Template(Node):
 class TemplateManager(Node):
     """Template manager."""
 
-    def find_templates(self, subjects: list[str], where: list[Node], user: 'User' = None, mime: str = None) -> list['Template']: ...
+    def find_templates(self, subjects: list[str], where: list[Node], user: 'User' = None, mime_type: str = None) -> list['Template']: ...
 
-    def find_template(self, subject: str, where: list[Node], user: 'User' = None, mime: str = None) -> Optional['Template']: ...
+    def find_template(self, subject: str, where: list[Node], user: 'User' = None, mime_type: str = None) -> Optional['Template']: ...
 
     def template_from_path(self, path: str) -> Optional['Template']: ...
 ################################################################################
@@ -4905,7 +4905,7 @@ class ExportResult(Data):
     """Export result."""
 
     path: str
-    mime: str
+    mimeType: str
     numFiles: int
     numFeaturesTotal: int
     numFeaturesExported: int
@@ -4936,7 +4936,7 @@ class ExportRequest(Request):
 class ExportResponse(Response):
     content: str | bytes
     contentFilename: str
-    mime: str
+    mimeType: str
 
 
 class ExporterManager(Node):

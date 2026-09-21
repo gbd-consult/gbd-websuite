@@ -207,20 +207,20 @@ class Object(gws.base.template.Object):
     def finalize(self, tri: gws.TemplateRenderInput, html: str, args: gws.TemplateArgs, main_engine: 'Engine'):
         self.notify(tri, 'finalize_print')
 
-        mime = tri.mimeOut
-        if not mime and self.mimeTypes:
-            mime = self.mimeTypes[0]
-        if not mime:
-            mime = gws.lib.mime.HTML
+        mime_type = tri.mimeOut
+        if not mime_type and self.mimeTypes:
+            mime_type = self.mimeTypes[0]
+        if not mime_type:
+            mime_type = gws.lib.mime.HTML
 
-        if mime == gws.lib.mime.HTML:
-            return gws.ContentResponse(mime=mime, content=html.lstrip())
+        if mime_type == gws.lib.mime.HTML:
+            return gws.ContentResponse(mimeType=mime_type, content=html.lstrip())
 
-        if mime == gws.lib.mime.PDF:
+        if mime_type == gws.lib.mime.PDF:
             res_path = self.finalize_pdf(tri, html, args, main_engine)
             return gws.ContentResponse(contentPath=res_path)
 
-        if mime == gws.lib.mime.PNG:
+        if mime_type == gws.lib.mime.PNG:
             res_path = self.finalize_png(tri, html, args, main_engine)
             return gws.ContentResponse(contentPath=res_path)
 

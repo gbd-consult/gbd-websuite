@@ -146,11 +146,11 @@ class Object(server.service.Object):
         if not lcs:
             raise server.error.LayerNotDefined()
 
-        mime = sr.requested_format('FORMAT')
+        mime_type = sr.requested_format('FORMAT')
 
         lcs = self.visible_layer_caps(sr, lcs)
         if not lcs:
-            return self.image_response(sr, None, mime)
+            return self.image_response(sr, None, mime_type)
 
         s = sr.string_param('TRANSPARENT', values={'true', 'false'}, default='true')
         transparent = s == 'true'
@@ -177,7 +177,7 @@ class Object(server.service.Object):
 
         mro = gws.gis.render.render_map(mri)
 
-        return self.image_response(sr, mro.planes[0].image, mime)
+        return self.image_response(sr, mro.planes[0].image, mime_type)
 
     def handle_get_legend_graphic(self, sr: server.request.Object):
         # @TODO currently only support 'layer'

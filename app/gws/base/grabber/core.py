@@ -38,7 +38,7 @@ class Object(gws.Grabber):
     """Short-lived store for static tiles outside the cache settings, so that blocks are composed once."""
     maxLevel: int
     """Finest served level."""
-    mime: str
+    mimeType: str
     """Mime type of ``imageFormat``."""
     minLevel: int
     """Coarsest served level."""
@@ -52,14 +52,14 @@ class Object(gws.Grabber):
         self.grid = gws.lib.grid.for_crs(self.targetCrs)
 
         self.imageFormat = opts.imageFormat
-        self.mime = self.imageFormat.mimeTypes[0]
+        self.mimeType = self.imageFormat.mimeTypes[0]
 
         self.cache = opts.cache
         self.requestTiles = 1
         self.store = gws.gis.cache.store.Object(
             f'{gws.c.MAP_CACHE_DIR}/{self.cache.name}',
             max_age=self.cache.maxAge,
-            extension=gws.lib.mime.extension_for(self.mime),
+            extension=gws.lib.mime.extension_for(self.mimeType),
         )
         self.defaultEphemeralStore = self._ephemeral_store('')
 
@@ -149,7 +149,7 @@ class Object(gws.Grabber):
     def to_bytes(self, img: gws.Image) -> bytes:
         """Encode an image in the grabber's image format."""
 
-        return img.to_bytes(self.mime, self.imageFormat.options)
+        return img.to_bytes(self.mimeType, self.imageFormat.options)
 
     def to_image(self, blob: bytes) -> gws.Image:
         """Decode an encoded image."""
@@ -337,5 +337,5 @@ class Object(gws.Grabber):
         return gws.gis.cache.store.Object(
             gws.u.ephemeral_dir(f'tiles_{self.cache.name}_{key}'),
             max_age=EPHEMERAL_MAX_AGE,
-            extension=gws.lib.mime.extension_for(self.mime),
+            extension=gws.lib.mime.extension_for(self.mimeType),
         )

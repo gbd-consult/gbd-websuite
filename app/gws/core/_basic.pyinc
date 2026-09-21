@@ -131,7 +131,7 @@ class ContentResponse(Response):
     """Name for the attachment, if provided, content will be served as an attachment."""
     contentPath: str
     """Local path with the content."""
-    mime: str
+    mimeType: str
     """Response mime type."""
     headers: dict
     """Additional headers."""

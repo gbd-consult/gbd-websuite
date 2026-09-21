@@ -1499,7 +1499,7 @@ class Controller extends gc.Controller {
             return this.goTo('error');
         }
 
-        gc.lib.downloadContent(res.content, res.mime, EXPORT_PATH)
+        gc.lib.downloadContent(res.content, res.mimeType, EXPORT_PATH)
     }
 
     showError(res) {

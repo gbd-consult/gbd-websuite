@@ -56,7 +56,7 @@ class Error(gws.Error):
 
         return gws.ContentResponse(
             status=self.status,
-            mime=gws.lib.mime.XML,
+            mimeType=gws.lib.mime.XML,
             content=xml.to_string(
                 gws.XmlOptions(
                     defaultNamespace=ns,
@@ -66,17 +66,17 @@ class Error(gws.Error):
             ),
         )
 
-    def to_image_response(self, mime='image/png') -> gws.ContentResponse:
+    def to_image_response(self, mime_type='image/png') -> gws.ContentResponse:
         """Returns an image response for this error.
 
         Args:
-            mime: Image mime type.
+            mime_type: Image mime type.
         """
 
         return gws.ContentResponse(
             status=self.status,
-            mime=mime,
-            content=gws.lib.image.error_pixel(mime),
+            mimeType=mime_type,
+            content=gws.lib.image.error_pixel(mime_type),
         )
 
 

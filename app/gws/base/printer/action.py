@@ -43,7 +43,7 @@ class Object(gws.base.action.Object):
         res = self.root.app.jobMgr.handle_status_request(req, p)
         if res.state == gws.JobState.complete:
             pr = gws.PrintResult(self.root.app.jobMgr.require_result(req, p))
-            ext = gws.lib.mime.extension_for(pr.mime) or 'bin'
+            ext = gws.lib.mime.extension_for(pr.mimeType) or 'bin'
             res.output = {
                 'url': gws.u.action_url_path('printerOutput', jobUid=res.jobUid) + f'/gws.{ext}',
             }
@@ -56,7 +56,7 @@ class Object(gws.base.action.Object):
     @gws.ext.command.get('printerOutput')
     def printer_output(self, req: gws.WebRequester, p: gws.JobRequest) -> gws.ContentResponse:
         pr = gws.PrintResult(self.root.app.jobMgr.require_result(req, p))
-        return gws.ContentResponse(contentPath=pr.path, mime=pr.mime)
+        return gws.ContentResponse(contentPath=pr.path, mimeType=pr.mimeType)
 
     @gws.ext.command.cli('printerPrint')
     def print(self, p: CliParams):

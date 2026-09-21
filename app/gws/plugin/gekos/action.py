@@ -66,7 +66,7 @@ class Object(gws.base.action.Object):
         alkis = cast(alkis_action.Object, self.root.app.actionMgr.find_action(project, 'alkis', req.user))
         if not alkis:
             gws.log.error(f'gekos: alkis action not found, {p.projectUid=}')
-            return gws.ContentResponse(mime='text/plain', content='error:')
+            return gws.ContentResponse(mimeType='text/plain', content='error:')
 
         lst = None
         if p.fs:
@@ -76,6 +76,6 @@ class Object(gws.base.action.Object):
 
         if not lst:
             gws.log.error(f'gekos: not found, {p.fs=} {p.ad=}')
-            return gws.ContentResponse(mime='text/plain', content='error:')
+            return gws.ContentResponse(mimeType='text/plain', content='error:')
 
-        return gws.ContentResponse(mime='text/plain', content='{:.3f};{:.3f}'.format(lst[0].x, lst[0].y))
+        return gws.ContentResponse(mimeType='text/plain', content='{:.3f};{:.3f}'.format(lst[0].x, lst[0].y))

@@ -201,7 +201,7 @@ def test_defaults():
     assert gr.targetCrs.srid == 3857
     assert gr.grid.crs.srid == 3857
     assert gr.imageFormat.name == 'png8'
-    assert gr.mime == gws.lib.mime.PNG
+    assert gr.mimeType == gws.lib.mime.PNG
     assert gr.levels() == list(range(core.MAX_LEVEL + 1))
     assert gr.extent == _max_extent(3857)
     assert gr.tile_range_for_level(0) == (0, 0, 0, 0, 0)
@@ -232,7 +232,7 @@ def test_extent_outside_grid_raises():
 def test_jpeg_format():
     fmt = gws.ImageFormat(name='jpeg', mimeTypes=[gws.lib.mime.JPEG], options={})
     gr = _grabber(image_format=fmt)
-    assert gr.mime == gws.lib.mime.JPEG
+    assert gr.mimeType == gws.lib.mime.JPEG
     assert gr.store.extension == 'jpeg'
     b = gr.get_tile_as_bytes(_block_tiles()[0])
     assert b[:2] == b'\xff\xd8'

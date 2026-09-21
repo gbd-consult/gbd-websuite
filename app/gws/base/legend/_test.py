@@ -15,7 +15,7 @@ def test_output_to_bytes(tmp_path):
         image=img,
         image_path=str(tmp_path / 'img.png'),
         size=gws.Size((50.0, 50.5)),
-        mime="image/jpeg"
+        mimeType="image/jpeg"
     )
     assert legend.output_to_bytes(lro) == img.to_bytes()
 
@@ -26,7 +26,7 @@ def test_output_to_bytes_none(tmp_path):
         image=None,
         image_path=None,
         size=gws.Size((50.0, 50.5)),
-        mime="image/jpeg"
+        mimeType="image/jpeg"
     )
     assert not legend.output_to_bytes(lro)
 
@@ -39,7 +39,7 @@ def test_output_to_image(tmp_path):
         image=img,
         image_path=str(tmp_path / 'img.png'),
         size=gws.Size((50.0, 50.5)),
-        mime="image/jpeg"
+        mimeType="image/jpeg"
     )
     assert legend.output_to_image(lro).compare_to(img) == 0
 
@@ -52,7 +52,7 @@ def test_output_to_image_from_path(tmp_path):
         image=None,
         image_path=str(tmp_path / 'img.png'),
         size=gws.Size((50.0, 50.5)),
-        mime="image/jpeg"
+        mimeType="image/jpeg"
     )
     assert legend.output_to_image(lro).compare_to(img) == 0
 
@@ -63,7 +63,7 @@ def test_output_to_image_none(tmp_path):
         image=None,
         image_path=None,
         size=gws.Size((50.0, 50.5)),
-        mime="image/jpeg"
+        mimeType="image/jpeg"
     )
     assert not legend.output_to_image(lro)
 
@@ -78,7 +78,7 @@ def test_output_to_image_path(tmp_path):
             image=img,
             image_path=str(tmp_path / 'img.png'),
             size=gws.Size((50.0, 50.5)),
-            mime="image/jpeg"
+            mimeType="image/jpeg"
         )
         assert legend.output_to_image_path(lro) == str(tmp_path / 'test_legend.png')
         assert image.from_path(legend.output_to_image_path(lro)).compare_to(img) == 0
@@ -100,7 +100,7 @@ def test_combine_outputs(tmp_path):
         image=red,
         image_path=str(tmp_path / 'red.png'),
         size=gws.Size((5.0, 5.0)),
-        mime="image/jpeg"
+        mimeType="image/jpeg"
     )
 
     lro_2 = gws.LegendRenderOutput(
@@ -108,7 +108,7 @@ def test_combine_outputs(tmp_path):
         image=blue,
         image_path=str(tmp_path / 'blue.png'),
         size=gws.Size((5.0, 5.0)),
-        mime="image/jpeg"
+        mimeType="image/jpeg"
     )
     assert legend.combine_outputs([lro_1, lro_2]).image.compare_to(img) == 0
 
@@ -119,7 +119,7 @@ def test_combine_outputs_none(tmp_path):
         image=None,
         image_path=None,
         size=gws.Size((5.0, 5.0)),
-        mime="image/jpeg"
+        mimeType="image/jpeg"
     )
 
     lro_2 = gws.LegendRenderOutput(
@@ -127,6 +127,6 @@ def test_combine_outputs_none(tmp_path):
         image=None,
         image_path=None,
         size=gws.Size((5.0, 5.0)),
-        mime="image/jpeg"
+        mimeType="image/jpeg"
     )
     assert not legend.combine_outputs([lro_1, lro_2])

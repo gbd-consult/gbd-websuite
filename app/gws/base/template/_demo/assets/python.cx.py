@@ -16,6 +16,6 @@ def main(args: gws.TemplateArgs):
     """
 
     return gws.ContentResponse(
-        mime='text/plain',
+        mimeType='text/plain',
         content=text,
     )

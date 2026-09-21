@@ -24,4 +24,4 @@ def main(ta: server.TemplateArgs):
 		{schema}
 		</csw:DescribeRecordResponse>
 	'''
-    return gws.ContentResponse(mime=gws.lib.mime.XML, content=xml.strip())
+    return gws.ContentResponse(mimeType=gws.lib.mime.XML, content=xml.strip())

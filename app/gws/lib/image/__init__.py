@@ -128,7 +128,7 @@ def from_array(arr: np.ndarray, mode: str = None) -> 'Image':
     return _new(img)
 
 
-def from_svg(xmlstr: str, size: gws.Size, mime=None) -> 'Image':
+def from_svg(xmlstr: str, size: gws.Size, mime_type=None) -> 'Image':
     """Not implemented yet. Should create an image object from a URL.
 
     Args:
@@ -136,7 +136,7 @@ def from_svg(xmlstr: str, size: gws.Size, mime=None) -> 'Image':
 
         size: `(width, height)`
 
-        mime: Mime type.
+        mime_type: Mime type.
 
     Returns:
         An image object.
@@ -145,7 +145,7 @@ def from_svg(xmlstr: str, size: gws.Size, mime=None) -> 'Image':
     raise NotImplementedError
 
 
-def thumbnail(r: bytes, size: gws.Size, max_pixels=0, mime=None, options=None) -> bytes:
+def thumbnail(r: bytes, size: gws.Size, max_pixels=0, mime_type=None, options=None) -> bytes:
     """Creates a thumbnail from image bytes.
 
     The image is scaled to fit into ``size``, small images are not scaled up.
@@ -154,7 +154,7 @@ def thumbnail(r: bytes, size: gws.Size, max_pixels=0, mime=None, options=None) -
         r: Bytes encoding an image.
         size: Maximum thumbnail size `(width, height)`
         max_pixels: Maximum number of source pixels.
-        mime: Mime type of the thumbnail.
+        mime_type: Mime type of the thumbnail.
         options: Image options.
 
     Returns:
@@ -173,7 +173,7 @@ def thumbnail(r: bytes, size: gws.Size, max_pixels=0, mime=None, options=None) -
             img.thumbnail(sz, resample=PIL.Image.Resampling.BICUBIC)
             if img.mode not in {'1', 'L', 'LA', 'P', 'RGB', 'RGBA'}:
                 img = img.convert('RGB')
-            return Image(img).to_bytes(mime, options)
+            return Image(img).to_bytes(mime_type, options)
     except Error:
         raise
     except Exception as exc:
@@ -311,26 +311,26 @@ class Image(gws.Image):
         self.img = PIL.Image.alpha_composite(self.img, oth)
         return self
 
-    def to_bytes(self, mime=None, options=None):
+    def to_bytes(self, mime_type=None, options=None):
         with io.BytesIO() as fp:
-            self._save(fp, mime, options)
+            self._save(fp, mime_type, options)
             return fp.getvalue()
 
-    def to_base64(self, mime=None, options=None):
-        b = base64.standard_b64encode(self.to_bytes(mime, options))
+    def to_base64(self, mime_type=None, options=None):
+        b = base64.standard_b64encode(self.to_bytes(mime_type, options))
         return b.decode('ascii')
 
-    def to_data_url(self, mime=None, options=None):
-        mime = mime or gws.lib.mime.PNG
-        return f'data:{mime};base64,' + self.to_base64(mime, options)
+    def to_data_url(self, mime_type=None, options=None):
+        mime_type = mime_type or gws.lib.mime.PNG
+        return f'data:{mime_type};base64,' + self.to_base64(mime_type, options)
 
-    def to_path(self, path, mime=None, options=None):
+    def to_path(self, path, mime_type=None, options=None):
         with open(path, 'wb') as fp:
-            self._save(fp, mime, options)
+            self._save(fp, mime_type, options)
         return path
 
-    def _save(self, fp, mime: str, options: dict):
-        fmt = _mime_to_format(mime)
+    def _save(self, fp, mime_type: str, options: dict):
+        fmt = _mime_to_format(mime_type)
         opts = dict(options or {})
         img = self.img
 
@@ -387,16 +387,16 @@ _MIME_TO_FORMAT = {
 }
 
 
-def _mime_to_format(mime):
-    if not mime:
+def _mime_to_format(mime_type):
+    if not mime_type:
         return 'PNG'
-    m = mime.split(';')[0].strip()
+    m = mime_type.split(';')[0].strip()
     if m in _MIME_TO_FORMAT:
         return _MIME_TO_FORMAT[m]
     m = m.split('/')
     if len(m) == 2 and m[0] == 'image':
         return m[1].upper()
-    raise Error(f'unknown mime type {mime!r}')
+    raise Error(f'unknown mime type {mime_type!r}')
 
 
 def _int_size(size: gws.Size):
@@ -408,16 +408,16 @@ _PIXELS = {}
 _ERROR_COLOR = '#ffa1b4'
 
 
-def empty_pixel(mime: str = None):
-    return pixel(mime, '#ffffff' if mime == gws.lib.mime.JPEG else None)
+def empty_pixel(mime_type: str = None):
+    return pixel(mime_type, '#ffffff' if mime_type == gws.lib.mime.JPEG else None)
 
 
-def error_pixel(mime: str = None):
-    return pixel(mime, _ERROR_COLOR)
+def error_pixel(mime_type: str = None):
+    return pixel(mime_type, _ERROR_COLOR)
 
 
-def pixel(mime, color):
-    fmt = _mime_to_format(mime)
+def pixel(mime_type, color):
+    fmt = _mime_to_format(mime_type)
     key = fmt, str(color)
 
     if key not in _PIXELS:

@@ -48,7 +48,7 @@ class Object(gws.base.action.Object):
             content = self._make_schema(req, p)
         except Exception as exc:
             return error.from_exception(exc).to_xml_response()
-        return gws.ContentResponse(mime=gws.lib.mime.XML, content=content)
+        return gws.ContentResponse(mimeType=gws.lib.mime.XML, content=content)
 
     def _make_schema(self, req, p) -> str:
         s = p.namespace

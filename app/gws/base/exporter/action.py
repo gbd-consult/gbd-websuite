@@ -48,7 +48,7 @@ class Object(gws.base.action.Object):
                 'numFeaturesExported': er.numFeaturesExported,
             }
             if er.path:
-                ext = gws.lib.mime.extension_for(er.mime) or 'bin'
+                ext = gws.lib.mime.extension_for(er.mimeType) or 'bin'
                 res.output['url'] = gws.u.action_url_path('exporterOutput', projectUid=p.projectUid, jobUid=res.jobUid) + f'/gws.{ext}'
 
         return res
@@ -64,7 +64,7 @@ class Object(gws.base.action.Object):
             raise gws.NotFoundError('export result not found')
         return gws.ContentResponse(
             contentPath=er.path,
-            mime=er.mime,
+            mimeType=er.mimeType,
         )
 
     @gws.ext.command.cli('exporterExport')

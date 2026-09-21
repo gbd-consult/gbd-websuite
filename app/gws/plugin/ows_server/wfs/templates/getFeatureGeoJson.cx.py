@@ -24,6 +24,6 @@ def main(ta: server.TemplateArgs):
         fc['features'].append(f)
 
     return gws.ContentResponse(
-        mime=gws.lib.mime.JSON,
+        mimeType=gws.lib.mime.JSON,
         content=gws.lib.jsonx.to_string(fc),
     )

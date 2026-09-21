@@ -248,7 +248,7 @@ class Requester(gws.WebRequester):
 
     def content_responder(self, response):
         args: dict = {
-            'mimetype': response.mime,
+            'mimetype': response.mimeType,
             'status': response.status or 200,
             'headers': {},
             'direct_passthrough': False,

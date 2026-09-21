@@ -110,7 +110,7 @@ def _feature_to_record(f: gws.Feature, grp: Group, ea: gws.ExportArgs, er: gws.E
 ##
 
 
-def run_gdal_vector_export(driver_name: str, mime: str, ea: gws.ExportArgs, er: gws.ExportResult):
+def run_gdal_vector_export(driver_name: str, mime_type: str, ea: gws.ExportArgs, er: gws.ExportResult):
     """Run the export for a GDAL vector driver."""
 
     di = gws.lib.gdalx.get_driver(driver_name)
@@ -143,8 +143,8 @@ def run_gdal_vector_export(driver_name: str, mime: str, ea: gws.ExportArgs, er: 
     er.numFiles = len(paths)
     if er.numFiles > 1:
         er.path = base_dir + '/export.zip'
-        er.mime = gws.lib.mime.ZIP
+        er.mimeType = gws.lib.mime.ZIP
         gws.lib.zipx.zip_to_path(er.path, paths, flat=True)
     else:
         er.path = paths[0]
-        er.mime = mime
+        er.mimeType = mime_type

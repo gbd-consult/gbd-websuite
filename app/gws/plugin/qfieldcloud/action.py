@@ -163,7 +163,7 @@ class Object(gws.base.action.Object):
         if isinstance(res, (list, dict, gws.Data)):
             return gws.ContentResponse(
                 content=gws.lib.jsonx.to_string(res),
-                mime=gws.lib.mime.JSON,
+                mimeType=gws.lib.mime.JSON,
             )
 
         raise gws.Error(f'API {rx.route=} invalid response type: {type(res)}')

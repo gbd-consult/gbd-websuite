@@ -23,7 +23,7 @@ class Object(gws.base.job.worker.Object):
         self.request = request
         self.result = gws.ExportResult(
             path='',
-            mime='',
+            mimeType='',
             numFiles=0,
             numFeaturesTotal=0,
             numFeaturesExported=0,

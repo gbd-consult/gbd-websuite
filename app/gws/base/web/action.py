@@ -64,7 +64,7 @@ class PageRequest(gws.Request):
 
 class AssetResponse(gws.Request):
     content: str
-    mime: str
+    mimeType: str
 
 
 class FileRequest(gws.Request):
@@ -84,7 +84,7 @@ class Object(gws.base.action.Object):
         res = self._serve_path(req, p)
         if res.contentPath:
             res.content = gws.u.read_file_b(res.contentPath)
-        return AssetResponse(content=res.content, mime=res.mime)
+        return AssetResponse(content=res.content, mimeType=res.mimeType)
 
     @gws.ext.command.get('webAsset')
     def http_asset(self, req: gws.WebRequester, p: AssetRequest) -> gws.ContentResponse:
@@ -144,19 +144,19 @@ class Object(gws.base.action.Object):
             path = path[len(self.root.app.version) + 1 :]
 
         if path == 'vendor.js':
-            return gws.ContentResponse(mime=gws.lib.mime.JS, content=gws.base.client.bundles.javascript(self.root, 'vendor', locale))
+            return gws.ContentResponse(mimeType=gws.lib.mime.JS, content=gws.base.client.bundles.javascript(self.root, 'vendor', locale))
 
         if path == 'home.js':
-            return gws.ContentResponse(mime=gws.lib.mime.JS, content=gws.u.read_file(f'{app_templates}/home.js'))
+            return gws.ContentResponse(mimeType=gws.lib.mime.JS, content=gws.u.read_file(f'{app_templates}/home.js'))
         # deprecated
         if path == 'util.js':
-            return gws.ContentResponse(mime=gws.lib.mime.JS, content=gws.u.read_file(f'{app_templates}/home.js'))
+            return gws.ContentResponse(mimeType=gws.lib.mime.JS, content=gws.u.read_file(f'{app_templates}/home.js'))
 
         if path == 'home.css':
-            return gws.ContentResponse(mime=gws.lib.mime.CSS, content=gws.u.read_file(f'{app_templates}/home.css'))
+            return gws.ContentResponse(mimeType=gws.lib.mime.CSS, content=gws.u.read_file(f'{app_templates}/home.css'))
 
         if path == 'app.js':
-            return gws.ContentResponse(mime=gws.lib.mime.JS, content=gws.base.client.bundles.javascript(self.root, 'app', locale))
+            return gws.ContentResponse(mimeType=gws.lib.mime.JS, content=gws.base.client.bundles.javascript(self.root, 'app', locale))
 
         if path.endswith('.css'):
             s = path.split('.')
@@ -165,7 +165,7 @@ class Object(gws.base.action.Object):
             content = gws.base.client.bundles.css(self.root, 'app', s[0])
             if not content:
                 raise gws.NotFoundError(f'invalid css request: {p.path=}')
-            return gws.ContentResponse(mime=gws.lib.mime.CSS, content=content)
+            return gws.ContentResponse(mimeType=gws.lib.mime.CSS, content=content)
 
         raise gws.NotFoundError(f'invalid system asset: {p.path=}')
 
@@ -206,14 +206,14 @@ class Object(gws.base.action.Object):
         if not real_path:
             raise gws.NotFoundError(f'no real path for {req_path=}')
 
-        mime = gws.lib.mime.for_path(real_path)
+        mime_type = gws.lib.mime.for_path(real_path)
 
-        if not _valid_mime_type(mime, project_assets, site_assets):
+        if not _valid_mime_type(mime_type, project_assets, site_assets):
             # NB: pretend the file doesn't exist
-            raise gws.NotFoundError(f'invalid mime path={real_path!r} mime={mime!r}')
+            raise gws.NotFoundError(f'invalid mime path={real_path!r} mime_type={mime_type!r}')
 
         gws.log.debug(f'serving {real_path!r} for {req_path!r}')
-        return gws.ContentResponse(contentPath=real_path, mime=mime)
+        return gws.ContentResponse(contentPath=real_path, mimeType=mime_type)
 
     def _serve_template(self, req: gws.WebRequester, p: gws.Request, tpl: gws.Template, project: Optional[gws.Project]):
         locale = gws.lib.intl.locale(p.localeUid, project.localeUids if project else self.root.app.localeUids)
