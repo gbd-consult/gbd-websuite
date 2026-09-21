@@ -8,8 +8,6 @@ import datetime
 import gws
 import gws.lib.intl
 
-gws.ext.new.helper('csv')
-
 
 class FormatConfig(gws.Config):
     """CSV format settings"""
@@ -28,6 +26,7 @@ class FormatConfig(gws.Config):
     """Row delimiter."""
 
 
+@gws.ext.config.helper('csv')
 class Config(gws.Config):
     """CSV helper."""
 
@@ -44,6 +43,7 @@ class Format(gws.Data):
     rowDelimiter: str
 
 
+@gws.ext.object.helper('csv')
 class Object(gws.Node):
     format: Format
 

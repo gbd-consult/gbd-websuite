@@ -4,14 +4,14 @@ import gws
 import gws.base.database
 import gws.base.database.auth_provider
 
-gws.ext.new.authProvider('postgres')
 
-
+@gws.ext.config.authProvider('postgres')
 class Config(gws.base.database.auth_provider.Config):
     """Postgres authorization provider."""
 
     pass
 
 
+@gws.ext.object.authProvider('postgres')
 class Object(gws.base.database.auth_provider.Object):
     pass

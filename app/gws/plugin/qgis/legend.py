@@ -12,7 +12,6 @@ import gws.lib.image
 
 from . import provider
 
-gws.ext.new.legend('qgis')
 
 # see https://docs.qgis.org/3.22/de/docs/server_manual/services/wms.html#getlegendgraphics
 
@@ -39,6 +38,7 @@ _DEFAULT_LEGEND_PARAMS = {
 }
 
 
+@gws.ext.config.legend('qgis')
 class Config(gws.base.legend.Config):
     """Qgis legend"""
 
@@ -48,6 +48,7 @@ class Config(gws.base.legend.Config):
     """Source layers to use."""
 
 
+@gws.ext.object.legend('qgis')
 class Object(gws.base.legend.Object):
     provider: provider.Object
     sourceLayers: list[gws.SourceLayer]

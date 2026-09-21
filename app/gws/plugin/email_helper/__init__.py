@@ -8,8 +8,6 @@ import ssl
 
 import gws
 
-gws.ext.new.helper('email')
-
 
 class SmtpMode(gws.Enum):
     """SMTP connection modes."""
@@ -38,6 +36,7 @@ class SmtpConfig(gws.Config):
     """Connection timeout."""
 
 
+@gws.ext.config.helper('email')
 class Config(gws.Config):
     """Mail helper settings"""
 
@@ -94,6 +93,7 @@ class _SmtpServer(gws.Data):
     timeout: int
 
 
+@gws.ext.object.helper('email')
 class Object(gws.Node):
     smtp: _SmtpServer
     mailFrom: str

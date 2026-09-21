@@ -3,9 +3,8 @@
 import gws
 import gws.base.model.widget
 
-gws.ext.new.modelWidget('input')
 
-
+@gws.ext.config.modelWidget('input')
 class Config(gws.base.model.widget.Config):
     """Generic input widget configuration."""
 
@@ -13,10 +12,12 @@ class Config(gws.base.model.widget.Config):
     """Input box placeholder."""
 
 
+@gws.ext.props.modelWidget('input')
 class Props(gws.base.model.widget.Props):
     placeholder: str
 
 
+@gws.ext.object.modelWidget('input')
 class Object(gws.base.model.widget.Object):
     def props(self, user):
         return gws.u.merge(

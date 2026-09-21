@@ -25,9 +25,8 @@ import gws
 import gws.base.model.value
 import gws.lib.datetimex
 
-gws.ext.new.modelValue('expression')
 
-
+@gws.ext.config.modelValue('expression')
 class Config(gws.base.model.value.Config):
     """Expression-based value."""
 
@@ -38,6 +37,7 @@ class Config(gws.base.model.value.Config):
     """List of additional modules to import."""
 
 
+@gws.ext.object.modelValue('expression')
 class Object(gws.base.model.value.Object):
     expression: str
     imports: list[str]

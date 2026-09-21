@@ -4,9 +4,8 @@ import gws
 import gws.base.model.widget
 import gws.plugin.model_widget.feature_list as feature_list
 
-gws.ext.new.modelWidget('fileList')
 
-
+@gws.ext.config.modelWidget('fileList')
 class Config(feature_list.Config):
     """File list widget configuration."""
 
@@ -14,6 +13,7 @@ class Config(feature_list.Config):
     """Field to link files to."""
 
 
+@gws.ext.props.modelWidget('fileList')
 class Props(gws.base.model.widget.Props):
     withNewButton: bool
     withLinkButton: bool
@@ -23,6 +23,7 @@ class Props(gws.base.model.widget.Props):
     toFileField: str
 
 
+@gws.ext.object.modelWidget('fileList')
 class Object(feature_list.Object):
     def props(self, user):
         return gws.u.merge(

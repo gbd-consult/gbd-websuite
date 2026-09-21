@@ -6,15 +6,14 @@ import gws.base.auth.user
 import gws.lib.intl
 
 
-gws.ext.new.action('project')
-
-
+@gws.ext.config.action('project')
 class Config(gws.base.action.Config):
     """Project info action configuration."""
 
     pass
 
 
+@gws.ext.props.action('project')
 class Props(gws.base.action.Props):
     pass
 
@@ -25,6 +24,7 @@ class InfoResponse(gws.Response):
     user: Optional[gws.base.auth.user.Props]
 
 
+@gws.ext.object.action('project')
 class Object(gws.base.action.Object):
     """Project information action"""
 

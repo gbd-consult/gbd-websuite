@@ -10,9 +10,8 @@ import gws.base.metadata
 
 from . import grabber, provider
 
-gws.ext.new.layer('qgisflat')
 
-
+@gws.ext.config.layer('qgisflat')
 class Config(gws.base.layer.Config):
     """Flat Qgis layer"""
 
@@ -24,6 +23,7 @@ class Config(gws.base.layer.Config):
     """Per-layer sql filters."""
 
 
+@gws.ext.object.layer('qgisflat')
 class Object(gws.base.layer.image.Object):
     provider: provider.Object
     sqlFilters: dict

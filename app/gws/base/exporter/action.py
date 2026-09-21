@@ -8,15 +8,15 @@ import gws.config
 import gws.lib.jsonx
 import gws.lib.mime
 
-gws.ext.new.action('exporter')
 
-
+@gws.ext.config.action('exporter')
 class Config(gws.base.action.Config):
     """Configuration for the exporter action. (added in 8.4)"""
 
     pass
 
 
+@gws.ext.props.action('exporter')
 class Props(gws.base.action.Props):
     pass
 
@@ -30,6 +30,7 @@ class CliParams(gws.CliParams):
     """output path"""
 
 
+@gws.ext.object.action('exporter')
 class Object(gws.base.action.Object):
     @gws.ext.command.api('exporterStart')
     def exporter_start(self, req: gws.WebRequester, p: gws.ExportRequest) -> gws.JobStatusResponse:

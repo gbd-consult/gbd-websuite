@@ -16,9 +16,8 @@ import gws.base.model
 import gws.base.model.related_field as related_field
 import gws.lib.sa as sa
 
-gws.ext.new.modelField('relatedFeature')
 
-
+@gws.ext.config.modelField('relatedFeature')
 class Config(related_field.Config):
     """Configuration for related feature field."""
 
@@ -30,10 +29,12 @@ class Config(related_field.Config):
     """Key column in the related model, primary key by default."""
 
 
+@gws.ext.props.modelField('relatedFeature')
 class Props(related_field.Props):
     pass
 
 
+@gws.ext.object.modelField('relatedFeature')
 class Object(related_field.Object):
     attributeType = gws.AttributeType.feature
 

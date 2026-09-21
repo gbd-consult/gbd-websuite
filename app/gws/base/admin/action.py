@@ -4,15 +4,15 @@ import gws
 import gws.base.action
 import gws.gis.cache.view
 
-gws.ext.new.action('admin')
 
-
+@gws.ext.config.action('admin')
 class Config(gws.base.action.Config):
     """Admin action configuration. (added in 8.5)"""
 
     pass
 
 
+@gws.ext.props.action('admin')
 class Props(gws.base.action.Props):
     pass
 
@@ -21,6 +21,7 @@ class ViewCacheRequest(gws.Request):
     path: str = ''
 
 
+@gws.ext.object.action('admin')
 class Object(gws.base.action.Object):
     """Admin action."""
 

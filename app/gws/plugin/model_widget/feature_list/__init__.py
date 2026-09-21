@@ -3,9 +3,8 @@
 import gws
 import gws.base.model.widget
 
-gws.ext.new.modelWidget('featureList')
 
-
+@gws.ext.config.modelWidget('featureList')
 class Config(gws.base.model.widget.Config):
     """Feature list widget configuration."""
 
@@ -21,6 +20,7 @@ class Config(gws.base.model.widget.Config):
     """Display the delete button."""
 
 
+@gws.ext.props.modelWidget('featureList')
 class Props(gws.base.model.widget.Props):
     withNewButton: bool
     withLinkButton: bool
@@ -29,6 +29,7 @@ class Props(gws.base.model.widget.Props):
     withDeleteButton: bool
 
 
+@gws.ext.object.modelWidget('featureList')
 class Object(gws.base.model.widget.Object):
     def props(self, user):
         return gws.u.merge(

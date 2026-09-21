@@ -6,9 +6,8 @@ This value is computed by applying python `format` to feature attributes.
 import gws
 import gws.base.model.value
 
-gws.ext.new.modelValue('format')
 
-
+@gws.ext.config.modelValue('format')
 class Config(gws.base.model.value.Config):
     """Format value configuration."""
 
@@ -16,6 +15,7 @@ class Config(gws.base.model.value.Config):
     """Format string to apply to feature attributes."""
 
 
+@gws.ext.object.modelValue('format')
 class Object(gws.base.model.value.Object):
     format: str
 

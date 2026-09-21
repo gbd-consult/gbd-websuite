@@ -8,15 +8,15 @@ This validator checks for this before writing such value is attempted.
 import gws
 import gws.base.model.validator
 
-gws.ext.new.modelValidator('format')
 
-
+@gws.ext.config.modelValidator('format')
 class Config(gws.base.model.validator.Config):
     """Validator for correct values."""
 
     pass
 
 
+@gws.ext.object.modelValidator('format')
 class Object(gws.base.model.validator.Object):
     def validate(self, field, feature, mc):
         val = feature.attributes.get(field.name)

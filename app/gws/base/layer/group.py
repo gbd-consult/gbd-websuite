@@ -8,9 +8,8 @@ import gws.gis.source
 
 from . import core, tree
 
-gws.ext.new.layer('group')
 
-
+@gws.ext.config.layer('group')
 class Config(core.Config):
     """Group layer"""
 
@@ -18,10 +17,12 @@ class Config(core.Config):
     """Layers in this group."""
 
 
+@gws.ext.props.layer('group')
 class Props(core.Props):
     layers: list[gws.ext.props.layer]
 
 
+@gws.ext.object.layer('group')
 class Object(core.Object):
     isGroup = True
 

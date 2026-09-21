@@ -5,9 +5,8 @@ from typing import Optional
 import gws
 import gws.base.model.validator
 
-gws.ext.new.modelValidator('numberRange')
 
-
+@gws.ext.config.modelValidator('numberRange')
 class Config(gws.base.model.validator.Config):
     """Validator for number ranges."""
 
@@ -17,6 +16,7 @@ class Config(gws.base.model.validator.Config):
     """Maximum value for the range."""
 
 
+@gws.ext.object.modelValidator('numberRange')
 class Object(gws.base.model.validator.Object):
     minVal: Optional[gws.ModelValue]
     maxVal: Optional[gws.ModelValue]

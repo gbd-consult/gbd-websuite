@@ -10,9 +10,8 @@ import gws.lib.jsonx
 
 from . import provider
 
-gws.ext.new.layer('geojson')
 
-
+@gws.ext.config.layer('geojson')
 class Config(gws.base.layer.Config):
     """GeoJson layer."""
 
@@ -20,6 +19,7 @@ class Config(gws.base.layer.Config):
     """Geojson provider."""
 
 
+@gws.ext.object.layer('geojson')
 class Object(gws.base.layer.vector.Object):
     path: str
     provider: provider.Object

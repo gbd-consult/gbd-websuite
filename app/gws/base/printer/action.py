@@ -9,15 +9,15 @@ import gws.lib.jsonx
 import gws.lib.osx
 import gws.lib.mime
 
-gws.ext.new.action('printer')
 
-
+@gws.ext.config.action('printer')
 class Config(gws.base.action.Config):
     """Configuration for the printer action."""
 
     pass
 
 
+@gws.ext.props.action('printer')
 class Props(gws.base.action.Props):
     pass
 
@@ -31,6 +31,7 @@ class CliParams(gws.CliParams):
     """output path"""
 
 
+@gws.ext.object.action('printer')
 class Object(gws.base.action.Object):
     @gws.ext.command.api('printerStart')
     def printer_start(self, req: gws.WebRequester, p: gws.PrintRequest) -> gws.JobStatusResponse:

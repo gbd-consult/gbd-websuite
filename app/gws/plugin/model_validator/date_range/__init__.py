@@ -6,9 +6,8 @@ import gws
 import gws.base.model.validator
 import gws.lib.datetimex as dt
 
-gws.ext.new.modelValidator('dateRange')
 
-
+@gws.ext.config.modelValidator('dateRange')
 class Config(gws.base.model.validator.Config):
     """Validator for date ranges."""
 
@@ -18,6 +17,7 @@ class Config(gws.base.model.validator.Config):
     """Maximum date for the range."""
 
 
+@gws.ext.object.modelValidator('dateRange')
 class Object(gws.base.model.validator.Object):
     minVal: Optional[gws.ModelValue]
     maxVal: Optional[gws.ModelValue]

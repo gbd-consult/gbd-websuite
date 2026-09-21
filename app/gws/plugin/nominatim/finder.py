@@ -14,8 +14,6 @@ import gws.config.util
 import gws.lib.net
 
 
-gws.ext.new.finder('nominatim')
-
 _DEFAULT_TEMPLATES = [
     gws.Config(
         subject='feature.teaser',
@@ -40,6 +38,7 @@ _DEFAULT_TEMPLATES = [
 ]
 
 
+@gws.ext.config.finder('nominatim')
 class Config(gws.base.search.finder.Config):
     """Nominatim search"""
 
@@ -49,6 +48,7 @@ class Config(gws.base.search.finder.Config):
     """Language to return the results in."""
 
 
+@gws.ext.object.finder('nominatim')
 class Object(gws.base.search.finder.Object):
     supportsKeywordSearch = True
 

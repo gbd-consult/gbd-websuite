@@ -8,20 +8,21 @@ import gws.base.exporter
 import gws.lib.mime
 
 
-gws.ext.new.exporter('gml')
-
+@gws.ext.config.exporter('gml')
 class Config(gws.base.exporter.Config):
     """GML Exporter configuration."""
 
     pass
 
 
+@gws.ext.props.exporter('gml')
 class Props(gws.base.exporter.Props):
     """GML Exporter properties."""
 
     pass
 
 
+@gws.ext.object.exporter('gml')
 class Object(gws.base.exporter.Object):
     supportsVector = True
     supportsRaster = False

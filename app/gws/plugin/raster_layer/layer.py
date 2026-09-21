@@ -11,9 +11,8 @@ import gws.lib.extent
 
 from . import grabber, provider
 
-gws.ext.new.layer('raster')
 
-
+@gws.ext.config.layer('raster')
 class Config(gws.base.layer.Config):
     """Raster layer"""
 
@@ -29,6 +28,7 @@ class Config(gws.base.layer.Config):
     """Name of an SLD NamedLayer to apply."""
 
 
+@gws.ext.object.layer('raster')
 class Object(gws.base.layer.image.Object):
     provider: provider.Object
     msOptions: gws.MapServerLayerOptions

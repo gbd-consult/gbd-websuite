@@ -6,9 +6,8 @@ import gws
 import gws.base.action
 import gws.base.storage
 
-gws.ext.new.action('dimension')
 
-
+@gws.ext.config.action('dimension')
 class Config(gws.base.action.Config):
     """Dimension action"""
 
@@ -20,12 +19,14 @@ class Config(gws.base.action.Config):
     """Storage configuration."""
 
 
+@gws.ext.props.action('dimension')
 class Props(gws.base.action.Props):
     layerUids: Optional[list[str]]
     pixelTolerance: int
     storage: gws.base.storage.Props
 
 
+@gws.ext.object.action('dimension')
 class Object(gws.base.action.Object):
     storage: Optional[gws.base.storage.Object]
 

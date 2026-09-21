@@ -11,8 +11,6 @@ import gws.config
 
 from . import core, seed
 
-gws.ext.new.cli('cache')
-
 
 class FilterParams(gws.CliParams):
     layerUids: Optional[list[str]]
@@ -45,6 +43,7 @@ class SeedParams(FilterParams):
     """Write json report to path."""
 
 
+@gws.ext.object.cli('cache')
 class Object(gws.Node):
     @gws.ext.command.cli('cacheStatus')
     def do_status(self, p: StatusParams):

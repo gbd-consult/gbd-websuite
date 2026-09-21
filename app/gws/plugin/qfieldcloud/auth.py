@@ -3,13 +3,13 @@
 import gws
 import gws.base.auth
 
-gws.ext.new.authMethod('qfieldcloud')
 
-
+@gws.ext.config.authMethod('qfieldcloud')
 class Config(gws.base.auth.method.Config):
     """QField Cloud authorisation options."""
 
 
+@gws.ext.object.authMethod('qfieldcloud')
 class Object(gws.base.auth.method.Object):
     """QField Cloud authorisation method."""
 

@@ -8,20 +8,21 @@ import gws.base.exporter
 import gws.lib.mime
 
 
-gws.ext.new.exporter('geojson')
-
+@gws.ext.config.exporter('geojson')
 class Config(gws.base.exporter.Config):
     """GeoJSON Exporter configuration."""
 
     pass
 
 
+@gws.ext.props.exporter('geojson')
 class Props(gws.base.exporter.Props):
     """GeoJSON Exporter properties."""
 
     pass
 
 
+@gws.ext.object.exporter('geojson')
 class Object(gws.base.exporter.Object):
     supportsVector = True
     supportsRaster = False

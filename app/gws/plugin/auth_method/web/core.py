@@ -7,8 +7,6 @@ import gws
 import gws.base.auth
 import gws.base.web
 
-gws.ext.new.authMethod('web')
-
 
 class LoginRedirectRule(gws.Data):
     """Login redirect rule."""
@@ -19,6 +17,7 @@ class LoginRedirectRule(gws.Data):
     """Target url."""
 
 
+@gws.ext.config.authMethod('web')
 class Config(gws.base.auth.method.Config):
     """Web-based authorization options"""
 
@@ -67,6 +66,7 @@ class MfaVerifyRequest(gws.Request):
 _DELETED_SESSION = 'web:deleted'
 
 
+@gws.ext.object.authMethod('web')
 class Object(gws.base.auth.method.Object):
     cookieName: str
     cookiePath: str

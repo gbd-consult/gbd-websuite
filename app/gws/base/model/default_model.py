@@ -5,15 +5,15 @@ import gws.base.feature
 import gws.base.shape
 from . import core
 
-gws.ext.new.model('default')
 
-
+@gws.ext.config.model('default')
 class Config(core.Config):
     """Configuration for the default model."""
 
     pass
 
 
+@gws.ext.object.model('default')
 class Object(core.Object):
     def configure(self):
         self.uidName = core.DEFAULT_UID_NAME

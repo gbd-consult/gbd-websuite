@@ -10,8 +10,6 @@ import gws.lib.otp
 
 from . import core
 
-gws.ext.new.helper('account')
-
 
 class MfaConfig(gws.Config):
     """Multi-factor authentication configuration."""
@@ -22,6 +20,7 @@ class MfaConfig(gws.Config):
     """Title of the multi-factor authentication method."""
 
 
+@gws.ext.config.helper('account')
 class Config(gws.Config):
     """Account helper."""
 
@@ -76,6 +75,7 @@ _DEFAULT_PASSWORD_CREATE_SQL = "crypt( {password}, gen_salt('bf') )"
 _DEFAULT_PASSWORD_VERIFY_SQL = 'crypt( {password}, {passwordColumn} )'
 
 
+@gws.ext.object.helper('account')
 class Object(gws.base.edit.helper.Object):
     adminModel: gws.DatabaseModel
     userModel: gws.DatabaseModel

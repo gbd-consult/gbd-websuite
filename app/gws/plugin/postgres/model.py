@@ -6,18 +6,19 @@ import gws.base.feature
 
 from . import provider
 
-gws.ext.new.model('postgres')
 
-
+@gws.ext.config.model('postgres')
 class Config(gws.base.database.model.Config):
     """Postgres database model configuration."""
 
     pass
 
 
+@gws.ext.props.model('postgres')
 class Props(gws.base.database.model.Props):
     pass
 
 
+@gws.ext.object.model('postgres')
 class Object(gws.base.database.model.Object):
     pass

@@ -13,8 +13,6 @@ from .data import types as dt
 from .data import exporter, index, indexer
 from . import action
 
-gws.ext.new.cli('alkis')
-
 
 class CreateIndexParams(gws.CliParams):
     projectUid: Optional[str]
@@ -53,6 +51,7 @@ class ExportParams(gws.CliParams):
     """Path to save the export."""
 
 
+@gws.ext.object.cli('alkis')
 class Object(gws.Node):
     act: action.Object
 

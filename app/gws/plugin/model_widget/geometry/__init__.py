@@ -3,9 +3,8 @@
 import gws
 import gws.base.model.widget
 
-gws.ext.new.modelWidget('geometry')
 
-
+@gws.ext.config.modelWidget('geometry')
 class Config(gws.base.model.widget.Config):
     """Geometry widget configuration."""
 
@@ -15,11 +14,13 @@ class Config(gws.base.model.widget.Config):
     """Display the text geometry editor."""
 
 
+@gws.ext.props.modelWidget('geometry')
 class Props(gws.base.model.widget.Props):
     isInline: bool
     withText: bool
 
 
+@gws.ext.object.modelWidget('geometry')
 class Object(gws.base.model.widget.Object):
     supportsTableView = False
 

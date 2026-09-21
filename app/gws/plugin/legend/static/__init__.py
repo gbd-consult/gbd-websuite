@@ -6,9 +6,7 @@ import gws.lib.mime
 import gws.base.legend
 
 
-gws.ext.new.legend('static')
-
-
+@gws.ext.config.legend('static')
 class Config(gws.base.legend.Config):
     """Static legend."""
 
@@ -16,6 +14,7 @@ class Config(gws.base.legend.Config):
     """Path to the image file."""
 
 
+@gws.ext.object.legend('static')
 class Object(gws.base.legend.Object):
     path: str
 

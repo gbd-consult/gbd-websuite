@@ -6,9 +6,8 @@ import gws.base.model
 import gws.base.search
 import gws.config.util
 
-gws.ext.new.finder('postgres')
 
-
+@gws.ext.config.finder('postgres')
 class Config(gws.base.search.finder.Config):
     """Database-based search"""
 
@@ -20,6 +19,7 @@ class Config(gws.base.search.finder.Config):
     """extra SQL filter"""
 
 
+@gws.ext.object.finder('postgres')
 class Object(gws.base.search.finder.Object):
     db: gws.DatabaseProvider
     tableName: str

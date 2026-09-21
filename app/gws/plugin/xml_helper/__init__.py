@@ -4,8 +4,6 @@ from typing import Optional
 import gws
 import gws.lib.xmlx
 
-gws.ext.new.helper('xml')
-
 
 class NamespaceConfig(gws.Config):
     """XML Namespace configuration."""
@@ -22,6 +20,7 @@ class NamespaceConfig(gws.Config):
     """Namespace schema extends the GML3 schema."""
 
 
+@gws.ext.config.helper('xml')
 class Config(gws.Config):
     """XML helper."""
 
@@ -29,6 +28,7 @@ class Config(gws.Config):
     """List of custom namespaces for XML generation."""
 
 
+@gws.ext.object.helper('xml')
 class Object(gws.Node):
     def configure(self):
         for c in self.cfg('namespaces', default=[]):

@@ -33,9 +33,6 @@ import gws.base.auth
 import gws.lib.net
 
 
-gws.ext.new.authProvider('ldap')
-
-
 class UserSpec(gws.Data):
     """Map LDAP filters to authorization roles"""
 
@@ -58,6 +55,7 @@ class SSLConfig(gws.Config):
     """Key location."""
 
 
+@gws.ext.config.authProvider('ldap')
 class Config(gws.base.auth.provider.Config):
     """LDAP authorization provider"""
 
@@ -79,6 +77,7 @@ class Config(gws.base.auth.provider.Config):
     """LDAP SSL configuration."""
 
 
+@gws.ext.object.authProvider('ldap')
 class Object(gws.base.auth.provider.Object):
     serverUrl: str
     baseDN: str

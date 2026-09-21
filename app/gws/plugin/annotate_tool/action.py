@@ -7,9 +7,8 @@ import gws.base.action
 import gws.base.web
 import gws.base.storage
 
-gws.ext.new.action('annotate')
 
-
+@gws.ext.config.action('annotate')
 class Config(gws.base.action.Config):
     """Annotate action configuration."""
 
@@ -19,11 +18,13 @@ class Config(gws.base.action.Config):
     """Default label templates."""
 
 
+@gws.ext.props.action('annotate')
 class Props(gws.base.action.Props):
     storage: gws.base.storage.Props
     labels: dict
 
 
+@gws.ext.object.action('annotate')
 class Object(gws.base.action.Object):
     storage: Optional[gws.base.storage.Object]
     labels: Optional[dict]

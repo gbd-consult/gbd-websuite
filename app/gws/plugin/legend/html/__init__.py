@@ -5,9 +5,8 @@ import gws.base.legend
 import gws.lib.image
 import gws.lib.mime
 
-gws.ext.new.legend('html')
 
-
+@gws.ext.config.legend('html')
 class Config(gws.base.legend.Config):
     """HTML-based legend."""
 
@@ -15,6 +14,7 @@ class Config(gws.base.legend.Config):
     """Template for the HTML legend."""
 
 
+@gws.ext.object.legend('html')
 class Object(gws.base.legend.Object):
     template: gws.Template
 

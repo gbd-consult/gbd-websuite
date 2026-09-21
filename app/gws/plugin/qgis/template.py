@@ -39,9 +39,8 @@ import gws.gis.render
 
 from . import caps, project, provider
 
-gws.ext.new.template('qgis')
 
-
+@gws.ext.config.template('qgis')
 class Config(gws.base.template.Config):
     """QGIS Print template configuration."""
     
@@ -60,6 +59,7 @@ class _HtmlBlock(gws.Data):
     template: gws.plugin.template.html.Object
 
 
+@gws.ext.object.template('qgis')
 class Object(gws.base.template.Object):
     provider: provider.Object
     qgisTemplate: caps.PrintTemplate

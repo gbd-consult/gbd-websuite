@@ -9,14 +9,14 @@ import gws.lib.mime
 
 from . import core, helper
 
-gws.ext.new.action('account')
 
-
+@gws.ext.config.action('account')
 class Config(gws.base.action.Config):
     """User Account action."""
     pass
 
 
+@gws.ext.props.action('account')
 class Props(gws.base.action.Props):
     pass
 
@@ -60,6 +60,7 @@ class OnboardingSaveMfaResponse(gws.Response):
     completionUrl: str
 
 
+@gws.ext.object.action('account')
 class Object(gws.base.action.Object):
     h: helper.Object
 

@@ -11,15 +11,15 @@ import gws.base.auth
 import gws.lib.net
 import gws.lib.otp
 
-gws.ext.new.authMultiFactorAdapter('totp')
 
-
+@gws.ext.config.authMultiFactorAdapter('totp')
 class Config(gws.base.auth.mfa.Config):
     """TOTP multi-factor authenticator configuration."""
 
     pass
 
 
+@gws.ext.object.authMultiFactorAdapter('totp')
 class Object(gws.base.auth.mfa.Object):
     def start(self, user):
         if not user.mfaSecret:

@@ -8,20 +8,21 @@ import gws.base.exporter
 import gws.lib.mime
 
 
-gws.ext.new.exporter('csv')
-
+@gws.ext.config.exporter('csv')
 class Config(gws.base.exporter.Config):
     """CSV Exporter configuration."""
 
     pass
 
 
+@gws.ext.props.exporter('csv')
 class Props(gws.base.exporter.Props):
     """CSV Exporter properties."""
 
     pass
 
 
+@gws.ext.object.exporter('csv')
 class Object(gws.base.exporter.Object):
     supportsVector = True
     supportsRaster = False

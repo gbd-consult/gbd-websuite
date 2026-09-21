@@ -11,9 +11,8 @@ import gws.gis.source
 
 from . import provider
 
-gws.ext.new.finder('qgis')
 
-
+@gws.ext.config.finder('qgis')
 class Config(gws.base.search.finder.Config):
     """QGIS Server-based Finder configuration."""
 
@@ -23,6 +22,7 @@ class Config(gws.base.search.finder.Config):
     """Source layers to search for."""
 
 
+@gws.ext.object.finder('qgis')
 class Object(gws.base.ows.client.finder.Object):
     supportsGeometrySearch = True
     provider: provider.Object

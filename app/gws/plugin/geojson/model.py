@@ -8,12 +8,11 @@ import gws.gis.source
 
 from . import provider
 
-gws.ext.new.model('geojson')
-
 
 # @TODO generally, vector models should be converted to sqlite/gpkg in order to support search
 
 
+@gws.ext.config.model('geojson')
 class Config(gws.base.model.Config):
     """Configuration for GeoJSON model."""
 
@@ -21,6 +20,7 @@ class Config(gws.base.model.Config):
     """GeoJSON provider."""
 
 
+@gws.ext.object.model('geojson')
 class Object(gws.base.model.default_model.Object):
     """GeoJSON Model."""
 

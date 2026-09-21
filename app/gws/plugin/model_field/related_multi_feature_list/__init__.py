@@ -29,8 +29,6 @@ import gws.base.model
 import gws.base.model.related_field as related_field
 import gws.lib.sa as sa
 
-gws.ext.new.modelField('relatedMultiFeatureList')
-
 
 class RelatedItem(gws.Data):
     """Configuration for a related model and key."""
@@ -41,6 +39,7 @@ class RelatedItem(gws.Data):
     """Key column in the related model."""
 
 
+@gws.ext.config.modelField('relatedMultiFeatureList')
 class Config(related_field.Config):
     """Configuration for related multi feature list field."""
 
@@ -50,10 +49,12 @@ class Config(related_field.Config):
     """Related models and keys."""
 
 
+@gws.ext.props.modelField('relatedMultiFeatureList')
 class Props(related_field.Props):
     pass
 
 
+@gws.ext.object.modelField('relatedMultiFeatureList')
 class Object(related_field.Object):
     attributeType = gws.AttributeType.featurelist
 

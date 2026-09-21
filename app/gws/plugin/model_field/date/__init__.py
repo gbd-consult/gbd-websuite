@@ -9,19 +9,20 @@ import gws
 import gws.base.model.scalar_field
 import gws.lib.datetimex
 
-gws.ext.new.modelField('date')
 
-
+@gws.ext.config.modelField('date')
 class Config(gws.base.model.scalar_field.Config):
     """Configuration for the date field."""
     
     pass
 
 
+@gws.ext.props.modelField('date')
 class Props(gws.base.model.scalar_field.Props):
     pass
 
 
+@gws.ext.object.modelField('date')
 class Object(gws.base.model.scalar_field.Object):
     attributeType = gws.AttributeType.date
 

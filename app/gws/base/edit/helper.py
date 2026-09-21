@@ -17,12 +17,12 @@ import gws.lib.mime
 
 from . import api
 
-gws.ext.new.helper('edit')
 
 LIST_VIEWS = ['title', 'label']
 DEFAULT_TOLERANCE = 10, gws.Uom.px
 
 
+@gws.ext.object.helper('edit')
 class Object(gws.Node):
 
     def get_models(self, req: gws.WebRequester, p: api.GetModelsRequest) -> list[gws.Model]:

@@ -12,9 +12,8 @@ If no ``format`` is configured, user's ``loginName`` is returned.
 import gws
 import gws.base.model.value
 
-gws.ext.new.modelValue('currentUser')
 
-
+@gws.ext.config.modelValue('currentUser')
 class Config(gws.base.model.value.Config):
     """Current user value configuration."""
 
@@ -22,6 +21,7 @@ class Config(gws.base.model.value.Config):
     """Format string."""
 
 
+@gws.ext.object.modelValue('currentUser')
 class Object(gws.base.model.value.Object):
     format: str
 

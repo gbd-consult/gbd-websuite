@@ -7,19 +7,20 @@ import gws.base.action
 
 from . import core
 
-gws.ext.new.action('auth')
 
-
+@gws.ext.config.action('auth')
 class Config(gws.base.action.Config):
     """Web-based authorization action configuration."""
 
     pass
 
 
+@gws.ext.props.action('auth')
 class Props(gws.base.action.Props):
     pass
 
 
+@gws.ext.object.action('auth')
 class Object(gws.base.action.Object):
     method: core.Object
 

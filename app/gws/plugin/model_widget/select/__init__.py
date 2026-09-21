@@ -5,8 +5,6 @@ from typing import Optional, Any
 import gws
 import gws.base.model.widget
 
-gws.ext.new.modelWidget('select')
-
 
 # see also js/ui/select
 class ListItem(gws.Data):
@@ -35,6 +33,7 @@ class ListItemConfig(gws.Config):
     """Optional level for hierarchical items, used for indentation."""
 
 
+@gws.ext.config.modelWidget('select')
 class Config(gws.base.model.widget.Config):
     """Select widget configuration."""
 
@@ -44,11 +43,13 @@ class Config(gws.base.model.widget.Config):
     """Whether to show a search input field."""
 
 
+@gws.ext.props.modelWidget('select')
 class Props(gws.base.model.widget.Props):
     items: list[ListItem]
     withSearch: bool
 
 
+@gws.ext.object.modelWidget('select')
 class Object(gws.base.model.widget.Object):
     def props(self, user):
         # fmt: off

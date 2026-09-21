@@ -9,9 +9,8 @@ import gws.lib.bounds
 import gws.lib.extent
 from . import grabber, provider
 
-gws.ext.new.layer('tile')
 
-
+@gws.ext.config.layer('tile')
 class Config(gws.base.layer.Config):
     """Tile layer"""
 
@@ -21,6 +20,7 @@ class Config(gws.base.layer.Config):
     """Layer display mode."""
 
 
+@gws.ext.object.layer('tile')
 class Object(gws.base.layer.image.Object):
     provider: provider.Object
 

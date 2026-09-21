@@ -10,9 +10,8 @@ import gws.gis.source
 
 from . import provider
 
-gws.ext.new.model('wfs')
 
-
+@gws.ext.config.model('wfs')
 class Config(gws.base.model.Config):
     """WFS model configuration."""
 
@@ -22,6 +21,7 @@ class Config(gws.base.model.Config):
     """Source layers to search for."""
 
 
+@gws.ext.object.model('wfs')
 class Object(gws.base.ows.client.model.Object):
     provider: provider.Object
 

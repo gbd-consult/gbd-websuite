@@ -10,9 +10,8 @@ import gws.gis.source
 
 from . import provider
 
-gws.ext.new.model('qgis')
 
-
+@gws.ext.config.model('qgis')
 class Config(gws.base.model.Config):
     """QGIS data model configuration."""
 
@@ -22,6 +21,7 @@ class Config(gws.base.model.Config):
     """Source layers to search for."""
 
 
+@gws.ext.object.model('qgis')
 class Object(gws.base.ows.client.model.Object):
     provider: provider.Object
 

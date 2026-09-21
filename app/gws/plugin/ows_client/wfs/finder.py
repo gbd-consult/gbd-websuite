@@ -10,9 +10,8 @@ import gws.gis.source
 
 from . import provider
 
-gws.ext.new.finder('wfs')
 
-
+@gws.ext.config.finder('wfs')
 class Config(gws.base.search.finder.Config):
     """WFS Finder configuration."""
     
@@ -22,6 +21,7 @@ class Config(gws.base.search.finder.Config):
     """Source layers to search for."""
 
 
+@gws.ext.object.finder('wfs')
 class Object(gws.base.ows.client.finder.Object):
     supportsGeometrySearch = True
     provider: provider.Object

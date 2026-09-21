@@ -8,8 +8,6 @@ import gws.config
 
 from . import action
 
-gws.ext.new.cli('gekos')
-
 
 class CreateIndexParams(gws.CliParams):
     """Parameters for creating the GEKOS index."""
@@ -18,6 +16,7 @@ class CreateIndexParams(gws.CliParams):
     """Project uid."""
 
 
+@gws.ext.object.cli('gekos')
 class Object(gws.Node):
 
     @gws.ext.command.cli('gekosIndex')

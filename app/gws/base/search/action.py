@@ -10,12 +10,12 @@ import gws.base.feature
 import gws.base.shape
 import gws.lib.uom
 
-gws.ext.new.action('search')
 
 _DEFAULT_VIEWS = ['title', 'teaser', 'description']
 _DEFAULT_TOLERANCE = 10, gws.Uom.px
 
 
+@gws.ext.config.action('search')
 class Config(gws.base.action.Config):
     """Search action"""
 
@@ -27,6 +27,7 @@ class Config(gws.base.action.Config):
     """Search categories."""
 
 
+@gws.ext.props.action('search')
 class Props(gws.base.action.Props):
     categories: list[str]
 
@@ -49,6 +50,7 @@ class Response(gws.Response):
     features: list[gws.FeatureProps]
 
 
+@gws.ext.object.action('search')
 class Object(gws.base.action.Object):
     limit = 0
     tolerance: gws.UomValue

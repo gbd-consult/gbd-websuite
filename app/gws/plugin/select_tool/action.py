@@ -8,9 +8,8 @@ import gws.base.web
 import gws.base.storage
 import gws.lib.uom
 
-gws.ext.new.action('select')
 
-
+@gws.ext.config.action('select')
 class Config(gws.base.action.Config):
     """Select action configuration."""
 
@@ -20,11 +19,13 @@ class Config(gws.base.action.Config):
     """Click tolerance."""
 
 
+@gws.ext.props.action('select')
 class Props(gws.base.action.Props):
     storage: gws.base.storage.Props
     tolerance: str
 
 
+@gws.ext.object.action('select')
 class Object(gws.base.action.Object):
     storage: Optional[gws.base.storage.Object]
     tolerance: Optional[gws.UomValue]

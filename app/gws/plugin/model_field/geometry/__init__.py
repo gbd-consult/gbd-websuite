@@ -10,9 +10,7 @@ import gws.lib.crs
 import gws.lib.sa as sa
 
 
-gws.ext.new.modelField('geometry')
-
-
+@gws.ext.config.modelField('geometry')
 class Config(gws.base.model.scalar_field.Config):
     """Geometry field configuration."""
 
@@ -22,10 +20,12 @@ class Config(gws.base.model.scalar_field.Config):
     """Coordinate Reference System (CRS) name, e.g. 'EPSG:4326'."""
 
 
+@gws.ext.props.modelField('geometry')
 class Props(gws.base.model.scalar_field.Props):
     geometryType: gws.GeometryType
 
 
+@gws.ext.object.modelField('geometry')
 class Object(gws.base.model.scalar_field.Object):
     attributeType = gws.AttributeType.geometry
     supportsGeometrySearch = True

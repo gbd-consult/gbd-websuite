@@ -9,9 +9,8 @@ import gws.lib.image
 import gws.lib.mime
 import gws.lib.sa as sa
 
-gws.ext.new.modelField('file')
 
-
+@gws.ext.config.modelField('file')
 class Config(gws.base.model.field.Config):
     """Configuration for the file field."""
 
@@ -23,6 +22,7 @@ class Config(gws.base.model.field.Config):
     """Column name for the file name, if stored in the database or filesystem."""
 
 
+@gws.ext.props.modelField('file')
 class Props(gws.base.model.field.Props):
     pass
 
@@ -58,6 +58,7 @@ _PREVIEW_MAX_PIXELS = 40_000_000
 _PREVIEW_BIG_FILE_SIZE = 1024 * 1024
 
 
+@gws.ext.object.modelField('file')
 class Object(gws.base.model.field.Object):
     model: gws.DatabaseModel
 

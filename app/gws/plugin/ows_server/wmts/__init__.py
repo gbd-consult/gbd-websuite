@@ -18,12 +18,12 @@ import gws.lib.mime
 import gws.gis.render
 import gws.gis.zoom
 
-gws.ext.new.owsService('wmts')
 
 MAX_LEVEL = 20
 """Finest advertised tile matrix level."""
 
 
+@gws.ext.config.owsService('wmts')
 class Config(server.service.Config):
     """WMTS Service configuration"""
 
@@ -51,6 +51,7 @@ _DEFAULT_METADATA = gws.Metadata(
 )
 
 
+@gws.ext.object.owsService('wmts')
 class Object(server.service.Object):
     protocol = gws.OwsProtocol.WMTS
     supportedVersions = ['1.0.0']

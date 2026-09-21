@@ -9,9 +9,8 @@ import re
 import gws
 import gws.base.model.validator
 
-gws.ext.new.modelValidator('regex')
 
-
+@gws.ext.config.modelValidator('regex')
 class Config(gws.base.model.validator.Config):
     """Regular expression validator."""
 
@@ -19,6 +18,7 @@ class Config(gws.base.model.validator.Config):
     """Regular expression to match against the field value."""
 
 
+@gws.ext.object.modelValidator('regex')
 class Object(gws.base.model.validator.Object):
     regex: str
 

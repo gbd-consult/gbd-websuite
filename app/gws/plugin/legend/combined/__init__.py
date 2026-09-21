@@ -6,10 +6,7 @@ import gws.lib.mime
 import gws.base.legend
 
 
-
-gws.ext.new.legend('combined')
-
-
+@gws.ext.config.legend('combined')
 class Config(gws.base.legend.Config):
     """Combined legend."""
 
@@ -17,6 +14,7 @@ class Config(gws.base.legend.Config):
     """Layers to combine in the legend."""
 
 
+@gws.ext.object.legend('combined')
 class Object(gws.base.legend.Object):
     layerUids: list[str]
 

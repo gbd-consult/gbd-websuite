@@ -29,7 +29,6 @@ import gws.lib.mime
 import gws.lib.uom
 import gws.gis.zoom
 
-gws.ext.new.owsService('wms')
 
 _cdir = gws.u.dirname(__file__)
 
@@ -63,6 +62,7 @@ _DEFAULT_METADATA = gws.Metadata(
 _DEFAULT_MAX_PIXEL_SIZE = 2048
 
 
+@gws.ext.config.owsService('wms')
 class Config(server.service.Config):
     """WMS Service configuration"""
 
@@ -72,6 +72,7 @@ class Config(server.service.Config):
     """WMS MaxWidth/MaxHeight value."""
 
 
+@gws.ext.object.owsService('wms')
 class Object(server.service.Object):
     protocol = gws.OwsProtocol.WMS
     supportedVersions = ['1.3.0', '1.1.1', '1.1.0']

@@ -16,9 +16,8 @@ import gws.base.model
 import gws.base.model.related_field as related_field
 import gws.lib.sa as sa
 
-gws.ext.new.modelField('relatedLinkedFeatureList')
 
-
+@gws.ext.config.modelField('relatedLinkedFeatureList')
 class Config(related_field.Config):
     """Configuration for related linked feature list field."""
 
@@ -36,10 +35,12 @@ class Config(related_field.Config):
     """Link key column for the related model."""
 
 
+@gws.ext.props.modelField('relatedLinkedFeatureList')
 class Props(related_field.Props):
     pass
 
 
+@gws.ext.object.modelField('relatedLinkedFeatureList')
 class Object(related_field.Object):
     attributeType = gws.AttributeType.featurelist
 

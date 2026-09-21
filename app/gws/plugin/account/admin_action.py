@@ -10,9 +10,8 @@ import gws.base.edit.api as api
 
 from . import helper
 
-gws.ext.new.action('accountadmin')
 
-
+@gws.ext.config.action('accountadmin')
 class Config(gws.base.action.Config):
     """Account Admin action."""
 
@@ -20,6 +19,7 @@ class Config(gws.base.action.Config):
     """Account data models."""
 
 
+@gws.ext.props.action('accountadmin')
 class Props(gws.base.action.Props):
     pass
 
@@ -35,6 +35,7 @@ class ResetResponse(gws.Response):
     feature: gws.FeatureProps
 
 
+@gws.ext.object.action('accountadmin')
 class Object(gws.base.action.Object):
     h: helper.Object
 

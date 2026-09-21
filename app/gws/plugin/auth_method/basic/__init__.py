@@ -8,9 +8,8 @@ import gws
 import gws.base.auth
 import gws.base.web
 
-gws.ext.new.authMethod('basic')
 
-
+@gws.ext.config.authMethod('basic')
 class Config(gws.base.auth.method.Config):
     """HTTP-basic authorization options"""
 
@@ -18,6 +17,7 @@ class Config(gws.base.auth.method.Config):
     """Authentication realm."""
 
 
+@gws.ext.object.authMethod('basic')
 class Object(gws.base.auth.method.Object):
     realm: str
 

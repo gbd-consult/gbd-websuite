@@ -4,19 +4,20 @@ import gws
 import gws.base.model.scalar_field
 from gws import User
 
-gws.ext.new.modelField('integer')
 
-
+@gws.ext.config.modelField('integer')
 class Config(gws.base.model.scalar_field.Config):
     """Configuration for integer field."""
 
     pass
 
 
+@gws.ext.props.modelField('integer')
 class Props(gws.base.model.scalar_field.Props):
     pass
 
 
+@gws.ext.object.modelField('integer')
 class Object(gws.base.model.scalar_field.Object):
     attributeType = gws.AttributeType.int
 

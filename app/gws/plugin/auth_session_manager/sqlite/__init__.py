@@ -6,12 +6,12 @@ import gws.lib.datetimex as dtx
 import gws.lib.jsonx
 import gws.lib.sqlitex
 
-gws.ext.new.authSessionManager('sqlite')
 
 _CLEANUP_INTERVAL = 600
 _TOUCH_INTERVAL = 60
 
 
+@gws.ext.config.authSessionManager('sqlite')
 class Config(gws.base.auth.session_manager.Config):
     """Configuration for sqlite sessions"""
 
@@ -19,6 +19,7 @@ class Config(gws.base.auth.session_manager.Config):
     """Session storage path."""
 
 
+@gws.ext.object.authSessionManager('sqlite')
 class Object(gws.base.auth.session_manager.Object):
     dbPath: str
     table = 'sessions'

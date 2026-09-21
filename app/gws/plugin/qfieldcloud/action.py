@@ -16,9 +16,8 @@ import gws.lib.osx as osx
 
 from . import core, packager, patcher, api, caps
 
-gws.ext.new.action('qfieldcloud')
 
-
+@gws.ext.config.action('qfieldcloud')
 class Config(gws.ConfigWithAccess):
     """QField Cloud action."""
 
@@ -28,6 +27,7 @@ class Config(gws.ConfigWithAccess):
     """Options for the token authorization method. (added in 8.4)"""
 
 
+@gws.ext.props.action('qfieldcloud')
 class Props(gws.base.action.Props):
     pass
 
@@ -70,6 +70,7 @@ def route(pattern: str):
     return decorator
 
 
+@gws.ext.object.action('qfieldcloud')
 class Object(gws.base.action.Object):
     """QField Cloud API action."""
 

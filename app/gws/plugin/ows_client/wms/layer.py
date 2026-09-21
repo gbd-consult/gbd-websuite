@@ -6,9 +6,8 @@ import gws.config.util
 
 from . import provider
 
-gws.ext.new.layer('wms')
 
-
+@gws.ext.config.layer('wms')
 class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
     """WMS tree layer configuration."""
 
@@ -16,6 +15,7 @@ class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
     """WMS provider"""
 
 
+@gws.ext.object.layer('wms')
 class Object(gws.base.layer.group.Object):
     provider: provider.Object
 

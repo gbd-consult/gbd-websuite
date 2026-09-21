@@ -13,9 +13,7 @@ import gws.lib.crs
 import gws.lib.bounds
 
 
-gws.ext.new.model('nominatim')
-
-
+@gws.ext.config.model('nominatim')
 class Config(gws.base.model.Config):
     """Nominatim model"""
 
@@ -25,6 +23,7 @@ class Config(gws.base.model.Config):
     """Language to return the results in."""
 
 
+@gws.ext.object.model('nominatim')
 class Object(gws.base.model.default_model.Object):
     """Nominatim model."""
 

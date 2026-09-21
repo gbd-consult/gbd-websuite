@@ -8,9 +8,7 @@ import gws.base.model.scalar_field
 import gws.lib.sa as sa
 
 
-gws.ext.new.modelField('text')
-
-
+@gws.ext.config.modelField('text')
 class Config(gws.base.model.scalar_field.Config):
     """Configuration for text field."""
 
@@ -18,10 +16,12 @@ class Config(gws.base.model.scalar_field.Config):
     """Text search options, if enabled."""
 
 
+@gws.ext.props.modelField('text')
 class Props(gws.base.model.scalar_field.Props):
     pass
 
 
+@gws.ext.object.modelField('text')
 class Object(gws.base.model.scalar_field.Object):
     attributeType = gws.AttributeType.str
     textSearch: Optional[gws.TextSearchOptions]

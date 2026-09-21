@@ -38,7 +38,6 @@ import gws.lib.crs
 import gws.base.metadata
 import gws.lib.mime
 
-gws.ext.new.owsService('wfs')
 
 STORED_QUERY_GET_FEATURE_BY_ID = 'urn:ogc:def:query:OGC-WFS::GetFeatureById'
 
@@ -102,12 +101,14 @@ _DEFAULT_METADATA = gws.Metadata(
 )
 
 
+@gws.ext.config.owsService('wfs')
 class Config(server.service.Config):
     """WFS Service configuration"""
 
     pass
 
 
+@gws.ext.object.owsService('wfs')
 class Object(server.service.Object):
     protocol = gws.OwsProtocol.WFS
     supportedVersions = ['2.0.2', '2.0.1', '2.0.0']

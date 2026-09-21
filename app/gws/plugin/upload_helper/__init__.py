@@ -35,9 +35,8 @@ import gws
 import gws.lib.jsonx
 import gws.lib.osx
 
-gws.ext.new.helper('upload')
 
-
+@gws.ext.config.helper('upload')
 class Config(gws.Config):
     """Upload helper."""
 
@@ -70,6 +69,7 @@ class Error(gws.Error):
     pass
 
 
+@gws.ext.object.helper('upload')
 class Object(gws.Node):
     maxSize: int
     maxChunkCount: int

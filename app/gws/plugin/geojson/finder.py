@@ -8,9 +8,8 @@ import gws.config.util
 
 from . import provider
 
-gws.ext.new.finder('geojson')
 
-
+@gws.ext.config.finder('geojson')
 class Config(gws.base.search.finder.Config):
     """GeoJSON Finder configuration."""
     
@@ -18,6 +17,7 @@ class Config(gws.base.search.finder.Config):
     """Provider configuration."""
 
 
+@gws.ext.object.finder('geojson')
 class Object(gws.base.search.finder.Object):
     supportsGeometrySearch = True
     provider: provider.Object

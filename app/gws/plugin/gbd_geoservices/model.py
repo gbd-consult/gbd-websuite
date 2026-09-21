@@ -12,9 +12,8 @@ import gws.gis.source
 import gws.lib.jsonx
 import gws.lib.net
 
-gws.ext.new.model('gbd_geoservices')
 
-
+@gws.ext.config.model('gbd_geoservices')
 class Config(gws.base.model.Config):
     """GBD Geoservices model."""
 
@@ -22,6 +21,7 @@ class Config(gws.base.model.Config):
     """API key for GBD Geoservices."""
 
 
+@gws.ext.object.model('gbd_geoservices')
 class Object(gws.base.model.default_model.Object):
     """GBD Geoservices model."""
 

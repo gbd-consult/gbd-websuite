@@ -14,9 +14,8 @@ import gws.gis.zoom
 
 from . import grabber, provider
 
-gws.ext.new.layer('wmsflat')
 
-
+@gws.ext.config.layer('wmsflat')
 class Config(gws.base.layer.Config):
     """Flat WMS layer."""
 
@@ -26,6 +25,7 @@ class Config(gws.base.layer.Config):
     """Source layers to use."""
 
 
+@gws.ext.object.layer('wmsflat')
 class Object(gws.base.layer.image.Object):
     provider: provider.Object
     sourceLayers: list[gws.SourceLayer]

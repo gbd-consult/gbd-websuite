@@ -3,15 +3,15 @@
 import gws
 import gws.base.model.validator
 
-gws.ext.new.modelValidator('notEmpty')
 
-
+@gws.ext.config.modelValidator('notEmpty')
 class Config(gws.base.model.validator.Config):
     """Validator for non-empty values."""
 
     pass
 
 
+@gws.ext.object.modelValidator('notEmpty')
 class Object(gws.base.model.validator.Object):
     def validate(self, field, feature, mc):
         val = feature.attributes.get(field.name)

@@ -17,9 +17,8 @@ import gws.lib.extent
 
 from . import provider
 
-gws.ext.new.layer('wfsflat')
 
-
+@gws.ext.config.layer('wfsflat')
 class Config(gws.base.layer.Config):
     """Flat WFS layer."""
 
@@ -29,6 +28,7 @@ class Config(gws.base.layer.Config):
     """Source layers to use."""
 
 
+@gws.ext.object.layer('wfsflat')
 class Object(gws.base.layer.vector.Object):
     provider: provider.Object
     sourceLayers: list[gws.SourceLayer]

@@ -19,9 +19,8 @@ import gws.base.model.related_field as related_field
 
 from gws.plugin.model_field import related_multi_feature_list
 
-gws.ext.new.modelField('relatedFeatureList')
 
-
+@gws.ext.config.modelField('relatedFeatureList')
 class Config(related_field.Config):
     """Configuration for related feature list field."""
 
@@ -33,10 +32,12 @@ class Config(related_field.Config):
     """Foreign key column in the related model."""
 
 
+@gws.ext.props.modelField('relatedFeatureList')
 class Props(related_field.Props):
     pass
 
 
+@gws.ext.object.modelField('relatedFeatureList')
 class Object(related_multi_feature_list.Object):
     def configure_relationship(self):
         to_mod = self.get_model(self.cfg('toModel'))

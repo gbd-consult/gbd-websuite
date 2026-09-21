@@ -7,8 +7,6 @@ import gws.lib.cli as cli
 
 from . import manager
 
-gws.ext.new.cli('auth')
-
 
 class RemoveParams(gws.CliParams):
     older: Optional[int]
@@ -19,6 +17,7 @@ class RemoveParams(gws.CliParams):
     """Remove all sessions."""
 
 
+@gws.ext.object.cli('auth')
 class Object(gws.Node):
 
     @gws.ext.command.cli('authSessions')

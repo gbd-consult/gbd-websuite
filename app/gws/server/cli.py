@@ -29,9 +29,7 @@ class ConfigTestParams(gws.CliParams):
     """Only parse the config."""
 
 
-gws.ext.new.cli('server')
-
-
+@gws.ext.object.cli('server')
 class Object(gws.Node):
     """Server command-line interface object."""
 

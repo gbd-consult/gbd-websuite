@@ -13,8 +13,6 @@ import gws.plugin.alkis.action as alkis_action
 
 from . import core, index
 
-gws.ext.new.action('gekos')
-
 
 class GetXyRequest(gws.Request):
     """Request to get XY coordinates from a GekoS feature."""
@@ -29,6 +27,7 @@ class GetFsResponse(gws.Response):
     feature: gws.FeatureProps
 
 
+@gws.ext.config.action('gekos')
 class Config(gws.base.action.Config):
     """GekoS action configuration."""
 
@@ -48,6 +47,7 @@ _DEFAULT_TEMPLATES = [
 ]
 
 
+@gws.ext.object.action('gekos')
 class Object(gws.base.action.Object):
     idx: index.Object
     templates: list[gws.Template]

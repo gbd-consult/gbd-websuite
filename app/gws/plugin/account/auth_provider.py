@@ -7,14 +7,14 @@ import gws.base.auth
 
 from . import core, helper
 
-gws.ext.new.authProvider('account')
 
-
+@gws.ext.config.authProvider('account')
 class Config(gws.base.auth.provider.Config):
     """Account-based authorization provider."""
     pass
 
 
+@gws.ext.object.authProvider('account')
 class Object(gws.base.auth.provider.Object):
     h: helper.Object
 

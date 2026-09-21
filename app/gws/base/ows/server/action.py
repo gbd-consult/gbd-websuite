@@ -10,8 +10,6 @@ import gws.lib.xmlx
 
 from . import core, layer_caps, error
 
-gws.ext.new.action('ows')
-
 
 class GetServiceRequest(gws.Request):
     serviceUid: str
@@ -21,10 +19,12 @@ class GetSchemaRequest(gws.Request):
     namespace: str
 
 
+@gws.ext.config.action('ows')
 class Config(gws.base.action.Config):
     """OWS server action"""
 
 
+@gws.ext.object.action('ows')
 class Object(gws.base.action.Object):
     @gws.ext.command.get('owsService')
     def get_service(self, req: gws.WebRequester, p: GetServiceRequest) -> gws.ContentResponse:

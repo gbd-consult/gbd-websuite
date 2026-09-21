@@ -7,8 +7,6 @@ import gws.base.search
 import gws.config.util
 
 
-gws.ext.new.finder('gbd_geoservices')
-
 _DEFAULT_TEMPLATES = [
     gws.Config(
         subject='feature.teaser',
@@ -23,6 +21,7 @@ _DEFAULT_TEMPLATES = [
 ]
 
 
+@gws.ext.config.finder('gbd_geoservices')
 class Config(gws.base.search.finder.Config):
     """GBD Geoservices search"""
 
@@ -30,6 +29,7 @@ class Config(gws.base.search.finder.Config):
     """API key."""
 
 
+@gws.ext.object.finder('gbd_geoservices')
 class Object(gws.base.search.finder.Object):
     supportsKeywordSearch = True
     supportsGeometrySearch = True

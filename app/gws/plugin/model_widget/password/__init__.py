@@ -3,9 +3,8 @@
 import gws
 import gws.base.model.widget
 
-gws.ext.new.modelWidget('password')
 
-
+@gws.ext.config.modelWidget('password')
 class Config(gws.base.model.widget.Config):
     """Password widget."""
 
@@ -15,11 +14,13 @@ class Config(gws.base.model.widget.Config):
     """Create a "show password" button."""
 
 
+@gws.ext.props.modelWidget('password')
 class Props(gws.base.model.widget.Props):
     placeholder: str
     withShow: bool
 
 
+@gws.ext.object.modelWidget('password')
 class Object(gws.base.model.widget.Object):
     def props(self, user):
         return gws.u.merge(

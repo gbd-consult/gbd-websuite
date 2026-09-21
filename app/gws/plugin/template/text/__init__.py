@@ -16,9 +16,8 @@ import gws.lib.osx
 import gws.lib.pdf
 import gws.lib.vendor.jump
 
-gws.ext.new.template('text')
 
-
+@gws.ext.config.template('text')
 class Config(gws.base.template.Config):
     """Text-only template."""
 
@@ -28,10 +27,12 @@ class Config(gws.base.template.Config):
     """Template content."""
 
 
+@gws.ext.props.template('text')
 class Props(gws.base.template.Props):
     pass
 
 
+@gws.ext.object.template('text')
 class Object(gws.base.template.Object):
     path: str
     text: str

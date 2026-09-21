@@ -9,8 +9,6 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from . import provider
 
-gws.ext.new.storageProvider('postgres')
-
 
 TABLE_DDL = """
     CREATE TABLE IF NOT EXISTS {table_name} (
@@ -25,6 +23,7 @@ TABLE_DDL = """
 """
 
 
+@gws.ext.config.storageProvider('postgres')
 class Config(gws.Config):
     """Postgres storage provider. (added in 8.4)"""
 
@@ -34,6 +33,7 @@ class Config(gws.Config):
     """Table name for the storage."""
 
 
+@gws.ext.object.storageProvider('postgres')
 class Object(gws.StorageProvider):
     db: provider.Object
     tableName: str

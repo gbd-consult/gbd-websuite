@@ -7,9 +7,8 @@ import gws.base.template
 import gws.config.util
 import gws.lib.style
 
-gws.ext.new.printer('default')
 
-
+@gws.ext.config.printer('default')
 class Config(gws.ConfigWithAccess):
     """Printer configuration"""
 
@@ -23,6 +22,7 @@ class Config(gws.ConfigWithAccess):
     """Quality levels supported by this printer"""
 
 
+@gws.ext.props.printer('default')
 class Props(gws.Props):
     template: gws.base.template.Props
     model: gws.base.model.Props
@@ -30,6 +30,7 @@ class Props(gws.Props):
     title: str
 
 
+@gws.ext.object.printer('default')
 class Object(gws.Printer):
 
     def configure(self):

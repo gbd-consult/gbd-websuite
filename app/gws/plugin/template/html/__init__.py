@@ -65,9 +65,8 @@ import gws.lib.osx
 import gws.lib.pdf
 import gws.lib.vendor.jump
 
-gws.ext.new.template('html')
 
-
+@gws.ext.config.template('html')
 class Config(gws.base.template.Config):
     """HTML template configuration."""
 
@@ -77,10 +76,12 @@ class Config(gws.base.template.Config):
     """Template content."""
 
 
+@gws.ext.props.template('html')
 class Props(gws.base.template.Props):
     pass
 
 
+@gws.ext.object.template('html')
 class Object(gws.base.template.Object):
     path: str
     text: str

@@ -9,9 +9,8 @@ from typing import Optional
 import gws
 import gws.base.template
 
-gws.ext.new.template('py')
 
-
+@gws.ext.config.template('py')
 class Config(gws.base.template.Config):
     """Python template"""
 
@@ -19,6 +18,7 @@ class Config(gws.base.template.Config):
     """Path to a template file."""
 
 
+@gws.ext.props.template('py')
 class Props(gws.base.template.Props):
     pass
 
@@ -26,6 +26,7 @@ class Props(gws.base.template.Props):
 _ENTRYPOINT_NAME = 'main'
 
 
+@gws.ext.object.template('py')
 class Object(gws.base.template.Object):
     path: str
 

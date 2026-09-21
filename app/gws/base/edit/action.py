@@ -7,18 +7,19 @@ import gws.base.action
 
 from . import api, helper
 
-gws.ext.new.action('edit')
 
-
+@gws.ext.config.action('edit')
 class Config(gws.base.action.Config):
     """Edit action"""
     pass
 
 
+@gws.ext.props.action('edit')
 class Props(gws.base.action.Props):
     pass
 
 
+@gws.ext.object.action('edit')
 class Object(gws.base.action.Object):
     h: helper.Object
 

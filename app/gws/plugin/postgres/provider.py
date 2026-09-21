@@ -11,9 +11,8 @@ import gws.lib.extent
 import gws.lib.net
 import gws.lib.sa as sa
 
-gws.ext.new.databaseProvider('postgres')
 
-
+@gws.ext.config.databaseProvider('postgres')
 class Config(gws.base.database.provider.Config):
     """Postgres/Postgis database provider"""
 
@@ -33,6 +32,7 @@ class Config(gws.base.database.provider.Config):
     """Libpq connection options."""
 
 
+@gws.ext.object.databaseProvider('postgres')
 class Object(gws.base.database.provider.Object):
     def url(self):
         return connection_url(self.config)

@@ -4,9 +4,8 @@ import gws
 import gws.lib.datetimex as dtx
 import gws.lib.sqlitex
 
-gws.ext.new.storageProvider('sqlite')
 
-
+@gws.ext.config.storageProvider('sqlite')
 class Config(gws.Config):
     """Configuration for sqlite storage."""
 
@@ -14,6 +13,7 @@ class Config(gws.Config):
     """Storage path."""
 
 
+@gws.ext.object.storageProvider('sqlite')
 class Object(gws.StorageProvider):
     dbPath: str
     table = 'storage'

@@ -8,18 +8,19 @@ import gws.lib.htmlx
 import gws.lib.mime
 import gws.gis.render
 
-gws.ext.new.template('map')
 
-
+@gws.ext.config.template('map')
 class Config(gws.base.template.Config):
     """Map-only template."""
     pass
 
 
+@gws.ext.props.template('map')
 class Props(gws.base.template.Props):
     pass
 
 
+@gws.ext.object.template('map')
 class Object(gws.base.template.Object):
 
     def render(self, tri):

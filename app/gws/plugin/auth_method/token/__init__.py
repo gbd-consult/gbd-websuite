@@ -19,9 +19,7 @@ import gws.base.auth
 import gws.base.web
 
 
-gws.ext.new.authMethod('token')
-
-
+@gws.ext.config.authMethod('token')
 class Config(gws.base.auth.method.Config):
     """HTTP-token authorization options"""
 
@@ -31,6 +29,7 @@ class Config(gws.base.auth.method.Config):
     """Token prefix."""
 
 
+@gws.ext.object.authMethod('token')
 class Object(gws.base.auth.method.Object):
     header: str
     prefix: str

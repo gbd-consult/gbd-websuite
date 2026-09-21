@@ -3,19 +3,20 @@
 import gws
 import gws.base.model.scalar_field
 
-gws.ext.new.modelField('bool')
 
-
+@gws.ext.config.modelField('bool')
 class Config(gws.base.model.scalar_field.Config):
     """Configuration for boolean field."""
 
     pass
 
 
+@gws.ext.props.modelField('bool')
 class Props(gws.base.model.scalar_field.Props):
     pass
 
 
+@gws.ext.object.modelField('bool')
 class Object(gws.base.model.scalar_field.Object):
     attributeType = gws.AttributeType.bool
 

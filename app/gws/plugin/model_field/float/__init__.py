@@ -3,19 +3,20 @@
 import gws
 import gws.base.model.scalar_field
 
-gws.ext.new.modelField('float')
 
-
+@gws.ext.config.modelField('float')
 class Config(gws.base.model.scalar_field.Config):
     """Configuration for float field."""
 
     pass
 
 
+@gws.ext.props.modelField('float')
 class Props(gws.base.model.scalar_field.Props):
     pass
 
 
+@gws.ext.object.modelField('float')
 class Object(gws.base.model.scalar_field.Object):
     """Float field object."""
 

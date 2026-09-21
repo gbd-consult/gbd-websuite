@@ -21,7 +21,6 @@ import gws.lib.extent
 import gws.lib.mime
 import gws.gis.zoom
 
-gws.ext.new.owsService('csw')
 
 _cdir = gws.u.dirname(__file__)
 
@@ -73,6 +72,7 @@ class Profile(gws.Enum):
     """Dublin Core metadata profile."""
 
 
+@gws.ext.config.owsService('csw')
 class Config(server.service.Config):
     """CSW Service configuration"""
 
@@ -80,6 +80,7 @@ class Config(server.service.Config):
     """Metadata profile."""
 
 
+@gws.ext.object.owsService('csw')
 class Object(server.service.Object):
     protocol = gws.OwsProtocol.CSW
     supportedVersions = ['2.0.2']

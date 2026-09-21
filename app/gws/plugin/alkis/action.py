@@ -19,8 +19,6 @@ import gws.lib.sa as sa
 from .data import index, exporter
 from .data import types as dt
 
-gws.ext.new.action('alkis')
-
 
 class EigentuemerConfig(gws.ConfigWithAccess):
     """Access to the Eigentümer (owner) information"""
@@ -107,6 +105,7 @@ class Ui(gws.Config):
     """Activate spatial search after submit."""
 
 
+@gws.ext.config.action('alkis')
 class Config(gws.ConfigWithAccess):
     """Flurstückssuche action configuration."""
 
@@ -153,6 +152,7 @@ class Config(gws.ConfigWithAccess):
 ##
 
 
+@gws.ext.props.action('alkis')
 class Props(gws.base.action.Props):
     exporters: list[exporter.Props]
     limit: int
@@ -348,6 +348,7 @@ class Model(gws.base.model.default_model.Object):
         self.loadingStrategy = gws.FeatureLoadingStrategy.all
 
 
+@gws.ext.object.action('alkis')
 class Object(gws.base.action.Object):
     db: gws.DatabaseProvider
 

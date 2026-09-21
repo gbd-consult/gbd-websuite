@@ -11,9 +11,8 @@ import gws.config.util
 
 from . import grabber, provider, flatlayer
 
-gws.ext.new.layer('qgis')
 
-
+@gws.ext.config.layer('qgis')
 class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
     """QGIS Tree layer configuration."""
 
@@ -25,6 +24,7 @@ class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
     """Per-layer sql filters."""
 
 
+@gws.ext.object.layer('qgis')
 class Object(gws.base.layer.group.Object):
     provider: provider.Object
     compositeRender: bool = False

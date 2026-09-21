@@ -7,9 +7,8 @@ import gws.lib.bounds
 import gws.lib.extent
 import gws.gis.zoom
 
-gws.ext.new.map('default')
 
-
+@gws.ext.config.map('default')
 class Config(gws.Config):
     """Map configuration"""
 
@@ -33,6 +32,7 @@ class Config(gws.Config):
     """Map scales and resolutions."""
 
 
+@gws.ext.props.map('default')
 class Props(gws.Data):
     crs: str
     crsDef: Optional[str]
@@ -50,6 +50,7 @@ class _RootLayer(gws.base.layer.group.Object):
     parent: 'Object'
 
 
+@gws.ext.object.map('default')
 class Object(gws.Map):
     wrapX: bool
 

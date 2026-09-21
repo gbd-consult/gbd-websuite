@@ -15,15 +15,15 @@ import gws.lib.jsonx
 import gws.lib.mime
 import gws.lib.uom
 
-gws.ext.new.action('map')
 
-
+@gws.ext.config.action('map')
 class Config(gws.base.action.Config):
     """Configuration for the map action."""
 
     pass
 
 
+@gws.ext.props.action('map')
 class Props(gws.base.action.Props):
     pass
 
@@ -81,6 +81,7 @@ _GET_FEATURES_LIMIT = 10000
 _PIXEL_SIZE_LIMIT = 4096
 
 
+@gws.ext.object.action('map')
 class Object(gws.base.action.Object):
     _empty_pixel = gws.lib.mime.PNG, gws.lib.image.empty_pixel()
 

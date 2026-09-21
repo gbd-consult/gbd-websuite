@@ -8,21 +8,21 @@ import gws.base.exporter
 import gws.lib.mime
 
 
-gws.ext.new.exporter('kml')
-
-
+@gws.ext.config.exporter('kml')
 class Config(gws.base.exporter.Config):
     """KML Exporter configuration."""
 
     pass
 
 
+@gws.ext.props.exporter('kml')
 class Props(gws.base.exporter.Props):
     """KML Exporter properties."""
 
     pass
 
 
+@gws.ext.object.exporter('kml')
 class Object(gws.base.exporter.Object):
     supportsVector = True
     supportsRaster = False

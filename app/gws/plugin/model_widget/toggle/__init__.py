@@ -3,9 +3,8 @@
 import gws
 import gws.base.model.widget
 
-gws.ext.new.modelWidget('toggle')
 
-
+@gws.ext.config.modelWidget('toggle')
 class Config(gws.base.model.widget.Config):
     """Toggle widget configuration."""
 
@@ -13,10 +12,12 @@ class Config(gws.base.model.widget.Config):
     """Toggle kind: checkbox, radio"""
 
 
+@gws.ext.props.modelWidget('toggle')
 class Props(gws.base.model.widget.Props):
     kind: str
 
 
+@gws.ext.object.modelWidget('toggle')
 class Object(gws.base.model.widget.Object):
     def props(self, user):
         return gws.u.merge(

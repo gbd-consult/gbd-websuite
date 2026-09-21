@@ -12,9 +12,8 @@ import gws.gis.zoom
 
 from . import grabber, provider
 
-gws.ext.new.layer('wmts')
 
-
+@gws.ext.config.layer('wmts')
 class Config(gws.base.layer.Config):
     """WMTS layer"""
 
@@ -41,11 +40,13 @@ class TileMatrixSetProps(gws.Props):
     """Tile size in pixels."""
 
 
+@gws.ext.props.layer('wmts')
 class Props(gws.base.layer.core.Props):
     tileMatrixSet: Optional[TileMatrixSetProps]
     """Tile matrix set for the client display mode."""
 
 
+@gws.ext.object.layer('wmts')
 class Object(gws.base.layer.image.Object):
     provider: provider.Object
     sourceLayers: list[gws.SourceLayer]

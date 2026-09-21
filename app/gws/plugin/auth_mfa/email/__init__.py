@@ -12,9 +12,8 @@ import gws.base.auth
 import gws.plugin.email_helper
 import gws.lib.otp
 
-gws.ext.new.authMultiFactorAdapter('email')
 
-
+@gws.ext.config.authMultiFactorAdapter('email')
 class Config(gws.base.auth.mfa.Config):
     """Email multi-factor authenticator configuration."""
 
@@ -22,6 +21,7 @@ class Config(gws.base.auth.mfa.Config):
     """Email templates."""
 
 
+@gws.ext.object.authMultiFactorAdapter('email')
 class Object(gws.base.auth.mfa.Object):
     templates: list[gws.Template]
 

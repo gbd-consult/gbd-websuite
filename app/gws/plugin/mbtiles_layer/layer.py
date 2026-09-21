@@ -11,9 +11,8 @@ import gws.lib.extent
 
 from . import grabber, provider
 
-gws.ext.new.layer('mbtiles')
 
-
+@gws.ext.config.layer('mbtiles')
 class Config(gws.base.layer.Config):
     """MBTiles layer"""
 
@@ -25,6 +24,7 @@ class Config(gws.base.layer.Config):
     """Color to treat as transparent in the layer."""
 
 
+@gws.ext.object.layer('mbtiles')
 class Object(gws.base.layer.image.Object):
     provider: provider.Object
     msOptions: gws.MapServerLayerOptions

@@ -9,9 +9,8 @@ import gws.base.template
 import gws.base.web
 import gws.base.metadata
 
-gws.ext.new.project('default')
 
-
+@gws.ext.config.project('default')
 class Config(gws.ConfigWithAccess):
     """Project configuration"""
 
@@ -49,6 +48,7 @@ class Config(gws.ConfigWithAccess):
     """Custom variables."""
 
 
+@gws.ext.props.project('default')
 class Props(gws.Props):
     actions: list[gws.ext.props.action]
     client: Optional[gws.base.client.Props]
@@ -64,6 +64,7 @@ class Props(gws.Props):
     uid: str
 
 
+@gws.ext.object.project('default')
 class Object(gws.Project):
     overviewMap: gws.base.map.Object
     title: str

@@ -24,8 +24,6 @@ import gws.lib.mime
 import gws.lib.osx
 import gws.lib.intl
 
-gws.ext.new.action('web')
-
 
 class TemplateArgs(gws.TemplateArgs):
     """Asset template arguments."""
@@ -44,12 +42,14 @@ class TemplateArgs(gws.TemplateArgs):
     """Locale object."""
 
 
+@gws.ext.config.action('web')
 class Config(gws.base.action.Config):
     """Web action configuration."""
 
     pass
 
 
+@gws.ext.props.action('web')
 class Props(gws.base.action.Props):
     pass
 
@@ -74,6 +74,7 @@ class FileRequest(gws.Request):
     featureUid: str
 
 
+@gws.ext.object.action('web')
 class Object(gws.base.action.Object):
     """Web action"""
 
