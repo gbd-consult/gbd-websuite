@@ -195,7 +195,8 @@ class Object(gws.base.template.Object):
             gws.log.debug(f'empty legend render')
             return
 
-        img_path = gws.base.legend.output_to_image_path(lro)
+        img_path = gws.u.ephemeral_path('legend.png')
+        lro.image.to_path(img_path, gws.lib.mime.PNG)
         return f'<img src="{img_path}"/>'
 
     def render_page_break(self, tri: gws.TemplateRenderInput):

@@ -3,14 +3,12 @@ class LegendRenderOutput(Data):
 
     html: str
     image: 'Image'
-    image_path: str
     size: Size
-    mimeType: str
 
 
 class Legend(Node):
     """Legend object."""
 
-    def render(self, args: Optional[dict] = None) -> Optional[LegendRenderOutput]: ...
+    def render(self, args: Optional[dict | Data] = None) -> Optional[LegendRenderOutput]: ...
 
 

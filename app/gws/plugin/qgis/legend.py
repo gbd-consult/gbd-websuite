@@ -95,4 +95,4 @@ class Object(gws.base.legend.Object):
             _get,
         )
         img = gws.lib.image.from_bytes(content)
-        return gws.LegendRenderOutput(image=img, size=img.size(), mimeType=gws.lib.mime.PNG)
+        return gws.LegendRenderOutput(image=img, size=img.size())

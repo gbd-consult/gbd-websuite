@@ -3,7 +3,6 @@
 from typing import Optional, cast
 
 import gws
-import gws.base.legend
 import gws.base.web
 import gws.config.util
 import gws.lib.bounds
@@ -284,9 +283,7 @@ class Object(gws.OwsService):
                 ),
             )
             lro = legend.render()
-            if not lro:
-                return self.image_response(sr, None, mime_type)
-            return self.image_response(sr, gws.base.legend.output_to_image(lro), mime_type)
+            return self.image_response(sr, lro.image if lro else None, mime_type)
 
         return gws.u.get_app_global(cache_key, _get)
 

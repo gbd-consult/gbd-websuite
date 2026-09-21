@@ -2,7 +2,6 @@ from typing import Optional
 
 import gws
 import gws.lib.image
-import gws.lib.mime
 
 
 class Props(gws.Props):
@@ -29,76 +28,28 @@ class Object(gws.Legend):
         self.cacheMaxAge = self.cfg('cacheMaxAge', default=3600 * 24)
 
 
-def output_to_bytes(lro: gws.LegendRenderOutput) -> Optional[bytes]:
-    """Convert a LegendRenderOutput to raw image bytes.
-
-        Args:
-            lro: The legend render output object.
-
-        Returns:
-            The image encoded as bytes if available, otherwise None.
-        """
-    img = output_to_image(lro)
-    return img.to_bytes() if img else None
-
-
-def output_to_image(lro: gws.LegendRenderOutput) -> Optional[gws.Image]:
-    """Extract an image object from a LegendRenderOutput.
-
-        Args:
-            lro: The legend render output object.
-
-        Returns:
-            The image object if available, otherwise None (e.g. when only HTML is set).
-        """
-    if lro.image:
-        return lro.image
-    if lro.image_path:
-        return gws.lib.image.from_path(lro.image_path)
-    if lro.html:
-        return None
-
-
-def output_to_image_path(lro: gws.LegendRenderOutput) -> Optional[str]:
-    """Resolve the file path to the image of a LegendRenderOutput.
-
-       Args:
-           lro: The legend render output object.
-
-       Returns:
-           Path to the image file if available, otherwise None.
-       """
-    if lro.image:
-        img_path = gws.u.ephemeral_path('legend.png')
-        return lro.image.to_path(img_path, gws.lib.mime.PNG)
-    if lro.image_path:
-        return lro.image_path
-    if lro.html:
-        return None
-
-
-def combine_outputs(lros: list[gws.LegendRenderOutput], options: dict = None) -> Optional[gws.LegendRenderOutput]:
+def combine_outputs(lro_list: list[gws.LegendRenderOutput], options: dict = None) -> Optional[gws.LegendRenderOutput]:
     """Combine multiple LegendRenderOutputs into a single output.
 
-        Args:
-            lros: A list of legend render outputs to combine.
-            options: Optional combination settings (currently unused).
+    Args:
+        lro_list: A list of legend render outputs to combine.
+        options: Optional combination settings (currently unused).
 
-        Returns:
-            A new LegendRenderOutput containing the combined image,
-            or None if no images were provided.
-        """
-    imgs = gws.u.compact(output_to_image(lro) for lro in lros)
+    Returns:
+        A new LegendRenderOutput containing the combined image,
+        or None if no images were provided.
+    """
+    imgs = []
+    for lro in lro_list:
+        if lro and lro.image:
+            imgs.append(lro.image)
+    if not imgs:
+        return
     img = _combine_images(imgs, options)
-    if not img:
-        return None
     return gws.LegendRenderOutput(image=img, size=img.size())
 
 
-def _combine_images(images: list[gws.Image], options: dict = None) -> Optional[gws.Image]:
-    if not images:
-        return None
-    # @TODO other combination options
+def _combine_images(images: list[gws.Image], options: dict = None):
     return _combine_vertically(images)
 
 
