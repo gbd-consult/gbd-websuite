@@ -180,6 +180,8 @@ def rmdir(path: _Path) -> bool:
         path: Path to a directory. Can be non-empty
     """
 
+    if not os.path.isdir(path):
+        return False
     try:
         shutil.rmtree(path)
         return True
