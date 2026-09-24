@@ -8,7 +8,7 @@ body {
     display: flex;
 }
 #sidebar {
-    width: 460px;
+    width: 360px;
     display: flex;
     flex-direction: column;
     border-right: 1px solid #ccc;
@@ -71,16 +71,17 @@ body {
     text-overflow: ellipsis;
 }
 .levels {
-    white-space: nowrap;
     overflow-x: auto;
     margin-top: 4px;
 }
 .levels .level {
-    font-size: 10px;
+    font-size: 11px;
+    width: 40px;
     display: inline-block;
-    text-align: right;
     padding: 2px 2px;
+    margin: 4px 0;
     text-decoration: none;
+    border: 1px solid #ccc;
 }
 .levels .p0 {
     color: #999;
@@ -94,7 +95,11 @@ body {
     font-weight: bold;
 }
 .levels .level.selected {
-    outline: 1px solid currentColor;
+    background: rgb(255, 165, 0);
+    color: white;
+}
+.levels .level:hover {
+    background: #f0f0f0;
 }
 #status {
     position: absolute;

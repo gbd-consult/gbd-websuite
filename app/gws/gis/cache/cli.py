@@ -5,6 +5,8 @@ from typing import Optional
 import re
 
 import gws
+import gws.base.shape
+import gws.lib.crs
 import gws.lib.jsonx
 import gws.lib.cli as cli
 import gws.config
@@ -22,17 +24,25 @@ class FilterParams(gws.CliParams):
 
 
 class StatusParams(FilterParams):
-    grids: bool = False
-    """Print grid tables."""
+    details: bool = False
+    """Print detailed status."""
     json: str = ''
     """Write json report to path."""
 
 
-class DropParams(FilterParams):
-    pass
+class FilterParamsWithGeom(FilterParams):
+    bbox: Optional[list[float]]
+    """Bounding box [minx, miny, maxx, maxy]."""
+    wkt: str = ''
+    """WKT geometry."""
 
 
-class SeedParams(FilterParams):
+class DropParams(FilterParamsWithGeom):
+    levels: str = ''
+    """Zoom levels (1,2,3 or 1-3)."""
+
+
+class SeedParams(FilterParamsWithGeom):
     levels: str = ''
     """Zoom levels (1,2,3 or 1-3)."""
     maxTime: Optional[int]
@@ -50,12 +60,14 @@ class Object(gws.Node):
         """Display the cache status."""
 
         root = gws.config.loader.load()
-        status = core.status(root, _filter(p))
-        js = _status_to_json(status)
+        status = core.apply_filter(core.status(root), _filter(p))
+        core.add_counts_and_sizes(status)
         if p.json:
-            gws.lib.jsonx.to_path(p.json, js)
+            gws.lib.jsonx.to_path(p.json, _status_to_json(status))
+        elif p.details:
+            _display_status_details(status)
         else:
-            _display_status(js, p.grids)
+            _display_status_brief(status)
 
     @gws.ext.command.cli('cacheCleanup')
     def do_cleanup(self, p: gws.CliParams):
@@ -69,7 +81,7 @@ class Object(gws.Node):
         """Remove active cache directories."""
 
         root = gws.config.loader.load()
-        core.drop(root, _filter(p))
+        core.drop(root, _filter_with_geom(p), _levels(p.levels))
 
     @gws.ext.command.cli('cacheSeed')
     def do_seed(self, p: SeedParams):
@@ -77,27 +89,17 @@ class Object(gws.Node):
 
         root = gws.config.loader.load()
 
-        if p.levels:
-            m = re.match(r'^(\d+)-(\d+)$', p.levels)
-            if m:
-                levels = list(range(int(m.group(1)), int(m.group(2)) + 1))
-            else:
-                levels = [int(x) for x in gws.u.to_list(p.levels)]
-        else:
-            levels = []
-
         opts = core.SeedOptions(
-            filter=_filter(p),
-            levels=levels,
+            filter=_filter_with_geom(p),
+            levels=_levels(p.levels),
             maxTime=p.maxTime or root.app.cfg('cache.seedingMaxTime'),
             concurrency=p.concurrency or root.app.cfg('cache.seedingConcurrency'),
         )
         res = seed.seed(root, opts)
-        js = _seed_to_json(res)
         if p.json:
-            gws.lib.jsonx.to_path(p.json, js)
+            gws.lib.jsonx.to_path(p.json, _seed_to_json(res))
         else:
-            _display_seed(js)
+            _display_seed(res)
 
 
 ##
@@ -109,6 +111,40 @@ def _filter(p: FilterParams) -> core.Filter:
         cacheNames=gws.u.to_list(p.cacheNames),
         srids=[int(s) for s in gws.u.to_list(p.crs)],
     )
+
+
+def _levels(s: str) -> list[int]:
+    if not s:
+        return []
+    m = re.match(r'^(\d+)-(\d+)$', s)
+    if m:
+        return list(range(int(m.group(1)), int(m.group(2)) + 1))
+    return [int(x) for x in gws.u.to_list(s)]
+
+
+def _filter_with_geom(p: FilterParamsWithGeom) -> core.Filter:
+    flt = _filter(p)
+
+    bbox = gws.u.to_list(p.bbox)
+    wkt = p.wkt or ''
+    if not bbox and not wkt:
+        return flt
+
+    if bbox and wkt:
+        raise gws.Error('only one of bbox and wkt can be given')
+    if len(flt.srids) != 1:
+        raise gws.Error('exactly one crs is required with bbox or wkt')
+
+    crs = gws.lib.crs.require(flt.srids[0])
+
+    if bbox:
+        if len(bbox) != 4:
+            raise gws.Error(f'invalid bbox {p.bbox!r}')
+        flt.bbox = gws.Bounds(crs=crs, extent=tuple(float(v) for v in bbox))
+    else:
+        flt.bbox = gws.base.shape.from_wkt(wkt, crs).bounds()
+
+    return flt
 
 
 def _status_to_json(status: core.Status) -> dict:
@@ -132,8 +168,10 @@ def _status_to_json(status: core.Status) -> dict:
                     {
                         'level': lv.z,
                         'gridSize': list(lv.gridSize),
+                        'gridRange': list(lv.gridRange),
                         'totalTiles': lv.totalTiles,
                         'cachedTiles': lv.cachedTiles,
+                        'fileSize': lv.fileSize,
                         'percentCached': lv.percentCached,
                     }
                     for lv in e.levels
@@ -147,45 +185,76 @@ def _status_to_json(status: core.Status) -> dict:
     }
 
 
-def _display_status(js: dict, with_grids: bool):
-    for e in js['entries']:
+def _display_status_brief(status: core.Status):
+    cli.info(f'{len(status.entries)} CACHES')
+    if status.staleDirs:
+        cli.info(f'{len(status.staleDirs)} STALE DIRECTORIES')
+    cli.info('')
+
+    table = []
+    for e in status.entries:
+        ls = e.layerType + ' "' + e.layerTitle[:30] + '"'
+        if len(e.layers) > 1:
+            ls += f' (+{len(e.layers) - 1})'
+        percents = ' '.join(f'{z}:{p}' for z, p in enumerate(core.percentage_by_level(e)))
+        table.append(
+            {
+                'cache': e.name,
+                'layer': ls,
+                'levels': max(lv.z for lv in e.levels),
+                'files': e.cachedTiles,
+                'size': _format_file_size(e.fileSize),
+                '%%': percents,
+            }
+        )
+
+    cli.info(cli.text_table(table, header='auto'))
+
+
+def _display_status_details(status: core.Status):
+    cli.info(f'{len(status.entries)} CACHES')
+    if status.staleDirs:
+        cli.info(f'{len(status.staleDirs)} STALE DIRECTORIES')
+    cli.info('')
+
+    for e in status.entries:
+        ls = e.layerType + ' "' + e.layerTitle[:30] + '"'
+        if len(e.layers) > 1:
+            ls += f' (+{len(e.layers) - 1})'
+        percents = ' '.join(f'{z}:{p}' for z, p in enumerate(core.percentage_by_level(e)))
+
         cli.info('')
         cli.info('=' * 80)
         cli.info('')
+        cli.info(f'CACHE  {e.name}')
+        cli.info(f'LAYER  {ls}')
+        cli.info(f'FILES  {e.cachedTiles}, {_format_file_size(e.fileSize)}')
+        cli.info(f'%%     {percents}')
 
-        cli.info(f'CACHE  {e["name"]}')
-        # cli.info(f'DIR    {e["dir"] or "-"}')
-        # cli.info(f'CRS    {e["crs"] or "-"}')
-
-        la = e['layers'][0]
-        uids = ','.join(la['uid'] for la in e['layers'])
-        cli.info(f'LAYER  {len(e["layers"])}: {la["type"]} "{la["title"]}" uids={uids}')
-        percents = ' '.join(f'{lv["percentCached"]:3d}' for lv in e['levels'])
-        cli.info(f'%%     [{percents}]')
-
-        if not with_grids or not e['levels']:
+        if not e.levels:
             continue
 
         table = []
 
-        for lv in e['levels']:
+        for lv in e.levels:
             table.append(
                 {
-                    'level': lv['level'],
-                    'grid': f'{lv["gridSize"][0]} x {lv["gridSize"][1]}',
-                    'total': lv['totalTiles'],
-                    'cached': lv['cachedTiles'],
-                    '%%': lv['percentCached'],
+                    'level': lv.z,
+                    'range': f'{lv.gridRange[0]},{lv.gridRange[1]} - {lv.gridRange[2]},{lv.gridRange[3]}',
+                    'grid': f'{lv.gridSize[0]} x {lv.gridSize[1]}',
+                    'total': lv.totalTiles,
+                    'cached': lv.cachedTiles,
+                    '%%': lv.percentCached,
                 }
             )
         cli.info('')
-        cli.info(cli.text_table(table, ['level', 'grid', 'total', 'cached', '%%']))
+        cli.info(cli.text_table(table, header='auto'))
 
-    if js['staleDirs']:
+    if status.staleDirs:
         cli.info('')
         cli.info('=' * 80)
-        cli.info(f'{len(js["staleDirs"])} STALE CACHES ("gws cache cleanup" to remove):')
-        for d in js['staleDirs']:
+        cli.info(f'{len(status.staleDirs)} STALE DIRECTORIES ("gws cache cleanup" to remove):')
+        for d in status.staleDirs:
             cli.info(f'    {d}')
 
 
@@ -227,26 +296,36 @@ def _seed_to_json(res: core.SeedResult) -> dict:
     }
 
 
-def _display_seed(js: dict):
+def _display_seed(res: core.SeedResult):
     table = []
 
-    for e in js['entries']:
-        for lv in e['levels']:
-            if not lv['fetchedTiles'] and not lv['failedTiles']:
+    for e in res.entries:
+        for lv in e.levels:
+            if not lv.fetchedTiles and not lv.failedTiles:
                 continue
-            n = lv['cachedTiles'] + lv['fetchedTiles'] + lv['failedTiles']
             table.append(
                 {
-                    'cache': e['name'],
-                    'level': lv['level'],
-                    'total': lv['totalTiles'],
-                    'fetched': lv['fetchedTiles'],
-                    'failed': lv['failedTiles'],
-                    '%%': int(100 * n / lv['totalTiles']) if lv['totalTiles'] else 0,
-                    'time': lv["seedTime"],
-                    'tps': int(lv["fetchedTiles"] / lv["seedTime"]) if lv["seedTime"] else 0,
+                    'cache': e.name,
+                    'level': lv.z,
+                    'total': lv.totalTiles,
+                    'fetched': lv.fetchedTiles,
+                    'failed': lv.failedTiles,
+                    '%%': core.percent_cached(lv),
+                    'time': round(lv.seedTime, 1),
+                    'tps': int(lv.fetchedTiles / lv.seedTime) if lv.seedTime else 0,
                 }
             )
 
     cli.info('')
-    cli.info(cli.text_table(table, ['cache', 'level', 'total', 'fetched', 'failed', '%%', 'time', 'tps']))
+    cli.info(cli.text_table(table, header='auto'))
+
+
+def _format_file_size(size: int) -> str:
+    if size == 0:
+        return '0'
+    s = float(size)
+    for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+        if s < 1024:
+            return f'{s:.1f} {unit}'
+        s /= 1024
+    return str(size) + '??'

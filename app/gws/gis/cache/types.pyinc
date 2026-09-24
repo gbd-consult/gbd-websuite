@@ -13,20 +13,28 @@ class MapCache(Data):
     """Number of tiles to request at once."""
 
 
+class TileStoreStats(Data):
+    """Tile store statistics."""
+
+    count: int
+    """Number of stored tiles."""
+    size: int
+    """Total size of stored tiles in bytes."""
+    range: Optional[MapTileRange]
+    """Bounding tile range of the stored tiles, only for a single level."""
+
+
 class TileStore:
     """Tile store."""
 
     baseDir: str
     """Base directory of the store."""
 
-    def count(self) -> int:
-        """Return the number of tiles stored."""
+    def stats(self) -> TileStoreStats:
+        """Return statistics for the whole store."""
 
-    def count_for_level(self, z: int) -> int:
-        """Return the number of tiles stored for a level."""
-
-    def range_for_level(self, z: int) -> Optional[MapTileRange]:
-        """Return the bounding tile range of the stored tiles of a level, or ``None`` if empty."""
+    def stats_for_level(self, z: int) -> TileStoreStats:
+        """Return statistics for a level."""
 
     def path(self, mt: MapTile) -> str:
         """Return the file path for a tile."""
@@ -42,3 +50,9 @@ class TileStore:
 
     def drop(self):
         """Remove the whole store."""
+
+    def drop_level(self, z: int):
+        """Remove all tiles of a level."""
+
+    def drop_range(self, mtr: MapTileRange):
+        """Remove the tiles of a range."""

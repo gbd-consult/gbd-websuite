@@ -173,6 +173,17 @@ def range_for_extent(mg: gws.MapGrid, extent: gws.Extent, z: int) -> gws.MapTile
     return max(x0, 0), max(y0, 0), min(x1, nx - 1), min(y1, ny - 1), z
 
 
+def intersect_ranges(a: gws.MapTileRange, b: gws.MapTileRange) -> gws.MapTileRange | None:
+    """Return the intersection of two tile ranges of the same level, or ``None`` if they do not intersect."""
+
+    if a[4] != b[4]:
+        raise ValueError(f'cannot intersect ranges of different levels: {a!r}, {b!r}')
+    x0, y0, x1, y1 = max(a[0], b[0]), max(a[1], b[1]), min(a[2], b[2]), min(a[3], b[3])
+    if x1 < x0 or y1 < y0:
+        return None
+    return x0, y0, x1, y1, a[4]
+
+
 def extent_for_range(mg: gws.MapGrid, tr: gws.MapTileRange) -> gws.Extent:
     x0, y0, x1, y1, z = tr
     span = resolution_for_level(mg, z) * mg.tileSize

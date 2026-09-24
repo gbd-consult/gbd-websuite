@@ -391,7 +391,7 @@ def test_cached_box_beyond_max_level_composes_directly():
     extent = _block_extent(n=2)
     gr.get_box_as_image(extent, 512, 512)
     assert gr.fetches == [(extent, 512, 512, None)]
-    assert gr.store.count() == 0
+    assert gr.store.stats().count == 0
 
 
 def test_dynamic_box_bypasses_store():
@@ -400,8 +400,8 @@ def test_dynamic_box_bypasses_store():
     params = {'param_1': 'value_1'}
     gr.get_box_as_image(extent, 512, 512, params)
     assert gr.fetches == [(extent, 512, 512, params)]
-    assert gr.store.count() == 0
-    assert gr._store_for(15).count() == 0
+    assert gr.store.stats().count == 0
+    assert gr._store_for(15).stats().count == 0
 
 
 def test_cached_box_overlapping_no_data_is_transparent():

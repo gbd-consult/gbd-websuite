@@ -28,11 +28,15 @@ def seed(root: gws.Root, opts: core.SeedOptions) -> core.SeedResult:
 
 
 def _run(root: gws.Root, opts: core.SeedOptions) -> core.SeedResult:
-    st = core.status(root, opts.filter, with_counts=True)
+    st = core.status(root)
+    if opts.filter:
+        st = core.apply_filter(st, opts.filter)
+    core.add_counts_and_sizes(st)
+    core.restrict(st, opts.filter.bbox if opts.filter else None, opts.levels)
     res = core.SeedResult(entries=st.entries, seedTime=0, seedStatus='')
     ts = gws.u.stime()
 
-    queue = _BlockQueue(res.entries, opts.levels)
+    queue = _BlockQueue(res.entries)
 
     deadline = gws.u.stime() + opts.maxTime
     threads = [threading.Thread(target=_worker, args=(queue, deadline), daemon=True) for _ in range(opts.concurrency)]
@@ -67,16 +71,17 @@ class _BlockGenerator:
 
     def iter_blocks(self):
         for z in sorted(self.levels):
-            x0, y0, x1, y1, _ = self.entry.grabber.tile_range_for_level(z)
-            for by in range(y0, y1 + 1, self.size):
-                for bx in range(x0, x1 + 1, self.size):
-                    yield bx, by, min(bx + self.size - 1, x1), min(by + self.size - 1, y1), z
+            x0, y0, x1, y1, _ = self.levels[z].gridRange
+            n = self.size
+            for by in range((y0 // n) * n, y1 + 1, n):
+                for bx in range((x0 // n) * n, x1 + 1, n):
+                    yield max(bx, x0), max(by, y0), min(bx + n - 1, x1), min(by + n - 1, y1), z
 
 
 class _BlockQueue:
     """Yields blocks to seed, round-robin over entries, so that no single source gets all threads."""
 
-    def __init__(self, entries: list[core.Entry], zs: list[int]):
+    def __init__(self, entries: list[core.Entry]):
         self.lock = threading.Lock()
         self.entries = entries
         self.generators: list[_BlockGenerator] = []
@@ -85,9 +90,8 @@ class _BlockQueue:
         self.lastReport = gws.u.stime()
 
         for e in entries:
-            levels = [lv for lv in e.levels if not zs or lv.z in zs]
-            if levels:
-                self.generators.append(_BlockGenerator(e, levels))
+            if e.levels:
+                self.generators.append(_BlockGenerator(e, e.levels))
 
     def next_block(self) -> tuple[_BlockGenerator, gws.MapTileRange] | None:
         with self.lock:
@@ -123,17 +127,9 @@ class _BlockQueue:
 
     def report(self):
         self.lastReport = gws.u.stime()
-
-        percents = {}
-        for e in self.entries:
-            percents.setdefault(e.name, [0 for _ in range(e.grabber.cache.maxLevel + 1)])
-            for lv in e.levels:
-                n = lv.cachedTiles + lv.fetchedTiles + lv.failedTiles
-                percents[e.name][lv.z] = int((n / lv.totalTiles) * 100 if lv.totalTiles else 0)
-
+        percents = {e.name: core.percentage_by_level(e) for e in self.entries}
         for name, ps in sorted(percents.items()):
-            gws.log.info(f'seed {name}: %% [{" ".join(f"{p:3d}" for p in ps)}]')
-
+            gws.log.info(f'seed {name}: %% {" ".join(f"{z}:{p}" for z, p in enumerate(ps))}')
 
 def _worker(queue: _BlockQueue, deadline: float):
     while not queue.stopped:

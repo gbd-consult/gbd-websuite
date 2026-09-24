@@ -4,6 +4,8 @@ import os
 import re
 
 import gws
+import gws.lib.crs
+import gws.lib.grid
 import gws.lib.image
 import gws.lib.mime
 
@@ -52,7 +54,8 @@ def get_content(root: gws.Root, path: str) -> gws.ContentResponse:
 
 
 def _page(root: gws.Root, name: str, z: int) -> gws.ContentResponse:
-    st = core.status(root, with_counts=True)
+    st = core.status(root)
+    core.add_counts_and_sizes(st)
     selected = None
 
     if name:
@@ -66,6 +69,7 @@ def _page(root: gws.Root, name: str, z: int) -> gws.ContentResponse:
         'url': _URL,
         'caches': {e.name: _cache_config(e) for e in st.entries},
         'selected': selected,
+        'baseGrid': _grid_config(gws.lib.grid.for_crs(gws.lib.crs.WEBMERCATOR)),
     }
 
     tpl = root.app.templateMgr.template_from_path(f'{_DIR}/page.cx.html')
@@ -87,7 +91,7 @@ def _find(st: core.Status, name: str) -> core.Entry:
 
 
 def _tile(root: gws.Root, name: str, z: int, x: int, y: int) -> gws.ContentResponse:
-    e = _find(core.status(root, core.Filter(cacheNames=[name]), with_counts=False), name)
+    e = _find(core.status(root), name)
     store = e.grabber.store
     p = store.path((x, y, z))
     if not os.path.isfile(p):
@@ -111,7 +115,6 @@ def _cache_config(e: core.Entry) -> dict:
         'crs': {
             'epsg': crs.epsg,
             'proj4text': crs.proj4text,
-            'extent': list(crs.extent),
         },
         'gridExtent': list(gr.grid.extent),
         'tileSize': gr.grid.tileSize,
@@ -119,6 +122,16 @@ def _cache_config(e: core.Entry) -> dict:
         'ext': gr.store.extension,
         'resolutions': {lv.z: lv.resolution for lv in e.levels},
         'ranges': {lv.z: list(lv.cachedRange) if lv.cachedRange else None for lv in e.levels},
+        'gridRanges': {lv.z: list(lv.gridRange) for lv in e.levels},
         'counts': {lv.z: [lv.totalTiles, lv.cachedTiles] for lv in e.levels},
         'srid': crs.srid,
+        'grid': _grid_config(gr.grid),
+    }
+
+
+def _grid_config(mg: gws.MapGrid) -> dict:
+    return {
+        'extent': list(mg.extent),
+        'baseResolution': mg.baseResolution,
+        'tileSize': mg.tileSize,
     }
