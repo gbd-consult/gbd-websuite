@@ -8,7 +8,7 @@ export GWS_UID=${GWS_UID:-1000}
 export GWS_GID=${GWS_GID:-1000}
 
 export LC_ALL=C.UTF-8
-export PYTHONPATH=$GWS_APP_DIR
+export PYTHONPATH="$GWS_APP_DIR"
 export PYTHONDONTWRITEBYTECODE=1
 
 PYTHON=python3
@@ -19,38 +19,43 @@ SERVER_START_SCRIPT=$GWS_VAR_DIR/server.sh
 
 # ensure the run user exists and has a valid home dir
 
-if ! getent group $GWS_GID > /dev/null; then
-    groupadd -g GWS_GID gws
+if ! getent group "$GWS_GID" > /dev/null; then
+    groupadd -g "$GWS_GID" gws
 fi
 
-if ! getent passwd $GWS_UID > /dev/null; then
-    useradd -u $GWS_UID -g $GWS_GID gws
+if ! getent passwd "$GWS_UID" > /dev/null; then
+    useradd -u "$GWS_UID" -g "$GWS_GID" gws
 fi
 
-GWS_USER_NAME=$(getent passwd $GWS_UID | cut -d: -f1)
-GWS_USER_HOME=$(getent passwd $GWS_UID | cut -d: -f6)
+GWS_USER_NAME=$(getent passwd "$GWS_UID" | cut -d: -f1)
+GWS_USER_HOME=$(getent passwd "$GWS_UID" | cut -d: -f6)
 
 mkdir -p "$GWS_USER_HOME"
-chown $GWS_UID:$GWS_GID "$GWS_USER_HOME"
+chown "$GWS_UID:$GWS_GID" "$GWS_USER_HOME"
 chmod 750 "$GWS_USER_HOME"
 
 ###########################################################################
 
 remove_temp_dir() {
-  rm -fr $GWS_TMP_DIR/*
+  rm -fr "$GWS_TMP_DIR"/*
 }
 
 ensure_temp_dir() {
-  mkdir -p $GWS_TMP_DIR
-  chown $GWS_UID:$GWS_GID $GWS_TMP_DIR
-  chmod 1777 $GWS_TMP_DIR
+  mkdir -p "$GWS_TMP_DIR"
+  chown "$GWS_UID:$GWS_GID" "$GWS_TMP_DIR"
+  chmod 1777 "$GWS_TMP_DIR"
 }
 
 ensure_var_dir() {
-  mkdir -p $GWS_VAR_DIR
-  chown -R $GWS_UID:$GWS_GID $GWS_VAR_DIR
-  chmod 750 $GWS_VAR_DIR
+  mkdir -p "$GWS_VAR_DIR"
+  chown "$GWS_UID:$GWS_GID" "$GWS_VAR_DIR"
+  chmod 750 "$GWS_VAR_DIR"
 }
+
+ensure_var_dir_ownership() {
+  chown -R "$GWS_UID:$GWS_GID" "$GWS_VAR_DIR"
+}
+
 
 ###########################################################################
 
@@ -63,15 +68,27 @@ if [ "$1 $2" == "server start" ]; then
 
     remove_temp_dir
     ensure_temp_dir
+    ensure_var_dir_ownership
 
-    rm -f $SERVER_START_SCRIPT
+    rm -f "$SERVER_START_SCRIPT"
 
-    $PYTHON $MAIN_PY "$@"
+    $PYTHON "$MAIN_PY" "$@" || exit $?
 
-    [ $? -eq 0 ] || exit $?
+    chmod 700 "$SERVER_START_SCRIPT"
+    exec "$SERVER_START_SCRIPT"
+fi
 
-    chmod 700 $SERVER_START_SCRIPT
-    exec $SERVER_START_SCRIPT
+# other server commands run as root
+
+if [ "$1" == "server" ]; then
+    exec $PYTHON "$MAIN_PY" "$@"
+fi
+
+# everything else runs as the run user
+
+RUN_AS=
+if [ "$(id -u)" -eq 0 ]; then
+    RUN_AS="gosu $GWS_UID:$GWS_GID"
 fi
 
 # if the `-p` option is set, run a given script
@@ -80,9 +97,9 @@ if [ "$1" == "-p" ]; then
     shift
     SCRIPT=$1
     shift
-    exec $PYTHON $SCRIPT "$@"
+    exec $RUN_AS $PYTHON "$SCRIPT" "$@"
 fi
 
 # run a built-in command
 
-exec $PYTHON $MAIN_PY "$@"
+exec $RUN_AS $PYTHON "$MAIN_PY" "$@"
