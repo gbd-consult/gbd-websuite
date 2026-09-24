@@ -80,6 +80,7 @@ class SeedOptions(gws.Data):
     levels: list[int]
     maxTime: int
     concurrency: int
+    maxAge: Optional[int]
 
 
 class SeedResult(gws.Data):

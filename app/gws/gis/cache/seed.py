@@ -31,6 +31,9 @@ def _run(root: gws.Root, opts: core.SeedOptions) -> core.SeedResult:
     st = core.status(root)
     if opts.filter:
         st = core.apply_filter(st, opts.filter)
+    if opts.maxAge is not None:
+        for e in st.entries:
+            e.grabber.store.maxAge = min(opts.maxAge, e.grabber.cache.maxAge)
     core.add_counts_and_sizes(st)
     core.restrict(st, opts.filter.bbox if opts.filter else None, opts.levels)
     res = core.SeedResult(entries=st.entries, seedTime=0, seedStatus='')
@@ -158,7 +161,7 @@ def _seed_block(queue: _BlockQueue, bg: _BlockGenerator, block: gws.MapTileRange
     missing = []
 
     for mt in gws.lib.grid.enum_tiles(block):
-        if bg.entry.grabber.store.has(mt, bg.entry.grabber.cache.maxAge):
+        if bg.entry.grabber.store.has(mt, bg.entry.grabber.store.maxAge):
             present += 1
         else:
             missing.append(mt)

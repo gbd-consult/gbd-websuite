@@ -7,6 +7,7 @@ import re
 import gws
 import gws.base.shape
 import gws.lib.crs
+import gws.lib.datetimex
 import gws.lib.jsonx
 import gws.lib.cli as cli
 import gws.config
@@ -49,6 +50,8 @@ class SeedParams(FilterParamsWithGeom):
     """Max. seeding time in seconds."""
     concurrency: Optional[int]
     """Number of concurrent seeding threads."""
+    maxAge: str = ''
+    """Reseed tiles older than this duration (e.g. 1d, 0 to reseed all)."""
     json: str = ''
     """Write json report to path."""
 
@@ -94,6 +97,7 @@ class Object(gws.Node):
             levels=_levels(p.levels),
             maxTime=p.maxTime or root.app.cfg('cache.seedingMaxTime'),
             concurrency=p.concurrency or root.app.cfg('cache.seedingConcurrency'),
+            maxAge=gws.lib.datetimex.parse_duration(p.maxAge) if p.maxAge else None,
         )
         res = seed.seed(root, opts)
         if p.json:
