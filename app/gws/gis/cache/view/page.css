@@ -30,6 +30,31 @@ body {
     font: inherit;
     cursor: pointer;
 }
+#toolbar {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    z-index: 1;
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: rgba(255, 255, 255, 0.9);
+}
+#toolbar .toggle {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 4px;
+    font: inherit;
+    cursor: pointer;
+}
+#toolbar .toggle svg {
+    width: 14px;
+    height: 14px;
+}
+#toolbar .toggle.off {
+    color: #999;
+}
 #caches {
     flex: 1;
     overflow: auto;

@@ -2035,9 +2035,11 @@ class TileStore:
 
     baseDir: str
     """Base directory of the store."""
+    maxAge: int
+    """Max. age of stored tiles (seconds)."""
 
     def stats(self) -> TileStoreStats:
-        """Return statistics for the whole store; ``range`` is ``None``."""
+        """Return statistics for the whole store."""
 
     def stats_for_level(self, z: int) -> TileStoreStats:
         """Return statistics for a level."""
@@ -2045,8 +2047,8 @@ class TileStore:
     def path(self, mt: MapTile) -> str:
         """Return the file path for a tile."""
 
-    def has(self, mt: MapTile, max_age: int) -> bool:
-        """True if the tile is stored and younger than ``max_age`` seconds."""
+    def has(self, mt: MapTile) -> bool:
+        """True if the tile is stored and younger than the store's max. age."""
 
     def read(self, mt: MapTile) -> Optional[bytes]:
         """Return a stored tile or ``None`` if missing or stale."""

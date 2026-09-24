@@ -13,24 +13,24 @@
         <button id="search-clear" type="button" title="clear">&times;</button>
     </div>
     <div id="caches">
-    @for e in entries
-        <div class="cache {'selected' if e.name == name else ''}" data-name="{e.name}">
-            <div class="name">{e.name} / {e.grabber.targetCrs.srid}</div>
+    @for c in caches
+        <div class="cache {'selected' if c.name == name else ''}" data-name="{c.name}">
+            <div class="name">{c.name} / {c.grabber.targetCrs.srid}</div>
             <div class="info">
-                {e.layerType} 
-                "{e.layerTitle[:20] | html}" 
-                @if len(e.layers) > 1
-                    (+{len(e.layers) - 1})
+                {c.layerType} 
+                "{c.layerTitle[:20] | html}" 
+                @if len(c.layers) > 1
+                    (+{len(c.layers) - 1})
                 @end
             </div>
             <div class="levels">
-                @for lv in e.levels
-                    @let sel = 'selected' if e.name == name and lv.z == z else ''
+                @for lv in c.levels
+                    @let sel = 'selected' if c.name == name and lv.z == z else ''
                     @let p = 'p0' if lv.percentCached == 0 else 'p100' if lv.percentCached == 100 else 'pn'
                     <a 
                         class="level {p} {sel}" 
-                        href="{url}{e.name}/{lv.z}" 
-                        data-name="{e.name}" 
+                        href="{url}{c.name}/{lv.z}" 
+                        data-name="{c.name}" 
                         data-z="{lv.z}" 
                         title="level {lv.z}: {lv.cachedTiles}/{lv.totalTiles}"
                         >{lv.z}:{lv.percentCached}</a>
@@ -40,7 +40,14 @@
     @end
     </div>
 </div>
-<div id="map"><div id="zoom"></div></div>
+<div id="map">
+    <div id="zoom"></div>
+    <div id="toolbar">
+        <button class="toggle" type="button" data-layer="cache" title="toggle cache tiles">cache</button>
+        <button class="toggle" type="button" data-layer="grid" title="toggle grid">grid</button>
+        <button class="toggle" type="button" data-layer="map" title="toggle background map">map</button>
+    </div>
+</div>
 <div id="status"></div>
 <script id="config" type="application/json">{config | json}</script>
 <script src="{url}proj4.js"></script>

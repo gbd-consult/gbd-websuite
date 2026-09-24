@@ -68,3 +68,18 @@ def test_level_for_resolution():
     assert grid.level_for_resolution(GRID_3857, r5 * 1.5) == 5
     assert grid.level_for_resolution(GRID_3857, r5 * (1 - 0.5 * grid.RESOLUTION_TOLERANCE)) == 5
     assert grid.level_for_resolution(GRID_3857, r5 * (1 - 2 * grid.RESOLUTION_TOLERANCE)) == 6
+
+
+def test_intersect_ranges():
+    assert grid.intersect_ranges((0, 0, 5, 5, 3), (3, 4, 9, 9, 3)) == (3, 4, 5, 5, 3)
+    assert grid.intersect_ranges((0, 0, 5, 5, 3), (5, 5, 9, 9, 3)) == (5, 5, 5, 5, 3)
+    assert grid.intersect_ranges((0, 0, 1, 1, 3), (3, 4, 9, 9, 3)) is None
+    with u.raises(ValueError):
+        grid.intersect_ranges((0, 0, 5, 5, 3), (0, 0, 5, 5, 4))
+
+
+def test_range_for_extent():
+    assert grid.range_for_extent(GRID_3857, _tile_extent((1, 0, 1)), 1) == (1, 0, 1, 0, 1)
+    assert grid.range_for_extent(GRID_3857, _tile_extent((1, 0, 1)), 3) == (4, 0, 7, 3, 3)
+    assert grid.range_for_extent(GRID_3857, (-2 * HALF, -2 * HALF, 2 * HALF, 2 * HALF), 2) == (0, 0, 3, 3, 2)
+    assert grid.range_for_extent(GRID_3857, (2 * HALF, 0, 3 * HALF, HALF), 2) is None

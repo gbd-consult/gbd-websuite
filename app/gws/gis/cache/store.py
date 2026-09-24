@@ -13,23 +13,23 @@ class Object(gws.TileStore):
         self.extension = extension
 
     def stats(self) -> gws.TileStoreStats:
-        return _stats(self.baseDir, self.maxAge, None)
+        return self._stats()
 
     def stats_for_level(self, z: int) -> gws.TileStoreStats:
-        return _stats(f'{self.baseDir}/{z:02d}', self.maxAge, z)
+        return self._stats(z)
 
     def path(self, mt: gws.MapTile) -> str:
         x, y, z = mt
         s = 10000
-        return f'{self.baseDir}/{z:02d}/{x // s:04d}/{x % s:04d}/{y // s:04d}/{y % s:04d}.{self.extension}'
+        return f'{self._level_dir(z)}/{(x // s):04d}/{(x % s):04d}/{(y // s):04d}/{(y % s):04d}.{self.extension}'
 
-    def has(self, mt: gws.MapTile, max_age: int) -> bool:
+    def has(self, mt: gws.MapTile) -> bool:
         p = self.path(mt)
         age = osx.file_age(p)
-        return 0 <= age < max_age
+        return 0 <= age < self.maxAge
 
     def read(self, mt: gws.MapTile) -> bytes | None:
-        if not self.has(mt, self.maxAge):
+        if not self.has(mt):
             return None
         try:
             with open(self.path(mt), 'rb') as fp:
@@ -46,77 +46,62 @@ class Object(gws.TileStore):
             gws.log.warning(f'tile store: write failed {p!r}: {exc}')
 
     def drop(self):
-        if gws.u.is_dir(self.baseDir):
-            osx.rmdir(self.baseDir)
+        osx.rmdir(self.baseDir)
 
     def drop_level(self, z: int):
-        path = f'{self.baseDir}/{z:02d}'
-        if gws.u.is_dir(path):
-            osx.rmdir(path)
+        osx.rmdir(self._level_dir(z))
 
     def drop_range(self, mtr: gws.MapTileRange):
         x0, y0, x1, y1, z = mtr
-        s = 10000
-        level_dir = f'{self.baseDir}/{z:02d}'
+        dir = self._level_dir(z)
+        if not gws.u.is_dir(dir):
+            return
 
-        for xh, xh_path in _numbered_entries(level_dir, x0 // s, x1 // s):
-            for _, xl_path in _numbered_entries(xh_path, x0 - xh * s, x1 - xh * s):
-                for yh, yh_path in _numbered_entries(xl_path, y0 // s, y1 // s):
-                    for _, yl_path in _numbered_entries(yh_path, y0 - yh * s, y1 - yh * s):
-                        osx.unlink(yl_path)
-                    _rmdir_if_empty(yh_path)
-                _rmdir_if_empty(xl_path)
-            _rmdir_if_empty(xh_path)
-        _rmdir_if_empty(level_dir)
+        for de in osx.find_entries(dir):
+            if not de.is_file() or de.name.endswith('.tmp'):
+                continue
+            x, y = self._tile_xy(de.path)
+            if x0 <= x <= x1 and y0 <= y <= y1:
+                osx.unlink(de.path)
 
+    ##
 
-##
+    def _level_dir(self, z: int) -> str:
+        return f'{self.baseDir}/{z:02d}'
 
+    def _tile_xy(self, path: str) -> tuple[int, int]:
+        a, b, c, d = path.rsplit('.', 1)[0].split('/')[-4:]
+        return int(a) * 10000 + int(b), int(c) * 10000 + int(d)
 
-def _numbered_entries(path: str, lo: int, hi: int) -> list[tuple[int, str]]:
-    if not gws.u.is_dir(path):
-        return []
-    res = []
-    for de in os.scandir(path):
-        stem = de.name.split('.')[0]
-        if stem.isdigit() and lo <= int(stem) <= hi:
-            res.append((int(stem), de.path))
-    return res
+    def _stats(self, z: int | None = None) -> gws.TileStoreStats:
+        stats = gws.TileStoreStats(count=0, size=0, range=None)
+        dir = self._level_dir(z) if z is not None else self.baseDir
+        if not gws.u.is_dir(dir):
+            return stats
 
+        last_time = gws.u.stime() - self.maxAge
 
-def _rmdir_if_empty(path: str):
-    try:
-        os.rmdir(path)
-    except OSError:
-        pass
+        for de in osx.find_entries(dir):
+            if not de.is_file() or de.name.endswith('.tmp'):
+                continue
+            s = de.stat()
+            if s.st_size == 0 or s.st_mtime < last_time:
+                continue
+            stats.count += 1
+            stats.size += s.st_size
+            if z is None:
+                continue
 
+            x, y = self._tile_xy(de.path)
+            if stats.range is None:
+                stats.range = (x, y, x, y, z)
+            else:
+                stats.range = (
+                    min(stats.range[0], x),
+                    min(stats.range[1], y),
+                    max(stats.range[2], x),
+                    max(stats.range[3], y),
+                    z,
+                )
 
-def _stats(path: str, max_age: int, z: int | None) -> gws.TileStoreStats:
-    st = gws.TileStoreStats(count=0, size=0, range=None)
-    if not gws.u.is_dir(path):
-        return st
-
-    last_time = gws.u.stime() - max_age
-    rng = None
-
-    for de in osx.find_entries(path):
-        if not de.is_file() or de.name.endswith('.tmp'):
-            continue
-        s = de.stat()
-        if s.st_size == 0 or s.st_mtime < last_time:
-            continue
-        st.count += 1
-        st.size += s.st_size
-        if z is None:
-            continue
-        a, b, c, d = de.path[len(path) + 1 :].rsplit('.', 1)[0].split('/')
-        x = int(a) * 10000 + int(b)
-        y = int(c) * 10000 + int(d)
-        if rng is None:
-            rng = [x, y, x, y]
-        else:
-            rng = [min(rng[0], x), min(rng[1], y), max(rng[2], x), max(rng[3], y)]
-
-    if rng:
-        st.range = rng[0], rng[1], rng[2], rng[3], z
-    return st
+        return stats

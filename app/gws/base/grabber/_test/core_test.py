@@ -94,24 +94,24 @@ def test_uncached_tiles_go_to_ephemeral_store_only():
     gr = _grabber(max_age=0)
     mt = _block_tiles()[0]
     gr.get_tile_as_bytes(mt)
-    assert gr._store_for(15).has(mt, 60)
-    assert not gr.store.has(mt, 3600)
+    assert gr._store_for(15).has(mt)
+    assert not os.path.isfile(gr.store.path(mt))
 
 
 def test_cached_tiles_go_to_persistent_store():
     gr = _grabber(max_age=3600, max_level=14)
     mt = _block_tiles(z=12)[0]
     gr.get_tile_as_bytes(mt)
-    assert gr.store.has(mt, 3600)
-    assert not gr._store_for(15).has(mt, 60)
+    assert gr.store.has(mt)
+    assert not gr._store_for(15).has(mt)
 
 
 def test_levels_above_max_level_go_to_ephemeral_store():
     gr = _grabber(max_age=3600, max_level=14)
     mt = _block_tiles(z=15, bx=4248, by=2728)[0]
     gr.get_tile_as_bytes(mt)
-    assert gr._store_for(15).has(mt, 60)
-    assert not gr.store.has(mt, 3600)
+    assert gr._store_for(15).has(mt)
+    assert not gr.store.has(mt)
 
 
 def test_dynamic_requests_are_meta_tiled_into_a_params_keyed_ephemeral_store():
@@ -127,9 +127,9 @@ def test_dynamic_requests_are_meta_tiled_into_a_params_keyed_ephemeral_store():
     assert st.baseDir != gr._store_for(12).baseDir
     assert st.maxAge == core.EPHEMERAL_MAX_AGE
     for mt in _block_tiles():
-        assert st.has(mt, 60)
-        assert not gr.store.has(mt, 3600)
-        assert not gr._store_for(15).has(mt, 60)
+        assert st.has(mt)
+        assert not gr.store.has(mt)
+        assert not gr._store_for(15).has(mt)
 
 
 def test_dynamic_requests_with_different_params_use_different_stores():
@@ -183,7 +183,7 @@ def test_busy_block_lock_returns_empty_tile():
             b = gr.get_tile_as_bytes(mt)
     assert b == gr.empty_tile()
     assert gr.fetches == []
-    assert not gr._store_for(15).has(mt, 60)
+    assert not gr._store_for(15).has(mt)
 
 
 def test_store_write_survives_missing_dir(tmp_path):
@@ -247,8 +247,8 @@ def test_tile_outside_range_is_transparent_without_fetch():
     b = gr.get_tile_as_bytes(mt)
     assert b == gr.empty_tile()
     assert gr.fetches == []
-    assert not gr.store.has(mt, 3600)
-    assert not gr._store_for(15).has(mt, 60)
+    assert not gr.store.has(mt)
+    assert not gr._store_for(15).has(mt)
 
 
 def test_tile_beyond_max_level_is_transparent_without_fetch():
@@ -308,8 +308,8 @@ def test_source_failure_propagates_and_stores_nothing():
     mt = _block_tiles()[0]
     with u.raises(gws.ExternalServiceError):
         gr.get_tile_as_bytes(mt)
-    assert not gr.store.has(mt, 3600)
-    assert not gr._store_for(15).has(mt, 60)
+    assert not gr.store.has(mt)
+    assert not gr._store_for(15).has(mt)
 
 
 def test_lock_identity_is_block_snapped():
@@ -370,7 +370,7 @@ def test_cached_box_is_mosaicked_from_stored_tiles():
     assert (img.to_array()[..., 3] == 255).all()
     assert len(gr.fetches) == 1
     for mt in _block_tiles():
-        assert gr.store.has(mt, 3600)
+        assert gr.store.has(mt)
 
     gr.get_box_as_bytes(extent, 512, 512)
     assert len(gr.fetches) == 1

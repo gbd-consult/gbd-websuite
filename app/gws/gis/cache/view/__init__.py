@@ -54,20 +54,20 @@ def get_content(root: gws.Root, path: str) -> gws.ContentResponse:
 
 
 def _page(root: gws.Root, name: str, z: int) -> gws.ContentResponse:
-    st = core.status(root)
-    core.add_counts_and_sizes(st)
+    inv = core.inventory(root)
+    core.add_stats(inv)
     selected = None
 
     if name:
-        e = _find(st, name)
+        c = _find(inv, name)
         z = max(z, 0)
-        if z not in [lv.z for lv in e.levels]:
+        if z not in [lv.z for lv in c.levels]:
             raise gws.NotFoundError(f'level {z} not found')
         selected = {'name': name, 'z': z}
 
     config = {
         'url': _URL,
-        'caches': {e.name: _cache_config(e) for e in st.entries},
+        'caches': {c.name: _cache_config(c) for c in inv.caches},
         'selected': selected,
         'baseGrid': _grid_config(gws.lib.grid.for_crs(gws.lib.crs.WEBMERCATOR)),
     }
@@ -75,7 +75,7 @@ def _page(root: gws.Root, name: str, z: int) -> gws.ContentResponse:
     tpl = root.app.templateMgr.template_from_path(f'{_DIR}/page.cx.html')
     args = {
         'url': _URL,
-        'entries': st.entries,
+        'caches': inv.caches,
         'name': name,
         'z': z,
         'config': config,
@@ -83,33 +83,35 @@ def _page(root: gws.Root, name: str, z: int) -> gws.ContentResponse:
     return tpl.render(gws.TemplateRenderInput(args=args))
 
 
-def _find(st: core.Status, name: str) -> core.Entry:
-    for e in st.entries:
-        if e.name == name:
-            return e
+def _find(inv: core.Inventory, name: str) -> core.Cache:
+    for c in inv.caches:
+        if c.name == name:
+            return c
     raise gws.NotFoundError(f'cache {name!r} not found')
 
 
 def _tile(root: gws.Root, name: str, z: int, x: int, y: int) -> gws.ContentResponse:
-    e = _find(core.status(root), name)
-    store = e.grabber.store
+    c = _find(core.inventory(root), name)
+    store = c.grabber.store
     p = store.path((x, y, z))
     if not os.path.isfile(p):
         return gws.ContentResponse(status=204, content=b'', mimeType=gws.lib.mime.PNG)
 
     img = gws.lib.image.from_path(p)
-    img.add_box(_DECOR_COLOR)
-    text = f'{p[len(store.baseDir) + 1 :]}\n{os.path.getsize(p) / 1024:.1f}K'
-    draw = gws.lib.image.get_draw(img)
-    font = gws.lib.image.get_font(11)
-    x0, y0, x1, y1 = draw.multiline_textbbox((4, 3), text, font=font)
-    draw.rectangle((x0 - 2, y0 - 1, x1 + 2, y1 + 1), fill=(255, 255, 255, 200))
-    draw.multiline_text((4, 3), text, font=font, fill=_DECOR_COLOR)
+    
+    # img.add_box(_DECOR_COLOR)
+    # text = f'{p[len(store.baseDir) + 1 :]}\n{os.path.getsize(p) / 1024:.1f}K'
+    # draw = gws.lib.image.get_draw(img)
+    # font = gws.lib.image.get_font(11)
+    # x0, y0, x1, y1 = draw.multiline_textbbox((4, 3), text, font=font)
+    # draw.rectangle((x0 - 2, y0 - 1, x1 + 2, y1 + 1), fill=(255, 255, 255, 200))
+    # draw.multiline_text((4, 3), text, font=font, fill=_DECOR_COLOR)
+    
     return gws.ContentResponse(content=img.to_bytes(gws.lib.mime.PNG), mimeType=gws.lib.mime.PNG)
 
 
-def _cache_config(e: core.Entry) -> dict:
-    gr = e.grabber
+def _cache_config(c: core.Cache) -> dict:
+    gr = c.grabber
     crs = gr.targetCrs
     return {
         'crs': {
@@ -120,10 +122,10 @@ def _cache_config(e: core.Entry) -> dict:
         'tileSize': gr.grid.tileSize,
         'extent': list(gr.extent),
         'ext': gr.store.extension,
-        'resolutions': {lv.z: lv.resolution for lv in e.levels},
-        'ranges': {lv.z: list(lv.cachedRange) if lv.cachedRange else None for lv in e.levels},
-        'gridRanges': {lv.z: list(lv.gridRange) for lv in e.levels},
-        'counts': {lv.z: [lv.totalTiles, lv.cachedTiles] for lv in e.levels},
+        'resolutions': {lv.z: lv.resolution for lv in c.levels},
+        'ranges': {lv.z: list(lv.cachedRange) if lv.cachedRange else None for lv in c.levels},
+        'gridRanges': {lv.z: list(lv.gridRange) for lv in c.levels},
+        'counts': {lv.z: [lv.totalTiles, lv.cachedTiles] for lv in c.levels},
         'srid': crs.srid,
         'grid': _grid_config(gr.grid),
     }
