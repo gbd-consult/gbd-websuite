@@ -8,8 +8,7 @@ import gws.lib.crs
 import gws.lib.grid
 import gws.lib.image
 import gws.lib.mime
-
-from .. import core
+import gws.gis.cache.core as core
 
 _DIR = os.path.dirname(__file__)
 _VENDOR_DIR = f'{gws.c.APP_DIR}/gws/lib/vendor'
@@ -20,7 +19,7 @@ _ASSETS = {
     'page.js': (f'{_DIR}/page.js', gws.lib.mime.JS),
     'page.css': (f'{_DIR}/page.css', gws.lib.mime.CSS),
 }
-_URL = f'{gws.c.SERVER_ENDPOINT}/adminViewCache?path='
+_URL = f'{gws.c.SERVER_ENDPOINT}/adminMapCache?path='
 _DECOR_COLOR = (200, 0, 0, 255)
 
 
