@@ -15,7 +15,7 @@
     <div id="caches">
     @for c in caches
         <div class="cache {'selected' if c.name == name else ''}" data-name="{c.name}">
-            <div class="name">{c.name} / {c.grabber.targetCrs.srid}</div>
+            <div class="name">{c.name}</div>
             <div class="info">
                 {c.layerType} 
                 "{c.layerTitle[:20] | html}" 

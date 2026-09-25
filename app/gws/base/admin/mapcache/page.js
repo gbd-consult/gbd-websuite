@@ -207,7 +207,7 @@ function applyVisibility() {
 
 function showZoom() {
     const view = map.getView();
-    document.getElementById('zoom').textContent = `${Math.floor(view.getZoom())} (${view.getResolution().toFixed(4)})`;
+    document.getElementById('zoom').textContent = `z=${Math.floor(view.getZoom())} (${view.getResolution().toFixed(4)} mpx)`;
 }
 
 function filter() {

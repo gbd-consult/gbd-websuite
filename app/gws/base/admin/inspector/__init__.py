@@ -28,7 +28,6 @@ _URL = f'{gws.c.SERVER_ENDPOINT}/adminInspector?path='
 _MAX_COLLECTION_DEPTH = 3
 _MAX_REPR_LENGTH = 500
 _MAX_SEARCH_RESULTS = 500
-_MAX_MATCH_LENGTH = 100
 
 _OPAQUE_TYPES = (
     type,
@@ -66,6 +65,7 @@ def get_content(root: gws.Root, path: str, search: str) -> gws.ContentResponse:
     tpl = root.app.templateMgr.template_from_path(f'{_DIR}/page.cx.html')
     args = {
         'url': _URL,
+        'version': max(int(os.path.getmtime(p)) for p, _ in _ASSETS.values()),
         'configJson': json.dumps(config).replace('<', '\\u003c'),
     }
     return tpl.render(gws.TemplateRenderInput(args=args))
@@ -140,10 +140,10 @@ def _value(root: gws.Root, val, path: str, depth: int) -> dict:
         return {'kind': 'primitive', 'baseType': _base_type(val), 'value': _primitive_str(val)}
 
     if val is root:
-        return {'kind': 'object', 'label': _repr(val), 'path': ''}
+        return {'kind': 'object', 'label': _format(val), 'path': ''}
 
     if _is_tree_node(root, val):
-        return {'kind': 'object', 'label': _repr(val), 'path': _node_path(val)}
+        return {'kind': 'object', 'label': _format(val), 'path': _node_path(val)}
 
     if (isinstance(val, (dict, gws.Data)) or _is_list(val)) and depth < _MAX_COLLECTION_DEPTH:
         return {
@@ -154,7 +154,7 @@ def _value(root: gws.Root, val, path: str, depth: int) -> dict:
         }
 
     if _is_object(val) or _is_list(val):
-        return {'kind': 'object', 'label': _repr(val), 'path': path}
+        return {'kind': 'object', 'label': _label(val), 'path': path}
 
     return {'kind': 'other', 'value': _repr(val)}
 
@@ -165,36 +165,34 @@ def _search(root: gws.Root, query: str) -> list[dict]:
     text = text.lower()
 
     results = []
+    found = set()
     seen = set()
-    queue = collections.deque([(root, '')])
+    queue = collections.deque([(root, '', root, '')])
 
     while queue and len(results) < _MAX_SEARCH_RESULTS:
-        obj, path = queue.popleft()
+        obj, path, owner, owner_path = queue.popleft()
         if id(obj) in seen:
             continue
         seen.add(id(obj))
+
+        if obj is root or (_is_object(obj) and not isinstance(obj, (dict, gws.Data))):
+            owner, owner_path = obj, path
 
         try:
             entries = _entries(obj)
         except Exception:
             continue
 
-        matches = []
-
         for k, v in entries:
-            if prop is None or str(k) == prop:
-                s = _match(v, text)
-                if s is not None:
-                    matches.append({'key': str(k), 'value': s[:_MAX_MATCH_LENGTH]})
+            if owner_path not in found and (prop is None or str(k) == prop) and not _is_list(obj) and _match(v, text) is not None:
+                found.add(owner_path)
+                results.append({'path': owner_path, 'label': _format(owner)})
             if _is_primitive(v) or v is root:
                 continue
             if _is_tree_node(root, v):
-                queue.append((v, _node_path(v)))
+                queue.append((v, _node_path(v), owner, owner_path))
             elif _is_object(v) or _is_list(v):
-                queue.append((v, _join(path, k)))
-
-        if matches and not _is_list(obj):
-            results.append({'path': path, 'label': _repr(obj), 'matches': matches})
+                queue.append((v, _join(path, k), owner, owner_path))
 
     return results
 
@@ -215,7 +213,7 @@ def _node_entry(node: gws.Node) -> dict:
     return {
         'uid': node.uid,
         'path': _node_path(node),
-        'label': _repr(node),
+        'label': _format(node),
     }
 
 
@@ -226,10 +224,10 @@ def _crumbs(root: gws.Root, path: str) -> list[dict]:
     if segs[0]:
         node = root.uidMap.get(segs[0])
         while _is_tree_node(root, node):
-            crumbs.insert(0, {'label': node.uid, 'path': _node_path(node)})
+            crumbs.insert(0, {'label': _format(node), 'path': _node_path(node)})
             node = vars(node).get('parent')
 
-    crumbs.insert(0, {'label': 'Root', 'path': ''})
+    crumbs.insert(0, {'label': _format(root), 'path': ''})
 
     p = _node_path(root.uidMap[segs[0]]) if segs[0] else ''
     for s in segs[1:]:
@@ -240,23 +238,23 @@ def _crumbs(root: gws.Root, path: str) -> list[dict]:
 
 
 def _label(val) -> str:
-    if isinstance(val, gws.Root):
-        return 'Root'
     if isinstance(val, dict):
         return f'dict[{len(val)}]'
     if _is_list(val):
         return f'{type(val).__name__}[{len(val)}]'
     if isinstance(val, gws.Data):
         return f'{type(val).__name__}[{len(vars(val))}]'
+    return _format(val)
 
-    s = vars(val).get('extName') if _is_object(val) else None
-    s = s or _class_name(val)
-    if _is_object(val):
-        for k in ('uid', 'title'):
-            v = vars(val).get(k)
-            if isinstance(v, str) and v:
-                s += f' {k}={v!r}'
-    return s
+
+def _format(val) -> str:
+    if isinstance(val, gws.Root):
+        return '<root>'
+    if isinstance(val, gws.Application):
+        return '<app>'
+    uid = vars(val).get('uid') if _is_object(val) else None
+    ident = uid if isinstance(uid, str) and uid else hex(id(val))
+    return f'<{_class_name(val)} {ident}>'
 
 
 def _class_name(val) -> str:

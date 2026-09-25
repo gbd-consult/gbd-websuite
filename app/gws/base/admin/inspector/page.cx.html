@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8">
 <title>GWS object inspector</title>
-<link rel="stylesheet" href="{url}page.css">
+<link rel="stylesheet" href="{url}page.css&v={version}">
 </head>
 <body>
 <div id="sidebar">
     <div id="search">
         <input id="search-input" type="text" placeholder="search: text or prop=text" autocomplete="off">
+        <button id="search-clear" type="button" title="clear">&times;</button>
         <button id="search-button" type="button">search</button>
         <div id="search-spinner" title="searching, esc to stop"></div>
     </div>
@@ -22,6 +23,6 @@
     </div>
 </div>
 <script id="config" type="application/json">{configJson}</script>
-<script src="{url}page.js"></script>
+<script src="{url}page.js&v={version}"></script>
 </body>
 </html>
