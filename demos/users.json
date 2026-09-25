@@ -2,7 +2,7 @@
     {
         "login": "admin",
         "name": "Admin",
-        "password": "$sha512$KRDUWHDj$tK3GthnG3BDUbRjnuBOgSPNrFqyHEFS9Z--CAwboC_qg3mQuA9ra_VrA7SyeShzav_60wC1FSOrwuEzBO6ctAA==",
+        "password": "$sha512$99NR42gm$QpgB7tl3ml7xxhWXaPb9JHgvk7nF066KZVCWQ5Q_48Gg8U-ZnoAGYnSRMhiJZ0jmScEy_cvdNRlDQ_RkvtDVXQ==",
         "roles": [
             "admin"
         ]

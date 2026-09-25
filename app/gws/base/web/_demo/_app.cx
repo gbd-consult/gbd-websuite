@@ -17,10 +17,6 @@ web.site {
             target "/_/webAsset/path/demos.cx.html"
         }
         {
-            pattern "^/login"
-            target "/_/webAsset/path/login.cx.html"
-        }
-        {
             pattern "^/config/([a-z0-9_.-]+)"
             target "/_/webAsset/path/config.cx.html/prj/$1"
         }

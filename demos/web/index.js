@@ -37,6 +37,31 @@ function setFrame(url) {
     }
 
     $('#main').innerHTML = `<iframe src="${url}"></iframe>`;
+
+    frame = $('#main').querySelector('iframe');
+    frame.addEventListener('load', () => {
+        try {
+            frame.contentDocument.addEventListener('click', evt => {
+                let a = evt.target.closest && evt.target.closest('a.demo-config-link');
+                if (a) {
+                    showConfigPopup(a.href);
+                    evt.preventDefault();
+                }
+            }, true);
+        } catch (exc) {
+        }
+    });
+}
+
+function showConfigPopup(url) {
+    $('#config-box iframe').src = url;
+    $('body').classList.add('with-config-popup');
+    $('#button-config-close').focus();
+}
+
+function hideConfigPopup() {
+    $('body').classList.remove('with-config-popup');
+    $('#config-box iframe').src = 'about:blank';
 }
 
 function scrollIntoView(el) {
@@ -88,6 +113,22 @@ function update() {
     } else {
         setFrame('');
     }
+}
+
+function showLoginPopup() {
+    if (window.parent !== window && window.parent.showLoginPopup) {
+        window.parent.showLoginPopup();
+        document.body.innerHTML = '';
+        return;
+    }
+    $('body').classList.add('with-login-popup');
+    let inp = $('#gws-home-username');
+    if (inp)
+        inp.focus();
+}
+
+function hideLoginPopup() {
+    $('body').classList.remove('with-login-popup');
 }
 
 function toggleKeyword(kw) {
@@ -182,21 +223,56 @@ window.addEventListener('load', () => {
         updateFromLocation();
     })
 
-    $('#button-sidebar-toggle').addEventListener('click', evt => {
-        $('body').classList.toggle('with-sidebar-hidden');
-        evt.preventDefault();
-    });
-
     $('#button-mobile-view').addEventListener('click', evt => {
         $('body').classList.toggle('with-mobile-view');
         evt.preventDefault();
     });
 
     $('#button-login').addEventListener('click', evt => {
-        // $('body').classList.toggle('with-login-box');
-        // evt.preventDefault();
-        window.location.href = '/login?to=/demos';
+        if ($('body').classList.contains('with-user'))
+            $('body').classList.toggle('with-user-dropdown');
+        else
+            showLoginPopup();
+        evt.preventDefault();
     });
+
+    document.addEventListener('click', evt => {
+        if (!evt.target.closest('#user-menu'))
+            $('body').classList.remove('with-user-dropdown');
+    });
+
+    document.addEventListener('keydown', evt => {
+        if (evt.key === 'Escape') {
+            hideLoginPopup();
+            hideConfigPopup();
+            $('body').classList.remove('with-user-dropdown');
+        }
+    });
+
+    $('#button-config-close').addEventListener('click', evt => {
+        hideConfigPopup();
+        evt.preventDefault();
+    });
+
+    $('#config-popup').addEventListener('click', evt => {
+        if (evt.target === $('#config-popup'))
+            hideConfigPopup();
+    });
+
+    if ($('#login-popup')) {
+        $('#button-login-close').addEventListener('click', evt => {
+            hideLoginPopup();
+            evt.preventDefault();
+        });
+
+        $('#login-popup').addEventListener('click', evt => {
+            if (evt.target === $('#login-popup'))
+                hideLoginPopup();
+        });
+
+        if (new URLSearchParams(window.location.search).get('to'))
+            showLoginPopup();
+    }
 
     $('#button-prev-demo').addEventListener('click', evt => {
         showPrevNextProject(-1);
@@ -208,28 +284,11 @@ window.addEventListener('load', () => {
         evt.preventDefault();
     });
 
-    $('#button-login-submit').addEventListener('click', evt => {
-        gwsLogin()
-        evt.preventDefault();
-    });
-
-    $('#button-logout-submit').addEventListener('click', evt => {
-        gwsLogout()
-        evt.preventDefault();
-    });
-
 });
 
 window.addEventListener("load", function () {
     setTimeout(function () {
         if (window.innerWidth < 768) {
-          var body = document.body;
-          if (!body.classList.contains("with-sidebar-hidden")) {
-          var rside = document.querySelector("#button-sidebar-toggle");
-          if (rside) {
-            rside.click();
-          }
-        }
           var closeBtn =
             document.querySelector(".uiIconButton button[title*='Menü']") ||
             document.querySelector(".uiIconButton button.uiRawButton");

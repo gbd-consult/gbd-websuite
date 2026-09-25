@@ -1,14 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
     <title>Fehler</title>
     <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" href="/demos/gws_logo.svg" type="image/svg+xml"/>
     <link rel="stylesheet" href="/_/webSystemAsset/path/{app.version}.light.css" type="text/css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap"/>
     <link rel="stylesheet" href="/demos/index.css"/>
-
 </head>
 <body class="frontpage">
-    <h1>Fehler {status}</h1>
-    <p>Bei der Verarbeitung der Anfrage ist ein Fehler aufgetreten.</p>
+    <header class="page-header">
+        <div class="page-inner">
+            <a class="brand" href="/">
+                <img src="/demos/gws_logo.svg" alt=""/>
+                <span>GBD WebSuite</span>
+            </a>
+        </div>
+    </header>
+    <main class="page-main">
+        <div class="page-inner">
+            <div class="content">
+                <h1>Fehler {status}</h1>
+                <p>Bei der Verarbeitung der Anfrage ist ein Fehler aufgetreten.</p>
+                <p><a href="/">Zur Startseite</a></p>
+            </div>
+        </div>
+    </main>
+    <footer class="page-footer">
+        <div class="page-inner">
+            <span>© Geoinformatikbüro Dassau GmbH</span>
+            <a href="https://gbd-websuite.de/">gbd-websuite.de</a>
+        </div>
+    </footer>
 </body>
 </html>

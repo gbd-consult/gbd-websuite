@@ -19,15 +19,22 @@ else:
 
 <!DOCTYPE html>
 
-<html>
+<html lang="de">
 <head>
     <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Projektkonfiguration</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap"/>
     <link rel="stylesheet" href="/demos/project.css"/>
 </head>
-<body>
+<body class="config-page">
 <div class="config">
-    <h1>Project configuration</h1>
+    <h1>Projektkonfiguration</h1>
+    <p class="config-path">app{path}</p>
     <pre>{src | html}</pre>
-    <p><small><a href="https://github.com/gbd-consult/gbd-websuite/tree/master/app{path}">View on Github</a></small></p>
+    <p><a class="config-link" href="https://github.com/gbd-consult/gbd-websuite/tree/master/app{path}" target="_blank">Auf GitHub ansehen</a></p>
+</div>
 </body>
 </html>

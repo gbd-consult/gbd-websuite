@@ -4,11 +4,15 @@
 @import time
 
 
-<html>
+<html lang="de">
 <head>
     <title>GBD WebSuite Developer Demos</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/demos/gws_logo.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" />
     <script src="/_/webSystemAsset/path/{app.version}.util.js"></script>
     <link rel="stylesheet" href="/demos/index.css?r={time.time()}" />
     <script src="/demos/index.js?r={time.time()}"></script>
@@ -16,12 +20,47 @@
 
 <body class="{@if not user.isGuest}with-user{@end}">
 
+    <header id="topbar">
+        <a id="topbar-brand" href="/demos">
+            <img src="/demos/gws_logo.svg" alt="" />
+            <span>GBD WebSuite Demos</span>
+        </a>
+        <div id="topbar-tools">
+            <a href="/" id="button-home" class="toolbar-button" title="Startseite">
+                <span class="icon home"></span>
+            </a>
+            <a href="#" id="button-prev-demo" class="toolbar-button" title="Vorherige Demo">
+                <span class="icon arrow_circle_up"></span>
+            </a>
+            <a href="#" id="button-next-demo" class="toolbar-button" title="Nächste Demo">
+                <span class="icon arrow_circle_down"></span>
+            </a>
+            <a href="#" id="button-mobile-view" class="toolbar-button" title="Mobilansicht">
+                <span class="icon smartphone"></span>
+            </a>
+            <div id="user-menu">
+                <a href="#" id="button-login" class="toolbar-button" title="{@if user.isGuest}Anmelden{@else}{user.displayName | html}{@end}">
+                    <span class="icon person"></span>
+                    @if not user.isGuest
+                    <span id="user-name">{user.displayName | html}</span>
+                    @end
+                </a>
+                @if not user.isGuest
+                <div id="user-dropdown">
+                    <form id="gws-home-logout-form" action="/_/authLogout" method="post">
+                        <button type="submit">Ausloggen</button>
+                    </form>
+                </div>
+                @end
+            </div>
+        </div>
+    </header>
+
     <div id="main">
     </div>
 
     <div id="intro">
         <div id="demo-intro">
-            <p>GBD WebSuite Demos</p>
             <p>Dies sind Beispiele zur Funktionalität der GBD WebSuite.</p>
             <p>Klicke auf die Links in der rechten Spalte, um die Demo in diesem Fenster anzusehen.</p>
             <p>Klicke auf das Symbol <span class="icon open_in_new"></span>, um die Demo in einem neuen Tab zu öffnen.</p>
@@ -35,7 +74,7 @@
                 <a href="#" id="button-clear-search" class="button" title="clear">
                     <span class="icon close"></span>
                 </a>
-                </div>
+            </div>
         </div>
 
         <div id="project-list">
@@ -57,28 +96,48 @@
             </div>
             @end
         </div>
-        
-        <div id="side-toolbar">
-            <a href="#" id="button-prev-demo" class="toolbar-button" title="previous">
-                <span class="icon arrow_circle_up"></span>
-            </a>
-            <a href="#" id="button-next-demo" class="toolbar-button" title="next">
-                <span class="icon arrow_circle_down"></span>
-            </a>
-            <a href="#" id="button-mobile-view" class="toolbar-button" title="mobile view">
-                <span class="icon smartphone"></span>
-            </a>
-            <a href="#" id="button-login" class="toolbar-button" title="login">
-                <span class="icon person"></span>
-            </a>
-        </div>
-
-
-    <div id="side-toggle">
-        <a href="#" id="button-sidebar-toggle" title="sidebar on/off">
-            <span class="icon"></span>
-        </a>
     </div>
+
+    <div id="config-popup">
+        <div id="config-box" role="dialog" aria-modal="true" aria-label="Projektkonfiguration">
+            <a href="#" id="button-config-close" class="button" title="Schließen">
+                <span class="icon close"></span>
+            </a>
+            <iframe></iframe>
+        </div>
+    </div>
+
+    @if user.isGuest
+    <div id="login-popup">
+        <div id="login-box" role="dialog" aria-modal="true" aria-labelledby="login-title">
+            <a href="#" id="button-login-close" class="button" title="Schließen">
+                <span class="icon close"></span>
+            </a>
+            <h2 id="login-title">Anmelden</h2>
+            <form id="gws-home-login-form" action="/_/authLogin" method="post">
+                <label for="gws-home-username">Benutzername</label>
+                <input id="gws-home-username" name="username" autocomplete="username">
+                <label for="gws-home-password">Passwort</label>
+                <input id="gws-home-password" name="password" type="password" autocomplete="current-password">
+                <div id="login-status">
+                    <p id="login-error" role="alert">Ungültiger Benutzername oder Passwort</p>
+                    <p id="login-wait" aria-live="polite"></p>
+                </div>
+                <button type="submit">Anmelden</button>
+            </form>
+            <p class="login-hint">
+                Auf diesem Demo-Server können Sie sich mit folgenden vordefinierten Konten anmelden:
+            </p>
+            <table class="login-credentials">
+                <tr><th>Benutzer</th><th>Gruppe</th><th>Passwort</th></tr>
+                <tr><td>demo1</td><td>groupA</td><td>demo</td></tr>
+                <tr><td>demo2</td><td>groupA</td><td>demo</td></tr>
+                <tr><td>demo3</td><td>groupB</td><td>demo</td></tr>
+                <tr><td>demo4</td><td>groupB</td><td>demo</td></tr>
+            </table>
+        </div>
+    </div>
+    @end
 
 </body>
 </html>
