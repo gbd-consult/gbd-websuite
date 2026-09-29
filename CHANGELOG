@@ -1,3 +1,16 @@
+## Version 8.5.3
+
+- configuration warnings: non-fatal configuration problems are collected and logged in a warnings report after startup
+- deprecated and ignored options now produce a configuration warning
+- `gws` CLI commands run as the GWS user instead of root
+- a layer whose extent cannot be determined is a configuration error (was a warning)
+- `gws cache` CLI: new selection options `-bbox`, `-wkt` and `-levels` for `seed` and `drop`, `seed -maxAge` reseeds tiles older than the given duration
+- new admin object inspector (`adminInspector`)
+- improved reprojection of tile sources (WMTS, tile layers)
+- reworked XML and GML serialization for OWS services
+- plugin API: extension types are declared with class decorators
+- updated demos
+
 ## Version 8.5.2
 
 - base image upgraded to Ubuntu 26.04 (Python 3.14, GDAL 3.12, PROJ 9.7); all Python packages pinned to their current major versions
