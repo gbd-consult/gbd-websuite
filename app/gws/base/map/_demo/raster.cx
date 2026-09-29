@@ -6,20 +6,18 @@ metadata.keywords [ "tile" "wms" "wmts" "raster" ]
 
 metadata.abstract """
 Rasterlayer aus verschiedenen Quellen (WMTS, WMS, GeoTIFF, Kachel-Dienste),
-alle auf dem Server gerendert und nach EPSG:25832 umprojiziert.
+alle auf dem Server gerendert.
 """
 
 map {
-    crs 25832
-    extent [-1455000 4763000 2645000 8139000]
-    center {demo_point_duesseldorf_25832}
-    zoom.initScale 60000
-    zoom.maxScale 4000000
+    crs 3857
+    center {demo_point_duesseldorf_3857}
 }
 
 map.layers+ {
     title "NRW ALKIS (WMS)"
     type "wmsflat"
+    display "tile"
     provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
     sourceLayers.names [
         "adv_alkis_gewaesser"
@@ -37,7 +35,6 @@ map.layers+ {
     title "basemap.de (WMTS)"
     type "wmts"
     provider.url "https://sgx.geodatenzentrum.de/wmts_basemapde/1.0.0/WMTSCapabilities.xml"
-    provider.forceCrs 25832
     sourceLayers.names ["de_basemapde_web_raster_farbe"]
     metadata.attribution "© <a href='https://basemap.de'>basemap.de</a> / BKG"
     clientOptions.hidden true
@@ -47,6 +44,7 @@ map.layers+ {
 map.layers+ {
     title "Sentinel-2 (GeoTIFF)"
     type "raster"
+    display "tile"
     provider.paths ["/gws-extern/demos/S2A_32ULB_20250811_TCI.tif"]
     metadata.attribution "Contains modified Copernicus Sentinel data 2025"
     clientOptions.hidden true

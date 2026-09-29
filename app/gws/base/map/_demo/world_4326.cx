@@ -1,6 +1,6 @@
-uid "map_worlds_4326"
+uid "map_world_4326"
 
-title "World WGS (experimental)"
+title "World WGS"
 
 metadata.keywords [ "map" "crs" ]
 
@@ -11,8 +11,8 @@ Whole world map in EPSG:4326.
 map {
     crs 4326
     center [0 0]
-    zoom.scales [400 300 200 100 50 20 10 5]
-    zoom.initScale 300
+    zoom.scales [44500000 33400000 22300000 11100000 5600000 2200000 1100000 560000]
+    zoom.initScale 33400000
     wrapX true
 }
 
