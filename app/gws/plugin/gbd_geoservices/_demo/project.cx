@@ -2,11 +2,12 @@ uid "gbd_geoservices"
 
 title "GBD Geoservices"
 
-metadata.keywords [ "search" ]
+metadata.keywords [ "search" "raster" ]
 
 metadata.abstract """
-Volltextsuche mit [GBD Geoservices](https://geoservices.gbd-consult.de). 
-Es wird in Schleswig-Holstein nach Orten, Straßen, Punkten von Interesse und Adressen gesucht.
+Rasterkarten und Volltextsuche mit [GBD Geoservices](https://geoservices.gbd-consult.de) für ganz Deutschland.
+Die Karten stehen in drei Detailstufen (Standard, Erweitert, Einfach) und vier Farbschemata (Default, Hell, Dunkel, Kontrast) zur Verfügung.
+Die Suche findet Orte, Straßen, Punkte von Interesse und Adressen.
 """
 
 client.addElements+ { tag "Sidebar.Search" }
