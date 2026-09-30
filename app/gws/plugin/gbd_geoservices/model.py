@@ -1,7 +1,5 @@
 """GBD Geoservices model."""
 
-import re
-
 import gws
 import gws.base.feature
 import gws.base.model
@@ -44,100 +42,112 @@ class Object(gws.base.model.default_model.Object):
         )
 
     def find_features(self, search, mc, **kwargs):
-        request = {'page': 0, 'tags': {}}
+        kw = (search.keyword or '').strip()
 
+        tolerance = 0.0
+        if search.tolerance:
+            n, u = search.tolerance
+            tolerance = n * (search.resolution or 1) if u == 'px' else n
+
+        area = None
         if search.shape:
-            geometry_tolerance = 0.0
+            area = search.shape.tolerance_polygon(tolerance).transformed_to(gws.lib.crs.WGS84)
 
-            if search.tolerance:
-                n, u = search.tolerance
-                geometry_tolerance = n * (search.resolution or 1) if u == 'px' else n
+        request = {}
 
-            search_shape = search.shape.tolerance_polygon(geometry_tolerance)
-            request['viewbox'] = gws.lib.bounds.wgs_extent(search_shape.bounds())
-
-        kw = search.keyword or ''
         if kw:
-            request['intersect'] = 1
-            # crude heuristics to check if this is an "address" or a "name"
-            if re.search(r'\s\d', kw):
-                request['address'] = kw
-            else:
-                request['name'] = kw
+            request['mode'] = 'phrase'
+            request['text'] = kw
+            if area:
+                request['area'] = area.to_wkt(output_dimension=2)
+                request['within'] = False
+        elif area:
+            request['mode'] = 'point'
+            if tolerance > 0:
+                request['radius'] = min(tolerance, _MAX_POINT_RADIUS)
+        else:
+            return []
 
-        features = []
-        titles = set()
+        request['limit'] = min(search.limit or _MAX_LIMIT, _MAX_LIMIT)
+        if area:
+            c = area.centroid()
+            request['near'] = [c.geom.x, c.geom.y]
 
-        res = self._query(request)
+        res = self._request(self.serviceUrl, method='POST', json=request)
+        if not res:
+            return []
 
-        for f in res['results']['features']:
-            a = {k.replace(':', '_'): v for k, v in sorted(f['properties'].items())}
+        results = res.get('results') or {}
+        features = results.get('features') or []
+
+        out = []
+
+        for f in features:
+            a = self._attributes(f['properties'])
+            if not a:
+                gws.log.warning(f'geoservices: skipping feature without name, address or category: {f.get("id")}')
+                continue
             shape = gws.base.shape.from_geojson(f['geometry'], gws.lib.crs.WGS84, always_xy=True)
-
-            if search.shape and search.shape.type == gws.GeometryType.polygon and not shape.intersects(search.shape):
-                continue
-
-            address = ' '.join(
-                [
-                    a.get('addr_street') or '',
-                    a.get('addr_housenumber') or '',
-                    a.get('addr_postcode') or '',
-                    a.get('addr_city') or '',
-                ]
-            )
-            a['address'] = ' '.join(address.split())
-            a['name'] = a.get('name') or ''
-
-            # @TODO
-            m = re.match(r'^\((\d+)\)\s+(.*)$', a['category'])
-            if m:
-                a['category_id'] = int(m.group(1))
-                a['category_name'] = m.group(2)
-            else:
-                a['category_id'] = 0
-                a['category_name'] = ''
-            m = re.match(r'^\((\d+)\)\s+(.*)$', a['subcategory'])
-            if m:
-                a['subcategory_id'] = int(m.group(1))
-                a['subcategory_name'] = m.group(2)
-            else:
-                a['subcategory_id'] = 0
-                a['subcategory_name'] = ''
-
-
-            a['title'] = self._get_title(a)
-            if a['title'] in titles:
-                continue
-
             rec = gws.FeatureRecord(uid=f['id'], attributes=a, shape=shape)
-            features.append(self.feature_from_record(rec, mc))
+            gws.log.debug(f'geoservices: feature record: {rec=}')
+            out.append(self.feature_from_record(rec, mc))
 
-        return features
+        return out
 
-    def _query(self, request) -> dict:
-        try:
-            res = gws.lib.net.http_request(
-                self.serviceUrl,
-                method='POST',
-                headers={'x-api-key': self.apiKey},
-                json=request,
-            )
-            return gws.lib.jsonx.from_string(res.text)
-        except gws.lib.net.Error as e:
-            gws.log.error('geoservices request error', e)
+    def _request(self, url, **kwargs) -> dict:
+        res = gws.lib.net.http_request(
+            url,
+            headers={'Authorization': f'Bearer {self.apiKey}'},
+            **kwargs,
+        )
+        if not res.ok:
+            gws.log.error(f'geoservices request error: {res.status_code} {res.text}')
             return {}
+        gws.log.debug(f'{res.text=}')
+        return gws.lib.jsonx.from_string(res.text)
 
-    def _get_title(self, a):
-        if a['name'] and a['address']:
-            return f'{a["name"]} ({a["address"]})'
+    def _attributes(self, props: dict) -> dict | None:
+        name = props.get('name') or ''
 
-        if a['address']:
-            return a['address']
+        addr1 = _join([props.get('address_street'), props.get('address_housenumber')])
+        addr2 = _join([props.get('address_postcode'), props.get('address_city')])
 
-        subcat = a.get('subcategory')
-        if not subcat:
-            return a['name']
+        category = props.get('category_name') or ''
+        icon = props.get('icon') or ''
+        places = [p['name'] for p in props.get('places') or []]
+        places_line = ' • '.join(places)
+        place = places[-1] if places else ''
 
-        # @TODO
-        subcat = re.sub(r'^\(\d+\)\s+', '', subcat)
-        return f'{a["name"]} ({subcat})'
+        a = dict(title='', subtitle='', teaser='', details='', icon=icon)
+
+        if name:
+            a['title'] = name
+            a['subtitle'] = category
+            a['teaser'] = places_line
+            if addr1:
+                a['details'] = addr1 + '\n' + addr2
+            else:
+                a['details'] = places_line
+        elif addr1:
+            a['title'] = addr1 + '\n' + addr2
+            a['subtitle'] = category
+        elif category:
+            a['title'] = category
+            a['subtitle'] = ''
+            a['teaser'] = place
+            if addr1:
+                a['details'] = addr1 + '\n' + addr2
+            else:
+                a['details'] = places_line
+        else:
+            return None
+
+        return a
+
+
+_MAX_LIMIT = 100
+_MAX_POINT_RADIUS = 10_000
+
+
+def _join(parts):
+    return ' '.join(' '.join(str(p) for p in parts if p).split())

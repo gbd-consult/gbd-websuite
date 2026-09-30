@@ -6,7 +6,7 @@ metadata.keywords [ "search" ]
 
 metadata.abstract """
 Volltextsuche mit [GBD Geoservices](https://geoservices.gbd-consult.de). 
-Es wird im Großraum Düsseldorf nach Punkten von Interesse bzw Adressen gesucht.
+Es wird in Schleswig-Holstein nach Orten, Straßen, Punkten von Interesse und Adressen gesucht.
 """
 
 client.addElements+ { tag "Sidebar.Search" }
@@ -14,7 +14,7 @@ client.addElements+ { tag "Altbar.Search" }
 
 client.options.sidebarActiveTab "Sidebar.Layers"
 
-actions+ { type "search" }
+actions+ { type "search" tolerance "5px" }
 
 finders+ {
     type "gbd_geoservices"
@@ -23,39 +23,43 @@ finders+ {
 }
 
 map {
-    center {demo_point_duesseldorf_3857}
-    extent [
-        {demo_point_duesseldorf_3857[0] - 300000}
-        {demo_point_duesseldorf_3857[1] - 300000}
-        {demo_point_duesseldorf_3857[0] + 300000}
-        {demo_point_duesseldorf_3857[1] + 300000}
-    ]
-    zoom.initScale 1000000
-    zoom.minScale  200
+    center [1163289, 6649645]
+    extent [612257, 5942074, 1725452, 7420309]
+    zoom.initScale 5000000
+    zoom.maxScale 5000000
+    zoom.minScale  50
 }
 
-map.layers+ {
-    title "Hintergrundkarte"
-    type "group"
-    clientOptions.expanded true
-    clientOptions.exclusive true
-
-    
-    @let THEMES = [
-        "default",
-        "dark",
-        "high-contrast",
-        "minimal",
-        "satellite"
-    ]
-    @for theme in THEMES
-        layers+ {
-            title "Thema {theme}"
-            type "tile"
-            display "client"
-            clientOptions.hidden {theme != "default"}
-            provider.url "https://geoservices.gbd-consult.de/xyz/{theme}/{{z}}/{{x}}/{{y}}.png"
-            metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-        }
-    @end
+@let DETAILS = {
+    "_max": "Karte Erweitert",
+    "": "Karte Standard",
+    "_min": "Karte Einfach",
 }
+
+@let THEMES = {
+    "default": "Default",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "hico": "Kontrast",
+}
+
+@for detail, detail_label in DETAILS
+    map.layers+ {
+        title "{detail_label}"
+        type "group"
+        clientOptions.expanded {detail == ""}
+        clientOptions.exclusive true
+        clientOptions.hidden {detail != ""}
+
+        @for theme, theme_label in THEMES
+            layers+ {
+                title "{theme_label}"
+                type "tile"
+                display "client"
+                clientOptions.hidden {theme != "default"}
+                provider.url "https://geoservices.gbd-consult.de/xyz/{theme}{detail}/{{z}}/{{x}}/{{y}}.png?key=my_key"
+                metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+            }
+        @end
+    }
+@end
