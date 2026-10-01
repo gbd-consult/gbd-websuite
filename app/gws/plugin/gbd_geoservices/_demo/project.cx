@@ -58,7 +58,7 @@ map {
                 type "tile"
                 display "client"
                 clientOptions.hidden {theme != "default"}
-                provider.url "https://geoservices.gbd-consult.de/xyz/{theme}{detail}/{{z}}/{{x}}/{{y}}.png?key=my_key"
+                provider.url "https://geoservices.gbd-consult.de/xyz/{theme}{detail}/{{z}}/{{x}}/{{y}}.png?key=gwsdemo"
                 metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
             }
         @end
