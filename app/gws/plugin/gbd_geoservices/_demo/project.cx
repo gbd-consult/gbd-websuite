@@ -19,7 +19,7 @@ actions+ { type "search" tolerance "5px" }
 
 finders+ {
     type "gbd_geoservices"
-    apiKey "my_key"
+    apiKey "gwsdemo"
     spatialContext "map"
 }
 
