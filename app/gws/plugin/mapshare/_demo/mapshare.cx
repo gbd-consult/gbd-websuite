@@ -1,0 +1,26 @@
+uid "mapshare"
+
+title "Karte teilen"
+
+metadata.keywords [ "client" ]
+
+metadata.abstract """
+Eine Kartenposition teilen.
+
+Das Teilen-Werkzeug in der Werkzeugleiste aktivieren und auf die Karte klicken. Der Dialog zeigt einen Link
+zur angeklickten Position mit dem aktuellen Maßstab und einem optionalen Titel, sowie einen QR-Code dazu.
+Der Link kann kopiert oder, auf Geräten die das unterstützen, über den Teilen-Dialog des Systems an andere Apps übergeben werden.
+
+Beim Öffnen des Links wird die geteilte Position mit einer Markierung angezeigt.
+"""
+
+actions+ { type "mapshare" }
+
+client.addElements+ { tag "Toolbar.MapShare" }
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 10000
+}
+
+{demo_osm_background}

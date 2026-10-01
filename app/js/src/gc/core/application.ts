@@ -497,7 +497,7 @@ function _cleanqs(qs) {
         return '';
 
     let d = _qsparse(qs);
-    let removeKeys = ['x', 'y', 'z'];
+    let removeKeys = ['x', 'y', 'z', 's'];
 
     removeKeys.forEach(k => delete d[k]);
     return _qsmake(d);
