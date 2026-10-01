@@ -2563,6 +2563,9 @@ class Shape(Object):
     def centroid(self) -> 'Shape':
         """Returns a centroid as a Point shape."""
 
+    def center(self) -> tuple[float, float]:
+        """Returns the coordinates of the centroid."""
+
     # formats
 
     def to_wkb(self) -> bytes:
@@ -2589,6 +2592,9 @@ class Shape(Object):
         Args:
             keep_crs: Do not transform to WGS.
         """
+
+    def to_precision(self, prec: int) -> 'Shape':
+        """Returns a copy of this shape with coordinates rounded to the given precision."""
 
     def to_props(self) -> ShapeProps:
         """Returns a GeoJSON representation of this shape."""

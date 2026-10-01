@@ -8,6 +8,7 @@ Internally, it holds a pointer to a Shapely geometry object and a Crs object.
 
 import struct
 import re
+import shapely.errors
 import shapely.geometry
 import shapely.ops
 import shapely.wkb
@@ -47,7 +48,11 @@ def from_wkt(wkt: str, default_crs: gws.Crs = None) -> gws.Shape:
     else:
         raise Error('missing or invalid crs for WKT')
 
-    return Shape(shapely.wkt.loads(wkt), crs)
+    try:
+        geom = shapely.wkt.loads(wkt)
+    except shapely.errors.ShapelyError as exc:
+        raise Error('invalid WKT') from exc
+    return Shape(geom, crs)
 
 
 def from_wkb(wkb: bytes, default_crs: gws.Crs = None) -> gws.Shape:
@@ -75,14 +80,21 @@ def from_wkb_hex(wkb: str, default_crs: gws.Crs = None) -> gws.Shape:
         A Shape object.
     """
 
-    return _from_wkb(bytes.fromhex(wkb), default_crs)
+    try:
+        b = bytes.fromhex(wkb)
+    except ValueError as exc:
+        raise Error('invalid WKB hex') from exc
+    return _from_wkb(b, default_crs)
 
 
 def _from_wkb(wkb: bytes, default_crs):
     # http://libgeos.org/specifications/wkb/#extended-wkb
 
-    byte_order = wkb[0]
-    header = struct.unpack('<cLL' if byte_order == 1 else '>cLL', wkb[:9])
+    try:
+        byte_order = wkb[0]
+        header = struct.unpack('<cLL' if byte_order == 1 else '>cLL', wkb[:9])
+    except (IndexError, struct.error) as exc:
+        raise Error('invalid WKB') from exc
 
     if header[1] & 0x20000000:
         crs = gws.lib.crs.require(header[2])
@@ -91,7 +103,10 @@ def _from_wkb(wkb: bytes, default_crs):
     else:
         raise Error('missing or invalid crs for WKB')
 
-    geom = shapely.wkb.loads(wkb)
+    try:
+        geom = shapely.wkb.loads(wkb)
+    except shapely.errors.ShapelyError as exc:
+        raise Error('invalid WKB') from exc
     return Shape(geom, crs)
 
 
@@ -216,6 +231,13 @@ _CIRCLE_RESOLUTION = 64
 
 
 def _shapely_shape(d):
+    try:
+        return _shapely_shape2(d)
+    except (shapely.errors.ShapelyError, AttributeError, TypeError, ValueError) as exc:
+        raise Error('invalid geometry') from exc
+
+
+def _shapely_shape2(d):
     if d.get('type').upper() == 'CIRCLE':
         geom = shapely.geometry.Point(d.get('center'))
         return geom.buffer(
@@ -264,6 +286,10 @@ class Shape(gws.Shape):
     def centroid(self):
         return Shape(self.geom.centroid, self.crs)
 
+    def center(self):
+        c = self.geom.centroid
+        return c.x, c.y
+
     def to_wkb(self):
         return shapely.wkb.dumps(self.geom)
 
@@ -296,6 +322,10 @@ class Shape(gws.Shape):
         tr = self.crs.transformer(gws.lib.crs.WGS84)
         new_geom = shapely.ops.transform(tr, self.geom)
         return shapely.geometry.mapping(new_geom)
+
+    def to_precision(self, prec: int):
+        geom = shapely.set_precision(self.geom, 10 ** -prec)
+        return Shape(geom, self.crs)
 
     def to_props(self):
         return gws.ShapeProps(crs=self.crs.epsg, geometry=shapely.geometry.mapping(self.geom))
