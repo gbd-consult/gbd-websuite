@@ -51,7 +51,7 @@
           <Option/>
         </customproperties>
       </layer-tree-layer>
-      <layer-tree-layer legend_exp="" providerKey="wms" expanded="0" patch_size="-1,-1" id="_27801483_32a6_41e7_9fe9_80561dfff54c" name="OpenStreetMap (XYZ)" legend_split_behavior="0" source="crs=EPSG:3857&amp;format&amp;type=xyz&amp;url=https://tile.openstreetmap.org/%7Bz%7D/%7Bx%7D/%7By%7D.png&amp;zmax=19&amp;zmin=0" checked="Qt::Unchecked">
+      <layer-tree-layer legend_exp="" providerKey="wms" expanded="0" patch_size="-1,-1" id="_27801483_32a6_41e7_9fe9_80561dfff54c" name="OpenStreetMap (XYZ)" legend_split_behavior="0" source="crs=EPSG:3857&amp;format&amp;type=xyz&amp;url=https://geoservices.gbd-consult.de/xyz/light/%7Bz%7D/%7Bx%7D/%7By%7D.png?key%3Dgwsdemo&amp;zmax=19&amp;zmin=0" checked="Qt::Unchecked">
         <customproperties>
           <Option/>
         </customproperties>
@@ -421,7 +421,7 @@
         <ymax>85.05112877980660357</ymax>
       </wgs84extent>
       <id>_27801483_32a6_41e7_9fe9_80561dfff54c</id>
-      <datasource>crs=EPSG:3857&amp;format&amp;type=xyz&amp;url=https://tile.openstreetmap.org/%7Bz%7D/%7Bx%7D/%7By%7D.png&amp;zmax=19&amp;zmin=0</datasource>
+      <datasource>crs=EPSG:3857&amp;format&amp;type=xyz&amp;url=https://geoservices.gbd-consult.de/xyz/light/%7Bz%7D/%7Bx%7D/%7By%7D.png?key%3Dgwsdemo&amp;zmax=19&amp;zmin=0</datasource>
       <keywordList>
         <value></value>
       </keywordList>

@@ -49,10 +49,4 @@ map.layers+ {
     }
 }
 
-map.layers+ {
-    title "Open Street Map"
-    type "tile"
-    provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
-
-    display "client"
-}
+{demo_osm_background}

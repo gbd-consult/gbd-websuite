@@ -31,11 +31,7 @@ overviewMap {
         cssSelector ".custom_district_outline"
     }
     layers+ {
-        title "Open Street Map"
-        type "tile"
-        display "client"
-        provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
-        opacity 0.5
+        {demo_osm_layer}
     }
 }
 

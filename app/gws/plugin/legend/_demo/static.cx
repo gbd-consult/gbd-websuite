@@ -19,7 +19,7 @@ map {
 map.layers+ {
     title "OpenStreetMap"
     type "tile"
-    provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
+    provider.url "https://geoservices.gbd-consult.de/xyz/light/{{z}}/{{x}}/{{y}}.png?key=gwsdemo"
     display "client"
 
     legend {

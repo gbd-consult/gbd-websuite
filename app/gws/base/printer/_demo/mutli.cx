@@ -49,11 +49,4 @@ map.layers+ {
     provider.path "/demos/poi_geojson.qgs"
 }
 
-map.layers+ {
-    uid "OSM"
-    title "Open Street Map"
-    type "tile"
-    display "tile"
-    provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
-    metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-}
+{demo_osm_background}

@@ -45,7 +45,7 @@
         <Option/>
       </customproperties>
     </layer-tree-layer>
-    <layer-tree-layer checked="Qt::Checked" legend_exp="" expanded="1" name="OpenStreetMap" legend_split_behavior="0" providerKey="wms" source="tilePixelRatio=1&amp;type=xyz&amp;url=https://tile.openstreetmap.org/%7Bz%7D/%7Bx%7D/%7By%7D.png&amp;zmax=19&amp;zmin=0" id="_429bfb0a_1daf_4eee_83e2_e80669cbb027" patch_size="-1,-1">
+    <layer-tree-layer checked="Qt::Checked" legend_exp="" expanded="1" name="OpenStreetMap" legend_split_behavior="0" providerKey="wms" source="tilePixelRatio=1&amp;type=xyz&amp;url=https://geoservices.gbd-consult.de/xyz/light/%7Bz%7D/%7Bx%7D/%7By%7D.png?key%3Dgwsdemo&amp;zmax=19&amp;zmin=0" id="_429bfb0a_1daf_4eee_83e2_e80669cbb027" patch_size="-1,-1">
       <customproperties>
         <Option/>
       </customproperties>
@@ -208,7 +208,7 @@
         <ymax>85.05112877980660357</ymax>
       </wgs84extent>
       <id>_429bfb0a_1daf_4eee_83e2_e80669cbb027</id>
-      <datasource>tilePixelRatio=1&amp;type=xyz&amp;url=https://tile.openstreetmap.org/%7Bz%7D/%7Bx%7D/%7By%7D.png&amp;zmax=19&amp;zmin=0</datasource>
+      <datasource>tilePixelRatio=1&amp;type=xyz&amp;url=https://geoservices.gbd-consult.de/xyz/light/%7Bz%7D/%7Bx%7D/%7By%7D.png?key%3Dgwsdemo&amp;zmax=19&amp;zmin=0</datasource>
       <keywordList>
         <value></value>
       </keywordList>

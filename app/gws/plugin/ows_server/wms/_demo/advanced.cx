@@ -120,7 +120,7 @@ map.layers+ {
 map.layers+ {
     title "Open Street Map"
     type "tile"
-    provider.url "https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png"
+    provider.url "https://geoservices.gbd-consult.de/xyz/light/{{z}}/{{x}}/{{y}}.png?key=gwsdemo"
     withCache true
     legend {
         type "static"

@@ -51,14 +51,7 @@ map.layers+ {
     withCache false
 }
 
-map.layers+ {
-    title "Open Street Map"
-    type "tile"
-    provider.url "https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png"
-    metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-    clientOptions.hidden false
-    withCache false
-}
+{demo_osm_background}
 
 printers+ {
     title "A4"

@@ -3,15 +3,19 @@
 @let demo_point_dresden_3857 = [1529461, 6631043]
 @let demo_point_kamen_25832 = [407336, 5716507]
 
+@let demo_osm_layer
+    title "Open Street Map"
+    type "tile"
+    display "tile"
+    withCache false
+    provider.url "https://geoservices.gbd-consult.de/xyz/light/{{z}}/{{x}}/{{y}}.png?key=gwsdemo"
+    @# provider.url "https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png"
+    metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+@end
+
 @let demo_osm_background
     map.layers+ {
-        title "Open Street Map"
-        type "tile"
-        display "client"
-        opacity 0.3
-@#        provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
-        provider.url "https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png"
-        metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+        {demo_osm_layer}
     }
 @end
 

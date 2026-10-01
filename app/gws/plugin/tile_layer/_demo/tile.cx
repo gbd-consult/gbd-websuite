@@ -17,8 +17,7 @@ map {
 map.layers+ {
     title "Open Street Map"
     type "tile"
-    provider.url "https://osmtiles.gbd-consult.de/ows/{{z}}/{{x}}/{{y}}.png"
-
+    provider.url "https://geoservices.gbd-consult.de/xyz/max/{{z}}/{{x}}/{{y}}.png"
     display "tile"
     withCache true
 }

@@ -24,11 +24,4 @@ map.layers+ {
     cssSelector ".ne_countries"
 }
 
-map.layers+ {
-    title "Open Street Map"
-    type "tile"
-    provider.url "https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png"
-    display "tile"
-    withCache true
-    metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-}
+{demo_osm_background}
