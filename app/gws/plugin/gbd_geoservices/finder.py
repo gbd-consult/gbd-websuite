@@ -9,6 +9,11 @@ import gws.config.util
 
 _DEFAULT_TEMPLATES = [
     gws.Config(
+        subject='feature.title',
+        type='html',
+        path=os.path.dirname(__file__) + '/templates/feature_title.cx.html',
+    ),
+    gws.Config(
         subject='feature.teaser',
         type='html',
         path=os.path.dirname(__file__) + '/templates/feature_teaser.cx.html',

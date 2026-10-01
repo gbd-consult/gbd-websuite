@@ -1,12 +1,13 @@
-uid "geoservices_search"
+uid "gbd_geoservices"
 
 title "GBD Geoservices"
 
-metadata.keywords [ "search" ]
+metadata.keywords [ "search" "raster" ]
 
 metadata.abstract """
-Volltextsuche mit [GBD Geoservices](https://geoservices.gbd-consult.de). 
-Es wird im Großraum Düsseldorf nach Punkten von Interesse bzw Adressen gesucht.
+Rasterkarten und Volltextsuche mit [GBD Geoservices](https://geoservices.gbd-consult.de) für ganz Deutschland.
+Die Karten stehen in drei Detailstufen (Standard, Erweitert, Einfach) und vier Farbschemata (Default, Hell, Dunkel, Kontrast) zur Verfügung.
+Die Suche findet Orte, Straßen, Punkte von Interesse und Adressen.
 """
 
 client.addElements+ { tag "Sidebar.Search" }
@@ -14,48 +15,54 @@ client.addElements+ { tag "Altbar.Search" }
 
 client.options.sidebarActiveTab "Sidebar.Layers"
 
-actions+ { type "search" }
+actions+ { type "search" tolerance "5px" }
 
 finders+ {
     type "gbd_geoservices"
-    apiKey "my_key"
+    apiKey "gwsdemo"
     spatialContext "map"
 }
 
 map {
-    center {demo_point_duesseldorf_3857}
-    extent [
-        {demo_point_duesseldorf_3857[0] - 300000}
-        {demo_point_duesseldorf_3857[1] - 300000}
-        {demo_point_duesseldorf_3857[0] + 300000}
-        {demo_point_duesseldorf_3857[1] + 300000}
-    ]
-    zoom.initScale 1000000
-    zoom.minScale  200
+    center [1163289, 6649645]
+    extent [612257, 5942074, 1725452, 7420309]
+    zoom.initScale 5000000
+    zoom.maxScale 5000000
+    zoom.minScale  50
 }
+
+
+@def TILES(theme, titel, visible=False)
+    layers+ {
+        title "{titel}"
+        type "tile"
+        display "client"
+        clientOptions.hidden {not visible} 
+        provider.url "https://geoservices.gbd-consult.de/xyz/{theme}/{{z}}/{{x}}/{{y}}.png?key=gwsdemo"
+        metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+    }
+@end
 
 map.layers+ {
-    title "Hintergrundkarte"
+    title "Karten"
     type "group"
-    clientOptions.expanded true
-    clientOptions.exclusive true
+    clientOptions { expanded true exclusive true }
 
+    @TILES("std", "Standard", visible=True)
+    @TILES("min", "Standard (Minimal)")
+    @TILES("max", "Standard (Alles)")
     
-    @let THEMES = [
-        "default",
-        "dark",
-        "high-contrast",
-        "minimal",
-        "satellite"
-    ]
-    @for theme in THEMES
-        layers+ {
-            title "Thema {theme}"
-            type "tile"
-            display "client"
-            clientOptions.hidden {theme != "default"}
-            provider.url "https://geoservices.gbd-consult.de/xyz/{theme}/{{z}}/{{x}}/{{y}}.png"
-            metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-        }
-    @end
+    @TILES("light", "Hell")
+    @TILES("light_min", "Hell (Minimal)")
+    @TILES("light_max", "Hell (Alles)")
+    
+    @TILES("dark", "Dunkel")
+    @TILES("dark_min", "Dunkel (Minimal)")
+    @TILES("dark_max", "Dunkel (Alles)")
+    
+    @TILES("hico", "Kontrast")
+    @TILES("hico_min", "Kontrast (Minimal)")
+    @TILES("hico_max", "Kontrast (Alles)")
+
 }
+

@@ -1,20 +1,16 @@
 <div class="geoservices_description">
-    <span class="geoservices_{category_id}">{category_name | html}</span>
-    <p class="head2">
-        @if name
-            {name | html}
-        @else
-            {address | html}
+    <div class="geoservices_head">
+        <div>
+            <p class="head2">{title | html | nl2br}</p>
+            @with subtitle
+                <p class="head3">{subtitle | html | nl2br}</p>
+            @end
+            @with details
+                <p class="head3">{details | html | nl2br}</p>
+            @end
+        </div>
+        @with icon
+            <img class="geoservices_icon" src="{icon | html}" />
         @end
-    </p>
-    @with subcategory_name
-        <p class="head3">{subcategory_name | html}</p>
-    @end
-    @with tags
-        <table>
-        @for k, v in tags
-            <tr><td>{k}</td><td>{v | html}</td></tr>
-        @end
-        </table>
-    @end
+    </div>
 </div>
