@@ -1,8 +1,7 @@
 """API definition from swagger.yaml"""
 
-import inspect
 from datetime import datetime
-from typing import Any, List, Optional, TypeVar, get_args, get_origin
+from typing import Any, Optional
 
 import gws
 
@@ -112,7 +111,7 @@ class Organization(gws.Data):
     membership_role: str
     membership_role_origin: str
     membership_is_public: bool
-    teams: List[str]
+    teams: list[str]
     email: Optional[str]
 
 
@@ -158,7 +157,7 @@ class ProjectCollaborator(gws.Data):
 class Team(gws.Data):
     team: str
     organization: str
-    members: List[str]
+    members: list[str]
 
 
 class TeamMember(gws.Data):
@@ -169,8 +168,8 @@ class TeamMember(gws.Data):
 
 
 class Package(gws.Data):
-    files: List[dict]
-    layers: List[dict]
+    files: list[dict]
+    layers: list[dict]
     status: JobStatusEnum
     package_id: str
     packaged_at: datetime
