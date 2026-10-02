@@ -41,7 +41,13 @@ class Object(gws.Node):
 
         search = gws.SearchQuery(project=mc.project, tolerance=DEFAULT_TOLERANCE)
         if p.extent:
-            search.bounds = gws.Bounds(crs=p.crs or mc.project.map.bounds.crs, extent=p.extent)
+            crs = p.crs
+            if not crs and mc.project and mc.project.map:
+                crs = mc.project.map.bounds.crs
+            if not crs:
+                gws.log.warning('no CRS specified for extent search')
+                return []
+            search.bounds = gws.Bounds(crs=crs, extent=p.extent)
         if p.shapes:
             shapes = [gws.base.shape.from_props(s) for s in p.shapes]
             search.shape = shapes[0] if len(shapes) == 1 else shapes[0].union(shapes[1:])
@@ -204,7 +210,7 @@ class Object(gws.Node):
                 )
 
             f.render_views(template_map[f.model.uid], user=mc.user, project=mc.project)
-            if mc.project.map:
+            if mc.project and mc.project.map:
                 f.transform_to(mc.project.map.bounds.crs)
 
         return [f.model.feature_to_props(f, mc) for f in features]

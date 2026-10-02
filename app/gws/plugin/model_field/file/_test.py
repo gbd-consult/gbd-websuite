@@ -148,6 +148,29 @@ def test_props_contain_the_preview_url_for_images(root: gws.Root):
     ) + '/d.png'
 
 
+def test_props_with_project_contain_urls(root: gws.Root):
+    mm = u.cast(gws.Model, root.get('OPEN'))
+    project = u.cast(gws.Project, root.get('A'))
+
+    f = mm.get_features([4], u.model.context())[0]
+    fp = mm.feature_to_props(f, u.model.context(project=project)).attributes['file']
+    assert fp.label == 'd.png'
+    assert fp.downloadUrl == _url('OPEN', '4') + '/d.png'
+    assert fp.previewUrl != ''
+
+
+def test_props_without_project_have_no_urls(root: gws.Root):
+    mm = u.cast(gws.Model, root.get('OPEN'))
+
+    f = mm.get_features([4], u.model.context())[0]
+    fp = mm.feature_to_props(f, u.model.context(project=None)).attributes['file']
+    assert fp.label == 'd.png'
+    assert fp.extension == 'png'
+    assert fp.size > 0
+    assert fp.downloadUrl == ''
+    assert fp.previewUrl == ''
+
+
 def test_props_omit_an_unreadable_field(root: gws.Root):
     res = u.http.api(root, 'editGetFeature', dict(projectUid='A', modelUid='FIELD_DENIED', featureUid='1'))
 

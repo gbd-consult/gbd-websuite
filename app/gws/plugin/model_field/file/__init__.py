@@ -179,6 +179,9 @@ class Object(gws.base.model.field.Object):
             downloadUrl='',
         )
 
+        if not mc.project:
+            return p
+
         name = fv.name or f'gws.{ext}'
 
         url_args = dict(

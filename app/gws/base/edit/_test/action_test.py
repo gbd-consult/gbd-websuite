@@ -1,4 +1,5 @@
 import gws
+import gws.base.edit.helper
 import gws.test.util as u
 
 
@@ -37,6 +38,20 @@ def root():
                 fields+ { name "g" type "geometry" }
             }
         }
+        projects+ {
+            uid "B"
+            map.crs 3857
+            map.layers+ { uid "LAYER_B" type "postgres" tableName "plain" }
+            models+ {
+                uid "MODEL_PLAIN_B"
+                type "postgres"
+                tableName "plain"
+                isEditable true
+                fields+ { name "id" type "integer" isPrimaryKey true }
+                fields+ { name "name" type "text" }
+                fields+ { name "g" type "geometry" }
+            }
+        }
     '''
 
     yield u.gws_root(cfg)
@@ -54,6 +69,31 @@ def test_get_feature(root: gws.Root):
     props = res.json['feature']
     assert props['attributes']['id'] == 2
     assert props['attributes']['name'] == 'a22'
+
+
+def test_get_features_extent_uses_the_project_map_crs(root: gws.Root):
+    res = u.http.api(root, 'editGetFeatures', dict(projectUid='B', modelUids=['MODEL_PLAIN_B'], extent=[0, 0, 15, 150]))
+    assert res.status_code == 200
+    assert [f['attributes']['id'] for f in res.json['features']] == [1]
+
+
+def test_get_features_extent_without_crs_and_project_map_returns_nothing(root: gws.Root):
+    assert u.cast(gws.Project, root.get('A')).map is None
+
+    res = u.http.api(root, 'editGetFeatures', dict(projectUid='A', modelUids=['MODEL_PLAIN'], extent=[0, 0, 15, 150]))
+    assert res.status_code == 200
+    assert res.json['features'] == []
+
+
+def test_feature_list_to_props_without_project(root: gws.Root):
+    h = u.cast(gws.base.edit.helper.Object, root.app.helper('edit'))
+    model = u.cast(gws.Model, root.get('MODEL_PLAIN'))
+
+    fs = model.get_features([1], u.model.context())
+    ps = h.feature_list_to_props(fs, u.model.context(project=None))
+    assert ps[0].attributes['id'] == 1
+    assert ps[0].attributes['name'] == 'a11'
+    assert ps[0].views['title'] == '--1/a11--'
 
 
 def test_write_feature(root: gws.Root):

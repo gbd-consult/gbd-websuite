@@ -51,7 +51,7 @@ class ModelContext(Data):
     op: ModelOperation
     target: ModelReadTarget
     user: 'User'
-    project: 'Project'
+    project: Optional['Project']
     relDepth: int = 0
     maxDepth: int = 0
     search: 'SearchQuery'
