@@ -1,11 +1,11 @@
-%def reference_de(name)
-<div class="reference">
-    Referenz: <a href="<% options.webRoot %>/admin-de/reference/index.html#<% name %>"><% name %></a>
-</div>
+%def ref(name)
+<span class="see_ref">
+    <a href="<% options.webRoot %>/admin-de/reference/index.html#<% name %>"><% name %></a>
+</span>
 %end
 
-%def demo(name)
-<div class="demo">
-    <a target="_blank" href="https://docs.gbd-websuite.de/demo/<% name %>">Demo</a>
-</div>
+%def demo(uid)
+<span class="see_demo">
+    <a target="_blank" href="https://docs.gbd-websuite.de/demo/<% uid %>"><% options.demoProjects.get(uid, uid) %></a>
+</span>
 %end

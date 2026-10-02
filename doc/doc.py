@@ -4,6 +4,7 @@ import os
 import shutil
 import sys
 import json
+import re
 
 APP_DIR = os.path.abspath(os.path.dirname(__file__) + '/../app')
 
@@ -80,6 +81,20 @@ def main(args):
     opts['outputDir'] = out_dir
     shutil.rmtree(opts['outputDir'], ignore_errors=True)
     os.makedirs(opts['outputDir'], exist_ok=True)
+
+    opts['demoProjects'] = {}
+    cx_paths = list(cli.find_files(APP_DIR, r'_demo/.+?\.cx$'))
+    for path in cx_paths:
+        cfg = dog.util.read_file(path)
+        uid = title = None
+        m = re.search(r'uid\s+"(.+?)"', cfg)
+        if m:
+            uid = m.group(1)
+        m = re.search(r'title\s+"(.+?)"', cfg)
+        if m:
+            title = m.group(1)
+        if uid and title:
+            opts['demoProjects'][uid] = title
 
     if cmd == 'build':
         dog.build_html(opts)

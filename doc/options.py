@@ -24,7 +24,12 @@ fileSplitLevel = {
     '/user-de': 2,
     '/user-de/sidebar.editieren': 3,
     '/admin-de': 2,
-    '/admin-de/themen': 3,
+    '/admin-de/erste-schritte': 3,
+    '/admin-de/themen': 4,
+    '/admin-de/konfiguration': 4,
+}
+tocDepth = {
+    '/admin-de/reference': 1,
 }
 pageTemplate = f'{DOC_DIR}/theme/page.cx.html'
 webRoot = f'/doc/{VERSION2}'
@@ -36,8 +41,8 @@ extraAssets = [
 ]
 
 brandLogo = "gws_logo.svg"
-brandURL = "https://gbd-consult.de"
-brandText = "&copy; Geoinformatikbüro Dassau GmbH 2006-2026"
+brandName = "Geoinformatikbüro Dassau GmbH"
+brandFooter = "&copy; Geoinformatikbüro Dassau GmbH 2006-2026"
 
 includeTemplate = f'{DOC_DIR}/extra_commands.cx.html'
 

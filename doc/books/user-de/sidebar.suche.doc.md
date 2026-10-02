@@ -18,8 +18,6 @@ Der Postgres Finder ermöglicht das Durchsuchen von einer oder mehreren Spalten 
 
 %demo 'postgres_search'
 
-%info
-
-Weitere Informationen zur [Konfiguration der Suche](/doc/8.1/admin-de/themen/suche/index.html) finden Sie im Administrator Handbuch.
-
+%see
+Siehe auch: [Konfiguration/Finder](/admin-de/konfiguration/finder), [Aktion/search](/admin-de/konfiguration/action/search).
 %end

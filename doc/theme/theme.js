@@ -1,305 +1,324 @@
-let $ = sel => document.querySelector(sel);
-let $$ = sel => document.querySelectorAll(sel);
-let $new = tag => document.createElement(tag);
+'use strict';
 
-function makeNavigation() {
-    let toc = GLOBAL_TOC;
+// The blue theme. All DOM, events and rendering live here; navigation data and search come
+// from the Dog client core (window.Dog, see _dog.js).
 
-    for (let node of Object.values(toc)) {
-        node.open = false;
-        node.active = false;
+const $ = sel => document.querySelector(sel);
+const $$ = sel => document.querySelectorAll(sel);
+const $new = (tag, props=null) => {
+    const el = document.createElement(tag);
+    if (props) {
+        Object.assign(el, props);
     }
+    return el;
+};
 
-    let u = location.pathname + location.hash;
-    u = u.split('?')[0];
+const STATIC = document.documentElement.dataset.static || '';
+const SEARCH_DEBOUNCE = 150;
+const SEARCH_LIMIT = 50;
+const NAV_SCROLL_KEY = 'dog.navScroll';
+const SEARCH_TEXT_KEY = 'dog.searchText';
+const SIDEBAR_KEY = 'dog.sidebar';
+const MAX_DEPTH = 999;
 
-    for (let [sid, node] of Object.entries(toc)) {
-        if (node.u === u) {
-            setActiveNavNode(toc, sid);
-            break;
-        }
+let searchSeq = 0;
+
+async function main() {
+    initSidebar();
+
+    const dog = await Dog.load(STATIC);
+
+    buildNav(dog);
+    initSearch(dog);
+    addRefMarks();
+    prepareConfigRef();
+    revealNav();
+
+    window.addEventListener('popstate', () => buildNav(dog));
+    window.addEventListener('pagehide', saveNavScroll);
+
+    if (location.search.includes('dev=1')) {
+        document.body.classList.add('with_dev_mode');
     }
-
-    toc['/'].open = true;
-
-
-    let li = makeNavNode(toc, '/')
-    let div = $('#sidebar-toc');
-
-    while (div.firstChild) {
-        div.removeChild(div.firstChild)
-    }
-
-    div.appendChild(li.lastChild);
 }
 
-let toggleOpen = e => e.target.parentNode.parentNode.classList.toggle('open');
+function initSidebar() {
+    $('#sidebar_toggle').addEventListener('click', () => {
+        const open = document.body.classList.toggle('sidebar_open');
+        if (matchMedia('(min-width: 768px)').matches) {
+            sessionStorage.setItem(SIDEBAR_KEY, open ? 'open' : 'closed');
+        }
+    });
+}
 
-function makeNavNode(toc, sid) {
-    let node = toc[sid];
+function revealNav() {
+    const content = $('#sidebar_content');
+    const saved = sessionStorage.getItem(NAV_SCROLL_KEY);
+    if (content && saved !== null) {
+        content.scrollTop = +saved;
+    }
+    $('#sidebar_toc').classList.add('ready');
+}
 
-    let li = $new('li');
-    li.dataset['sid'] = sid;
+function saveNavScroll() {
+    const content = $('#sidebar_content');
+    if (content) {
+        sessionStorage.setItem(NAV_SCROLL_KEY, content.scrollTop);
+    }
+}
 
-    let span = $new('span');
-    li.appendChild(span);
+// ---------------------------------------------------------------- navigation
 
-    let button = $new('button');
-    span.appendChild(button);
+function buildNav(dog) {
+    const active = dog.toc.forUrl(location.pathname + location.hash);
 
-    let sub = node.s.map(subSid => makeNavNode(toc, subSid))
+    let shown = active;
+    let depth = MAX_DEPTH;
+    for (const sec of dog.toc.breadcrumbs(active)) {
+        depth = Math.min(depth, sec.tocDepth ?? MAX_DEPTH);
+        shown = sec;
+        if (depth < 2) {
+            break;
+        }
+        depth -= 1;
+    }
 
-    if (node.active) {
+    const open = new Set();
+    for (let sec = shown; sec; sec = sec.parent) {
+        open.add(sec);
+    }
+
+    // the sidebar shows the root's children, not the root itself
+    const rootNode = makeNavNode(dog.toc.root, shown, open, MAX_DEPTH);
+    $('#sidebar_toc').replaceChildren(rootNode.lastChild || rootNode);
+
+    setArrows(dog, active);
+}
+
+function makeNavNode(sec, active, open, depth) {
+    const li = $new('li');
+    li.dataset.sid = sec.sid;
+
+    const span = $new('span');
+    const button = $new('button');
+    span.append(button);
+
+    const a = $new('a', { textContent: sec.title, href: sec.url });
+    span.append(a);
+    li.append(span);
+
+    if (sec === active) {
         li.classList.add('active');
     }
-    if (node.open) {
+    if (open.has(sec)) {
         li.classList.add('open');
     }
-    if (sub.length > 0) {
+
+    depth = Math.min(depth, sec.tocDepth ?? MAX_DEPTH);
+    if (sec.children.length && depth > 1) {
         li.classList.add('branch');
         button.addEventListener('click', toggleOpen);
-    }
-
-    let a = $new('a');
-    a.textContent = node.h;
-    a.href = node.u;
-    span.appendChild(a);
-
-    if (sub.length > 0) {
-        let ul = $new('ul');
-        for (let s of sub) {
-            ul.appendChild(s);
+        const ul = $new('ul');
+        for (const child of sec.children) {
+            ul.append(makeNavNode(child, active, open, depth - 1));
         }
-        li.appendChild(ul);
+        li.append(ul);
     }
 
     return li;
 }
 
-function setActiveNavNode(toc, sid) {
-    let node = toc[sid];
-    let parent = toc[node.p];
+const toggleOpen = evt => evt.currentTarget.closest('li').classList.toggle('open');
 
-    let arrows = [
-        $('#nav-arrow-up'),
-        $('#nav-arrow-prev'),
-        $('#nav-arrow-next'),
-    ];
+function setArrows(dog, active) {
+    const targets = {
+        prev: active ? dog.toc.prev(active) : null,
+        next: active ? dog.toc.next(active) : null,
+    };
+    const arrows = {
+        prev: $('#nav_arrow_prev'),
+        next: $('#nav_arrow_next'),
+    };
 
-    arrows.forEach(a => a.href = '#');
-    arrows.forEach(a => a.classList.add('disabled'));
+    for (const [dir, el] of Object.entries(arrows)) {
+        const target = targets[dir];
+        el.href = target ? target.url : '#';
+        el.querySelector('.nav_title').textContent = target ? target.title : '';
+        el.classList.toggle('disabled', !target);
+    }
+}
 
-    if (!parent) {
+// ---------------------------------------------------------------- search
+
+function initSearch(dog) {
+    const input = $('#search input');
+    const clear = $('#search button');
+    const results = $('#search_results');
+    let timer;
+
+    const showClear = () => clear.classList.toggle('visible', input.value !== '');
+    const persist = () => localStorage.setItem(SEARCH_TEXT_KEY, input.value);
+
+    input.value = localStorage.getItem(SEARCH_TEXT_KEY) || '';
+    showClear();
+
+    input.addEventListener('input', () => {
+        clearTimeout(timer);
+        showClear();
+        persist();
+        if (input.value.trim()) {
+            openSearch();     // drop the popup down as soon as the search starts
+            timer = setTimeout(() => runSearch(dog, input.value, results), SEARCH_DEBOUNCE);
+        } else {
+            closeSearch(results);
+        }
+    });
+
+    input.addEventListener('focus', () => {
+        requestAnimationFrame(() => input.select());
+        if (input.value.trim()) {
+            openSearch();
+            runSearch(dog, input.value, results);
+        }
+    });
+
+    clear.addEventListener('click', () => {
+        input.value = '';
+        showClear();
+        persist();
+        closeSearch(results);
+        input.focus();
+    });
+
+    document.addEventListener('keydown', evt => {
+        if (evt.key === 'Escape') {
+            input.value = '';
+            showClear();
+            persist();
+            closeSearch(results);
+        }
+    });
+
+    document.addEventListener('click', evt => {
+        if (!evt.target.closest('#search')) {
+            closeSearch(results);
+        }
+    });
+}
+
+function openSearch() {
+    document.body.classList.add('searching');
+}
+
+function closeSearch(results) {
+    document.body.classList.remove('searching');
+    results.replaceChildren();
+}
+
+async function runSearch(dog, text, results) {
+    const seq = ++searchSeq;
+    const found = await dog.query(text.trim(), { limit: SEARCH_LIMIT, snippetWidth: 1000 });
+    if (seq === searchSeq) {
+        renderResults(dog, results, found);
+    }
+}
+
+function renderResults(dog, el, { results, totalCount }) {
+    el.replaceChildren();
+
+    if (!results.length) {
+        el.append($new('div', {
+            className: 'search_result_empty',
+            textContent: 'keine Ergebnisse gefunden',
+        }));
         return;
     }
 
-    arrows[0].href = parent.u;
-    arrows[0].classList.remove('disabled');
+    el.append($new('div', {
+        className: 'search_result_count',
+        textContent: totalCount >= SEARCH_LIMIT
+            ? `${SEARCH_LIMIT}+ Ergebnisse`
+            : `${totalCount} ${totalCount === 1 ? 'Ergebnis' : 'Ergebnisse'}`,
+    }));
 
-    let i = parent.s.indexOf(sid);
-
-    let prev = toc[parent.s[i - 1]];
-    if (prev) {
-        arrows[1].href = prev.u;
-        arrows[1].classList.remove('disabled');
+    const ul = $new('ul');
+    for (const hit of results) {
+        ul.append(makeResult(dog, hit));
     }
+    el.append(ul);
+}
 
-    let next = toc[parent.s[i + 1]];
-    if (next) {
-        arrows[2].href = next.u;
-        arrows[2].classList.remove('disabled');
+function makeResult(dog, hit) {
+    const li = $new('li');
+
+    const a = $new('a', { className: 'search_result', href: hit.section.url });
+
+    const crumbs = dog.toc.breadcrumbs(hit.section);   // drop the first (home) crumb
+    a.append($new('div', {
+        className: 'search_result_title',
+        textContent: crumbs.slice(1).map(sec => sec.title).join(' › ') || crumbs.at(-1).title,
+    }));
+
+    const snippet = $new('div', { className: 'search_result_snippet' });
+    fillSnippet(snippet, hit.snippet);
+    a.append(snippet);
+
+    li.append(a);
+    return li;
+}
+
+function fillSnippet(el, snippet) {
+    if (!snippet.length) {
+        return;
     }
-
-    node.active = true;
-    while (node) {
-        node.open = true;
-        node = toc[node.p];
+    if (!snippet[0].atBegin) {
+        el.append('… ');
+    }
+    for (const frag of snippet) {
+        if (frag.marker) {
+            const [start, len] = frag.marker;
+            if (start) {
+                el.append(frag.text.slice(0, start));
+            }
+            el.append($new('mark', { textContent: frag.text.slice(start, start + len) }));
+            const rest = frag.text.slice(start + len);
+            if (rest) {
+                el.append(rest);
+            }
+        } else {
+            el.append(frag.text);   // text node — auto-escaped
+        }
+    }
+    if (!snippet.at(-1).atEnd) {
+        el.append(' …');
     }
 }
 
-function syncNavigation() {
-    let curr = null;
-
-    $$('#sidebar-toc a').forEach(a => {
-        if (a.href === location.href) {
-            curr = a
-        }
-    })
-
-    $$('#sidebar-toc *').forEach(li =>
-        li.classList.remove('on')
-    )
-
-    if (curr) {
-
-        while (curr.id !== 'sidebar-toc') {
-            curr.classList.add('on')
-            curr = curr.parentNode
-        }
-    } else {
-        $('#sidebar-toc ul').classList.add('on')
-    }
-}
+// ---------------------------------------------------------------- content
 
 function addRefMarks() {
-    for (let h of '123456') {
-        $$('h' + h).forEach(el => {
-            let a = $new('a')
-            a.className = 'header-link'
-            a.href = el.getAttribute('data-url')
-            a.innerHTML = '&para;'
-            el.appendChild(a)
-        })
-    }
-}
-
-//
-
-let searchTimer = 0;
-
-
-function searchSave(text) {
-    sessionStorage.setItem('savedSearch', text);
-}
-
-function searchInit() {
-    $('#sidebar-search input').addEventListener('input', searchRun);
-    $('#sidebar-search button').addEventListener('click', searchReset);
-
-    let val = sessionStorage.getItem('savedSearch');
-    if (val) {
-        $('#sidebar-search input').value = val;
-        searchExec(val);
-    }
-}
-
-function searchRun(evt) {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => searchExec(evt.target.value), 500);
-}
-
-function searchReset() {
-    clearTimeout(searchTimer);
-    $('#sidebar-search input').value = '';
-    searchSave('');
-    $('body').classList.remove('with-search-found', 'with-search-not-found');
-    $('#sidebar-search-results').innerHTML = '';
-}
-
-function searchExec(val) {
-    val = val.trim();
-
-    if (val.length === 0) {
-        searchReset();
-        return;
-    }
-
-    searchSave(val);
-
-    let secs = searchFindSections(val);
-    let html = '';
-
-    if (secs) {
-        $('body').classList.add('with-search-found');
-        $('body').classList.remove('with-search-not-found');
-        val = encodeURIComponent(val);
-        html = '<ul>' + secs.map(sec => `<li><a href="${sec.u}">${sec.h}</a></li>`).join('') + '</ul>';
-    } else {
-        $('body').classList.remove('with-search-found');
-        $('body').classList.add('with-search-not-found');
-        html = '';
-    }
-
-    $('#sidebar-search-results').innerHTML = html;
-}
-
-const SEARCH_MAX_RESULTS = 50;
-
-function searchFindSections(val) {
-    if (!SEARCH_INDEX) {
-        return;
-    }
-    SEARCH_INDEX._words = SEARCH_INDEX._words || SEARCH_INDEX.words.split('.');
-
-    let searchWords = val.toLowerCase().match(/[a-zA-ZÄÖÜßäöü_-]+/g);
-    if (!searchWords) {
-        return;
-    }
-
-    let wordIndexes = [];
-    let hasAllWords = true;
-
-    for (let w of searchWords) {
-        let n = SEARCH_INDEX._words.indexOf(w);
-        if (n > 0) {
-            wordIndexes.push('.' + n.toString(36) + '.');
-        } else {
-            hasAllWords = false;
+    for (const el of $$('main h1, main h2, main h3, main h4, main h5, main h6')) {
+        const url = el.dataset.url;
+        if (!url) {
+            continue;
         }
-    }
-
-    if (wordIndexes.length > 0 && hasAllWords) {
-        let exactPhrase = wordIndexes.join('');
-        let secs = SEARCH_INDEX.sections.filter(sec => sec.w.includes(exactPhrase));
-        if (secs.length > 0) {
-            return secs.slice(0, SEARCH_MAX_RESULTS);
-        }
-    }
-
-    if (wordIndexes.length > 0) {
-        let secs = SEARCH_INDEX.sections.filter(sec => wordIndexes.every(ix => sec.w.includes(ix)));
-        if (secs.length > 0) {
-            return secs.slice(0, SEARCH_MAX_RESULTS);
-        }
-    }
-
-    if (wordIndexes.length > 0) {
-        let secs = SEARCH_INDEX.sections.filter(sec => wordIndexes.some(ix => sec.w.includes(ix)));
-        if (secs.length > 0) {
-            return secs.slice(0, SEARCH_MAX_RESULTS);
-        }
-    }
-
-    let partialWordIndexes = [];
-
-    for (let w of searchWords) {
-        for (let [n, sw] of SEARCH_INDEX._words.entries()) {
-            if (sw.indexOf(w) >= 0) {
-                partialWordIndexes.push('.' + n.toString(36) + '.');
-            }
-        }
-    }
-
-    if (partialWordIndexes.length > 0) {
-        let secs = SEARCH_INDEX.sections.filter(sec => partialWordIndexes.some(ix => sec.w.includes(ix)));
-        if (secs.length > 0) {
-            return secs.slice(0, SEARCH_MAX_RESULTS);
-        }
-    }
-
-    return [];
-}
-
-function isDev() {
-    return location.search.includes('dev=1');
-}
-
-//
-
-function main() {
-    $('#sidebar-toggle').addEventListener('click', () => {
-        document.body.classList.toggle('mobile-sidebar')
-    });
-    makeNavigation();
-    window.addEventListener('popstate', () => {
-        makeNavigation();
-        document.body.classList.remove('mobile-sidebar')
-    });
-    searchInit();
-    addRefMarks();
-    if (isDev()) {
-        document.body.classList.add('with-dev')
+        el.append($new('a', { className: 'header_link', href: url, textContent: '¶' }));
     }
 }
 
-window.addEventListener('load', main);
+function prepareConfigRef() {
+    for (const marker of $$('main .configref_category_marker')) {
+        const cls = marker.classList[1];
+        let h = marker.closest('p') || marker;
+        while (h && h.tagName !== 'H2') {
+            h = h.previousElementSibling;
+        }
+        if (!h) {
+            continue;
+        }
+        h.classList.add(cls);
+    }
+}
+
+
+main();

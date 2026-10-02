@@ -6,8 +6,6 @@
 
 Zum Beispiel können nur berechtigte Personen auf sensible Inhalte wie Eigentümerinformationen im Rahmen einer Suche nach Liegenschaftsdaten zugreifen oder bekommen nur bestimmte Layer eines GBD WebSuite Projektes bereitgestellt oder erhalten im Gegensatz zu anderen Benutzer:innen Zugriff auf bestimmte Werkzeuge.
 
-%info
-
-Weitere Informationen zur [Konfiguration einer Authentifizierung](/doc/8.1/admin-de/themen/auth/index.html) finden Sie im Administrator Handbuch.
-
+%see
+Siehe auch: [Konfiguration/Authentifizierungs-Provider](/admin-de/konfiguration/authProvider), [Konfiguration/Authentifizierungsmethoden](/admin-de/konfiguration/authMethod), [Aktion/auth](/admin-de/konfiguration/action/auth).
 %end

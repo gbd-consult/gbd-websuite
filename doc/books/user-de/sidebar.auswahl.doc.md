@@ -2,7 +2,7 @@
 
 ![](auswahl1.png){border=1}
 
-Das Menü ![](gbd-icon-auswahl-01.svg) {title Auswahl} der Seitenleiste interagiert mit dem [Werkzeug Auswählen](/doc/8.1/user-de/toolbar.auswahl/index.html). Es wird automatisch aktiviert, wenn Sie mit dem Werkzeug Objekte in der Karte auswählen und listet diese dann im Bereich Auswahl dieses Menüs. 
+Das Menü ![](gbd-icon-auswahl-01.svg) {title Auswahl} der Seitenleiste interagiert mit dem [Werkzeug Auswählen](/user-de/toolbar.auswahl). Es wird automatisch aktiviert, wenn Sie mit dem Werkzeug Objekte in der Karte auswählen und listet diese dann im Bereich Auswahl dieses Menüs. 
 
 ![](auswahl2.png){border=1}
 
@@ -18,9 +18,7 @@ Am unteren Rand im Bereich Auswahl befindet sich je nach Konfiguration weitere F
 
 %demo 'select_tool'
 
-%info
-
-Weitere Informationen zur [Konfiguration einer Auswahl](/doc/8.2/admin-de/plugin/auswahl/index.html) finden Sie im Administrator Handbuch.
-
+%see
+Siehe auch: [Aktion/select](/admin-de/konfiguration/action/select).
 %end
 

@@ -17,7 +17,7 @@ Die Seitenleiste ![](baseline-menu-24px.svg) {title Menü} ermöglicht den Zugri
 | ![](baseline-search-24px.svg)        	| [Suche](/user-de/sidebar.suche)  					| Inhalte suchen und als Ergebnis auflisten		|
 
 %info
-	Die Elemente in der Seitenleiste und ihre Reihenfolge können durch einen Administrator für Benutzer oder Benutzergruppen individuelle konfiguriert werden. Weitere Informationen dazu finden sich im Administrator Handbuch im Bereich der [UI-Konfiguration](/admin-de/config/client).
+	Die Elemente in der Seitenleiste und ihre Reihenfolge können durch einen Administrator für Benutzer oder Benutzergruppen individuelle konfiguriert werden. Weitere Informationen dazu finden sich im Administrator Handbuch im Bereich der [UI-Konfiguration](/admin-de/konfiguration/client).
 %end
 
 %comment

@@ -1,71 +1,76 @@
 <!DOCTYPE html>
-
-<html>
+<html lang="de" data-static="<% options.webRoot %>/_static">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><% options.title %> - <% options.subTitle %></title>
-    <link rel="stylesheet" href="<% options.webRoot %>/_static/theme.css" type="text/css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="<% options.webRoot %>/_static/theme.js"></script>
-    <script src="<% options.webRoot %>/_static/_global_toc.js"></script>
-    <script src="<% options.webRoot %>/_static/_search_index.js"></script>
+    <link rel="stylesheet" href="<% options.webRoot %>/_static/theme.css">
+    <script src="<% options.webRoot %>/_static/_dog.js" defer></script>
+    <script src="<% options.webRoot %>/_static/theme.js" defer></script>
 </head>
 
 <body>
+    <script>
+        (function () {
+            if (matchMedia('(min-width: 768px)').matches && sessionStorage.getItem('dog.sidebar') !== 'closed') {
+                document.body.classList.add('sidebar_open');
+            }
+        })();
+    </script>
+
+    <button type="button" id="sidebar_toggle" aria-label="Navigation ein-/ausblenden"></button>
+
     <aside>
         <div id="sidebar">
-            <a id="sidebar-header" href="<% home %>">
-                %with options.brandLogo
-                    <img id="sidebar-logo" src="<% options.webRoot %>/_static/<% options.brandLogo %>"/>
+            <a id="sidebar_header" href="<% home %>">
+                %if options.brandLogo
+                    <span id="sidebar_logo">
+                        <img src="<% options.webRoot %>/_static/<% options.brandLogo %>" alt="<% options.brandName | html%>">
+                    </span>
                 %end
-                <span id="sidebar-header-title">
-                    <% title %>
-                </span>
-                <span id="sidebar-header-subtitle">
-                    <% subTitle %>
-                </span>
+                <span id="sidebar_header_title"><% options.title | html %></span>
+                <span id="sidebar_header_subtitle"><% options.subTitle | html %></span>
             </a>
-            <div id="sidebar-search">
-                <div id="sidebar-search-box">
-                    <input>
-                    <button>&times;</button>
-                </div>
+            <div id="sidebar_content">
+                <div id="sidebar_toc"></div>
             </div>
-            <div id="sidebar-content">
-                <div id="sidebar-search-results">
-                </div>
-                <div id="sidebar-search-not-found">
-                    keine Ergebnisse gefunden
-                </div>
-                <div id="sidebar-toc">
-                </div>
-            </div>
-            <div id="sidebar-footer">
-                <a href="<% options.brandURL %>" style="color:grey; text-decoration:none" target="_blank"><% options.brandText %></a>
+            <div id="sidebar_footer">
+                <% options.brandFooter %>
             </div>
         </div>
     </aside>
 
-    <div id="sidebar-toggle"></div>
-
     <main>
         <nav>
-            %for url, title in breadcrumbs index i length total
-                %if i == 1
-                    <a href="<% url %>" class="nav-icon" id="nav-breadcrumbs-home"></a>
-                %elif i == total
-                    <span>&raquo;</span><span><% title %></span>
-                %else
-                    <span>&raquo;</span><span><a href="<% url %>"><% title %></a></span>
+            <div id="nav_breadcrumbs">
+                %for url, title in breadcrumbs index i length total
+                    %if i == 1
+                        %continue
+                    %end
+                    %if i > 2
+                        <span>&raquo;</span>
+                    %end
+                    %if i < total
+                        <span><a href="<% url %>"><% title %></a></span>
+                    %else
+                        <span><% title %></span>                    
+                    %end
                 %end
-            %end
-            <span class="nav-flex"></span>
-            <a class="nav-icon" id="nav-arrow-prev"></a>
-            <a class="nav-icon" id="nav-arrow-up"></a>
-            <a class="nav-icon" id="nav-arrow-next"></a>
+            </div>
+            <div id="nav_flex"></div>
+            <div id="search">
+                <div id="search_box">
+                    <input type="search" autocomplete="off" aria-label="Suche">
+                    <button type="button" aria-label="Suche zurücksetzen"></button>
+                </div>
+                <div id="search_results"></div>
+            </div>
         </nav>
         <% main %>
+        <footer id="page_nav">
+            <a class="nav_link" id="nav_arrow_prev"><span class="nav_icon"></span><span class="nav_title"></span></a>
+            <a class="nav_link" id="nav_arrow_next"><span class="nav_title"></span><span class="nav_icon"></span></a>
+        </footer>
     </main>
-
 </body>
 </html>

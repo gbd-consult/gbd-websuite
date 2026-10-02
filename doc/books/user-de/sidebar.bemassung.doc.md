@@ -2,7 +2,7 @@
 
 ![](bemassung.png){border=1}
 
-Das Menü ![](gbd-icon-bemassung-02.svg) {title Bemaßung} interagiert mit dem Werkzeug [Werkzeug Bemaßung](/doc/8.1/user-de/toolbar.bemassung/index.html). Es wird automatisch aktiviert, wenn Sie mit dem Werkzeug in der Karte eine erste Bemaßung gezeichnet haben und listet diese und alle weiteren im Bereich Bemaßung dieses Menüs. Dargestellt wird die Streckenlängen mit der textlichen Erweiterung. Die Funktionalität ähnelt einer technischen Bemaßung. Zum genauen Bemessen der Strecken, wird das Zeichnen durch eine Snap-Funktion unterstützt, die auf einen PostgreSQL Layer fangen kann, z.B. ALKIS und Gebäude.
+Das Menü ![](gbd-icon-bemassung-02.svg) {title Bemaßung} interagiert mit dem Werkzeug [Werkzeug Bemaßung](/user-de/toolbar.bemassung). Es wird automatisch aktiviert, wenn Sie mit dem Werkzeug in der Karte eine erste Bemaßung gezeichnet haben und listet diese und alle weiteren im Bereich Bemaßung dieses Menüs. Dargestellt wird die Streckenlängen mit der textlichen Erweiterung. Die Funktionalität ähnelt einer technischen Bemaßung. Zum genauen Bemessen der Strecken, wird das Zeichnen durch eine Snap-Funktion unterstützt, die auf einen PostgreSQL Layer fangen kann, z.B. ALKIS und Gebäude.
 
 Die gezeichneten Bemaßungen werden automatisch mit den jeweiligen Streckenlängen beschriftet und können frei verschoben und textlich erweitert werden. Die Eingabe von Werten ist auch mit Nachkommastellen möglich, welche dann Zentimeter darstellen.
 
@@ -20,8 +20,6 @@ Am unteren Menüfensterrand befindet sich weitere Funktionalität für die Ablag
 
 %demo 'dimension_tool'
 
-%info
-
-Weitere Informationen zur [Konfiguration einer Bemaßung](/doc/8.1/admin-de/themen/bemassung/index.html) finden Sie im Administrator Handbuch.
-
+%see
+Siehe auch: [Aktion/dimension](/admin-de/konfiguration/action/dimension).
 %end

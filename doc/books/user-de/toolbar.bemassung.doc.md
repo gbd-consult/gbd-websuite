@@ -2,7 +2,7 @@
 
 ![](dimensions2.png){border=1}
 
-Das Werkzeug ![](gbd-icon-bemassung-02.svg) {title Bemaßung} ermöglicht die Erfassung von Streckenlängen durch das Zeichen von Linien, ähnlich einer technischen Bemaßung. Es interagiert mit dem [Menü Bemaßung der Seitenleiste](/doc/8.1/user-de/sidebar.bemassung/index.html). Es wird automatisch aktiviert, wenn Sie mit dem Werkzeug in der Karte eine erste Bemaßung gezeichnet haben und listet diese und alle weiteren im Bereich Bemaßung dieses Menüs.
+Das Werkzeug ![](gbd-icon-bemassung-02.svg) {title Bemaßung} ermöglicht die Erfassung von Streckenlängen durch das Zeichen von Linien, ähnlich einer technischen Bemaßung. Es interagiert mit dem [Menü Bemaßung der Seitenleiste](/user-de/sidebar.bemassung). Es wird automatisch aktiviert, wenn Sie mit dem Werkzeug in der Karte eine erste Bemaßung gezeichnet haben und listet diese und alle weiteren im Bereich Bemaßung dieses Menüs.
 
 Die gezeichneten Linien werden automatisch mit den jeweiligen Streckenlängen beschriftet. Die Längeneinheit kann individuell angepasst werden. Wenn Sie das Werkzeug Bemaßung aktiviert haben, öffnet sich unter der Werkzeugleiste ein Feld mit verschiedenen Optionen.
 
@@ -25,8 +25,6 @@ Die gezeichneten Linien werden automatisch mit den jeweiligen Streckenlängen be
 
 %demo 'dimension_tool'
 
-%info
-
-Weitere Informationen zur [Konfiguration einer Bemaßung](/doc/8.1/admin-de/themen/bemassung/index.html) finden Sie im Administrator Handbuch.
-
+%see
+Siehe auch: [Aktion/dimension](/admin-de/konfiguration/action/dimension).
 %end

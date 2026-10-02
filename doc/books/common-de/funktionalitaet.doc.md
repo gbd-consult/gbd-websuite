@@ -22,7 +22,6 @@ Aktuell umfasst die Funktionalität u.a.:
 | Benutzer-Authentifizierung			|Abfrage von Benutzername und Passwort per LDAP, PostgreSQL oder durch eine Anmeldedatei, um Rechte für das Arbeiten mit der GBD WebSuite zu erhalten|
 | Daten und Objekte erstellen und editieren	|Über den WebGIS Client der GBD WebSuite können bestehende Daten editiert und neue Daten hinzugefügt werden. Daten können mit Bildern und Dokumenten in Beziehung gesetzt werden|
 | Beauskunftung Liegenschaften (ALKIS)		|Auf Basis von amtlichen Liegenschaftsdaten (ALKIS) können Flurstücke abgefragt werden inklusive Datenexport, Ausdruck sowie Datenschutzabfragen und Logging|
-| Schnittstelle D-ProCon			|Schnittstelle D-ProCon als Werkzeug zur statistischen Analyse von administrativen Daten, um Informationen über die demografische Entwicklung zu erstellen|
 | Schnittstelle GekoS Online			|Schnittstelle zur Interaktion der GBD WebSuite mit der externen Fachschale GekoS Online|
 | Unterstützung von Sprachen			|Die GBD WebSuite unterstützt aktuell die Sprachen Deutsch, Englisch, Georgisch und Tschechisch für den GBD WebSuite Client|
 | Druckkkarten erstellen			|Druckkarten können auf QGIS Druckzusammenstellungen (.qpt) oder auf HTML-Vorlagen basieren und unterschiedliche Datenquellen miteinander kombinieren. Dabei wird auch das Drucken von auf dem Kartenfenster gezeichneten Objekten unterstützt (Redlining)

@@ -2,7 +2,7 @@
 
 ![](auswahl_tool.png){border=1}
 
-Über das Werkzeug ![](gbd-icon-auswahl-01.svg) {title Auswählen} können Objekte in der Karte ausgewählt werden. Es interagiert mit dem [Menü Auswahl der Seitenleiste](/doc/8.2/user-de/sidebar.auswahl/index.html). Es wird automatisch aktiviert, wenn Sie ein Objekt in der Karte auswählen und listet dann dieses und alle weiteren in der Karte selektierten Objekte auf.
+Über das Werkzeug ![](gbd-icon-auswahl-01.svg) {title Auswählen} können Objekte in der Karte ausgewählt werden. Es interagiert mit dem [Menü Auswahl der Seitenleiste](/user-de/sidebar.auswahl). Es wird automatisch aktiviert, wenn Sie ein Objekt in der Karte auswählen und listet dann dieses und alle weiteren in der Karte selektierten Objekte auf.
 
 ![](auswahl_uebersicht.png){border=1}
 
@@ -16,8 +16,6 @@ Beim Auswählen eines Objekts in der Auswahlliste öffnet sich automatisch das I
 
 %demo 'select_tool'
 
-%info
-
-Weitere Informationen zur [Konfiguration einer Auswahl](/doc/8.2/admin-de/plugin/auswahl/index.html) finden Sie im Administrator Handbuch.
-
+%see
+Siehe auch: [Aktion/select](/admin-de/konfiguration/action/select).
 %end

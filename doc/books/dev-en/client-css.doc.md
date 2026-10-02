@@ -133,7 +133,7 @@ These helpers retun objects, so they must be used with the spread operator ``...
 
 - ``v.GOOGLE_SVG(category/name, color)``
 
-    Sets ``backgroundImage`` to a `material icon <https://material.io/tools/icons>`_ from the given category/name. ``color`` defaults to ``v.ICON_COLOR`` if omitted. Example 
+    Sets ``backgroundImage`` to a `material icon <https://fonts.google.com/icons>`_ from the given category/name. ``color`` defaults to ``v.ICON_COLOR`` if omitted. Example 
 
 ```css
         '.mySelector': {
