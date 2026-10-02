@@ -14,6 +14,8 @@ class ProjectConfig(gws.ConfigWithAccess):
     """Data models."""
     mapCacheLifeTime: gws.Duration = '0'
     """Cache life time for base map layers."""
+    thumbnail: Optional[gws.FilePath]
+    """Thumbnail image shown in the project details. (added in 8.5)"""
 
 
 class QfcProject(gws.Node):
@@ -21,6 +23,7 @@ class QfcProject(gws.Node):
     qgisProvider: gws.plugin.qgis.provider.Object
     models: list[gws.DatabaseModel]
     mapCacheLifeTime: int
+    thumbnail: str
 
     def configure(self):
         self.title = self.cfg('title', '') or self.uid
@@ -28,5 +31,6 @@ class QfcProject(gws.Node):
         self.root.app.register_supported_crs(self.qgisProvider.forceCrs)
         self.models = self.create_children(gws.ext.object.model, self.cfg('models'))
         self.mapCacheLifeTime = self.cfg('mapCacheLifeTime') or 0
+        self.thumbnail = self.cfg('thumbnail') or ''
 
 

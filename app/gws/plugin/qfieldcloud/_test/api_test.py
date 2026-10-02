@@ -6,7 +6,9 @@ import io
 import os
 
 import gws
+import gws.lib.image
 import gws.lib.jsonx
+import gws.lib.mime
 import gws.test.util as u
 
 from gws.plugin.qfieldcloud import action as action_mod, packager
@@ -30,6 +32,7 @@ CONFIG = f"""
             projects+ {{
                 uid "QFC_1"
                 title "QField Test"
+                thumbnail {THUMBNAIL_PATH}
                 access "allow all"
                 provider.path {{QGS_PATH}}
                 models+ {{
@@ -68,6 +71,12 @@ CONFIG = f"""
 ENDPOINT = '/_/qfieldcloudApi'
 
 
+def _thumbnail_path():
+    path = f'{gws.u.ensure_dir(tu.WORK_DIR)}/api_thumbnail.png'
+    gws.u.write_file_b(path, gws.lib.image.from_size((20, 10)).to_bytes(gws.lib.mime.PNG))
+    return path
+
+
 def _url(path, project_uid='PROJECT_1'):
     return f'{ENDPOINT}/projectUid/{project_uid}/{path}'
 
@@ -88,7 +97,7 @@ def root():
     u.auth.add_user('user1', 'pass1', displayName='User One', roles=['role1'])
     u.auth.add_user('user2', 'pass2', displayName='User Two')
 
-    yield u.gws_root(CONFIG, QGS_PATH=repr(tu.qgs_path('api', patch)))
+    yield u.gws_root(CONFIG, QGS_PATH=repr(tu.qgs_path('api', patch)), THUMBNAIL_PATH=repr(_thumbnail_path()))
 
 
 def _token(root, username='user1', password='pass1'):
@@ -226,6 +235,32 @@ def test_unknown_project_by_id(root: gws.Root, token):
 def test_forbidden_project_by_id(root: gws.Root):
     tok = _token(root, 'user2', 'pass2')
     assert u.http.get(root, _url('api/v1/projects/QFC_SECRET'), headers=_auth(tok)).status_code == 404
+
+
+def test_thumbnail(root: gws.Root, token):
+    res = u.http.get(root, _url('api/v1/files/thumbnails/QFC_1'), headers=_auth(token))
+
+    assert res.status_code == 200
+    assert res.mimetype == 'image/png'
+    assert gws.lib.image.from_bytes(res.data).size() == (20, 10)
+
+
+def test_thumbnail_not_configured(root: gws.Root, token):
+    assert u.http.get(root, _url('api/v1/files/thumbnails/QFC_SECRET'), headers=_auth(token)).status_code == 404
+
+
+def test_thumbnail_file_removed(root: gws.Root, token):
+    path = _thumbnail_path()
+    os.unlink(path)
+    try:
+        assert u.http.get(root, _url('api/v1/files/thumbnails/QFC_1'), headers=_auth(token)).status_code == 404
+    finally:
+        _thumbnail_path()
+
+
+def test_thumbnail_forbidden_project(root: gws.Root):
+    tok = _token(root, 'user2', 'pass2')
+    assert u.http.get(root, _url('api/v1/files/thumbnails/QFC_SECRET'), headers=_auth(tok)).status_code == 404
 
 
 ##

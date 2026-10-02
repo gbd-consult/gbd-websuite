@@ -278,6 +278,14 @@ class Object(gws.base.action.Object):
         path_map = self.get_latest_package_path_map(rx)
         return _format_files(path_map)
 
+    @route('GET api/v1/files/thumbnails/(?P<project_id>[^/]+)')
+    def on_get_thumbnail(self, rx: Request) -> gws.ContentResponse:
+        self.set_qfc_project_from_parts(rx)
+        path = rx.qfcProject.thumbnail
+        if not path or not gws.u.is_file(path):
+            raise gws.NotFoundError(f'no thumbnail for {rx.qfcProject.uid!r}')
+        return gws.ContentResponse(contentPath=path)
+
     @route('POST api/v1/deltas/(?P<project_id>[^/]+)')
     def on_post_deltas(self, rx: Request):
         self.set_qfc_project_from_parts(rx)
