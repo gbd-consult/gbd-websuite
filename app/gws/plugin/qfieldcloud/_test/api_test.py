@@ -32,7 +32,7 @@ CONFIG = f"""
             projects+ {{
                 uid "QFC_1"
                 title "QField Test"
-                thumbnail {THUMBNAIL_PATH}
+                thumbnail {{THUMBNAIL_PATH}}
                 access "allow all"
                 provider.path {{QGS_PATH}}
                 models+ {{
@@ -116,7 +116,10 @@ def token(root):
 
 
 def test_unknown_route(root: gws.Root, token):
-    assert u.http.get(root, _url('api/v1/nope'), headers=_auth(token)).status_code == 404
+    res = u.http.get(root, _url('api/v1/nope'), headers=_auth(token))
+
+    assert res.status_code == 404
+    assert res.json['code'] == 'object_not_found'
 
 
 def test_empty_path(root: gws.Root):
@@ -132,6 +135,56 @@ def test_project_uid_mismatch(root: gws.Root, token):
 def test_unknown_gws_project(root: gws.Root, token):
     res = u.http.get(root, _url('api/v1/projects', 'NO_SUCH_PROJECT'), headers=_auth(token))
     assert res.status_code == 404
+
+
+##
+# server info and stubs
+
+
+def test_server_info_is_public(root: gws.Root):
+    res = u.http.get(root, _url('api/v1/server/info'))
+
+    assert res.status_code == 200
+    assert res.json['auth_providers'] == [{'type': 'credentials', 'id': 'credentials', 'name': 'Username / Password'}]
+    assert res.json['signup_url'] == ''
+    assert res.json['whitelabel'] == {}
+
+
+def test_status_is_public(root: gws.Root):
+    res = u.http.get(root, _url('api/v1/status'))
+
+    assert res.status_code == 200
+    assert res.json['database'] == 'ok'
+    assert res.json['storage'] == 'ok'
+
+
+def test_user_organizations_are_empty(root: gws.Root, token):
+    res = u.http.get(root, _url('api/v1/users/user1/organizations'), headers=_auth(token))
+
+    assert res.status_code == 200
+    assert res.json == []
+
+
+def test_user_organizations_require_auth(root: gws.Root):
+    res = u.http.get(root, _url('api/v1/users/user1/organizations'))
+
+    assert res.status_code == 401
+    assert res.json['code'] == 'authentication_failed'
+
+
+def test_subscription_has_no_storage(root: gws.Root, token):
+    res = u.http.get(root, _url('api/v1/subscriptions/user1/current'), headers=_auth(token))
+
+    assert res.status_code == 200
+    assert res.json['active_storage_total_bytes'] == 0
+    assert res.json['storage_used_bytes'] == 0
+
+
+def test_creating_projects_is_refused(root: gws.Root, token):
+    res = u.http.post(root, _url('api/v1/projects'), json={'name': 'project_1', 'owner': 'user1'}, headers=_auth(token))
+
+    assert res.status_code == 400
+    assert res.json == {'code': 'validation_error'}
 
 
 ##
@@ -156,18 +209,18 @@ def test_auth_token(root: gws.Root):
 
 
 def test_auth_token_wrong_credentials(root: gws.Root):
-    assert u.http.post(root, _url('api/v1/auth/token'), json={'username': 'user1', 'password': 'XX'}).status_code == 403
-    assert u.http.post(root, _url('api/v1/auth/token'), json={'username': 'XX', 'password': 'pass1'}).status_code == 403
-    assert u.http.post(root, _url('api/v1/auth/token'), json={}).status_code == 403
+    assert u.http.post(root, _url('api/v1/auth/token'), json={'username': 'user1', 'password': 'XX'}).status_code == 401
+    assert u.http.post(root, _url('api/v1/auth/token'), json={'username': 'XX', 'password': 'pass1'}).status_code == 401
+    assert u.http.post(root, _url('api/v1/auth/token'), json={}).status_code == 401
 
 
 def test_protected_route_without_a_token(root: gws.Root):
-    assert u.http.get(root, _url('api/v1/auth/user')).status_code == 403
+    assert u.http.get(root, _url('api/v1/auth/user')).status_code == 401
 
 
 def test_protected_route_with_a_malformed_header(root: gws.Root):
     res = u.http.get(root, _url('api/v1/auth/user'), headers={'Authorization': 'Bearer xyz'})
-    assert res.status_code == 403
+    assert res.status_code == 401
 
 
 def test_protected_route_with_a_web_session_cookie(root: gws.Root):
@@ -176,11 +229,11 @@ def test_protected_route_with_a_web_session_cookie(root: gws.Root):
     assert res.status_code == 200
 
     sid = res.cookies['AUTH_COOKIE'].value
-    assert u.http.get(root, _url('api/v1/auth/user'), headers=_auth(sid)).status_code == 403
+    assert u.http.get(root, _url('api/v1/auth/user'), headers=_auth(sid)).status_code == 401
 
 
 def test_protected_route_with_an_invalid_token(root: gws.Root):
-    assert u.http.get(root, _url('api/v1/auth/user'), headers=_auth('NOT-A-TOKEN')).status_code == 403
+    assert u.http.get(root, _url('api/v1/auth/user'), headers=_auth('NOT-A-TOKEN')).status_code == 401
 
 
 def test_auth_user(root: gws.Root, token):
@@ -196,7 +249,7 @@ def test_logout_invalidates_the_token(root: gws.Root):
     assert u.http.get(root, _url('api/v1/auth/user'), headers=_auth(tok)).status_code == 200
 
     assert u.http.post(root, _url('api/v1/auth/logout'), headers=_auth(tok)).status_code == 200
-    assert u.http.get(root, _url('api/v1/auth/user'), headers=_auth(tok)).status_code == 403
+    assert u.http.get(root, _url('api/v1/auth/user'), headers=_auth(tok)).status_code == 401
 
 
 ##
@@ -296,7 +349,23 @@ def test_unsupported_job_type(root: gws.Root, token):
         json={'project_id': 'QFC_1', 'type': 'delta_apply'},
         headers=_auth(token),
     )
-    assert res.status_code >= 400
+    assert res.status_code == 400
+    assert res.json['code'] == 'validation_error'
+
+
+def test_listing_jobs_is_refused(root: gws.Root, token):
+    res = u.http.get(root, _url('api/v1/jobs?project_id=QFC_1&type=create_project'), headers=_auth(token))
+
+    assert res.status_code == 400
+    assert res.json['code'] == 'validation_error'
+
+
+def test_an_error_returns_only_the_code(root: gws.Root, token):
+    data = {'file': (io.BytesIO(b'NOT_JSON'), 'deltafile.json')}
+    res = u.http.post(root, _url('api/v1/deltas/QFC_1'), data=data, headers=_auth(token))
+
+    assert res.status_code == 400
+    assert res.json == {'code': 'validation_error'}
 
 
 def test_job_by_id(root: gws.Root, token):

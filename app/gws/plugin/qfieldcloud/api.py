@@ -201,6 +201,34 @@ class AuthToken(gws.Data):
     last_name: Optional[str]
 
 
+class ServerInfo(gws.Data):
+    version: str
+    auth_providers: list[AuthProvider]
+    signup_url: str
+    whitelabel: dict
+
+
+class Status(gws.Data):
+    version: str
+    database: str
+    storage: str
+    status_page_url: Optional[str]
+    incident_message: Optional[str]
+    incident_timestamp_utc: Optional[str]
+    maintenance_message: Optional[str]
+    maintenance_start_timestamp_utc: Optional[str]
+    maintenance_end_timestamp_utc: Optional[str]
+
+
+class Subscription(gws.Data):
+    plan_display_name: str
+    active_storage_total_bytes: int
+    storage_used_bytes: int
+    plan_storage_threshold_warning_bytes: int
+    plan_storage_threshold_critical_bytes: int
+    status: str
+
+
 class PostJobPayload(gws.Data):
     type: TypeEnum
     project_id: str

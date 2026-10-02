@@ -92,6 +92,18 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.raw('qfieldcloudApi')
     def raw_request(self, req: gws.WebRequester, p: gws.Request) -> gws.ContentResponse:
+        try:
+            return self.dispatch_request(req, p)
+        except gws.NotFoundError as exc:
+            return _error_response(404, 'object_not_found', exc)
+        except gws.AuthenticationError as exc:
+            return _error_response(401, 'authentication_failed', exc)
+        except gws.ForbiddenError as exc:
+            return _error_response(403, 'permission_denied', exc)
+        except gws.BadRequestError as exc:
+            return _error_response(400, 'validation_error', exc)
+
+    def dispatch_request(self, req: gws.WebRequester, p: gws.Request) -> gws.ContentResponse:
         path = req.path().strip('/')
         if not path:
             raise gws.NotFoundError('API path not specified')
@@ -130,10 +142,12 @@ class Object(gws.base.action.Object):
 
         raise gws.NotFoundError(f'API {route=} not found')
 
-    _public_routes = [
+    _public_routes = (
         'GET api/v1/auth/providers',
         'POST api/v1/auth/token',
-    ]
+        'GET api/v1/server/info',
+        'GET api/v1/status',
+    )
 
     def _handle_route(self, fn, rx: Request) -> gws.ContentResponse:
         if rx.req.isApi:
@@ -150,7 +164,7 @@ class Object(gws.base.action.Object):
 
         res = fn(rx)
 
-        if not res:
+        if res is None:
             return gws.ContentResponse(content='')
 
         if isinstance(res, gws.ContentResponse):
@@ -177,6 +191,44 @@ class Object(gws.base.action.Object):
         return [
             api.AuthProvider(type='credentials', id='credentials', name='Username / Password'),
         ]
+
+    @route('GET api/v1/server/info')
+    def on_get_server_info(self, rx: Request) -> api.ServerInfo:
+        return api.ServerInfo(
+            version=self.root.app.version,
+            auth_providers=self.on_get_auth_providers(rx),
+            signup_url='',
+            whitelabel={},
+        )
+
+    @route('GET api/v1/status')
+    def on_get_status(self, rx: Request) -> api.Status:
+        return api.Status(
+            version=self.root.app.version,
+            database='ok',
+            storage='ok',
+            status_page_url=None,
+            incident_message=None,
+            incident_timestamp_utc=None,
+            maintenance_message=None,
+            maintenance_start_timestamp_utc=None,
+            maintenance_end_timestamp_utc=None,
+        )
+
+    @route('GET api/v1/users/(?P<username>[^/]+)/organizations')
+    def on_get_user_organizations(self, rx: Request) -> list:
+        return []
+
+    @route('GET api/v1/subscriptions/(?P<username>[^/]+)/current')
+    def on_get_subscription(self, rx: Request) -> api.Subscription:
+        return api.Subscription(
+            plan_display_name='',
+            active_storage_total_bytes=0,
+            storage_used_bytes=0,
+            plan_storage_threshold_warning_bytes=0,
+            plan_storage_threshold_critical_bytes=0,
+            status='active_paid',
+        )
 
     @route('POST api/v1/auth/token')
     def on_post_auth_token(self, rx: Request) -> api.AuthToken:
@@ -219,6 +271,10 @@ class Object(gws.base.action.Object):
         qps = self.get_qfc_projects(rx.user)
         return [_format_project(qp, rx) for qp in qps[offset : offset + limit]]
 
+    @route('POST api/v1/projects')
+    def on_post_projects(self, rx: Request):
+        raise gws.BadRequestError('creating projects is not supported')
+
     @route('GET api/v1/projects/(?P<project_id>[^/]+)')
     def on_get_projects_id(self, rx: Request) -> api.Project:
         self.set_qfc_project_from_parts(rx)
@@ -230,10 +286,14 @@ class Object(gws.base.action.Object):
         type = rx.post.get('type', '')
         self.set_qfc_project(project_id, rx)
         if type != api.TypeEnum.package:
-            raise gws.Error(f'Unsupported job type: {type!r}')
+            raise gws.BadRequestError(f'unsupported job type: {type!r}')
 
         job = self.create_package_job(rx)
         return _format_job(job, rx)
+
+    @route('GET api/v1/jobs')
+    def on_get_jobs(self, rx: Request):
+        raise gws.BadRequestError('listing jobs is not supported')
 
     @route('GET api/v1/jobs/(?P<job_id>[^/]+)')
     def on_get_jobs_id(self, rx: Request) -> api.Job:
@@ -411,7 +471,7 @@ class Object(gws.base.action.Object):
         am = self.root.app.authMgr
         user = am.authenticate(self.method, credentials, rx.req)
         if not user:
-            raise gws.ForbiddenError('invalid username or password')
+            raise gws.AuthenticationError('invalid username or password')
         rx.sess = am.sessionMgr.create(self.method, user)
         rx.user = user
         rx.token = rx.sess.uid
@@ -420,16 +480,16 @@ class Object(gws.base.action.Object):
         h = rx.req.header('Authorization', '')
         m = re.match(r'^Token (.+)$', h)
         if not m:
-            raise gws.ForbiddenError('token_auth: missing or invalid Authorization header')
+            raise gws.AuthenticationError('token_auth: missing or invalid Authorization header')
         token = m.group(1)
         am = self.root.app.authMgr
         if not am.can_use_method(rx.req, self.method):
             raise gws.ForbiddenError('token_auth: insecure_context')
         sess = am.sessionMgr.get(token)
         if not sess:
-            raise gws.ForbiddenError(f'token_auth: invalid or expired {token=}')
+            raise gws.AuthenticationError('token_auth: invalid or expired token')
         if not sess.method or sess.method.uid != self.method.uid:
-            raise gws.ForbiddenError(f'token_auth: wrong method {sess.method=}')
+            raise gws.AuthenticationError(f'token_auth: wrong method {sess.method=}')
         rx.sess = sess
         rx.user = sess.user
         rx.token = sess.uid
@@ -655,6 +715,15 @@ class PackageWorker(gws.base.job.worker.Object):
 
 
 _DATE_CREATED = '2025-10-10T14:00:00'
+
+
+def _error_response(status: int, code: str, exc: Exception) -> gws.ContentResponse:
+    gws.log.warning(f'qfieldcloudApi: {status} {code} cause={exc!r}')
+    return gws.ContentResponse(
+        status=status,
+        content=gws.lib.jsonx.to_string({'code': code}),
+        mimeType=gws.lib.mime.JSON,
+    )
 
 
 def _format_project(qp: core.QfcProject, rx: Request) -> api.Project:
