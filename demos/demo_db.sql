@@ -1,12 +1,6 @@
 drop schema if exists baustellen cascade;
 create schema baustellen;
 
-drop table if exists baustellen.kanalarbeiten cascade;
-drop table if exists baustellen.sperrung cascade;
-drop table if exists baustellen.umleitung cascade;
-drop table if exists baustellen.verkehrsschild cascade;
-drop table if exists baustellen.baustelle cascade;
-
 create table baustellen.baustelle
 (
     id     int primary key generated always as identity,
@@ -4628,7 +4622,7 @@ insert into public.many_points (pk) select generate_series(1, 12345);
 update public.many_points set geom=st_makepoint(pk / 100, pk % 100);
 update public.many_points set label=st_x(geom)::text || '/' || st_y(geom)::text;
 
-drop table edit.nutzer;
+drop table if exists edit.nutzer;
 
 create table edit.nutzer
 (
