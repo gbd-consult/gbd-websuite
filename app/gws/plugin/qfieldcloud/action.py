@@ -43,7 +43,7 @@ class Request(gws.Data):
     """Query string parameters."""
     post: dict
     """POST payload."""
-    project: gws.Project
+    project: Optional[gws.Project]
     """GWS Project context."""
     qfcProject: core.QfcProject
     """QField Cloud Project context."""
@@ -59,7 +59,7 @@ class WorkerPayload(gws.Data):
     actionUid: str
     jobType: str
     qfcProjectUid: str
-    projectUid: str
+    projectUid: Optional[str]
 
 
 def route(pattern: str):
@@ -97,22 +97,18 @@ class Object(gws.base.action.Object):
             raise gws.NotFoundError('API path not specified')
 
         path_parts = path.split('/')
-        project = cast(gws.Project, self.find_closest(gws.ext.object.project))
+        uid = p.get('projectUid')
 
         if path_parts[0] == 'projectUid':
-            try:
-                path_parts.pop(0)
-                uid = path_parts.pop(0)
-                path = '/'.join(path_parts)
-            except IndexError:
+            if len(path_parts) < 2:
                 raise gws.NotFoundError('gws project UID not specified')
-            if not project:
-                project = req.user.require_project(uid)
-            elif uid != project.uid:
-                raise gws.NotFoundError(f'gws project UID mismatch: {uid=} != {project.uid=}')
+            uid = path_parts[1]
+            path = '/'.join(path_parts[2:])
 
-        if not project:
-            raise gws.NotFoundError('gws project not found')
+        project = cast(Optional[gws.Project], self.find_closest(gws.ext.object.project))
+        project_uid = project.uid if project else uid
+        if project_uid:
+            project = req.user.require_project(project_uid)
 
         path = path.strip('/')
         route = f'{req.method} {path}'
@@ -462,7 +458,7 @@ class Object(gws.base.action.Object):
             actionUid=self.uid,
             jobType='package',
             qfcProjectUid=rx.qfcProject.uid,
-            projectUid=rx.project.uid,
+            projectUid=rx.project.uid if rx.project else None,
         )
         job = mgr.create_job(
             PackageWorker,
@@ -472,7 +468,7 @@ class Object(gws.base.action.Object):
         return mgr.schedule_job(job)
 
     def create_package_from_worker(self, worker: 'PackageWorker', pa: WorkerPayload):
-        project = worker.user.require_project(pa.projectUid)
+        project = worker.user.require_project(pa.projectUid) if pa.projectUid else None
         qfc_project = gws.u.require(self.get_qfc_project(pa.qfcProjectUid, worker.user))
 
         self.fs_cleanup_old_packages(qfc_project)
@@ -494,7 +490,7 @@ class Object(gws.base.action.Object):
         )
         self.get_packager().create_package(self.root, args)
 
-    def create_package_from_cli(self, qfc_project_uid: str, target_dir: str, project: gws.Project, user: gws.User):
+    def create_package_from_cli(self, qfc_project_uid: str, target_dir: str, project: Optional[gws.Project], user: gws.User):
         qfc_project = self.get_qfc_project(qfc_project_uid, user)
         if not qfc_project:
             raise gws.NotFoundError(f'project {qfc_project_uid!r} not found')
@@ -514,7 +510,7 @@ class Object(gws.base.action.Object):
         )
         self.get_packager().create_package(self.root, args)
 
-    def get_job(self, job_id: str, project: gws.Project, user: gws.User) -> Optional[gws.Job]:
+    def get_job(self, job_id: str, project: Optional[gws.Project], user: gws.User) -> Optional[gws.Job]:
         return self.root.app.jobMgr.get_job(job_id, user=user)
 
     ##

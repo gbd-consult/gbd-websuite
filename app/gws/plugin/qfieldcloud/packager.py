@@ -1,4 +1,4 @@
-from typing import cast
+from typing import cast, Optional
 
 import gws
 import gws.lib.gdalx
@@ -20,7 +20,7 @@ class Args(gws.Data):
     uid: str
     qfcProject: core.QfcProject
     caps: caps_mod.Caps
-    project: gws.Project
+    project: Optional[gws.Project]
     user: gws.User
     packageDir: str
     mapCacheDir: str
@@ -34,7 +34,7 @@ class Object:
     uid: str
     root: gws.Root
     qfcProject: core.QfcProject
-    project: gws.Project
+    project: Optional[gws.Project]
     user: gws.User
     args: Args
     caps: caps_mod.Caps

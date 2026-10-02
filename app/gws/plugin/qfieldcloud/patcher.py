@@ -32,7 +32,7 @@ class Operation(gws.Data):
 class Args(gws.Data):
     qfcProject: core.QfcProject
     caps: caps_mod.Caps
-    project: gws.Project
+    project: Optional[gws.Project]
     user: gws.User
     baseDir: str
     changes: list[Change]
@@ -43,7 +43,7 @@ class Args(gws.Data):
 class Object:
     root: gws.Root
     qfcProject: core.QfcProject
-    project: gws.Project
+    project: Optional[gws.Project]
     user: gws.User
     args: Args
 
