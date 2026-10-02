@@ -45,6 +45,12 @@ def parse_args(argv):
     return args
 
 
+def ensure_dir_for(path):
+    d = os.path.dirname(path)
+    if d:
+        os.makedirs(d, exist_ok=True)
+
+
 def read_file(path: str) -> str:
     with open(path, 'rt', encoding='utf8') as fp:
         return fp.read()
@@ -56,13 +62,13 @@ def read_file_b(path: str) -> bytes:
 
 
 def write_file(path: str, s: str):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    ensure_dir_for(path)
     with open(path, 'wt', encoding='utf8') as fp:
         fp.write(s)
 
 
 def write_file_b(path: str, s: bytes):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    ensure_dir_for(path)
     with open(path, 'wb') as fp:
         fp.write(s)
 
@@ -117,6 +123,29 @@ def to_uid(x) -> str:
     x = str(x).lower().strip().translate(_UID_DE_TRANS)
     x = re.sub(r'[^a-z0-9]+', '-', x)
     return x.strip('-')
+
+
+def unique_name(base: str, is_taken, start: int = 1) -> str:
+    """Return ``base``, or ``base-{start}``, ``base-{start+1}``, ... — the first name for which
+    ``is_taken(name)`` is falsy."""
+
+    name = base
+    n = start
+    while is_taken(name):
+        name = f'{base}-{n}'
+        n += 1
+    return name
+
+
+def strip_blank_lines(text: str) -> str:
+    """Remove trailing whitespace and blank lines at both ends of a text."""
+
+    lines = [s.rstrip() for s in text.split('\n')]
+    while lines and not lines[0]:
+        lines.pop(0)
+    while lines and not lines[-1]:
+        lines.pop()
+    return '\n'.join(lines)
 
 
 def flatten(ls):

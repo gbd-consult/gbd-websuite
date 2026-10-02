@@ -18,10 +18,16 @@ class Options:
     """Debug/verbose mode."""
 
     fileSplitLevel: dict = {}
-    """Split levels for output files."""
+    """Split levels for output files (dict keyed by sid)."""
+
+    tocDepth: dict = {}
+    """How deep the TOC shows a section (dict keyed by sid)."""
 
     pageTemplate: str = ''
     """Jump template for HTML pages."""
+
+    pageTemplateArgs: dict = {}
+    """Additional data for use in the page template."""
 
     webRoot: str = ''
     """Prefix for all URLs."""
@@ -52,3 +58,9 @@ class Options:
 
     pdfOptions: dict = {}
     """Options for wkhtmltopdf."""
+
+    blendChars: str = ''
+    """Characters that split and join words in the search index."""
+
+    extraChars: str = ''
+    """Characters treated as part of a word in the search index."""

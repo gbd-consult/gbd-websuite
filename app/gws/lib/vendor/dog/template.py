@@ -6,7 +6,8 @@ import hashlib
 
 import jump
 
-from . import util, markdown
+from . import util as u, markdown
+from .types import BaseBuilder, CssClasses
 
 OPTIONS = dict(
     comment_symbol='#%',
@@ -18,24 +19,24 @@ OPTIONS = dict(
     echo_start_whitespace=True,
 )
 
-GENERATED_NODE = '__DG__'
+GENERATED_NODE = '__GENERATED_NODE__'
 
 
-def compile(builder, path):
+def compile(builder: BaseBuilder, path):
     try:
         return Engine(builder).compile_path(path, **OPTIONS)
     except jump.CompileError as exc:
-        util.log.error(f'template compilation error: {exc.args[0]}')
+        u.log.error(f'template compilation error: {exc.args[0]}')
 
 
-def render(builder, text, path, args):
+def render(builder: BaseBuilder, text, path, args):
     try:
         return Engine(builder).render(text, args, error=_error, path=path, **OPTIONS)
     except jump.CompileError as exc:
-        util.log.error(f'template compilation error: {exc.args[0]}')
+        u.log.error(f'template compilation error: {exc.args[0]}')
 
 
-def call(builder, tpl, args):
+def call(builder: BaseBuilder, tpl, args):
     return Engine(builder).call(tpl, args)
 
 
@@ -43,7 +44,7 @@ def call(builder, tpl, args):
 
 
 class Engine(jump.Engine):
-    def __init__(self, builder):
+    def __init__(self, builder: BaseBuilder):
         self.b = builder
 
     def generated_node(self, cls, args):
@@ -52,9 +53,9 @@ class Engine(jump.Engine):
         return f'\n```\n{GENERATED_NODE}{js}\n```\n'
 
     def render_dot(self, text):
-        tmp = os.path.join(tempfile.gettempdir(), util.random_string(8) + '.dot')
-        util.write_file(tmp, text)
-        ok, out = util.run(['dot', '-Tsvg', tmp], pipe=True)
+        tmp = os.path.join(tempfile.gettempdir(), u.random_string(8) + '.dot')
+        u.write_file(tmp, text)
+        ok, out = u.run(['dot', '-Tsvg', tmp], pipe=True)
         if not ok:
             return f'<xmp>DOT ERROR: {out}</xmp>'
         os.unlink(tmp)
@@ -68,10 +69,13 @@ class Engine(jump.Engine):
         )
 
     def box_info(self, text):
-        return self.wrap_html('<div class="admonition_info">', text, '</div>')
+        return self.wrap_html(f'<div class="{CssClasses.ADMONITION_INFO}">', text, '</div>')
 
     def box_warn(self, text):
-        return self.wrap_html('<div class="admonition_warn">', text, '</div>')
+        return self.wrap_html(f'<div class="{CssClasses.ADMONITION_WARN}">', text, '</div>')
+
+    def box_see(self, text):
+        return self.wrap_html(f'<div class="{CssClasses.ADMONITION_SEE}">', text, '</div>')
 
     def box_toc(self, text, depth=1):
         items = [ln.strip() for ln in text.strip().splitlines() if ln.strip()]
@@ -198,15 +202,14 @@ def _dbgraph_to_dot(text, colors):
 
     rows = parse(text)
 
-    tables = []
-    arrows = []
-
-    for tab_name in set(r[0] for r in rows):
-        tables.append(make_table(rows, tab_name))
+    tables = {}
+    arrows = {}
 
     for tab, col, typ, pk, ref_tab, ref_col in rows:
-        if ref_tab:
-            arrows.append(make_arrow(tab, col, ref_tab, ref_col))
+        if tab not in tables:
+            tables[tab] = make_table(rows, tab)
+        if ref_tab and (tab, col, ref_tab, ref_col) not in arrows:
+            arrows[tab, col, ref_tab, ref_col] = make_arrow(tab, col, ref_tab, ref_col)
 
     return f"""
         digraph {{
@@ -215,14 +218,14 @@ def _dbgraph_to_dot(text, colors):
             bgcolor="transparent"
             splines="spline"
             node [fontname="Menlo, monospace", fontsize=9, shape="plaintext"]
-            {nl(tables)}
-            {nl(arrows)}
+            {nl(tables.values())}
+            {nl(arrows.values())}
         }}
     """
 
 
 def _error(exc, source_path, source_lineno, env):
-    util.log.error(f'template error: {exc.args[0]} in {source_path!r}:{source_lineno}')
+    u.log.error(f'template error: {exc.args[0]} in {source_path!r}:{source_lineno}')
 
 
 def _dedent(text):

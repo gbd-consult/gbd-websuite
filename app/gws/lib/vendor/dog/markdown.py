@@ -2,39 +2,16 @@ import re
 from typing import List
 
 import mistune
-from mistune import Markdown
 
 import pygments
 import pygments.util
 import pygments.lexers
 import pygments.formatters.html
 
-from . import util
+from . import util as u
+from .types import MarkdownElement, CssClasses
 
-
-class Element(util.Data):
-    type: str
-
-    align: str
-    alt: str
-    children: List['Element']
-    info: str
-    is_head: bool
-    level: int
-    target: str
-    ordered: bool
-    sid: str
-    src: str
-    start: str
-    text: str
-    html: str
-    title: str
-
-    classname: str  # inline_decoration_plugin
-    attributes: dict  # link_attributes_plugin
-
-    def __repr__(self):
-        return repr(vars(self))
+Markdown = mistune.Markdown
 
 
 def parser() -> Markdown:
@@ -45,7 +22,7 @@ def parser() -> Markdown:
 # plugin API reference: https://mistune.lepture.com/en/v2.0.5/advanced.html#create-plugins
 
 # plugin: inline decorations
-# {someclass some text} => <span class="decoration_someclass">some text</span>
+# {someclass some text} => <span class="md-decoration-someclass">some text</span>
 
 
 def inline_decoration_plugin(md):
@@ -88,7 +65,7 @@ def process(text):
     return ''.join(rd.render_element(el) for el in els)
 
 
-def strip_text_content(el: Element):
+def strip_text_content(el: MarkdownElement):
     while el.children:
         if not el.children[-1].text:
             return
@@ -98,7 +75,11 @@ def strip_text_content(el: Element):
         el.children.pop()
 
 
-def text_from_element(el: Element) -> str:
+def longest_backtick_run(text: str) -> int:
+    return max((len(s) for s in re.findall(r'`+', text)), default=0)
+
+
+def text_from_element(el: MarkdownElement) -> str:
     if el.text:
         return el.text.strip()
     if el.children:
@@ -121,7 +102,7 @@ class AstRenderer:
     def _get_method(self, name):
         return getattr(self.parser, f'p_{name}')
 
-    def finalize(self, elements: List[Element]):
+    def finalize(self, elements: List[MarkdownElement]):
         # merge 'link attributes' with the previous element
         res = []
         for el in elements:
@@ -140,174 +121,200 @@ class AstRenderer:
 
 class Parser:
     def p_block_code(self, text, info=None):
-        return Element(type='block_code', text=text, info=info)
+        lang = ''
+        atts = {}
+        if info:
+            # 'javascript' or 'javascript title=...' or 'title=...'
+            m = re.match(r'^(\w+(?=(\s|$)))?(.*)$', info.strip())
+            if m:
+                lang = m.group(1) or ''
+                atts = parse_attributes(m.group(3))
+        return MarkdownElement(
+            type='block_code',
+            text=u.strip_blank_lines(text),
+            lang=lang,
+            title=atts.get('title'),
+            attributes=atts,
+        )
 
     def p_block_error(self, children=None):
-        return Element(type='block_error', children=children)
+        return MarkdownElement(type='block_error', children=children)
 
     def p_block_html(self, html):
-        return Element(type='block_html', html=html)
+        return MarkdownElement(type='block_html', html=html)
 
     def p_block_quote(self, children=None):
-        return Element(type='block_quote', children=children)
+        return MarkdownElement(type='block_quote', children=children)
 
     def p_block_text(self, children=None):
-        return Element(type='block_text', children=children)
+        return MarkdownElement(type='block_text', children=children)
 
     def p_codespan(self, text):
-        return Element(type='codespan', text=text)
+        return MarkdownElement(type='codespan', text=text)
 
     def p_emphasis(self, children):
-        return Element(type='emphasis', children=children)
+        return MarkdownElement(type='emphasis', children=children)
 
     def p_heading(self, children, level):
-        return Element(type='heading', children=children, level=level)
+        return MarkdownElement(type='heading', children=children, level=level)
 
     def p_image(self, src, alt='', title=None):
-        return Element(type='image', src=src, alt=alt, title=title)
+        return MarkdownElement(type='image', src=src, alt=alt, title=title)
 
     def p_inline_decoration(self, classname, text):
-        return Element(type='inline_decoration', classname=classname, text=text)
+        return MarkdownElement(type='inline_decoration', classname=classname, text=text)
 
     def p_inline_html(self, html):
-        return Element(type='inline_html', html=html)
+        return MarkdownElement(type='inline_html', html=html)
 
     def p_linebreak(self):
-        return Element(type='linebreak')
+        return MarkdownElement(type='linebreak')
 
     def p_link(self, target, children=None, title=None):
         if isinstance(children, str):
-            children = [Element(type='text', text=children)]
-        return Element(type='link', target=target, children=children, title=title)
+            children = [MarkdownElement(type='text', text=children)]
+        return MarkdownElement(type='link', target=target, children=children, title=title)
 
     def p_link_attributes(self, text, attributes):
-        return Element(type='link_attributes', text=text, attributes=attributes)
+        return MarkdownElement(type='link_attributes', text=text, attributes=attributes)
 
     def p_list_item(self, children, level):
-        return Element(type='list_item', children=children, level=level)
+        return MarkdownElement(type='list_item', children=children, level=level)
 
     def p_list(self, children, ordered, level, start=None):
-        return Element(type='list', children=children, ordered=ordered, level=level, start=start)
+        return MarkdownElement(type='list', children=children, ordered=ordered, level=level, start=start)
 
     def p_newline(self):
-        return Element(type='newline')
+        return MarkdownElement(type='newline')
 
     def p_paragraph(self, children=None):
-        return Element(type='paragraph', children=children)
+        return MarkdownElement(type='paragraph', children=children)
 
     def p_strong(self, children=None):
-        return Element(type='strong', children=children)
+        return MarkdownElement(type='strong', children=children)
 
     def p_table_body(self, children=None):
-        return Element(type='table_body', children=children)
+        return MarkdownElement(type='table_body', children=children)
 
     def p_table_cell(self, children, align=None, is_head=False):
-        return Element(type='table_cell', children=children, align=align, is_head=is_head)
+        return MarkdownElement(type='table_cell', children=children, align=align, isTableHead=is_head)
 
     def p_table_head(self, children=None):
-        return Element(type='table_head', children=children)
+        return MarkdownElement(type='table_head', children=children)
 
     def p_table(self, children=None):
-        return Element(type='table', children=children)
+        return MarkdownElement(type='table', children=children)
 
     def p_table_row(self, children=None):
-        return Element(type='table_row', children=children)
+        return MarkdownElement(type='table_row', children=children)
 
     def p_text(self, text):
-        return Element(type='text', text=text)
+        return MarkdownElement(type='text', text=text)
 
     def p_thematic_break(self):
-        return Element(type='thematic_break')
+        return MarkdownElement(type='thematic_break')
 
 
 class _Renderer:
-    def render_children(self, el: Element):
+    def render_children(self, el: MarkdownElement):
         if el.children:
             return ''.join(self.render_element(c) for c in el.children)
         return ''
 
-    def render_element(self, el: Element):
+    def render_element(self, el: MarkdownElement):
         fn = getattr(self, f'r_{el.type}')
         return fn(el)
 
 
 class MarkdownRenderer(_Renderer):
+    list_ordered = False
+    list_index = 1
+
     def render_link(self, href, title, content, el):
         title = f' "{title}"' if title else ''
-        return f'[{content}]({el.target}{title})'        
+        return f'[{content}]({href}{title})'
 
-    def r_block_code(self, el: Element):
-        lang = ''
-        if el.info:
-            lang = el.info.split(None, 1)[0]
-        return f'```{lang}\n{el.text}\n```\n'
+    def r_block_code(self, el: MarkdownElement):
+        fence = '`' * max(3, longest_backtick_run(el.text) + 1)
+        code = f'{fence}{el.lang or ""}\n{el.text}\n{fence}\n'
+        if el.title:
+            code = f'**{el.title}**\n\n' + code
+        return code
 
-    def r_block_error(self, el: Element):
+    def r_block_error(self, el: MarkdownElement):
         c = self.render_children(el)
         return f'> **ERROR:** {c}\n\n'
 
-    def r_block_html(self, el: Element):
+    def r_block_html(self, el: MarkdownElement):
         return el.html + '\n\n'
 
-    def r_block_quote(self, el: Element):
+    def r_block_quote(self, el: MarkdownElement):
         c = self.render_children(el)
         lines = c.split('\n')
         return ''.join(f'> {line}\n' for line in lines) + '\n'
 
-    def r_block_text(self, el: Element):
+    def r_block_text(self, el: MarkdownElement):
         return self.render_children(el)
 
-    def r_codespan(self, el: Element):
+    def r_codespan(self, el: MarkdownElement):
         return f'`{el.text}`'
 
-    def r_emphasis(self, el: Element):
+    def r_emphasis(self, el: MarkdownElement):
         return f'*{self.render_children(el)}*'
 
-    def r_heading(self, el: Element):
+    def r_heading(self, el: MarkdownElement):
         c = self.render_children(el)
         return f'{"#" * el.level} {c}\n\n'
 
-    def r_image(self, el: Element):
+    def r_image(self, el: MarkdownElement):
         title = f' "{el.title}"' if el.title else ''
         return f'![{el.alt or ""}]({el.src}{title})'
 
-    def r_inline_decoration(self, el: Element):
+    def r_inline_decoration(self, el: MarkdownElement):
         return f'{{{el.classname} {el.text}}}'
 
-    def r_inline_html(self, el: Element):
+    def r_inline_html(self, el: MarkdownElement):
         return el.html
 
-    def r_linebreak(self, el: Element):
+    def r_linebreak(self, el: MarkdownElement):
         return '\n'
 
-    def r_link(self, el: Element):
+    def r_link(self, el: MarkdownElement):
         c = self.render_children(el)
         return self.render_link(el.target, el.title, c or el.target, el)
 
-    def r_list_item(self, el: Element):
+    def r_list_item(self, el: MarkdownElement):
         c = self.render_children(el)
         indent = '  ' * (el.level - 1)
-        marker = '1. ' if getattr(el, 'ordered', False) else '- '
+        if self.list_ordered:
+            marker = f'{self.list_index}. '
+            self.list_index += 1
+        else:
+            marker = '- '
         return f'{indent}{marker}{c}\n'
 
-    def r_list(self, el: Element):
+    def r_list(self, el: MarkdownElement):
+        prev = self.list_ordered, self.list_index
+        self.list_ordered = bool(el.ordered)
+        self.list_index = int(el.start or 1)
         c = self.render_children(el)
+        self.list_ordered, self.list_index = prev
         return c + '\n'
 
-    def r_newline(self, el: Element):
+    def r_newline(self, el: MarkdownElement):
         return '\n'
 
-    def r_paragraph(self, el: Element):
+    def r_paragraph(self, el: MarkdownElement):
         c = self.render_children(el)
         return f'{c}\n\n'
 
-    def r_strong(self, el: Element):
+    def r_strong(self, el: MarkdownElement):
         return f'**{self.render_children(el)}**'
 
-    def r_table(self, el: Element):
+    def r_table(self, el: MarkdownElement):
         return self.render_children(el) + '\n'
 
-    def r_table_head(self, el: Element):
+    def r_table_head(self, el: MarkdownElement):
         cells = [child for child in el.children if child.type == 'table_cell']
         header = '| ' + ' | '.join(self.render_children(cell) for cell in cells) + ' |\n'
 
@@ -324,20 +331,20 @@ class MarkdownRenderer(_Renderer):
         separator = '| ' + ' | '.join(separators) + ' |\n'
         return header + separator
 
-    def r_table_body(self, el: Element):
+    def r_table_body(self, el: MarkdownElement):
         return self.render_children(el)
 
-    def r_table_row(self, el: Element):
+    def r_table_row(self, el: MarkdownElement):
         cells = [child for child in el.children if child.type == 'table_cell']
         return '| ' + ' | '.join(self.render_children(cell) for cell in cells) + ' |\n'
 
-    def r_table_cell(self, el: Element):
+    def r_table_cell(self, el: MarkdownElement):
         return self.render_children(el)
 
-    def r_text(self, el: Element):
+    def r_text(self, el: MarkdownElement):
         return el.text
 
-    def r_thematic_break(self, el: Element):
+    def r_thematic_break(self, el: MarkdownElement):
         return '---\n\n'
 
 
@@ -352,78 +359,63 @@ class HTMLRenderer(_Renderer):
 
     ##
 
-    def r_block_code(self, el: Element):
-        lang = ''
-        atts = {}
-
-        lines = [s.rstrip() for s in el.text.split('\n')]
-        while lines and not lines[0]:
-            lines.pop(0)
-        while lines and not lines[-1]:
-            lines.pop()
-        text = '\n'.join(lines)
-
-        if el.info:
-            # 'javascript' or 'javascript title=...' or 'title=...'
-            m = re.match(r'^(\w+(?=(\s|$)))?(.*)$', el.info.strip())
-            if m:
-                lang = m.group(1)
-                atts = parse_attributes(m.group(3))
-
-        lang = lang or 'text'
+    def r_block_code(self, el: MarkdownElement):
+        lang = el.lang or 'text'
         try:
             lexer = pygments.lexers.get_lexer_by_name(lang, stripall=True)
         except pygments.util.ClassNotFound:
-            util.log.warning(f'pygments lexer {lang!r} not found')
+            u.log.warning(f'pygments lexer {lang!r} not found')
             lexer = pygments.lexers.get_lexer_by_name('text', stripall=True)
 
-        kwargs = dict(
+        kwargs = {}
+        if 'numbers' in el.attributes:
+            kwargs['linenos'] = 'table'
+            kwargs['linenostart'] = el.attributes['numbers']
+
+        formatter = pygments.formatters.html.HtmlFormatter(
             noclasses=True,
             nobackground=True,
+            cssclass=CssClasses.CODE_BLOCK,
+            **kwargs,
         )
-        if 'numbers' in atts:
-            kwargs['linenos'] = 'table'
-            kwargs['linenostart'] = atts['numbers']
+        html = pygments.highlight(el.text, lexer, formatter)
 
-        formatter = pygments.formatters.html.HtmlFormatter(**kwargs)
-        html = pygments.highlight(text, lexer, formatter)
-
-        if 'title' in atts:
-            html = f'<p class="highlighttitle">{escape(atts["title"])}</p>' + html
+        if el.title:
+            html = f'<div class="{CssClasses.CODE_BLOCK_TITLE}">{escape(el.title)}</div>' + html
 
         return html
 
-    def r_block_error(self, el: Element):
+    def r_block_error(self, el: MarkdownElement):
         c = self.render_children(el)
-        return f'<div class="error">{c}</div>\n'
+        return f'<div class="{CssClasses.ERROR}">{c}</div>\n'
 
-    def r_block_html(self, el: Element):
+    def r_block_html(self, el: MarkdownElement):
         return el.html
 
-    def r_block_quote(self, el: Element):
+    def r_block_quote(self, el: MarkdownElement):
         c = self.render_children(el)
         return f'<blockquote>\n{c}</blockquote>\n'
 
-    def r_block_text(self, el: Element):
+    def r_block_text(self, el: MarkdownElement):
         return self.render_children(el)
 
-    def r_codespan(self, el: Element):
+    def r_codespan(self, el: MarkdownElement):
         c = escape(el.text)
         return f'<code{attributes(el.attributes)}>{c}</code>'
 
-    def r_emphasis(self, el: Element):
+    def r_emphasis(self, el: MarkdownElement):
         c = self.render_children(el)
         return f'<em>{c}</em>'
 
-    def r_heading(self, el: Element):
+    def r_heading(self, el: MarkdownElement):
         c = self.render_children(el)
         tag = 'h' + str(el.level)
         s = ''
-        if el.id:
-            s += f' id="{el.id}"'
+        if el.htmlId:
+            s += f' id="{el.htmlId}"'
         return f'<{tag}{s}>{c}</{tag}>\n'
 
-    def r_image(self, el: Element):
+    def r_image(self, el: MarkdownElement):
         a = {}
         if el.src:
             a['src'] = el.src
@@ -446,25 +438,25 @@ class HTMLRenderer(_Renderer):
 
         return f'<img{attributes(a)}/>'
 
-    def r_inline_decoration(self, el: Element):
+    def r_inline_decoration(self, el: MarkdownElement):
         c = escape(el.text)
-        return f'<span class="decoration_{el.classname}">{c}</span>'
+        return f'<span class="{CssClasses.DECORATION}{el.classname}">{c}</span>'
 
-    def r_inline_html(self, el: Element):
+    def r_inline_html(self, el: MarkdownElement):
         return el.html
 
-    def r_linebreak(self, el: Element):
+    def r_linebreak(self, el: MarkdownElement):
         return '<br/>\n'
 
-    def r_link(self, el: Element):
+    def r_link(self, el: MarkdownElement):
         c = self.render_children(el)
         return self.render_link(el.target, el.title, c, el)
 
-    def r_list_item(self, el: Element):
+    def r_list_item(self, el: MarkdownElement):
         c = self.render_children(el)
         return f'<li>{c}</li>\n'
 
-    def r_list(self, el: Element):
+    def r_list(self, el: MarkdownElement):
         c = self.render_children(el)
         tag = 'ol' if el.ordered else 'ul'
         a = {}
@@ -472,45 +464,45 @@ class HTMLRenderer(_Renderer):
             a['start'] = el.start
         return f'<{tag}{attributes(a)}>\n{c}\n</{tag}>\n'
 
-    def r_newline(self, el: Element):
+    def r_newline(self, el: MarkdownElement):
         return ''
 
-    def r_paragraph(self, el: Element):
+    def r_paragraph(self, el: MarkdownElement):
         c = self.render_children(el)
         return f'<p>{c}</p>\n'
 
-    def r_strong(self, el: Element):
+    def r_strong(self, el: MarkdownElement):
         c = self.render_children(el)
         return f'<strong>{c}</strong>'
 
-    def r_table_body(self, el: Element):
+    def r_table_body(self, el: MarkdownElement):
         c = self.render_children(el)
         return f'<tbody>\n{c}</tbody>\n'
 
-    def r_table_cell(self, el: Element):
+    def r_table_cell(self, el: MarkdownElement):
         c = self.render_children(el)
-        tag = 'th' if el.is_head else 'td'
+        tag = 'th' if el.isTableHead else 'td'
         a = {}
         if el.align:
             a['style'] = f'text-align:{el.align}'
         return f'<{tag}{attributes(a)}>{c}</{tag}>'
 
-    def r_table_head(self, el: Element):
+    def r_table_head(self, el: MarkdownElement):
         c = self.render_children(el)
         return f'<thead>\n<tr>{c}</tr>\n</thead>\n'
 
-    def r_table(self, el: Element):
+    def r_table(self, el: MarkdownElement):
         c = self.render_children(el)
-        return f'<table class="markdown-table">{c}</table>\n'
+        return f'<table class="{CssClasses.TABLE}">{c}</table>\n'
 
-    def r_table_row(self, el: Element):
+    def r_table_row(self, el: MarkdownElement):
         c = self.render_children(el)
         return f'<tr>{c}</tr>\n'
 
-    def r_text(self, el: Element):
+    def r_text(self, el: MarkdownElement):
         return escape(el.text)
 
-    def r_thematic_break(self, el: Element):
+    def r_thematic_break(self, el: MarkdownElement):
         return '<hr/>\n'
 
 
