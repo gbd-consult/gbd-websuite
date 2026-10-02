@@ -12,10 +12,10 @@ import gws.base.model.validator
 
 @gws.ext.config.modelValidator('regex')
 class Config(gws.base.model.validator.Config):
-    """Regular expression validator."""
+    """Checks that a value matches a regular expression."""
 
     regex: gws.Regex
-    """Regular expression to match against the field value."""
+    """Regular expression, matched anywhere in the value unless anchored."""
 
 
 @gws.ext.object.modelValidator('regex')

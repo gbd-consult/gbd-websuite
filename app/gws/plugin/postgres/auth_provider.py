@@ -7,7 +7,7 @@ import gws.base.database.auth_provider
 
 @gws.ext.config.authProvider('postgres')
 class Config(gws.base.database.auth_provider.Config):
-    """Postgres authorization provider."""
+    """Authentication provider that checks users with SQL queries in PostgreSQL."""
 
     pass
 

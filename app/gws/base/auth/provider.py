@@ -10,7 +10,7 @@ class Config(gws.Config):
     """Auth provider config."""
 
     allowedMethods: Optional[list[str]]
-    """Allowed authorization methods."""
+    """Authentication methods this provider accepts."""
 
 
 class Object(gws.AuthProvider):

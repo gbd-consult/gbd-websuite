@@ -18,10 +18,10 @@ import gws.lib.password
 
 @gws.ext.config.authProvider('file')
 class Config(gws.base.auth.provider.Config):
-    """File-based authorization provider."""
+    """Authentication against user records in a JSON file."""
 
     path: gws.FilePath
-    """Path to the users json file."""
+    """Path to the JSON file with user records."""
 
 
 @gws.ext.object.authProvider('file')

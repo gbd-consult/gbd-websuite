@@ -13,12 +13,12 @@ from . import provider
 
 @gws.ext.config.model('qgis')
 class Config(gws.base.model.Config):
-    """QGIS data model configuration."""
+    """Data model for features queried from a QGIS project."""
 
     provider: Optional[provider.Config]
-    """WMS provider."""
+    """QGIS project the features are queried from."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]
-    """Source layers to search for."""
+    """Source layers to query."""
 
 
 @gws.ext.object.model('qgis')

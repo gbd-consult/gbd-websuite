@@ -13,7 +13,7 @@ from . import caps
 
 
 class Config(gws.base.ows.client.provider.Config):
-    """WMTS provider configuration."""
+    """Connection to a WMTS service."""
 
 
 class Object(gws.base.ows.client.provider.Object):

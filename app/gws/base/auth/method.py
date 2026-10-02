@@ -3,12 +3,12 @@ import gws
 
 
 class Config(gws.Config):
-    """Auth method config."""
+    """Common options for authentication methods."""
 
     secure: bool = True
-    """Use only with SSL."""
+    """Accept credentials only over HTTPS."""
     allowInsecureFrom: Optional[list[str]]
-    """Allow insecure access from these IPs."""
+    """IP addresses allowed to use this method without HTTPS."""
 
 
 class Object(gws.AuthMethod):

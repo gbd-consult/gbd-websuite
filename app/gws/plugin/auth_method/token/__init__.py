@@ -21,12 +21,12 @@ import gws.base.web
 
 @gws.ext.config.authMethod('token')
 class Config(gws.base.auth.method.Config):
-    """HTTP-token authorization options"""
+    """Authentication with a token passed in an HTTP header."""
 
     header: str
-    """HTTP header name."""
+    """HTTP header that carries the token."""
     prefix: str = ''
-    """Token prefix."""
+    """Prefix expected before the token in the header value."""
 
 
 @gws.ext.object.authMethod('token')

@@ -6,7 +6,7 @@ import gws.base.auth
 
 @gws.ext.config.authMethod('qfieldcloud')
 class Config(gws.base.auth.method.Config):
-    """QField Cloud authorisation options."""
+    """Token authentication for QField clients."""
 
 
 @gws.ext.object.authMethod('qfieldcloud')

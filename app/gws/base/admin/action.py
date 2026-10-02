@@ -8,7 +8,7 @@ from . import inspector, mapcache
 
 @gws.ext.config.action('admin')
 class Config(gws.base.action.Config):
-    """Admin action configuration. (added in 8.5)"""
+    """Administration tools. (added in 8.5)"""
 
     pass
 

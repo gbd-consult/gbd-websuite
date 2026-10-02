@@ -6,7 +6,7 @@ import gws.base.model.widget
 
 @gws.ext.config.modelWidget('file')
 class Config(gws.base.model.widget.Config):
-    """File widget configuration."""
+    """Upload and download for a file field."""
 
     pass
 

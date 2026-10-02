@@ -14,12 +14,12 @@ from . import provider
 
 @gws.ext.config.finder('qgis')
 class Config(gws.base.search.finder.Config):
-    """QGIS Server-based Finder configuration."""
+    """Search in QGIS project layers via QGIS Server."""
 
     provider: Optional[provider.Config]
-    """Provider configuration."""
+    """QGIS project to search."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]
-    """Source layers to search for."""
+    """Source layers to search."""
 
 
 @gws.ext.object.finder('qgis')

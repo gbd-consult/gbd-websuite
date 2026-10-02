@@ -8,10 +8,10 @@ import gws.base.legend
 
 @gws.ext.config.legend('combined')
 class Config(gws.base.legend.Config):
-    """Combined legend."""
+    """Legend combining the legends of several layers."""
 
     layerUids: list[str]
-    """Layers to combine in the legend."""
+    """UIDs of the layers whose legends are combined."""
 
 
 @gws.ext.object.legend('combined')

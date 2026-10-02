@@ -26,14 +26,14 @@ class Error(gws.Error):
 
 
 class FormatConfig(gws.Config):
-    """Image format configuration."""
+    """Image format with its encoding options."""
 
     name: str = ''
     """Name of the format."""
     mimeTypes: list[gws.MimeType]
-    """Mime types for this format."""
+    """MIME types for this format."""
     options: Optional[dict]
-    """Image options."""
+    """Image encoding options."""
 
 
 def from_size(size: gws.Size, color=None) -> 'Image':

@@ -12,20 +12,20 @@ import gws.lib.sqlitex
 
 
 class Config(gws.Config):
-    """Authentication throttle options. (added in 8.4)"""
+    """Blocking of repeated failed authentication attempts."""
 
     maxAttemptsPerIp: int = 10
     """Failed attempts from one address before blocking."""
     maxAttemptsPerUser: int = 0
-    """Failed attempts for one login from all addresses before blocking, 0=no limit."""
+    """Failed attempts per login name from any address before blocking, 0 for no limit."""
     windowTime: gws.Duration = '10m'
     """Time span in which failed attempts are counted."""
     blockTime: gws.Duration = '15m'
     """How long to block once the limit is reached."""
     allowFrom: Optional[list[str]]
-    """Addresses exempt from throttling."""
+    """IP addresses exempt from throttling."""
     path: Optional[str]
-    """Throttle storage path."""
+    """File that stores failed attempts."""
 
 
 _CLEANUP_INTERVAL = 600

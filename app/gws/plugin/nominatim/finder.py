@@ -40,12 +40,12 @@ _DEFAULT_TEMPLATES = [
 
 @gws.ext.config.finder('nominatim')
 class Config(gws.base.search.finder.Config):
-    """Nominatim search"""
+    """Search for places and addresses in OpenStreetMap via Nominatim."""
 
     country: Optional[str]
-    """Country to limit the search."""
+    """Countries to limit the results to."""
     language: Optional[str]
-    """Language to return the results in."""
+    """Preferred language of the results."""
 
 
 @gws.ext.object.finder('nominatim')

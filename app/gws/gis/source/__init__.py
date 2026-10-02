@@ -11,24 +11,24 @@ import gws.lib.crs
 ##
 
 class LayerFilter(gws.Data):
-    """Source layer filter"""
+    """Selects source layers."""
 
     level: int = 0
-    """Match only layers at this level."""
+    """Match only layers at this depth in the source tree, 1 being the top."""
     names: Optional[list[str]]
     """Match these layer names (top-to-bottom order)."""
     titles: Optional[list[str]]
     """Match these layer titles."""
     pattern: gws.Regex = ''
-    """Match layers whose full path matches a pattern."""
+    """Match layers whose path matches a regular expression."""
     isGroup: Optional[bool]
-    """If true, match only group layers."""
+    """Match only group layers."""
     isImage: Optional[bool]
-    """If true, match only images layers."""
+    """Match only image layers."""
     isQueryable: Optional[bool]
-    """If true, match only queryable layers."""
+    """Match only queryable layers."""
     isVisible: Optional[bool]
-    """If true, match only visible layers."""
+    """Match only visible layers."""
 
 
 def layer_matches(sl: gws.SourceLayer, f: Optional[LayerFilter]) -> bool:

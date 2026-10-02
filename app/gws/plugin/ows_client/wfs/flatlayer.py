@@ -20,12 +20,12 @@ from . import provider
 
 @gws.ext.config.layer('wfsflat')
 class Config(gws.base.layer.Config):
-    """Flat WFS layer."""
+    """Vector layer that shows the features of one WFS feature type."""
 
     provider: Optional[provider.Config]
-    """WFS provider."""
+    """WFS service the layer is loaded from."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]
-    """Source layers to use."""
+    """Feature type to show."""
 
 
 @gws.ext.object.layer('wfsflat')

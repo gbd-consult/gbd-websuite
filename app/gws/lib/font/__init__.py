@@ -5,10 +5,10 @@ import gws.lib.osx
 
 
 class Config(gws.Config):
-    """Custom fonts configuration."""
+    """Custom fonts, installed on the server for rendering."""
 
     dir: gws.DirPath
-    """Directory with custom fonts."""
+    """Directory with font files to install."""
 
 
 def configure(cfg: Config):

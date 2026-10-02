@@ -6,7 +6,7 @@ import gws.base.model.widget
 
 @gws.ext.config.modelWidget('date')
 class Config(gws.base.model.widget.Config):
-    """Date widget configuration."""
+    """Input for date values."""
 
     pass
 

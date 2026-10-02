@@ -9,18 +9,18 @@ class MiddlewareManager(Node):
 
 
 class TemplateOptions(Data):
-    """Options for default templates."""
+    """Options for the built-in application and project home pages."""
 
     withLogin: bool = True
-    """Show login form in the application home page."""
+    """Show the login form on the home page."""
     footerText: Optional[str]
-    """Footer text for the application home page."""
+    """HTML text for the home page footer."""
     withGws: bool = True
-    """Show GWS logo in the application home page."""
+    """Show the GWS logo in the home page footer."""
     homeResources: Optional[list[str]]
-    """List of additional resource URLs for the application home ('style.css' by default)."""
+    """Extra resource URLs for the home page."""
     projectResources: Optional[list[str]]
-    """List of additional resource URLs for the project page ('style.css' by default)."""
+    """Extra resource URLs for the project page."""
 
 
 class Application(Node):

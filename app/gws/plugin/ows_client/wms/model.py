@@ -13,12 +13,12 @@ from . import provider
 
 @gws.ext.config.model('wms')
 class Config(gws.base.model.Config):
-    """WMS model configuration."""
+    """Data model for features queried from a WMS service."""
 
     provider: Optional[provider.Config]
-    """WMS provider"""
+    """WMS service the features are queried from."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]
-    """Source layers to search for."""
+    """Source layers to query."""
 
 
 @gws.ext.object.model('wms')

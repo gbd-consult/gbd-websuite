@@ -11,11 +11,11 @@ class Config(gws.Config):
     """Database provider"""
 
     schemaCacheLifeTime: gws.Duration = '3600'
-    """Life time for schema caches."""
+    """How long table structures read from the database are cached."""
     withPool: Optional[bool] = False
-    """Use connection pooling"""
+    """Keep and reuse database connections in a pool."""
     pool: Optional[dict]
-    """Options for connection pooling."""
+    """Connection pool options."""
 
 
 _thread_local = threading.local()

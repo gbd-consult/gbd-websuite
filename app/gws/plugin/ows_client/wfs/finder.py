@@ -13,12 +13,12 @@ from . import provider
 
 @gws.ext.config.finder('wfs')
 class Config(gws.base.search.finder.Config):
-    """WFS Finder configuration."""
+    """Search for features in a WFS service."""
     
     provider: Optional[provider.Config]
-    """Provider configuration."""
+    """WFS service to search."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]
-    """Source layers to search for."""
+    """Feature types to search."""
 
 
 @gws.ext.object.finder('wfs')

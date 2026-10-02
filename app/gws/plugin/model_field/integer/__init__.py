@@ -7,7 +7,7 @@ from gws import User
 
 @gws.ext.config.modelField('integer')
 class Config(gws.base.model.scalar_field.Config):
-    """Configuration for integer field."""
+    """Field for integer numbers."""
 
     pass
 

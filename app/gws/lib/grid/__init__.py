@@ -59,16 +59,16 @@ class Props(gws.Props):
 
 
 class Config(gws.Config):
-    """Map grid options. (changed in 8.5)"""
+    """Tile grid. (changed in 8.5)"""
 
     crs: Optional[gws.CrsName]
     """Grid CRS."""
     extent: Optional[gws.Extent]
-    """Grid frame extent. The origin is its north-west corner. Defaults to the web mercator square for projected CRS and to the whole world for geographic CRS."""
+    """Grid frame extent, with the origin at its north-west corner."""
     baseResolution: Optional[float]
-    """Resolution at level 0. By default, one tile at level 0 spans the frame height. (added in 8.5)"""
+    """Resolution at level 0. (added in 8.5)"""
     tileSize: Optional[int]
-    """Tile size in pixels. Default 256."""
+    """Tile size in pixels."""
     withSnap: bool = True
     """Snap the extent and the base resolution to the default grid of the CRS. (added in 8.5)"""
 

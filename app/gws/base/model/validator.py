@@ -9,11 +9,11 @@ class Config(gws.Config):
     """Configuration for the model validator."""
 
     message: str = ''
-    """Error message prefix for validation errors."""
+    """Validation error message."""
     forCreate: bool = True
-    """If True, the validator is applied when creating a new object."""
+    """The validator is applied when creating a new object."""
     forUpdate: bool = True
-    """If True, the validator is applied when updating an existing object."""
+    """The validator is applied when updating an existing object."""
 
 
 class Object(gws.ModelValidator):

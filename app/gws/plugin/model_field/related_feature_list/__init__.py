@@ -22,12 +22,12 @@ from gws.plugin.model_field import related_multi_feature_list
 
 @gws.ext.config.modelField('relatedFeatureList')
 class Config(related_field.Config):
-    """Configuration for related feature list field."""
+    """Field listing related features in another model."""
 
     fromColumn: str = ''
     """Key column in this table, primary key by default."""
     toModel: str
-    """Related model."""
+    """UID of the related model."""
     toColumn: str
     """Foreign key column in the related model."""
 

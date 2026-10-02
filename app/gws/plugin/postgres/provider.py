@@ -14,7 +14,7 @@ import gws.lib.sa as sa
 
 @gws.ext.config.databaseProvider('postgres')
 class Config(gws.base.database.provider.Config):
-    """Postgres/Postgis database provider"""
+    """Connection to a PostgreSQL/PostGIS database."""
 
     database: Optional[str]
     """Database name."""
@@ -23,13 +23,13 @@ class Config(gws.base.database.provider.Config):
     port: int = 5432
     """Database port."""
     username: Optional[str]
-    """Username."""
+    """User name."""
     password: Optional[str]
     """Password."""
     serviceName: Optional[str]
-    """Service name from pg_services file."""
+    """Service name from the PostgreSQL service file."""
     options: Optional[dict]
-    """Libpq connection options."""
+    """Extra libpq connection parameters."""
 
 
 @gws.ext.object.databaseProvider('postgres')

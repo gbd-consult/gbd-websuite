@@ -13,7 +13,7 @@ class Config(gws.Config):
     """Configuration for the widget."""
 
     readOnly: bool = False
-    """If True, the value is read-only."""
+    """The widget displays the value without allowing edits."""
 
 
 class Object(gws.ModelWidget):

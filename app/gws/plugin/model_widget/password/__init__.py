@@ -6,12 +6,12 @@ import gws.base.model.widget
 
 @gws.ext.config.modelWidget('password')
 class Config(gws.base.model.widget.Config):
-    """Password widget."""
+    """Password input with masked characters."""
 
     placeholder: str = ''
-    """Password input placeholder."""
+    """Hint text shown in the empty input."""
     withShow: bool = False
-    """Create a "show password" button."""
+    """Show a button that reveals the typed password."""
 
 
 @gws.ext.props.modelWidget('password')

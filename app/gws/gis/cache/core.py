@@ -9,29 +9,29 @@ import gws.lib.osx as osx
 
 
 class LayerConfig(gws.Config):
-    """Layer cache configuration."""
+    """Tile cache settings of a layer."""
 
     name: str = ''
     """Cache directory name. (added in 8.5)"""
     maxAge: gws.Duration = '7d'
-    """Cache max. age."""
+    """Max. age of cached tiles."""
     maxLevel: int = 18
-    """Max. zoom level to cache, on the global tile grid. (changed in 8.5)"""
+    """Finest zoom level to cache. (changed in 8.5)"""
     requestBuffer: int = 64
-    """Pixel buffer for source requests. (changed in 8.5)"""
+    """Pixel buffer around source requests, to keep labels consistent across tiles. (changed in 8.5)"""
     requestTiles: int = 4
-    """Number of tiles to request at once. (changed in 8.5)"""
+    """Tiles per side of the block rendered in one source request. (changed in 8.5)"""
     crs: Optional[list[gws.CrsName]]
-    """CRS to cache tiles in. By default, tiles are cached in all supported CRS. (added in 8.5)"""
+    """CRS to cache tiles in. (added in 8.5)"""
 
 
 class GlobalConfig(gws.Config):
-    """Global cache options"""
+    """Global tile cache options."""
 
     seedingMaxTime: gws.Duration = '10m'
-    """Max. time for a seeding job."""
+    """Time limit for a cache seeding run."""
     seedingConcurrency: int = 1
-    """Number of concurrent seeding jobs."""
+    """Number of parallel threads for cache seeding."""
 
 
 class Level(gws.Data):

@@ -10,12 +10,12 @@ import gws.base.storage
 
 @gws.ext.config.action('annotate')
 class Config(gws.base.action.Config):
-    """Annotate action configuration."""
+    """Map annotations with measurement labels."""
 
     storage: Optional[gws.base.storage.Config]
-    """Storage configuration."""
+    """Storage for saved annotations."""
     labels: Optional[dict]
-    """Default label templates."""
+    """Label templates per shape type."""
 
 
 @gws.ext.props.action('annotate')

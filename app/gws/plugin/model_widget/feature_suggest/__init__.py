@@ -6,7 +6,7 @@ import gws.base.model.widget
 
 @gws.ext.config.modelWidget('featureSuggest')
 class Config(gws.base.model.widget.Config):
-    """Feature suggest widget configuration."""
+    """Input that suggests related features as the user types."""
 
     pass
 

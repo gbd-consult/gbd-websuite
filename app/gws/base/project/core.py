@@ -12,36 +12,36 @@ import gws.base.metadata
 
 @gws.ext.config.project('default')
 class Config(gws.ConfigWithAccess):
-    """Project configuration"""
+    """Project with its own map, actions, templates and services."""
 
     type: str = 'default'
 
     actions: Optional[list[gws.ext.config.action]]
-    """Project-specific actions."""
+    """Actions available only in this project."""
     assets: Optional[gws.base.web.site.WebDirConfig]
-    """Project-specific assets options."""
+    """Directory with project assets, checked before the global assets directory."""
     client: Optional[gws.base.client.Config]
-    """Project-specific gws client configuration."""
+    """Client UI for this project, replacing the application client."""
     exporters: Optional[list[gws.ext.config.exporter]]
-    """Project-specific exporters."""
+    """Exporters for this project, offered along with the global ones."""
     finders: Optional[list[gws.ext.config.finder]]
-    """Search providers."""
+    """Search providers available in this project."""
     locales: Optional[list[gws.LocaleUid]]
-    """Project locales."""
+    """Locales for this project."""
     map: Optional[gws.base.map.Config]
-    """Map configuration."""
+    """Main map of the project."""
     metadata: Optional[gws.base.metadata.Config]
-    """Project metadata."""
+    """Project metadata, merged with the application metadata."""
     models: Optional[list[gws.ext.config.model]]
     """Data models."""
     overviewMap: Optional[gws.base.map.Config]
-    """Overview map configuration."""
+    """Overview map, showing the current view on a smaller scale."""
     owsServices: Optional[list[gws.ext.config.owsService]]
-    """OWS services configuration."""
+    """OWS services published for this project."""
     printers: Optional[list[gws.base.printer.Config]]
-    """Print configurations."""
+    """Printers for this project, offered along with the global ones."""
     templates: Optional[list[gws.ext.config.template]]
-    """Project info templates."""
+    """Templates for this project."""
     title: str = ''
     """Project title."""
     vars: Optional[dict]

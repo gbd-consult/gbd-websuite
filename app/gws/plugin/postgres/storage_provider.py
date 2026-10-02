@@ -25,12 +25,12 @@ TABLE_DDL = """
 
 @gws.ext.config.storageProvider('postgres')
 class Config(gws.Config):
-    """Postgres storage provider. (added in 8.4)"""
+    """Storage provider that keeps saved user data in a PostgreSQL table."""
 
     dbUid: Optional[str]
-    """Database provider uid."""
+    """UID of the database provider."""
     tableName: str
-    """Table name for the storage."""
+    """Table for the stored records."""
 
 
 @gws.ext.object.storageProvider('postgres')

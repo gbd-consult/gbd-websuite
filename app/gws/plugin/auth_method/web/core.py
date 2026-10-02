@@ -9,26 +9,26 @@ import gws.base.web
 
 
 class LoginRedirectRule(gws.Data):
-    """Login redirect rule."""
+    """Redirect to a login page for page requests that are denied."""
 
     pattern: Optional[gws.Regex]
-    """URL matching pattern for pages that must be redirected."""
+    """Regular expression for URLs to redirect."""
     target: str
-    """Target url."""
+    """Login page URL."""
 
 
 @gws.ext.config.authMethod('web')
 class Config(gws.base.auth.method.Config):
-    """Web-based authorization options"""
+    """Authentication with a login form and a session cookie."""
 
     cookieName: str = 'auth'
-    """Name for the cookie."""
+    """Name of the session cookie."""
     cookiePath: str = '/'
-    """Cookie path."""
+    """Path attribute of the session cookie."""
     cookieSameSite: str = 'Lax'
-    """Cookie SameSite attribute."""
+    """SameSite attribute of the session cookie."""
     loginRedirect: Optional[LoginRedirectRule]
-    """Rule to redirect if a login is required."""
+    """Redirect denied page requests to a login page."""
 
 
 ##

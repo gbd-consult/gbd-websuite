@@ -7,59 +7,68 @@ from . import inspire, iso
 
 
 class LinkConfig(gws.Config):
-    """Metadata link."""
+    """Link to a metadata document or another resource related to the object."""
 
     about: Optional[str]
+    """Aspect of the object the link describes."""
     description: Optional[str]
+    """Description of the linked resource."""
     format: Optional[str]
+    """Format of the linked resource."""
     formatVersion: Optional[str]
+    """Version of the format of the linked resource."""
     function: Optional[str]
+    """Function of the link."""
     mimeType: Optional[gws.MimeType]
+    """MIME type of the linked resource."""
     scheme: Optional[str]
+    """Link scheme or protocol."""
     title: Optional[str]
+    """Link title."""
     type: Optional[str]
     url: Optional[str]
+    """Link URL."""
 
 
 class Config(gws.Config):
-    """Metadata configuration."""
+    """Metadata of an object, used in the client and in OWS services."""
 
     name: Optional[str]
     """Object name."""
     title: Optional[str]
-    """Object title."""
+    """Title of the object."""
 
     abstract: Optional[str]
-    """Object abstract, a brief description of the object."""
+    """Abstract of the object, a brief description."""
     accessConstraints: Optional[str]
-    """Access constraint for the object."""
+    """Access constraints, written to AccessConstraints in service capabilities."""
     accessConstraintsType: Optional[str]
     """Access constraint type for the object."""
     attribution: Optional[str]
-    """Attribution information for the object. (changed in 8.2)"""
+    """Attribution text, shown in the client and as the WMS Attribution title."""
     attributionUrl: Optional[str]
-    """Attribution URL for the object."""
+    """URL of the attribution, written to the WMS Attribution online resource."""
     dateCreated: Optional[gws.DateStr]
-    """Object creation date."""
+    """Creation date of the object."""
     dateUpdated: Optional[gws.DateStr]
-    """Object last update date."""
+    """Last update date of the object."""
     fees: Optional[str]
-    """Fees associated with accessing or using the object."""
+    """Fees for using the object, written to Fees in service capabilities."""
     image: Optional[str]
     """Image URL or path associated with the object."""
     keywords: Optional[list[str]]
     """Keywords, optionally prefixed with a vocabulary, e.g. 'gemet:river'."""
     license: Optional[str]
-    """License information for the object."""
+    """License text, written to the legal constraints in CSW records."""
     licenseUrl: Optional[gws.Url]
     """License URL."""
 
     contactAddress: Optional[str]
-    """Contact address for the object."""
+    """Street address of the contact."""
     contactAddressType: Optional[str]
     """Type of contact address, such as 'postal' or 'email'."""
     contactArea: Optional[str]
-    """Contact area or state."""
+    """Administrative area, state or province of the contact address."""
     contactCity: Optional[str]
     """Contact city."""
     contactCountry: Optional[str]
@@ -77,70 +86,92 @@ class Config(gws.Config):
     contactPosition: Optional[str]
     """Contact position or job title."""
     contactProviderName: Optional[str]
-    """Name of the provider of the contact information."""
+    """Name of the service provider, written to ServiceProvider/ProviderName."""
     contactProviderSite: Optional[str]
-    """Website of the provider of the contact information."""
+    """Website of the service provider, written to ServiceProvider/ProviderSite."""
     contactRole: Optional[iso.CI_RoleCode]
-    """Role of the contact person, such as 'pointOfContact' or 'author'."""
+    """Role of the contact."""
     contactUrl: Optional[str]
-    """URL for additional contact information."""
+    """Website of the contact, written to the contact OnlineResource."""
     contactZip: Optional[str]
     """Contact postal code."""
 
     authorityIdentifier: Optional[str]
-    """Identifier (WMS)"""
+    """Layer identifier issued by the authority, written to the WMS Identifier element."""
     authorityName: Optional[str]
-    """AuthorityURL name (WMS)"""
+    """Name of the authority that issues layer identifiers."""
     authorityUrl: Optional[str]
-    """AuthorityURL (WMS)"""
+    """URL of the authority that issues layer identifiers."""
 
     metaLinks: Optional[list[LinkConfig]]
-    """MetadataURL (WMS, WFS) or metadata links (CSW)."""
+    """Links to metadata documents."""
     serviceMetadataURL: Optional[str]
-    """Service metadata URL (WMTS)."""
+    """URL of the service metadata document."""
 
     catalogCitationUid: Optional[str]
-    """CI_Citation.Identifier (CSW)."""
+    """Identifier of the resource, written to the CI_Citation identifier in CSW records."""
     catalogUid: Optional[str]
-    """MD_Metadata.Identifier (CSW)."""
+    """Identifier of the metadata record."""
 
     language: Optional[str]
-    """Language code (ISO 639-1)."""
+    """Language of the object as an ISO 639-1 code."""
 
     parentIdentifier: Optional[str]
-    """MD_Metadata.parentIdentifier (ISO)."""
+    """Identifier of the parent metadata record."""
     wgsExtent: Optional[gws.Extent]
-    """EX_Extent (ISO)."""
+    """Geographic extent in WGS84, written to EX_Extent in CSW records."""
     crs: Optional[gws.CrsName]
-    """MD_ReferenceSystem (ISO)."""
+    """Reference system of the data, written to MD_ReferenceSystem in CSW records."""
     temporalBegin: Optional[gws.DateStr]
-    """EX_TemporalExtent (ISO)."""
+    """Start of the temporal extent of the data."""
     temporalEnd: Optional[gws.DateStr]
-    """EX_TemporalExtent (ISO)."""
+    """End of the temporal extent of the data."""
 
     inspireMandatoryKeyword: Optional[inspire.IM_MandatoryKeyword]
+    """INSPIRE service type, added to the keywords as the ISO serviceType keyword."""
     inspireDegreeOfConformity: Optional[inspire.IM_DegreeOfConformity]
+    """Degree of conformity with the INSPIRE implementing rules."""
     inspireResourceType: Optional[inspire.IM_ResourceType]
+    """INSPIRE resource type."""
     inspireSpatialDataServiceType: Optional[inspire.IM_SpatialDataServiceType]
+    """INSPIRE spatial data service type."""
     inspireSpatialScope: Optional[inspire.IM_SpatialScope]
+    """INSPIRE spatial scope."""
     inspireSpatialScopeName: Optional[str]
+    """Display name of the INSPIRE spatial scope."""
     inspireTheme: Optional[inspire.IM_Theme]
+    """INSPIRE data theme, added to the keywords as a GEMET INSPIRE theme."""
 
     isoMaintenanceFrequencyCode: Optional[iso.MD_MaintenanceFrequencyCode]
+    """How often the data is updated."""
     isoQualityConformanceExplanation: Optional[str]
+    """Explanation of the conformance result."""
     isoQualityConformanceQualityPass: Optional[bool]
+    """The data passes the conformance test."""
     isoQualityConformanceSpecificationDate: Optional[str]
+    """Publication date of the specification the conformance is tested against."""
     isoQualityConformanceSpecificationTitle: Optional[str]
+    """Title of the specification the conformance is tested against."""
     isoQualityLineageSource: Optional[str]
+    """Description of the source data."""
     isoQualityLineageSourceScale: Optional[int]
+    """Scale denominator of the source data."""
     isoQualityLineageStatement: Optional[str]
+    """Statement on the lineage of the data."""
     isoRestrictionCode: Optional[iso.MD_RestrictionCode]
+    """Restrictions on access or use of the data."""
     isoServiceFunction: Optional[iso.SV_ServiceFunction]
+    """ISO service function."""
     isoScope: Optional[iso.MD_ScopeCode]
+    """Scope of the metadata."""
     isoScopeName: Optional[str]
+    """Name of the scope, written to hierarchyLevelName in CSW records."""
     isoSpatialRepresentationType: Optional[iso.MD_SpatialRepresentationTypeCode]
+    """How the data is represented spatially."""
     isoTopicCategories: Optional[list[iso.MD_TopicCategoryCode]]
+    """ISO 19115 topic categories, added to the keywords."""
     isoSpatialResolution: Optional[int]
+    """Spatial resolution as a scale denominator."""
 
 
 ##

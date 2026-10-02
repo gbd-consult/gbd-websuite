@@ -27,10 +27,10 @@ from . import caps
 
 
 class Config(gws.base.ows.client.provider.Config):
-    """WFS provider configuration."""
+    """Connection to a WFS service."""
     
     withBboxCrs: Optional[bool]
-    """Add CRS to bbox request parameters."""
+    """Add the CRS to the bounding box parameter."""
 
 
 class Object(gws.base.ows.client.provider.Object):

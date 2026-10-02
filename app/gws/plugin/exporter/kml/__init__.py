@@ -10,7 +10,7 @@ import gws.lib.mime
 
 @gws.ext.config.exporter('kml')
 class Config(gws.base.exporter.Config):
-    """KML Exporter configuration."""
+    """Export of features to KML."""
 
     pass
 

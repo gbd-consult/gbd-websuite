@@ -61,60 +61,60 @@ DEFAULT_PRINTER = gws.Config(
 DEFAULT_CSS_FILENAME = 'style.css'
 
 class Config(gws.ConfigWithAccess):
-    """Main application configuration"""
+    """Root configuration of the application."""
 
     actions: Optional[list[gws.ext.config.action]]
-    """System-wide server actions."""
+    """Server actions available in all projects."""
     auth: Optional[gws.base.auth.manager.Config]
-    """Authorization methods and options."""
+    """Authentication methods, providers and session options."""
     cache: Optional[gws.gis.cache.GlobalConfig]
-    """Global cache configuration."""
+    """Options for tile cache seeding."""
     client: Optional[gws.base.client.Config]
-    """Gws client configuration."""
+    """Default client UI elements and options for all projects."""
     database: Optional[gws.base.database.manager.Config]
-    """Database configuration."""
+    """Database connections."""
     developer: Optional[dict]
-    """Developer options."""
+    """Options for development and debugging, not for production use."""
     exporters: Optional[list[gws.ext.config.exporter]]
-    """Exporters configuration."""
+    """Formats for exporting features."""
     finders: Optional[list[gws.ext.config.finder]]
-    """Global search providers."""
+    """Search providers available in all projects."""
     fonts: Optional[gws.lib.font.Config]
-    """Fonts configuration."""
+    """Directory with additional fonts for rendering and printing."""
     helpers: Optional[list[gws.ext.config.helper]]
-    """Helpers configurations."""
+    """Auxiliary objects, used throughout the application."""
     locales: Optional[list[gws.LocaleUid]]
     """Default locales for all projects."""
     metadata: Optional[gws.base.metadata.Config]
     """Application metadata."""
     models: Optional[list[gws.ext.config.model]]
-    """Global data models."""
+    """Data models available in all projects."""
     owsServices: Optional[list[gws.ext.config.owsService]]
-    """OWS services configuration."""
+    """OWS services provided by the server."""
     projectDirs: Optional[list[gws.DirPath]]
-    """Directories with additional projects."""
+    """Directories searched recursively for project configuration files."""
     projectPaths: Optional[list[gws.FilePath]]
-    """Additional project paths."""
+    """Additional project configuration files."""
     printers: Optional[list[gws.ext.config.printer]]
-    """Print configurations."""
+    """Configuration for print templates and quality levels."""
     projects: Optional[list[gws.ext.config.project]]
-    """Project configurations."""
+    """Projects, each with its own map, client and actions."""
     server: Optional[gws.server.Config]
-    """Server engine options."""
+    """Server processes, logging and monitoring options."""
     storage: Optional[gws.base.storage.manager.Config]
-    """Database configuration."""
+    """Storage providers for data that users save in the client."""
     templates: Optional[list[gws.ext.config.template]]
-    """Default templates."""
+    """Templates available in all projects."""
     templateOptions: Optional[gws.TemplateOptions]
-    """Options for default templates."""
+    """Login form, footer and extra resources of the built-in home pages."""
     title: Optional[str]
     """Application title."""
     vars: Optional[dict]
     """Custom variables."""
     web: Optional[gws.base.web.manager.Config]
-    """Web server options."""
+    """Web site and SSL options."""
     lastUid: int = 1
-    """Last used uid for auto-generated uids."""
+    """Last used UID for auto-generated UIDs."""
 
 
 class Object(gws.Application):

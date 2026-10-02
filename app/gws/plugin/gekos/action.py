@@ -29,12 +29,12 @@ class GetFsResponse(gws.Response):
 
 @gws.ext.config.action('gekos')
 class Config(gws.base.action.Config):
-    """GekoS action configuration."""
+    """Integration with the GekoS-Bau software."""
 
     index: Optional[core.IndexConfig]
-    """GekoS index configuration."""
+    """Index of GekoS records loaded from gek-online."""
     templates: Optional[list[gws.ext.config.template]]
-    """Feature templates."""
+    """Templates for GekoS features."""
 
 
 _DEFAULT_TEMPLATES = [

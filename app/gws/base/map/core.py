@@ -10,26 +10,26 @@ import gws.gis.zoom
 
 @gws.ext.config.map('default')
 class Config(gws.Config):
-    """Map configuration"""
+    """Map with its layers, extent, CRS and zoom levels."""
 
     center: Optional[gws.Point]
-    """Map center."""
+    """Initial map center."""
     coordinatePrecision: Optional[int]
-    """Precision for coordinates."""
+    """Decimal places for coordinates."""
     crs: Optional[gws.CrsName] = 'EPSG:3857'
-    """Crs for this map."""
+    """CRS of the map and its layers."""
     extent: Optional[gws.Extent]
-    """Map extent."""
+    """Map extent in map CRS coordinates."""
     extentBuffer: Optional[int]
-    """Extent buffer."""
+    """Buffer added around the configured extent, in map units."""
     layers: list[gws.ext.config.layer]
-    """Collection of layers for this map."""
+    """Map layers."""
     title: str = ''
-    """Map title."""
+    """Map title, used as the root layer title."""
     wrapX: bool = False
-    """Wrap the world horizontally."""
+    """Repeat the world horizontally in the client."""
     zoom: Optional[gws.gis.zoom.Config]
-    """Map scales and resolutions."""
+    """Allowed scales or zoom levels and the initial zoom."""
 
 
 @gws.ext.props.map('default')

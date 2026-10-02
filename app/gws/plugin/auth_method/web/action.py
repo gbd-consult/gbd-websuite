@@ -10,7 +10,7 @@ from . import core
 
 @gws.ext.config.action('auth')
 class Config(gws.base.action.Config):
-    """Web-based authorization action configuration."""
+    """Login, logout and session checks for web-based authentication."""
 
     pass
 

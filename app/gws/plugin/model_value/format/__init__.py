@@ -9,7 +9,7 @@ import gws.base.model.value
 
 @gws.ext.config.modelValue('format')
 class Config(gws.base.model.value.Config):
-    """Format value configuration."""
+    """Value computed by a format string over feature attributes."""
 
     format: str
     """Format string to apply to feature attributes."""

@@ -14,9 +14,9 @@ class Config(gws.base.layer.Config):
     """Database layer."""
 
     dbUid: Optional[str]
-    """Database provider uid."""
+    """UID of the database provider."""
     tableName: str
-    """Database table name."""
+    """Table name, optionally schema-qualified."""
 
 
 class Object(gws.base.layer.vector.Object):

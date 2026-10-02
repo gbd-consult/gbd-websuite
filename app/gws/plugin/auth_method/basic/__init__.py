@@ -11,10 +11,10 @@ import gws.base.web
 
 @gws.ext.config.authMethod('basic')
 class Config(gws.base.auth.method.Config):
-    """HTTP-basic authorization options"""
+    """HTTP basic authentication."""
 
     realm: Optional[str]
-    """Authentication realm."""
+    """Authentication realm sent to the client."""
 
 
 @gws.ext.object.authMethod('basic')

@@ -14,7 +14,7 @@ import gws.lib.otp
 
 @gws.ext.config.authMultiFactorAdapter('totp')
 class Config(gws.base.auth.mfa.Config):
-    """TOTP multi-factor authenticator configuration."""
+    """Multi-factor authentication with time-based one-time passwords."""
 
     pass
 

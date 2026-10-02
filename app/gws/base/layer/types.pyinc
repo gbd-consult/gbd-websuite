@@ -1,23 +1,23 @@
 class LayerDisplayMode(Enum):
-    """Layer display mode."""
+    """How a layer is rendered."""
 
     box = 'box'
-    """Display a layer as one big image (WMS-alike)."""
+    """Render the map view as a single image."""
     tile = 'tile'
-    """Display a layer in a tile grid."""
+    """Render the layer as tiles of a grid."""
     client = 'client'
-    """Draw a layer in the client."""
+    """Let the client render the layer from its source."""
 
 
 class FeatureLoadingStrategy(Enum):
-    """Loading strategy for features."""
+    """When the client loads a layer's features."""
 
     all = 'all'
-    """Load all features."""
+    """Load all features once, on first display."""
     bbox = 'bbox'
-    """Load only features in the current map extent."""
+    """Reload features for the current map extent whenever it changes."""
     lazy = 'lazy'
-    """Load features on demand."""
+    """Load features only when a search text is entered."""
 
 
 class LayerOwsBinding(Node):

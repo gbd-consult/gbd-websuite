@@ -18,28 +18,28 @@ class Config(gws.ConfigWithAccess):
     """Configuration for the model field."""
 
     name: str
-    """The name of the field."""
+    """Field name, matching the column or attribute name in the source."""
     title: Optional[str]
-    """The title of the field."""
+    """Field title shown in the client."""
 
     isPrimaryKey: Optional[bool]
-    """If True, the field is a primary key."""
+    """The field is a primary key."""
     isRequired: Optional[bool]
-    """If True, the field is required."""
+    """The field must not be empty."""
     isUnique: Optional[bool]
-    """If True, the field is unique."""
+    """The field is unique."""
     isAuto: Optional[bool]
-    """If True, the field is auto-updated."""
+    """The value is set by the database and never written."""
     isHidden: Optional[bool]
-    """If True, the field is not automatically displayed in UIs."""
+    """The field is not automatically displayed in the UI."""
 
     values: Optional[list[gws.ext.config.modelValue]]
-    """List of possible values for the field."""
+    """Value sources that compute the field value on read, create or update."""
     validators: Optional[list[gws.ext.config.modelValidator]]
-    """List of validators for the field."""
+    """Additional validators for the field value."""
 
     widget: Optional[gws.ext.config.modelWidget]
-    """Configuration for the field widget."""
+    """Widget that displays and edits the field in the client."""
 
 
 ##

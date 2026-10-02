@@ -25,10 +25,10 @@ MAX_LEVEL = 20
 
 @gws.ext.config.owsService('wmts')
 class Config(server.service.Config):
-    """WMTS Service configuration"""
+    """WMTS service that serves the project layers as tiles."""
 
     grids: Optional[list[gws.lib.grid.Config]]
-    """Tile matrix grids, one per CRS. A supported CRS without a grid uses the default grid. (added in 8.5)"""
+    """Tile matrix grids, one per CRS. (added in 8.5)"""
 
 
 _DEFAULT_TEMPLATES = [

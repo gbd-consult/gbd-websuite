@@ -5,7 +5,7 @@ class Config(gws.Config):
     """Configuration for the model value."""
 
     isDefault: bool = False
-    """If True, this value is the default for the model."""
+    """The value is used only when no other value is provided."""
     forRead: bool = True
     """The value is applied when reading an object."""
     forCreate: bool = True

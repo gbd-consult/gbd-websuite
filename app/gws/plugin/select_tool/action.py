@@ -11,12 +11,12 @@ import gws.lib.uom
 
 @gws.ext.config.action('select')
 class Config(gws.base.action.Config):
-    """Select action configuration."""
+    """Action for selecting features on the map."""
 
     storage: Optional[gws.base.storage.Config]
-    """Storage configuration."""
+    """Storage for saving and loading selections."""
     tolerance: Optional[gws.UomValueStr]
-    """Click tolerance."""
+    """Click tolerance for feature selection."""
 
 
 @gws.ext.props.action('select')

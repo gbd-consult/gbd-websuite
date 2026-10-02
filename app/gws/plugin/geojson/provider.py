@@ -9,10 +9,10 @@ import gws.lib.jsonx
 
 
 class Config(gws.Config):
-    """Configuration for GeoJSON provider."""
+    """Access to a GeoJSON file."""
 
     path: gws.FilePath
-    """path to a GeoJSON file"""
+    """Path to a GeoJSON file."""
 
 
 class Object(gws.Node):

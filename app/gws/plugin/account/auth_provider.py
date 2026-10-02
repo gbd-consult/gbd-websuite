@@ -10,7 +10,7 @@ from . import core, helper
 
 @gws.ext.config.authProvider('account')
 class Config(gws.base.auth.provider.Config):
-    """Account-based authorization provider."""
+    """Authentication against the accounts table of the account helper."""
     pass
 
 

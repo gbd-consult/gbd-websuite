@@ -19,33 +19,33 @@ import gws.lib.otp
 
 
 class OtpConfig:
-    """OTP generation options."""
+    """Options for one-time password generation."""
 
     start: Optional[int]
-    """Start time for TOTP."""
+    """Start time for TOTP counting, as a Unix timestamp."""
     step: Optional[int]
-    """Step time for TOTP."""
+    """TOTP time step in seconds."""
     length: Optional[int]
-    """Length of the OTP code."""
+    """Number of digits in the code."""
     tolerance: Optional[int]
-    """Tolerance window for TOTP verification."""
+    """Accepted time steps before and after the current one."""
     algo: Optional[str]
-    """Hash algorithm for OTP generation."""
+    """Hash algorithm for code generation."""
 
 
 class Config(gws.Config):
     """Multi-factor authorization configuration."""
 
     message: str = ''
-    """Message to display in the client."""
+    """Message shown to the user during the MFA step."""
     lifeTime: Optional[gws.Duration] = '120'
-    """How long to wait for the MFA to complete."""
+    """Time allowed to complete the MFA step."""
     maxVerifyAttempts: int = 3
-    """Max verify attempts."""
+    """Code entries allowed before the MFA step fails."""
     maxRestarts: int = 0
-    """Max code regeneration attempts."""
+    """How often a new code can be requested."""
     otp: Optional[OtpConfig]
-    """OTP generation options"""
+    """OTP generation options."""
 
 
 class Object(gws.AuthMultiFactorAdapter):

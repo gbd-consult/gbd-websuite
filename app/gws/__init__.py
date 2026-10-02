@@ -412,7 +412,7 @@ A list of tuples ``(ACL bit, role-name)`` where ``ACL bit`` is ``1`` if the acce
 """
 
 AclStr: TypeAlias = str
-"""A string of comma-separated pairs ``allow <role>`` or ``deny <role>``."""
+"""Comma-separated rules ``allow <role>`` or ``deny <role>``."""
 
 
 class Access(Enum):
@@ -429,20 +429,20 @@ class Access(Enum):
 
 
 class PermissionsConfig(Config):
-    """Permissions configuration."""
+    """Access rules per operation."""
 
     all: Optional[AclStr]
-    """All permissions."""
+    """Rules for read, write, create and delete at once."""
     read: Optional[AclStr]
-    """Permission to read the object."""
+    """Rules for reading or using the object."""
     write: Optional[AclStr]
-    """Permission to change the object."""
+    """Rules for changing existing objects."""
     create: Optional[AclStr]
-    """Permission to create new objects."""
+    """Rules for creating new objects."""
     delete: Optional[AclStr]
-    """Permission to delete objects."""
+    """Rules for deleting objects."""
     edit: Optional[AclStr]
-    """A combination of write, create and delete."""
+    """Rules for write, create and delete at once."""
 
 
 class ConfigWithAccess(Config):
@@ -451,7 +451,7 @@ class ConfigWithAccess(Config):
     access: Optional[AclStr]
     """Permission to read or use the object."""
     permissions: Optional[PermissionsConfig]
-    """Access permissions."""
+    """Access rules per operation."""
 ################################################################################
 
 
@@ -1096,7 +1096,7 @@ class MapServerLayerOptions(Data):
 
 
 MimeType: TypeAlias = str
-"""A mime type or an alias."""
+"""A MIME type or a file extension."""
 ################################################################################
 
 
@@ -1171,13 +1171,13 @@ UomSize: TypeAlias = tuple[float, float, Uom]
 """A Size with a unit."""
 
 UomSizeStr: TypeAlias = list[str]
-"""A Size with a unit like ``["1mm", "2mm"]``."""
+"""A size with a unit like ``["1mm", "2mm"]``."""
 
 UomExtent: TypeAlias = tuple[float, float, float, float, Uom]
 """Extent with a unit."""
 
 UomExtentStr: TypeAlias = list[str]
-"""Extent with a unit like ``["1mm", "2mm", "3mm", "4mm"]``."""
+"""An extent with a unit like ``["1mm", "2mm", "3mm", "4mm"]``."""
 ################################################################################
 
 
@@ -1376,7 +1376,7 @@ class Image:
 
 
 LocaleUid: TypeAlias = str
-"""Locale uid like `de_DE`."""
+"""Locale UID like ``de_DE``."""
 
 
 class Locale(Data):
@@ -2895,7 +2895,7 @@ class AuthManager(Node):
         """Authenticate a user."""
 
     def create_transient_session(self, method: 'AuthMethod', user: 'User', data: Optional[dict] = None) -> 'AuthSession':
-        """Create a Session which only lives for the duration of the request. (added in 8.4)
+        """Create a Session which only lives for the duration of the request.
 
         Args:
             method: Auth Method that creates the Session.
@@ -3194,25 +3194,25 @@ class AuthSessionManager(Node):
 
 
 class LayerDisplayMode(Enum):
-    """Layer display mode."""
+    """How a layer is rendered."""
 
     box = 'box'
-    """Display a layer as one big image (WMS-alike)."""
+    """Render the map view as a single image."""
     tile = 'tile'
-    """Display a layer in a tile grid."""
+    """Render the layer as tiles of a grid."""
     client = 'client'
-    """Draw a layer in the client."""
+    """Let the client render the layer from its source."""
 
 
 class FeatureLoadingStrategy(Enum):
-    """Loading strategy for features."""
+    """When the client loads a layer's features."""
 
     all = 'all'
-    """Load all features."""
+    """Load all features once, on first display."""
     bbox = 'bbox'
-    """Load only features in the current map extent."""
+    """Reload features for the current map extent whenever it changes."""
     lazy = 'lazy'
-    """Load features on demand."""
+    """Load features only when a search text is entered."""
 
 
 class LayerOwsBinding(Node):
@@ -4013,7 +4013,7 @@ class OwsAuthorization(Data):
 
 
 class OwsVerb(Enum):
-    """OWS verb."""
+    """OWS request type."""
 
     CreateStoredQuery = 'CreateStoredQuery'
     DescribeCoverage = 'DescribeCoverage'
@@ -4393,23 +4393,23 @@ class TextSearchType(Enum):
 
 
 class TextSearchOptions(Data):
-    """Text search options."""
+    """How keywords are matched against a text field."""
 
     type: TextSearchType
     """Type of the search."""
     minLength: int = 0
-    """Minimal pattern length."""
+    """Min. keyword length."""
     caseSensitive: bool = False
-    """Use the case sensitive search."""
+    """Use case-sensitive search."""
 
 
 class SortOptions(Data):
-    """Sort options."""
+    """Sort order for features."""
 
     fieldName: str
     """Field name to sort by."""
     reverse: bool = False
-    """Sort in reverse order."""
+    """Sort in descending order."""
 
 
 class SearchManager(Node):
@@ -4521,12 +4521,12 @@ class TemplateRenderInput(Data):
 
 
 class TemplateQualityLevel(Config):
-    """Template quality level."""
+    """Print quality level users can choose."""
 
     name: str
-    """Quality level name."""
+    """Quality level name shown to users."""
     dpi: int
-    """DPI for the quality level."""
+    """Print resolution in dots per inch."""
 
 
 class Template(Node):
@@ -4922,8 +4922,12 @@ class ExportArgs(Data):
 
 
 class ExportTarget(Enum):
+    """Export target."""
+
     file = 'file'
+    """Save the export result to a file on the server."""
     download = 'download'
+    """Return the export result for download."""
 
 
 class ExportResult(Data):
@@ -4938,7 +4942,7 @@ class ExportResult(Data):
 
 
 class FeatureExportStrategy(Enum):
-    """Export strategy for features."""
+    """How exported features are obtained."""
 
     load = 'load'
     """Load features by ids from the source model."""
@@ -5014,18 +5018,18 @@ class MiddlewareManager(Node):
 
 
 class TemplateOptions(Data):
-    """Options for default templates."""
+    """Options for the built-in application and project home pages."""
 
     withLogin: bool = True
-    """Show login form in the application home page."""
+    """Show the login form on the home page."""
     footerText: Optional[str]
-    """Footer text for the application home page."""
+    """HTML text for the home page footer."""
     withGws: bool = True
-    """Show GWS logo in the application home page."""
+    """Show the GWS logo in the home page footer."""
     homeResources: Optional[list[str]]
-    """List of additional resource URLs for the application home ('style.css' by default)."""
+    """Extra resource URLs for the home page."""
     projectResources: Optional[list[str]]
-    """List of additional resource URLs for the project page ('style.css' by default)."""
+    """Extra resource URLs for the project page."""
 
 
 class Application(Node):

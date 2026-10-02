@@ -21,32 +21,32 @@ from . import caps as caps_module, project
 
 
 class Config(gws.Config):
-    """QGIS provider configuration."""
+    """QGIS project, served by QGIS Server."""
     
     path: Optional[gws.FilePath]
-    """Qgis project file."""
+    """QGIS project file."""
     dbUid: Optional[str]
-    """Qgis project database."""
+    """Database provider UID for projects stored in a database."""
     schema: Optional[str]
-    """Qgis project schema."""
+    """Database schema for projects stored in a database."""
     projectName: Optional[str]
-    """Qgis project name."""
+    """Project name for projects stored in a database."""
     defaultLegendOptions: Optional[dict]
-    """Default options for qgis legends.."""
+    """Legend options applied to all layers of this project."""
     directRender: Optional[list[str]]
-    """Qgis data providers that should be rendered directly."""
+    """Layer sources to load directly, not through QGIS Server."""
     directSearch: Optional[list[str]]
-    """Qgis data providers that should be searched directly."""
+    """Layer sources to search directly, not through QGIS Server."""
     forceCrs: Optional[gws.CrsName]
-    """Use this CRS for requests."""
+    """CRS for QGIS Server requests."""
     extentBuffer: Optional[int]
-    """Extent buffer for automatically computed bounds.."""
+    """Buffer around the extent computed from layer data."""
     useCanvasExtent: Optional[bool]
-    """Use canvas extent as project extent.."""
+    """Use the map canvas extent when the project has no WMS extent."""
     withWatch: Optional[bool]
-    """Enable monitoring of the project for changes."""
+    """Reload the application when the QGIS project changes."""
     watchFrequency: Optional[gws.Duration]
-    """Frequency for checking project changes."""
+    """Interval between checks for project changes."""
 
 
 class Object(gws.OwsServiceProvider):

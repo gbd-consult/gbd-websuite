@@ -15,10 +15,10 @@ import gws.lib.otp
 
 @gws.ext.config.authMultiFactorAdapter('email')
 class Config(gws.base.auth.mfa.Config):
-    """Email multi-factor authenticator configuration."""
+    """Multi-factor authentication with a one-time code sent by email."""
 
     templates: Optional[list[gws.ext.config.template]]
-    """Email templates."""
+    """Templates for the email subject and body."""
 
 
 @gws.ext.object.authMultiFactorAdapter('email')

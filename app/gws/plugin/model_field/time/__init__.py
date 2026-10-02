@@ -12,7 +12,7 @@ import gws.lib.datetimex
 
 @gws.ext.config.modelField('time')
 class Config(gws.base.model.scalar_field.Config):
-    """Configuration for the time field."""
+    """Field for time values."""
 
     pass
 

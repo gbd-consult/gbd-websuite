@@ -13,10 +13,10 @@ from . import provider
 
 @gws.ext.config.layer('geojson')
 class Config(gws.base.layer.Config):
-    """GeoJson layer."""
+    """Vector layer with features from a GeoJSON file."""
 
     provider: provider.Config
-    """Geojson provider."""
+    """GeoJSON file with the layer features."""
 
 
 @gws.ext.object.layer('geojson')

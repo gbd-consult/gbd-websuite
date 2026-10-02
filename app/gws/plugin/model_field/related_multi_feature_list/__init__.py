@@ -31,17 +31,17 @@ import gws.lib.sa as sa
 
 
 class RelatedItem(gws.Data):
-    """Configuration for a related model and key."""
+    """Related model and its key column."""
 
     toModel: str
-    """Related model."""
+    """UID of the related model."""
     toColumn: str
-    """Key column in the related model."""
+    """Foreign key column in the related model."""
 
 
 @gws.ext.config.modelField('relatedMultiFeatureList')
 class Config(related_field.Config):
-    """Configuration for related multi feature list field."""
+    """Field listing related features from several models."""
 
     fromColumn: str = ''
     """Key column in this table, primary key by default."""

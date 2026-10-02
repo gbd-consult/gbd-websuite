@@ -28,13 +28,13 @@ import gws.lib.datetimex
 
 @gws.ext.config.modelValue('expression')
 class Config(gws.base.model.value.Config):
-    """Expression-based value."""
+    """Value computed by a Python expression."""
 
     expression: str
     """Python expression to evaluate."""
 
     imports: Optional[list[str]]
-    """List of additional modules to import."""
+    """Additional Python modules available to the expression."""
 
 
 @gws.ext.object.modelValue('expression')

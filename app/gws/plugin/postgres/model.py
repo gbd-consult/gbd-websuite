@@ -9,7 +9,7 @@ from . import provider
 
 @gws.ext.config.model('postgres')
 class Config(gws.base.database.model.Config):
-    """Postgres database model configuration."""
+    """Data model for a PostgreSQL table."""
 
     pass
 

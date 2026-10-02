@@ -4,29 +4,29 @@ import gws
 
 
 class ElementConfig(gws.ConfigWithAccess):
-    """GWS client UI element configuration"""
+    """Client UI element."""
 
     tag: str
     """Element tag."""
     before: str = ''
-    """Insert before this tag."""
+    """Tag of the element to insert this one before."""
     after: str = ''
-    """Insert after this tag."""
+    """Tag of the element to insert this one after."""
     options: Optional[dict]
-    """Element options."""
+    """Element-specific options passed to the client."""
 
 
 class Config(gws.ConfigWithAccess):
-    """GWS client configuration"""
+    """UI elements and options of the browser client."""
 
     options: Optional[dict]
-    """Client options."""
+    """Client options, merged with the application client options."""
     elements: Optional[list[ElementConfig]]
-    """Client UI elements."""
+    """Client UI elements, replacing the inherited application list."""
     addElements: Optional[list[ElementConfig]]
-    """Add elements to the parent element list."""
+    """Elements to add to the inherited application element list."""
     removeElements: Optional[list[ElementConfig]]
-    """Remove elements from the parent element list."""
+    """Elements to remove from the inherited application element list."""
 
 
 class ElementProps(gws.Data):

@@ -64,7 +64,7 @@ _DEFAULT_METADATA = dict(
 
 
 class Profile(gws.Enum):
-    """Metadata profile for CSW service."""
+    """Metadata profile for the CSW service."""
 
     ISO = 'ISO'
     """ISO 19115 metadata profile."""
@@ -74,7 +74,7 @@ class Profile(gws.Enum):
 
 @gws.ext.config.owsService('csw')
 class Config(server.service.Config):
-    """CSW Service configuration"""
+    """Catalogue service that publishes metadata records."""
 
     profile: Profile = Profile.ISO
     """Metadata profile."""

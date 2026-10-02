@@ -6,10 +6,10 @@ import gws.base.model.widget
 
 @gws.ext.config.modelWidget('toggle')
 class Config(gws.base.model.widget.Config):
-    """Toggle widget configuration."""
+    """Checkbox or radio button for boolean values."""
 
     kind: str = 'checkbox'
-    """Toggle kind: checkbox, radio"""
+    """Toggle kind: checkbox or radio."""
 
 
 @gws.ext.props.modelWidget('toggle')

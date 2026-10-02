@@ -6,12 +6,12 @@ import gws.base.model.widget
 
 @gws.ext.config.modelWidget('integer')
 class Config(gws.base.model.widget.Config):
-    """Integer input widget configuration."""
+    """Input for whole numbers."""
 
     step: int = 1
-    """Numeric step."""
+    """Increment of the up/down buttons."""
     placeholder: str = ''
-    """Input box placeholder."""
+    """Hint text shown in the empty input."""
 
 
 @gws.ext.props.modelWidget('integer')

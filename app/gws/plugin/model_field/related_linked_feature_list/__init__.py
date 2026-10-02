@@ -19,20 +19,20 @@ import gws.lib.sa as sa
 
 @gws.ext.config.modelField('relatedLinkedFeatureList')
 class Config(related_field.Config):
-    """Configuration for related linked feature list field."""
+    """Field listing features of another model, related via a link table."""
 
     fromColumn: str = ''
     """Key column in this table, primary key by default."""
     toModel: str
-    """Related model."""
+    """UID of the related model."""
     toColumn: str = ''
     """Key column in the related table, primary key by default."""
     linkTableName: str
     """Link table name."""
     linkFromColumn: str
-    """Link key column for this model."""
+    """Column in the link table that refers to this model."""
     linkToColumn: str
-    """Link key column for the related model."""
+    """Column in the link table that refers to the related model."""
 
 
 @gws.ext.props.modelField('relatedLinkedFeatureList')

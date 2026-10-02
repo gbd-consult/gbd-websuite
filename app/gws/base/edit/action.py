@@ -10,7 +10,7 @@ from . import api, helper
 
 @gws.ext.config.action('edit')
 class Config(gws.base.action.Config):
-    """Edit action"""
+    """Feature editing in the client."""
     pass
 
 

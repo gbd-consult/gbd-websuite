@@ -18,7 +18,7 @@ class OwsAuthorization(Data):
 
 
 class OwsVerb(Enum):
-    """OWS verb."""
+    """OWS request type."""
 
     CreateStoredQuery = 'CreateStoredQuery'
     DescribeCoverage = 'DescribeCoverage'

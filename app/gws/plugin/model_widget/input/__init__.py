@@ -6,10 +6,10 @@ import gws.base.model.widget
 
 @gws.ext.config.modelWidget('input')
 class Config(gws.base.model.widget.Config):
-    """Generic input widget configuration."""
+    """Single-line text input."""
 
     placeholder: str = ''
-    """Input box placeholder."""
+    """Hint text shown in the empty input."""
 
 
 @gws.ext.props.modelWidget('input')

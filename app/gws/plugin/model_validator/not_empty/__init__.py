@@ -6,7 +6,7 @@ import gws.base.model.validator
 
 @gws.ext.config.modelValidator('notEmpty')
 class Config(gws.base.model.validator.Config):
-    """Validator for non-empty values."""
+    """Checks that a value is not empty."""
 
     pass
 

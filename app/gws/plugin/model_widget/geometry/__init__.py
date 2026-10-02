@@ -6,12 +6,12 @@ import gws.base.model.widget
 
 @gws.ext.config.modelWidget('geometry')
 class Config(gws.base.model.widget.Config):
-    """Geometry widget configuration."""
+    """Buttons to draw or edit the feature geometry."""
 
     isInline: bool = False
     """Display the geometry widget in the form."""
     withText: bool = False
-    """Display the text geometry editor."""
+    """Show a button to edit the geometry as text."""
 
 
 @gws.ext.props.modelWidget('geometry')

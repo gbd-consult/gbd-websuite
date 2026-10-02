@@ -8,7 +8,7 @@ from . import core
 
 @gws.ext.config.model('default')
 class Config(core.Config):
-    """Configuration for the default model."""
+    """Default model configuration."""
 
     pass
 

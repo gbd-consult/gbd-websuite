@@ -12,45 +12,45 @@ from . import core
 
 
 class MfaConfig(gws.Config):
-    """Multi-factor authentication configuration."""
+    """Multi-factor authentication method offered to users."""
 
     mfaUid: str
     """UID of the multi-factor authentication adapter."""
     title: str
-    """Title of the multi-factor authentication method."""
+    """Title of the method shown to users."""
 
 
 @gws.ext.config.helper('account')
 class Config(gws.Config):
-    """Account helper."""
+    """Accounts table, onboarding and password settings, shared by account components."""
 
     adminModel: gws.ext.config.model
-    """Edit model for account administration."""
+    """Model of the accounts table for account administrators."""
     userModel: Optional[gws.ext.config.model]
-    """Edit model for end-users accounts."""
+    """Model for account data that users can edit themselves."""
     templates: list[gws.ext.config.template]
-    """Templates"""
+    """Templates for account emails."""
 
     usernameColumn: str = 'email'
-    """Column used as 'login'."""
+    """Column of the accounts table used as the login name."""
 
     passwordCreateSql: Optional[str]
     """SQL expression for computing password hashes."""
     passwordVerifySql: Optional[str]
-    """SQL expression for verifying password hashes."""
+    """SQL expression for checking a password against the stored hash."""
 
     tcLifeTime: gws.Duration = '3600'
-    """Life time for temporary codes."""
+    """Validity period of temporary codes."""
 
     mfa: Optional[list[MfaConfig]]
     """Multi-factor authentication methods the user can choose from."""
     mfaIssuer: str = ''
-    """Issuer name for Multi-factor key uris (qr codes)."""
+    """Issuer name for multi-factor key URIs (QR codes)."""
 
     onboardingUrl: str
-    """URL for email onboarding."""
+    """Onboarding page URL sent to new users."""
     onboardingCompletionUrl: str = ''
-    """URL to redirect after onboarding."""
+    """URL to redirect to after onboarding."""
 
 
 ##

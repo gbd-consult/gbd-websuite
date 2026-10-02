@@ -23,27 +23,27 @@ class SmtpConfig(gws.Config):
     """SMTP server configuration."""
 
     mode: SmtpMode = SmtpMode.ssl
-    """Connection mode."""
+    """Connection encryption mode."""
     host: str
-    """SMTP host name"""
+    """SMTP host name."""
     port: int = 0
     """SMTP port."""
     login: str = ''
-    """Login"""
+    """Login name for the SMTP server."""
     password: str = ''
-    """Password."""
+    """Password for the SMTP server."""
     timeout: gws.Duration = '30'
     """Connection timeout."""
 
 
 @gws.ext.config.helper('email')
 class Config(gws.Config):
-    """Mail helper settings"""
+    """Sending of emails via SMTP."""
 
     smtp: SmtpConfig
     """SMTP server configuration."""
     mailFrom: str = ''
-    """Default 'From' address."""
+    """Sender address for messages that do not set one."""
 
 
 class Message(gws.Data):

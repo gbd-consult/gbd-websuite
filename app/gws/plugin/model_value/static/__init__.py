@@ -9,7 +9,7 @@ import gws.base.model.value
 
 @gws.ext.config.modelValue('static')
 class Config(gws.base.model.value.Config):
-    """Static value configuration."""
+    """Fixed value."""
 
     value: Any
     """Static value to return."""

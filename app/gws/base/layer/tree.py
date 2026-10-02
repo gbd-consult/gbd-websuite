@@ -11,12 +11,12 @@ from . import core
 
 
 class FlattenConfig(gws.Config):
-    """Layer hierarchy flattening"""
+    """Turns source groups below a level into single layers."""
 
     level: int
-    """Flatten level."""
+    """Source hierarchy level from which groups become single layers."""
     useGroups: bool = False
-    """Use group names (true) or image layer names (false)."""
+    """Request a flattened group by its own name instead of its image layers."""
 
 
 class Config(gws.Config):
@@ -27,9 +27,9 @@ class Config(gws.Config):
     excludeLayers: Optional[gws.gis.source.LayerFilter]
     """Source layers to exclude."""
     flattenLayers: Optional[FlattenConfig]
-    """Flatten the layer hierarchy."""
+    """Collapse source groups below a level into single layers."""
     autoLayers: Optional[list[core.AutoLayersConfig]]
-    """Custom configurations for automatically created layers."""
+    """Extra configuration for generated layers that match a filter."""
 
 
 class _TreeConfigArgs(gws.Data):

@@ -12,10 +12,10 @@ import gws.base.template
 
 @gws.ext.config.template('py')
 class Config(gws.base.template.Config):
-    """Python template"""
+    """Template implemented as a Python module with a main function."""
 
     path: Optional[gws.FilePath]
-    """Path to a template file."""
+    """Python module file with the main function."""
 
 
 @gws.ext.props.template('py')

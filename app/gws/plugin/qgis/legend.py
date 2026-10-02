@@ -40,12 +40,12 @@ _DEFAULT_LEGEND_PARAMS = {
 
 @gws.ext.config.legend('qgis')
 class Config(gws.base.legend.Config):
-    """Qgis legend"""
+    """Legend for QGIS project layers, rendered by QGIS Server."""
 
     provider: Optional[provider.Config]
-    """Qgis provider."""
+    """QGIS project the legend is rendered from."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]
-    """Source layers to use."""
+    """Source layers to include in the legend."""
 
 
 @gws.ext.object.legend('qgis')

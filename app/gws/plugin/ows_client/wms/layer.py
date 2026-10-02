@@ -9,10 +9,10 @@ from . import provider
 
 @gws.ext.config.layer('wms')
 class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
-    """WMS tree layer configuration."""
+    """Layer group that mirrors the layer tree of a WMS service."""
 
     provider: provider.Config
-    """WMS provider"""
+    """WMS service the layers are loaded from."""
 
 
 @gws.ext.object.layer('wms')

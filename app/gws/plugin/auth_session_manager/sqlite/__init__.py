@@ -13,10 +13,10 @@ _TOUCH_INTERVAL = 60
 
 @gws.ext.config.authSessionManager('sqlite')
 class Config(gws.base.auth.session_manager.Config):
-    """Configuration for sqlite sessions"""
+    """Session storage in an SQLite database."""
 
     path: Optional[str]
-    """Session storage path."""
+    """Path to the SQLite session database file."""
 
 
 @gws.ext.object.authSessionManager('sqlite')

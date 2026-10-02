@@ -15,7 +15,7 @@ LINK_PARAM_NAME = 's'
 
 @gws.ext.config.action('mapshare')
 class Config(gws.base.action.Config):
-    """Map share action configuration."""
+    """Shareable links and QR codes for a map position."""
 
     pass
 

@@ -118,23 +118,23 @@ class TextSearchType(Enum):
 
 
 class TextSearchOptions(Data):
-    """Text search options."""
+    """How keywords are matched against a text field."""
 
     type: TextSearchType
     """Type of the search."""
     minLength: int = 0
-    """Minimal pattern length."""
+    """Min. keyword length."""
     caseSensitive: bool = False
-    """Use the case sensitive search."""
+    """Use case-sensitive search."""
 
 
 class SortOptions(Data):
-    """Sort options."""
+    """Sort order for features."""
 
     fieldName: str
     """Field name to sort by."""
     reverse: bool = False
-    """Sort in reverse order."""
+    """Sort in descending order."""
 
 
 class SearchManager(Node):

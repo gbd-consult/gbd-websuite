@@ -14,14 +14,14 @@ from . import grabber, provider
 
 @gws.ext.config.layer('mbtiles')
 class Config(gws.base.layer.Config):
-    """MBTiles layer"""
+    """Raster layer from an MBTiles file."""
 
     provider: provider.Config
-    """Provider configuration."""
+    """MBTiles file for the layer."""
     processing: Optional[list[str]]
-    """Processing directives."""
+    """MapServer PROCESSING directives for the raster data."""
     transparentColor: Optional[str]
-    """Color to treat as transparent in the layer."""
+    """Color rendered as transparent."""
 
 
 @gws.ext.object.layer('mbtiles')

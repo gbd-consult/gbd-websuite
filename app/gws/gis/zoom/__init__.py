@@ -21,18 +21,18 @@ MAX_SCALE = 500_000_000
 
 
 class Config(gws.Config):
-    """Zoom levels and resolutions"""
+    """Zoom levels of a map or layer, given as scales or levels."""
 
     scales: Optional[list[float]]
-    """Allowed scales."""
+    """Scale denominators of the zoom levels."""
     initScale: Optional[float]
-    """Initial scale, snapped to the nearest resolution."""
+    """Scale to open the map at, snapped to the nearest zoom level."""
     minScale: Optional[float]
-    """Minimal scale, snapped to the nearest resolution."""
+    """Smallest scale denominator, snapped to the nearest zoom level."""
     maxScale: Optional[float]
-    """Maximal scale, snapped to the nearest resolution."""
+    """Largest scale denominator, snapped to the nearest zoom level."""
     initLevel: Optional[int]
-    """Initial zoom level. (added in 8.5)"""
+    """Zoom level to open the map at. (added in 8.5)"""
     minLevel: Optional[int]
     """Coarsest zoom level. (added in 8.5)"""
     maxLevel: Optional[int]
@@ -42,9 +42,9 @@ class Config(gws.Config):
     initResolution: Optional[float]
     """Initial resolution. (deprecated in 8.5)"""
     minResolution: Optional[float]
-    """Minimal resolution. (deprecated in 8.5)"""
+    """Min. resolution. (deprecated in 8.5)"""
     maxResolution: Optional[float]
-    """Maximal resolution. (deprecated in 8.5)"""
+    """Max. resolution. (deprecated in 8.5)"""
 
 
 _DEPRECATED_OPTIONS = {

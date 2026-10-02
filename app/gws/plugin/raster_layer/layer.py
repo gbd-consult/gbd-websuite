@@ -14,12 +14,12 @@ from . import grabber, provider
 
 @gws.ext.config.layer('raster')
 class Config(gws.base.layer.Config):
-    """Raster layer"""
+    """Layer that shows georeferenced image files, rendered with MapServer."""
 
     provider: provider.Config
-    """Raster provider"""
+    """Image files the layer is built from."""
     processing: Optional[list[str]]
-    """Processing directives."""
+    """MapServer processing directives."""
     transparentColor: Optional[str]
     """Color to treat as transparent in the layer."""
     sldPath: Optional[gws.FilePath]

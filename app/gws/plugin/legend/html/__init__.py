@@ -8,7 +8,7 @@ import gws.lib.mime
 
 @gws.ext.config.legend('html')
 class Config(gws.base.legend.Config):
-    """HTML-based legend."""
+    """Legend rendered from an HTML template."""
 
     template: gws.ext.config.template
     """Template for the HTML legend."""

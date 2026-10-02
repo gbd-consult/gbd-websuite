@@ -11,7 +11,7 @@ from . import core, tree
 
 @gws.ext.config.layer('group')
 class Config(core.Config):
-    """Group layer"""
+    """Layer that groups other layers."""
 
     layers: list[gws.ext.config.layer]
     """Layers in this group."""

@@ -12,7 +12,7 @@ import gws.lib.sa as sa
 
 @gws.ext.config.modelField('file')
 class Config(gws.base.model.field.Config):
-    """Configuration for the file field."""
+    """Field for files stored in the database or the filesystem."""
 
     contentColumn: str = ''
     """Column name for the file content, if stored in the database."""

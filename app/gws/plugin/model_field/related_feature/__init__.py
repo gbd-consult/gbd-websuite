@@ -19,12 +19,12 @@ import gws.lib.sa as sa
 
 @gws.ext.config.modelField('relatedFeature')
 class Config(related_field.Config):
-    """Configuration for related feature field."""
+    """Field referring to a feature in another model."""
 
     fromColumn: str
     """Foreign key column in this table."""
     toModel: str
-    """Related model."""
+    """UID of the related model."""
     toColumn: str = ''
     """Key column in the related model, primary key by default."""
 

@@ -7,10 +7,10 @@ import gws.plugin.model_widget.feature_list as feature_list
 
 @gws.ext.config.modelWidget('fileList')
 class Config(feature_list.Config):
-    """File list widget configuration."""
+    """List of related files."""
 
     toFileField: str
-    """Field to link files to."""
+    """File field of the related model that holds the file."""
 
 
 @gws.ext.props.modelWidget('fileList')

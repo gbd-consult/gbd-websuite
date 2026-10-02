@@ -12,7 +12,7 @@ class Config(gws.Config):
     lifeTime: gws.Duration = '20m'
     """Session life time, counted from the last request."""
     maxLifeTime: Optional[gws.Duration]
-    """Absolute session life time. (added in 8.4)"""
+    """Absolute session life time, counted from the login."""
 
 
 class Object(gws.AuthSessionManager):

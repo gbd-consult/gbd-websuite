@@ -15,10 +15,10 @@ import gws.base.model.value
 
 @gws.ext.config.modelValue('currentUser')
 class Config(gws.base.model.value.Config):
-    """Current user value configuration."""
+    """Value derived from the current user."""
 
     format: str = ''
-    """Format string."""
+    """Format string for the user value."""
 
 
 @gws.ext.object.modelValue('currentUser')

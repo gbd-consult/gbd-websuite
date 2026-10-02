@@ -68,12 +68,12 @@ import gws.lib.vendor.jump
 
 @gws.ext.config.template('html')
 class Config(gws.base.template.Config):
-    """HTML template configuration."""
+    """Jump template that renders HTML, PDF or image output."""
 
     path: Optional[gws.FilePath]
-    """Path to a template file."""
+    """Template file."""
     text: str = ''
-    """Template content."""
+    """Template source."""
 
 
 @gws.ext.props.template('html')

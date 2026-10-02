@@ -4,17 +4,16 @@ Der GBD WebSuite Server ist kein einzelner Prozess, sondern ein Verbund mehrerer
 
 - **nginx** – der Webserver, der Anfragen entgegennimmt und Antworten ausliefert.
 - **Applikationsserver (uWSGI)** – führt die eigentliche Logik der WebSuite aus und bearbeitet die Anfragen.
-- **Mapproxy** – bindet externe Kartenquellen an, projiziert um und speichert Kacheln zwischen.
 - **Spooler** – erledigt langlaufende Aufgaben wie den Druck im Hintergrund.
 - **Monitor** – überwacht die Konfigurations- und Datendateien und veranlasst bei Änderungen ein automatisches Neuladen.
 
 Einzelne Prozesse lassen sich deaktivieren, wenn sie nicht benötigt werden.
 
-Sie müssen auch nicht alle auf derselben Maschine laufen. Für Mapproxy und den QGIS-Server geben Sie in der Konfiguration `host` und `port` an; damit lassen sich diese Dienste auf eigene Rechner auslagern, etwa um das Rendern von der Auslieferung zu trennen. Voreingestellt ist der lokale Betrieb.
+Sie müssen auch nicht alle auf derselben Maschine laufen. Für den QGIS-Server geben Sie in der Konfiguration `host` und `port` an; damit lässt er sich auf einen eigenen Rechner auslagern, etwa um das Rendern von der Auslieferung zu trennen. Voreingestellt ist der lokale Betrieb.
 
 ## Dimensionierung
 
-Unter Last bestimmen einige Angaben je Prozess das Verhalten des Servers. Jeder Prozess (`web`, `spool`, `mapproxy`) hat eine Anzahl von Arbeitsprozessen `workers` (Vorgabe 4). Für den Webserver begrenzen `timeout` (Vorgabe 60 s) und `maxRequestLength` (in MB) die Dauer und Größe einer Anfrage; für den Spooler bestimmen `jobFrequency`, wie oft nach neuen Aufgaben gesehen wird, und `timeout` die maximale Laufzeit einer Aufgabe.
+Unter Last bestimmen einige Angaben je Prozess das Verhalten des Servers. Jeder Prozess (`web`, `spool`) hat eine Anzahl von Arbeitsprozessen `workers` (Vorgabe 4). Für den Webserver begrenzen `timeout` (Vorgabe 60 s) und `maxRequestLength` (in MB) die Dauer und Größe einer Anfrage; für den Spooler bestimmen `jobFrequency`, wie oft nach neuen Aufgaben gesehen wird, und `timeout` die maximale Laufzeit einer Aufgabe.
 
 ## Automatisches Neuladen
 
@@ -33,7 +32,7 @@ Die Konfiguration der eingebetteten Dienste entsteht bei jedem Konfigurationslau
 | Subject | erzeugt |
 |---|---|
 | `server.nginx_config` | `nginx.conf` für den vorgeschalteten Webserver |
-| `server.uwsgi_config` | die Konfiguration je uWSGI-Prozess – `uwsgi_web.ini`, `uwsgi_mapproxy.ini`, `uwsgi_spool.ini` |
+| `server.uwsgi_config` | die Konfiguration je uWSGI-Prozess – `uwsgi_web.ini`, `uwsgi_spool.ini` |
 | `server.rsyslog_config` | `syslog.conf` für den eingebetteten `rsyslogd`, nur im Container |
 | `server.start_script` | das Startskript des Servers |
 

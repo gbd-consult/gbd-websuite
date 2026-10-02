@@ -7,7 +7,7 @@ import gws.lib.gdalx
 
 @gws.ext.config.exporter('shapefile')
 class Config(gws.base.exporter.Config):
-    """Shapefile Exporter configuration."""
+    """Export of features to ESRI Shapefile."""
 
     pass
 

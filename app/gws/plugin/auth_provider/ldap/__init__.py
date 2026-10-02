@@ -34,47 +34,47 @@ import gws.lib.net
 
 
 class UserSpec(gws.Data):
-    """Map LDAP filters to authorization roles"""
+    """Rule that assigns GWS roles to LDAP accounts."""
 
     roles: list[str]
-    """GWS role names"""
+    """GWS roles assigned to matching accounts."""
     matches: Optional[str]
-    """LDAP filter the account has to match"""
+    """LDAP filter the account has to match."""
     memberOf: Optional[str]
-    """LDAP group the account has to be a member of"""
+    """LDAP filter for groups the account has to be a member of."""
 
 
 class SSLConfig(gws.Config):
-    """LDAP SSL configuration."""
+    """SSL settings for the LDAP connection."""
 
     ca: Optional[gws.FilePath]
-    """CA certificate location."""
+    """Path to the CA certificate file."""
     crt: Optional[gws.FilePath]
-    """Client certificate location."""
+    """Path to the client certificate file."""
     key: Optional[gws.FilePath]
-    """Key location."""
+    """Path to the client key file."""
 
 
 @gws.ext.config.authProvider('ldap')
 class Config(gws.base.auth.provider.Config):
-    """LDAP authorization provider"""
+    """Authentication against an LDAP or Active Directory server."""
 
     activeDirectory: bool = True
-    """True if the LDAP server is ActiveDirectory."""
+    """The LDAP server is an Active Directory."""
     bindDN: Optional[str]
-    """Bind DN."""
+    """DN to bind as for user lookups, anonymous bind if empty."""
     bindPassword: Optional[str]
-    """Bind password."""
+    """Password for the bind DN."""
     displayNameFormat: Optional[gws.FormatStr]
-    """Format for user's display name."""
+    """Format string for the user's display name."""
     users: list[UserSpec]
-    """Map LDAP filters to gws roles."""
+    """Rules that assign GWS roles to LDAP accounts."""
     timeout: gws.Duration = '30'
-    """LDAP server timeout."""
+    """Network timeout for LDAP connections."""
     url: str
-    """LDAP server url."""
+    """LDAP server URL."""
     ssl: Optional[SSLConfig]
-    """LDAP SSL configuration."""
+    """SSL settings, enables ldaps."""
 
 
 @gws.ext.object.authProvider('ldap')

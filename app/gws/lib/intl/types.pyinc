@@ -1,5 +1,5 @@
 LocaleUid: TypeAlias = str
-"""Locale uid like `de_DE`."""
+"""Locale UID like ``de_DE``."""
 
 
 class Locale(Data):

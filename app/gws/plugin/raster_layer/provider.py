@@ -11,14 +11,14 @@ import gws.lib.gdalx
 
 
 class Config(gws.Config):
-    """Raster data provider."""
+    """Set of georeferenced image files for a raster layer."""
 
     paths: Optional[list[gws.FilePath]]
-    """List of image file paths."""
+    """Image files to show."""
     pathPattern: Optional[str]
-    """Glob pattern for image file paths."""
+    """Glob pattern for image files."""
     crs: Optional[gws.CrsName]
-    """Default CRS for the images."""
+    """CRS for images that have none."""
 
 
 class ImageEntry(gws.Data):

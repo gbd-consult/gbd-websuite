@@ -100,75 +100,75 @@ class IM_Theme(Enum):
     """INSPIRE data themes."""
 
     ad = 'ad'
-    """Adressen."""
+    """Addresses."""
     au = 'au'
-    """Verwaltungseinheiten."""
+    """Administrative units."""
     rs = 'rs'
-    """Koordinatenreferenzsysteme."""
+    """Coordinate reference systems."""
     gg = 'gg'
-    """Geografische Gittersysteme."""
+    """Geographical grid systems."""
     cp = 'cp'
-    """Flurstücke/Grundstücke (Katasterparzellen)."""
+    """Cadastral parcels."""
     gn = 'gn'
-    """Geografische Bezeichnungen."""
+    """Geographical names."""
     hy = 'hy'
-    """Gewässernetz."""
+    """Hydrography."""
     ps = 'ps'
-    """Schutzgebiete."""
+    """Protected sites."""
     tn = 'tn'
-    """Verkehrsnetze."""
+    """Transport networks."""
     el = 'el'
-    """Höhe."""
+    """Elevation."""
     ge = 'ge'
-    """Geologie."""
+    """Geology."""
     lc = 'lc'
-    """Bodenbedeckung."""
+    """Land cover."""
     oi = 'oi'
-    """Orthofotografie."""
+    """Orthoimagery."""
     af = 'af'
-    """Landwirtschaftliche Anlagen und Aquakulturanlagen."""
+    """Agricultural and aquaculture facilities."""
     am = 'am'
-    """Bewirtschaftungsgebiete/Schutzgebiete/geregelte Gebiete und Berichterstattungseinheiten."""
+    """Area management/restriction/regulation zones and reporting units."""
     ac = 'ac'
-    """Atmosphärische Bedingungen."""
+    """Atmospheric conditions."""
     br = 'br'
-    """Biogeografische Regionen."""
+    """Bio-geographical regions."""
     bu = 'bu'
-    """Gebäude."""
+    """Buildings."""
     er = 'er'
-    """Energiequellen."""
+    """Energy resources."""
     ef = 'ef'
-    """Umweltüberwachung."""
+    """Environmental monitoring facilities."""
     hb = 'hb'
-    """Lebensräume und Biotope."""
+    """Habitats and biotopes."""
     hh = 'hh'
-    """Gesundheit und Sicherheit."""
+    """Human health and safety."""
     lu = 'lu'
-    """Bodennutzung."""
+    """Land use."""
     mr = 'mr'
-    """Mineralische Bodenschätze."""
+    """Mineral resources."""
     nz = 'nz'
-    """Gebiete mit naturbedingten Risiken."""
+    """Natural risk zones."""
     of = 'of'
-    """Ozeanografisch-geografische Kennwerte."""
+    """Oceanographic geographical features."""
     pd = 'pd'
-    """Verteilung der Bevölkerung — Demografie."""
+    """Population distribution — demography."""
     pf = 'pf'
-    """Produktions- und Industrieanlagen."""
+    """Production and industrial facilities."""
     sr = 'sr'
-    """Meeresregionen."""
+    """Sea regions."""
     so = 'so'
-    """Boden."""
+    """Soil."""
     sd = 'sd'
-    """Verteilung der Arten."""
+    """Species distribution."""
     su = 'su'
-    """Statistische Einheiten."""
+    """Statistical units."""
     us = 'us'
-    """Versorgungswirtschaft und staatliche Dienste."""
+    """Utility and governmental services."""
     mf = 'mf'
-    """Meteorologisch-geografische Kennwerte."""
+    """Meteorological geographical features."""
     ac_mf = 'ac_mf'
-    """Atmospheric Conditions and meteorological geographical features."""
+    """Atmospheric conditions and meteorological geographical features."""
 
 
 # fmt: off

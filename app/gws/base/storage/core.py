@@ -46,12 +46,12 @@ class Response(gws.Response):
 
 
 class Config(gws.ConfigWithAccess):
-    """Storage configuration"""
+    """Storage for entries saved by users."""
 
     providerUid: Optional[str]
-    """Storage provider uid."""
+    """UID of the storage provider."""
     categoryName: Optional[str]
-    """Category name."""
+    """Category under which entries are stored in the provider."""
 
 
 class Props(gws.Props):

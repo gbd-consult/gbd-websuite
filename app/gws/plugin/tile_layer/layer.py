@@ -12,12 +12,12 @@ from . import grabber, provider
 
 @gws.ext.config.layer('tile')
 class Config(gws.base.layer.Config):
-    """Tile layer"""
+    """Layer that shows tiles from an XYZ tile service."""
 
     provider: provider.Config
-    """Tile service provider."""
+    """Tile service the layer is loaded from."""
     display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile
-    """Layer display mode."""
+    """The way the layer is rendered in the client."""
 
 
 @gws.ext.object.layer('tile')

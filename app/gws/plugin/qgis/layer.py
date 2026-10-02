@@ -14,14 +14,14 @@ from . import grabber, provider, flatlayer
 
 @gws.ext.config.layer('qgis')
 class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
-    """QGIS Tree layer configuration."""
+    """Layer group that shows a QGIS project as a tree of its layers."""
 
     provider: Optional[provider.Config]
-    """Qgis provider."""
+    """QGIS project the layers are loaded from."""
     compositeRender: bool = False
-    """If true, the layer will be rendered as a single image."""
+    """Render all sublayers as one image instead of one image per layer."""
     sqlFilters: Optional[dict]
-    """Per-layer sql filters."""
+    """SQL filters for source layers, passed to QGIS Server."""
 
 
 @gws.ext.object.layer('qgis')

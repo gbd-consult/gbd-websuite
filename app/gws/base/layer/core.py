@@ -20,31 +20,31 @@ DEFAULT_IMAGE_FORMAT = gws.ImageFormat(name='png8', mimeTypes=['image/png'], opt
 
 
 class AutoLayersConfig(gws.ConfigWithAccess):
-    """Configuration for automatic layers."""
+    """Configuration merged into automatically created layers that match a filter."""
 
     applyTo: Optional[gws.gis.source.LayerFilter]
-    """Source layers to apply the configuration to."""
+    """Filter for the source layers the configuration applies to."""
     config: dict
-    """Configuration for the matching layers."""
+    """Layer configuration to merge into each matching layer."""
 
 
 class ClientConfig(gws.Data):
-    """Client options for a layer."""
+    """Display options for the layer in the client layer tree."""
 
     expanded: bool = False
-    """The layer is expanded in the list view."""
+    """Show the layer's children expanded in the layer tree."""
     unlisted: bool = False
-    """The layer is hidden in the list view."""
+    """Hide the layer from the layer tree."""
     selected: bool = False
-    """The layer is initially selected."""
+    """Select the layer in the layer tree initially."""
     hidden: bool = False
-    """The layer is initially hidden."""
+    """Hide the layer on the map initially."""
     unfolded: bool = False
-    """The layer is not listed, but its children are."""
+    """Show the layer's children in the tree instead of the layer itself."""
     exclusive: bool = False
-    """Only one of this layer children is visible at a time."""
+    """Allow only one child layer to be visible at a time."""
     treeClassName = ''
-    """CSS class name for the layer tree item."""
+    """CSS class for the layer's item in the layer tree."""
 
 
 class ClientOptions(gws.Data):
@@ -70,51 +70,51 @@ class Config(gws.ConfigWithAccess):
     """Layer configuration"""
 
     cache: Optional[gws.gis.cache.LayerConfig]
-    """Cache configuration."""
+    """Tile cache options."""
     clientOptions: Optional[ClientConfig]
-    """Options for the layer display in the client."""
+    """Display options in the client layer tree."""
     cssSelector: str = ''
-    """Css selector for feature layers."""
+    """CSS selector for styling the layer's features in the client."""
     display: gws.LayerDisplayMode = gws.LayerDisplayMode.box
-    """Layer display mode."""
+    """The way the layer is rendered in the client."""
     extent: Optional[gws.Extent]
-    """Layer extent."""
+    """Layer extent in map CRS coordinates, clipped to the parent extent."""
     zoomExtent: Optional[gws.Extent]
-    """Layer zoom extent."""
+    """Extent to zoom to when zooming to the layer."""
     extentBuffer: Optional[int]
-    """Extent buffer."""
+    """Buffer around the layer extent."""
     finders: Optional[list[gws.ext.config.finder]]
-    """Search providers."""
+    """Search providers for the layer's features."""
     grid: Optional[dict]
-    """Client grid. (deprecated in 8.5)"""
+    """Ignored. (deprecated in 8.5)"""
     imageFormat: Optional[gws.lib.image.FormatConfig]
-    """Image format."""
+    """Format of rendered and cached images."""
     legend: Optional[gws.ext.config.legend]
-    """Legend configuration."""
+    """Custom legend or legend options for the layer."""
     loadingStrategy: gws.FeatureLoadingStrategy = gws.FeatureLoadingStrategy.all
-    """Feature loading strategy."""
+    """When the client loads the layer's features."""
     metadata: Optional[gws.base.metadata.Config]
     """Layer metadata."""
     models: Optional[list[gws.ext.config.model]]
-    """Data models."""
+    """Data models for the layer's features."""
     opacity: float = 1
-    """Layer opacity."""
+    """Layer opacity, from 0 to 1."""
     ows: Optional[ows.Config]
-    """Configuration for OWS services."""
+    """Layer names, namespace and allowed services for OWS services."""
     templates: Optional[list[gws.ext.config.template]]
-    """Layer templates."""
+    """Templates for the layer's description and feature info."""
     title: str = ''
-    """Layer title."""
+    """Layer title, shown in the layer tree."""
     zoom: Optional[gws.gis.zoom.Config]
-    """Layer resolutions and scales."""
+    """Scales or zoom levels at which the layer is visible."""
     withSearch: Optional[bool] = True
-    """Layer is searchable."""
+    """Include the layer in searches."""
     withLegend: Optional[bool] = True
-    """Layer has a legend."""
+    """Show a legend for the layer."""
     withCache: Optional[bool] = True
-    """Layer is cached. (changed in 8.5)"""
+    """Store rendered tiles in the persistent cache. (changed in 8.5)"""
     withOws: Optional[bool] = True
-    """Layer is enabled for OWS services."""
+    """Publish the layer in OWS services."""
 
 
 class Props(gws.Props):

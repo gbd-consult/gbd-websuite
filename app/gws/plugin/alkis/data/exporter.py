@@ -19,16 +19,16 @@ from . import index
 
 
 class Config(gws.ConfigWithAccess):
-    """Export configuration"""
+    """Export of Flurstück data to CSV or GeoJSON."""
 
     type: str
     """Export type."""
     title: Optional[str]
-    """Title to display in the ui."""
+    """Title to display in the UI."""
     model: Optional[gws.ext.config.model]
-    """Export model."""
+    """Fields to export."""
     models: Optional[list[gws.ext.config.model]]
-    """Export models."""
+    """Field sets the user can choose from."""
 
 
 class Args(gws.Data):

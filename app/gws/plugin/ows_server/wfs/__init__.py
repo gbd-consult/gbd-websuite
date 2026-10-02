@@ -103,7 +103,7 @@ _DEFAULT_METADATA = gws.Metadata(
 
 @gws.ext.config.owsService('wfs')
 class Config(server.service.Config):
-    """WFS Service configuration"""
+    """WFS service that serves features of the project layers."""
 
     pass
 

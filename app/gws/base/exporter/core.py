@@ -7,21 +7,21 @@ class Config(gws.ConfigWithAccess):
     """Exporter configuration."""
 
     title: str
-    """Exporter title."""
+    """Exporter title, shown in the client."""
     target: gws.ExportTarget
-    """Target export type."""
+    """Where the export result goes."""
     targetPath: Optional[str]
     """Target export path (if applicable)."""
     withNoGeometry: bool = False
-    """Allow features with no geometry."""
+    """Export features without geometry instead of skipping them."""
     withMixedGeometry: bool = False
-    """Allow features with different geometries in the same layer."""
+    """Allow different geometry types in one layer instead of skipping features."""
     withMixedCrs: bool = False
-    """Allow features with different CRS in the same layer."""
+    """Allow different CRS in one layer instead of skipping features."""
     withMultiLayer: bool = False
-    """Store multiple layers in a single file."""
+    """Write all layers to one file if the format supports it."""
     options: dict = {}
-    """Additional exporter-specific options."""
+    """Format-specific options, passed to the GDAL driver."""
 
 
 class Props(gws.Props):

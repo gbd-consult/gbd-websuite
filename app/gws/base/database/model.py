@@ -13,11 +13,11 @@ class Config(gws.base.model.Config):
     """Configuration for the database model."""
 
     dbUid: Optional[str]
-    """Database provider uid."""
+    """UID of the database provider."""
     tableName: Optional[str]
-    """Table name for the model."""
+    """Database table of the model."""
     sqlFilter: Optional[str]
-    """Extra SQL filter."""
+    """SQL condition added to every query of the model."""
 
 
 class Props(gws.base.model.Props):

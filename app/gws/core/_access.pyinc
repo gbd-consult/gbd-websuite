@@ -6,7 +6,7 @@ A list of tuples ``(ACL bit, role-name)`` where ``ACL bit`` is ``1`` if the acce
 """
 
 AclStr: TypeAlias = str
-"""A string of comma-separated pairs ``allow <role>`` or ``deny <role>``."""
+"""Comma-separated rules ``allow <role>`` or ``deny <role>``."""
 
 
 class Access(Enum):
@@ -23,20 +23,20 @@ class Access(Enum):
 
 
 class PermissionsConfig(Config):
-    """Permissions configuration."""
+    """Access rules per operation."""
 
     all: Optional[AclStr]
-    """All permissions."""
+    """Rules for read, write, create and delete at once."""
     read: Optional[AclStr]
-    """Permission to read the object."""
+    """Rules for reading or using the object."""
     write: Optional[AclStr]
-    """Permission to change the object."""
+    """Rules for changing existing objects."""
     create: Optional[AclStr]
-    """Permission to create new objects."""
+    """Rules for creating new objects."""
     delete: Optional[AclStr]
-    """Permission to delete objects."""
+    """Rules for deleting objects."""
     edit: Optional[AclStr]
-    """A combination of write, create and delete."""
+    """Rules for write, create and delete at once."""
 
 
 class ConfigWithAccess(Config):
@@ -45,4 +45,4 @@ class ConfigWithAccess(Config):
     access: Optional[AclStr]
     """Permission to read or use the object."""
     permissions: Optional[PermissionsConfig]
-    """Access permissions."""
+    """Access rules per operation."""

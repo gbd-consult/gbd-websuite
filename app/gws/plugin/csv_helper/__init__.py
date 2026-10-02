@@ -10,14 +10,14 @@ import gws.lib.intl
 
 
 class FormatConfig(gws.Config):
-    """CSV format settings"""
+    """CSV format settings."""
 
     delimiter: str = ','
     """Field delimiter."""
     encoding: str = 'utf8'
     """Text encoding."""
     formulaHack: bool = True
-    """Prepend numeric strings with an equals sign."""
+    """Write digit-only strings as formulas."""
     quote: str = '"'
     """Quote character."""
     quoteAll: bool = False
@@ -28,7 +28,7 @@ class FormatConfig(gws.Config):
 
 @gws.ext.config.helper('csv')
 class Config(gws.Config):
-    """CSV helper."""
+    """Format settings for CSV exports."""
 
     format: FormatConfig
     """CSV format settings."""

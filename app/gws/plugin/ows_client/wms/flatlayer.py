@@ -17,12 +17,12 @@ from . import grabber, provider
 
 @gws.ext.config.layer('wmsflat')
 class Config(gws.base.layer.Config):
-    """Flat WMS layer."""
+    """Layer that renders selected WMS layers as a single image."""
 
     provider: Optional[provider.Config]
-    """WMS provider."""
+    """WMS service the layer is loaded from."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]
-    """Source layers to use."""
+    """Source layers to render."""
 
 
 @gws.ext.object.layer('wmsflat')

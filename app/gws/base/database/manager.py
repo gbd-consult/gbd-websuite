@@ -7,10 +7,10 @@ import gws.lib.crs
 
 
 class Config(gws.Config):
-    """Database configuration"""
+    """Database connections used by layers, models and other objects."""
 
     providers: list[gws.ext.config.databaseProvider]
-    """Database providers."""
+    """Database connections."""
 
 
 class Object(gws.DatabaseManager):

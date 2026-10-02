@@ -20,13 +20,13 @@ _PREFER_XML_MIME = [gws.lib.mime.GML3, gws.lib.mime.GML, gws.lib.mime.XML]
 
 
 class OperationConfig(gws.Config):
-    """Custom OWS operation."""
+    """OWS operation that overrides or adds to those in the service capabilities."""
     verb: gws.OwsVerb
-    """OWS verb."""
+    """OWS request type."""
     formats: Optional[list[str]]
-    """Supported formats."""
+    """Formats supported by the operation."""
     params: Optional[dict]
-    """Operation parameters."""
+    """Extra parameters added to GET requests for this operation."""
     postUrl: Optional[gws.Url]
     """URL for POST requests."""
     url: Optional[gws.Url]
@@ -34,7 +34,7 @@ class OperationConfig(gws.Config):
 
 
 class AuthorizationConfig(gws.Config):
-    """Service authorization."""
+    """Credentials for accessing the service."""
     type: str
     """Authorization type (only "basic" is supported)."""
     username: str = ''
@@ -47,19 +47,19 @@ class Config(gws.Config):
     """OWS provider configuration."""
 
     capsCacheMaxAge: gws.Duration = '1d'
-    """Max cache age for capabilities documents."""
+    """How long a downloaded capabilities document is cached."""
     forceCrs: Optional[gws.CrsName]
     """Use this CRS for requests."""
     alwaysXY: bool = False
-    """Force XY orientation for lat/lon projections."""
+    """Force XY axis order for CRSs with lat/lon axis order."""
     maxRequests: int = 0
-    """Max concurrent requests to this source."""
+    """Max. concurrent requests to this source."""
     operations: Optional[list[OperationConfig]]
     """Override operations reported in capabilities."""
     authorization: Optional[AuthorizationConfig]
-    """Service authorization."""
+    """Service authorization options."""
     url: gws.Url
-    """Service url."""
+    """Service URL."""
 
 
 class Object(gws.OwsServiceProvider):

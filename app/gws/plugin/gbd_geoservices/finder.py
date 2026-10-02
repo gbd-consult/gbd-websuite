@@ -28,10 +28,10 @@ _DEFAULT_TEMPLATES = [
 
 @gws.ext.config.finder('gbd_geoservices')
 class Config(gws.base.search.finder.Config):
-    """GBD Geoservices search"""
+    """Keyword and location search via the GBD Geoservices service."""
 
     apiKey: str
-    """API key."""
+    """API key for GBD Geoservices."""
 
 
 @gws.ext.object.finder('gbd_geoservices')

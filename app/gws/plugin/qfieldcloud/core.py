@@ -4,16 +4,16 @@ import gws.plugin.qgis.provider
 
 
 class ProjectConfig(gws.ConfigWithAccess):
-    """QField Cloud project."""
+    """Project offered to QField, packaged from a QGIS project."""
 
     title: str = ''
-    """Project title."""
+    """Project title shown in QField."""
     provider: gws.plugin.qgis.provider.Config
-    """QGis provider settings."""
+    """QGIS project the QField package is built from."""
     models: Optional[list[gws.ext.config.model]]
-    """Data models."""
+    """Data models for editable layers, matched by table name."""
     mapCacheLifeTime: gws.Duration = '0'
-    """Cache life time for base map layers."""
+    """How long rendered offline base maps are reused."""
     thumbnail: Optional[gws.FilePath]
     """Thumbnail image shown in the project details. (added in 8.5)"""
 

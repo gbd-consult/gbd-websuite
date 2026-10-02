@@ -9,14 +9,14 @@ import gws.base.storage
 
 @gws.ext.config.action('dimension')
 class Config(gws.base.action.Config):
-    """Dimension action"""
+    """Tool for drawing dimensions on the map."""
 
     layerUids: Optional[list[str]]
-    """Layer uids to snap to."""
+    """UIDs of layers to snap to."""
     pixelTolerance: int = 10
-    """Pixel tolerance."""
+    """Snapping distance in screen pixels."""
     storage: Optional[gws.base.storage.Config]
-    """Storage configuration."""
+    """Storage for saved dimensions."""
 
 
 @gws.ext.props.action('dimension')

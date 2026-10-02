@@ -10,7 +10,7 @@ import gws.lib.mime
 
 @gws.ext.config.exporter('gml')
 class Config(gws.base.exporter.Config):
-    """GML Exporter configuration."""
+    """Export of features to GML."""
 
     pass
 

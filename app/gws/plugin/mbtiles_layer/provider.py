@@ -5,10 +5,10 @@ import gws
 
 
 class Config(gws.Config):
-    """MBTiles provider configuration."""
+    """Access to an MBTiles file."""
     
     path: gws.FilePath
-    """List of image file paths."""
+    """Path to the MBTiles file."""
 
 
 

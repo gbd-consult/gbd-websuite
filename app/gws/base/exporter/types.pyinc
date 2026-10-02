@@ -11,8 +11,12 @@ class ExportArgs(Data):
 
 
 class ExportTarget(Enum):
+    """Export target."""
+
     file = 'file'
+    """Save the export result to a file on the server."""
     download = 'download'
+    """Return the export result for download."""
 
 
 class ExportResult(Data):
@@ -27,7 +31,7 @@ class ExportResult(Data):
 
 
 class FeatureExportStrategy(Enum):
-    """Export strategy for features."""
+    """How exported features are obtained."""
 
     load = 'load'
     """Load features by ids from the source model."""

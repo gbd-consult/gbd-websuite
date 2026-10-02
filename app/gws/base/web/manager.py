@@ -5,14 +5,14 @@ import gws
 from . import site
 
 class Config(gws.Config):
-    """Web server configuration"""
+    """Web server settings."""
 
     site: Optional[site.Config]
-    """Site configuration. (added in 8.4)"""
+    """Web site settings."""
     sites: Optional[list[site.Config]]
-    """Sites configuration. (deprecated in 8.4)"""
+    """List of sites. (deprecated in 8.4)"""
     ssl: Optional[site.SSLConfig]
-    """SSL configuration."""
+    """SSL settings."""
 
 
 class Object(gws.WebManager):

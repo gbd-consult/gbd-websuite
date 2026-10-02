@@ -6,12 +6,12 @@ import gws.base.model.widget
 
 @gws.ext.config.modelWidget('textarea')
 class Config(gws.base.model.widget.Config):
-    """Textarea widget configuration."""
+    """Multi-line text input."""
 
     height: int = 0
-    """Textarea height."""
+    """Height of the input in pixels."""
     placeholder: str = ''
-    """Textarea placeholder."""
+    """Hint text shown in the empty input."""
 
 
 @gws.ext.props.modelWidget('textarea')

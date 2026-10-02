@@ -12,7 +12,7 @@ import gws.lib.mime
 
 @gws.ext.config.action('printer')
 class Config(gws.base.action.Config):
-    """Configuration for the printer action."""
+    """Runs print jobs in the background and returns their output."""
 
     pass
 

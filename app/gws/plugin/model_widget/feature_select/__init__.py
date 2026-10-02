@@ -6,10 +6,10 @@ import gws.base.model.widget
 
 @gws.ext.config.modelWidget('featureSelect')
 class Config(gws.base.model.widget.Config):
-    """Feature select widget configuration."""
+    """Drop-down list for choosing a related feature."""
 
     withSearch: bool = False
-    """Enable search functionality in the widget."""
+    """Show a search field to filter the list."""
 
 
 @gws.ext.props.modelWidget('featureSelect')

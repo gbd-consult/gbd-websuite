@@ -13,7 +13,7 @@ import gws.lib.net
 
 @gws.ext.config.model('gbd_geoservices')
 class Config(gws.base.model.Config):
-    """GBD Geoservices model."""
+    """Read-only model for features from GBD Geoservices."""
 
     apiKey: str
     """API key for GBD Geoservices."""

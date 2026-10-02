@@ -10,18 +10,18 @@ from . import session, system_provider, throttle
 
 
 class Config(gws.Config):
-    """Authentication and authorization options"""
+    """Authentication methods, providers, sessions and login throttling."""
 
     methods: Optional[list[gws.ext.config.authMethod]]
-    """Authorization methods."""
+    """Login methods available to users."""
     providers: Optional[list[gws.ext.config.authProvider]]
-    """Authorization providers."""
+    """User sources that verify credentials."""
     mfa: Optional[list[gws.ext.config.authMultiFactorAdapter]]
-    """Authorization providers."""
+    """Multi-factor authentication adapters."""
     session: Optional[gws.ext.config.authSessionManager]
-    """Session options."""
+    """Session storage and life time."""
     throttle: Optional[throttle.Config]
-    """Authentication throttle options. (added in 8.4)"""
+    """Blocking of repeated failed login attempts, disabled if not set."""
 
 
 _DEFAULT_SESSION_TYPE = 'sqlite'

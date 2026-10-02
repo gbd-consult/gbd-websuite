@@ -10,10 +10,10 @@ import gws.lib.sa as sa
 
 @gws.ext.config.modelField('text')
 class Config(gws.base.model.scalar_field.Config):
-    """Configuration for text field."""
+    """Field for text values."""
 
     textSearch: Optional[gws.TextSearchOptions]
-    """Text search options, if enabled."""
+    """Keyword search options for the field."""
 
 
 @gws.ext.props.modelField('text')

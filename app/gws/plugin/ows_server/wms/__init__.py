@@ -64,12 +64,12 @@ _DEFAULT_MAX_PIXEL_SIZE = 2048
 
 @gws.ext.config.owsService('wms')
 class Config(server.service.Config):
-    """WMS Service configuration"""
+    """WMS service that renders the project layers."""
 
     layerLimit: int = 0
-    """WMS LayerLimit."""
+    """Max. number of layers in a map request."""
     maxPixelSize: int = 0
-    """WMS MaxWidth/MaxHeight value."""
+    """Max. width and height of a map image in pixels."""
 
 
 @gws.ext.object.owsService('wms')

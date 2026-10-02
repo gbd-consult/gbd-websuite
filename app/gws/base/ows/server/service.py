@@ -20,31 +20,31 @@ class Config(gws.ConfigWithAccess):
     """Configuration for OWS services."""
 
     defaultFeatureCount: int = 1000
-    """Default number of features per page."""
+    """Number of features per page when the request does not specify a count."""
     extent: Optional[gws.Extent]
-    """Service extent, in extentCrs or the first supported CRS."""
+    """Service extent."""
     extentCrs: Optional[gws.CrsName]
-    """Service extent CRS."""
+    """CRS of the service extent."""
     imageFormats: Optional[list[gws.lib.image.FormatConfig]]
-    """Supported image formats."""
+    """Image formats for map and tile requests."""
     maxFeatureCount: int = 10000
-    """Max number of features per page."""
+    """Maximum number of features per page a request can ask for."""
     metadata: Optional[gws.base.metadata.Config]
-    """Service metadata."""
+    """Service metadata, overriding the project and application metadata."""
     rootLayerUid: str = ''
-    """Root layer uid."""
+    """UID of the layer published as the service root."""
     searchTolerance: gws.UomValueStr = '10px'
-    """Search pixel tolerance."""
+    """Search tolerance for feature info requests."""
     supportedCrs: Optional[list[gws.CrsName]]
-    """List of CRS supported by this service."""
+    """CRSs supported by the service."""
     templates: Optional[list[gws.ext.config.template]]
-    """XML and HTML templates."""
+    """Templates for service responses."""
     updateSequence: Optional[str]
-    """Service update sequence."""
+    """Value of updateSequence in capabilities, to signal changes to clients."""
     withInspireMeta: bool = False
-    """Emit INSPIRE Metadata."""
+    """Include INSPIRE extended capabilities in WMS and WFS capabilities."""
     withStrictParams: bool = False
-    """Use strict params checking."""
+    """Use strict parameter checking."""
 
 
 class Object(gws.OwsService):

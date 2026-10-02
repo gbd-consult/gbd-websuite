@@ -21,12 +21,12 @@ class ListItem(gws.Data):
 
 
 class ListItemConfig(gws.Config):
-    """Configuration for a list item in the select widget."""
+    """Option of a select widget."""
 
     value: Any
-    """Value of the item."""
+    """Value stored in the field when the item is selected."""
     text: Optional[str]
-    """Text to display for the item."""
+    """Label shown for the item."""
     extraText: Optional[str]
     """Additional text to display for the item."""
     level: Optional[int]
@@ -35,12 +35,12 @@ class ListItemConfig(gws.Config):
 
 @gws.ext.config.modelWidget('select')
 class Config(gws.base.model.widget.Config):
-    """Select widget configuration."""
+    """Drop-down list with a fixed set of values."""
 
     items: list[ListItemConfig]
-    """List of items to select from."""
+    """Options to choose from."""
     withSearch: bool = False
-    """Whether to show a search input field."""
+    """Show a search field to filter the options."""
 
 
 @gws.ext.props.modelWidget('select')

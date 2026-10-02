@@ -12,7 +12,7 @@ from . import core, helper
 
 @gws.ext.config.action('account')
 class Config(gws.base.action.Config):
-    """User Account action."""
+    """Account management for end users, including onboarding."""
     pass
 
 

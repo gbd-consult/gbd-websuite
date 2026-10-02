@@ -4,7 +4,7 @@ import gws
 
 
 class Config(gws.Config):
-    """Storage configuration"""
+    """Storage providers for data saved by users."""
 
     providers: list[gws.ext.config.storageProvider]
     """Storage providers."""

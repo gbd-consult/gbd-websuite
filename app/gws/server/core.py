@@ -6,40 +6,40 @@ import gws
 
 
 class SpoolConfig(gws.Config):
-    """Spool server module"""
+    """Spool server, which runs background jobs."""
 
     enabled: Optional[bool]
     """The module is enabled. (deprecated in 8.2)"""
     workers: int = 4
-    """Number of processes for this module."""
+    """Number of spool worker processes."""
     jobFrequency: gws.Duration = '3'
-    """Background jobs checking frequency."""
+    """Interval at which the spool server checks for new jobs."""
     timeout: gws.Duration = '300'
-    """Job timeout."""
+    """Max. run time of a background job before it is aborted."""
 
 
 class WebConfig(gws.Config):
-    """Web server module"""
+    """Web server, which handles client and API requests."""
 
     enabled: Optional[bool]
     """The module is enabled. (deprecated in 8.2)"""
     workers: int = 4
-    """Number of processes for this module."""
+    """Number of web worker processes."""
     maxRequestLength: int = 10
-    """Max request length in megabytes."""
+    """Max. request body size in megabytes."""
     timeout: gws.Duration = '60'
-    """Web server timeout."""
+    """Max. time to process a request before it is aborted."""
 
 
 class MonitorConfig(gws.Config):
-    """Monitor module configuration."""
+    """Monitor, which watches files and runs periodic tasks."""
 
     enabled: Optional[bool]
     """The module is enabled. (deprecated in 8.2)"""
     frequency: gws.Duration = '30'
-    """Periodic tasks frequency."""
+    """Default interval of periodic tasks."""
     disableWatch: bool = False
-    """Disable file system watching."""
+    """Do not reconfigure the server when watched files change."""
     ignore: Optional[list[gws.Regex]]
     """Ignore paths that match these regexes. (deprecated in 8.2)"""
 
@@ -48,53 +48,53 @@ class QgisConfig(gws.Config):
     """External QGIS server configuration."""
 
     host: str = 'qgis'
-    """Host where the qgis server runs."""
+    """Host where the QGIS server runs."""
     port: int = 80
-    """Port number."""
+    """Port of the QGIS server."""
 
 
 class LogConfig(gws.Config):
-    """Logging configuration"""
+    """Logging configuration."""
 
     path: str = ''
     """Log path."""
     level: str = 'INFO'
-    """Logging level."""
+    """Log level."""
 
 
 class Config(gws.Config):
-    """Server module configuration"""
+    """Server processes and logging."""
 
     mapproxy: Optional[dict]
-    """Bundled Mapproxy module. (deprecated in 8.5)"""
+    """Bundled MapProxy module, ignored. (deprecated in 8.5)"""
     monitor: Optional[MonitorConfig]
     """Monitor configuration."""
     log: Optional[LogConfig]
     """Logging configuration."""
     qgis: Optional[QgisConfig]
-    """Qgis server configuration."""
+    """QGIS server configuration."""
     spool: Optional[SpoolConfig]
-    """Spool server module."""
+    """Spool server module configuration."""
     web: Optional[WebConfig]
-    """Web server module."""
+    """Web server module configuration."""
 
     withWeb: bool = True
-    """Enable the web server."""
+    """Run the web server."""
     withSpool: bool = True
-    """Enable the spool server."""
+    """Run the spool server for background jobs."""
     withMapproxy: Optional[bool]
-    """Enable the mapproxy server. (deprecated in 8.5)"""
+    """Run the MapProxy server, ignored. (deprecated in 8.5)"""
     withMonitor: bool = True
-    """Enable the monitor."""
+    """Run the monitor."""
 
     templates: Optional[list[gws.ext.config.template]]
-    """Configuration templates."""
+    """Templates for the nginx, uWSGI and syslog configs and the start script."""
 
     autoRun: str = ''
     """Shell command to run before the server start. (deprecated in 8.2)"""
     preConfigure: str = ''
-    """Shell or python script to run before configuring the server."""
+    """Shell or Python script to run before configuring the server."""
     postConfigure: str = ''
-    """Shell or python script to run run after the service has been configured."""
+    """Shell or Python script to run after the server has been configured."""
     timeZone: str = 'Europe/Berlin'
-    """Timezone for this server."""
+    """Time zone of the server."""

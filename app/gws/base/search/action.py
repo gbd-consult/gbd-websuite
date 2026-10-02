@@ -17,14 +17,14 @@ _DEFAULT_TOLERANCE = 10, gws.Uom.px
 
 @gws.ext.config.action('search')
 class Config(gws.base.action.Config):
-    """Search action"""
+    """Runs searches in the project finders and returns the found features."""
 
     limit: int = 1000
-    """Search results limit."""
+    """Max. number of search results."""
     tolerance: Optional[gws.UomValueStr]
-    """Default tolerance."""
+    """Default tolerance for geometry searches."""
     categories: Optional[list[str]]
-    """Search categories."""
+    """Result categories users can filter search results by."""
 
 
 @gws.ext.props.action('search')

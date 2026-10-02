@@ -11,7 +11,7 @@ import gws.gis.render
 
 @gws.ext.config.template('map')
 class Config(gws.base.template.Config):
-    """Map-only template."""
+    """Template that renders only the map."""
     pass
 
 

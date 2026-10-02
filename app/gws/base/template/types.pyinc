@@ -28,12 +28,12 @@ class TemplateRenderInput(Data):
 
 
 class TemplateQualityLevel(Config):
-    """Template quality level."""
+    """Print quality level users can choose."""
 
     name: str
-    """Quality level name."""
+    """Quality level name shown to users."""
     dpi: int
-    """DPI for the quality level."""
+    """Print resolution in dots per inch."""
 
 
 class Template(Node):

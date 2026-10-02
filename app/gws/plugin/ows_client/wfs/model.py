@@ -13,12 +13,12 @@ from . import provider
 
 @gws.ext.config.model('wfs')
 class Config(gws.base.model.Config):
-    """WFS model configuration."""
+    """Data model for features from a WFS service."""
 
     provider: Optional[provider.Config]
-    """WFS provider"""
+    """WFS service the features are loaded from."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]
-    """Source layers to search for."""
+    """Feature types to query."""
 
 
 @gws.ext.object.model('wfs')

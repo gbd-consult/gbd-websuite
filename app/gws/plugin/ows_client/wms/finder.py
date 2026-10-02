@@ -13,12 +13,12 @@ from . import provider
 
 @gws.ext.config.finder('wms')
 class Config(gws.base.search.finder.Config):
-    """WMS Finder configuration."""
+    """Search in a WMS service via GetFeatureInfo, at a clicked point."""
     
     provider: Optional[provider.Config]
-    """Provider configuration."""
+    """WMS service to query."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]
-    """Source layers to search for."""
+    """Source layers to query."""
 
 
 @gws.ext.object.finder('wms')

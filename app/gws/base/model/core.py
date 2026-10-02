@@ -12,19 +12,19 @@ DEFAULT_GEOMETRY_NAME = 'geometry'
 
 
 class TableViewColumn(gws.Data):
-    """Table view column configuration."""
+    """Column of the feature table view."""
 
     name: str
-    """Column name."""
+    """Name of the model field shown in the column."""
     width: Optional[int]
-    """Column width in pixels. If not set, the column will be auto-sized."""
+    """Column width in pixels."""
 
 
 class ClientOptions(gws.Data):
-    """Client options for a model"""
+    """Client-side options for editing features of the model."""
 
     keepFormOpen: bool = False
-    """Keep the edit form open after save"""
+    """Keep the edit form open after saving."""
 
 
 class Config(gws.ConfigWithAccess):
@@ -33,27 +33,27 @@ class Config(gws.ConfigWithAccess):
     fields: Optional[list[gws.ext.config.modelField]]
     """Model fields."""
     loadingStrategy: Optional[gws.FeatureLoadingStrategy]
-    """Loading strategy for features."""
+    """How the client loads features."""
     exportStrategy: Optional[gws.FeatureExportStrategy]
-    """Export strategy for features."""
+    """How features are obtained for export."""
     title: str = ''
     """Model title."""
     isEditable: bool = False
-    """This model is editable."""
+    """Features of this model can be edited."""
     withAutoFields: bool = False
-    """Autoload non-configured model fields from the source."""
+    """Add fields for unconfigured source columns in addition to the configured ones."""
     excludeColumns: Optional[list[str]]
-    """Exclude columns names from autoload."""
+    """Source columns to skip when creating fields automatically."""
     withTableView: bool = True
-    """Enable table view for this model."""
+    """Enable the table view of features in the client."""
     tableViewColumns: Optional[list[TableViewColumn]]
-    """Fields to include in the table view."""
+    """Columns of the table view."""
     templates: Optional[list[gws.ext.config.template]]
-    """Feature templates."""
+    """Templates for rendering features of this model."""
     sort: Optional[list[gws.SortOptions]]
-    """Default sorting."""
+    """Default sort order of features."""
     clientOptions: Optional[ClientOptions]
-    """Client options for a model.."""
+    """Client-side options for the model."""
 
 
 class Props(gws.Props):

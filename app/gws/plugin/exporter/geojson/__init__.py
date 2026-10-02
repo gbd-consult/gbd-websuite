@@ -10,7 +10,7 @@ import gws.lib.mime
 
 @gws.ext.config.exporter('geojson')
 class Config(gws.base.exporter.Config):
-    """GeoJSON Exporter configuration."""
+    """Export of features to GeoJSON."""
 
     pass
 

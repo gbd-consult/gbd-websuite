@@ -8,22 +8,22 @@ import gws.config.util
 
 
 class Config(gws.Config):
-    """Layer OWS configuration."""
+    """OWS service settings for a layer."""
 
     allowedServices: Optional[list[str]]
-    """Service UIDs which can use this layer."""
+    """UIDs of OWS services allowed to publish this layer."""
     deniedServices: Optional[list[str]]
-    """Service UIDs which can not use this layer."""
+    """UIDs of OWS services that must not publish this layer."""
     featureName: str = ''
-    """Name for features in this layer."""
+    """Feature type name in WFS."""
     geometryName: str = ''
-    """Name for geometries in this layer."""
+    """Name of the geometry element in WFS and GML output."""
     layerName: str = ''
-    """Name for this layer in WMS services."""
+    """Layer name in WMS and WMTS services."""
     xmlns: Optional[str]
-    """XML namespace prefix."""
+    """XML namespace prefix for the layer's features."""
     models: Optional[list[gws.ext.config.model]]
-    """OWS-specific models."""
+    """Data models for OWS output."""
 
 
 class Object(gws.LayerOwsBinding):

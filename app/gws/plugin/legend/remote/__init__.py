@@ -8,10 +8,10 @@ import gws.lib.image
 
 @gws.ext.config.legend('remote')
 class Config(gws.base.legend.Config):
-    """External legend."""
+    """Legend images loaded from external URLs."""
 
     urls: list[gws.Url]
-    """Urls of external legend images."""
+    """URLs of external legend images."""
 
 
 @gws.ext.object.legend('remote')

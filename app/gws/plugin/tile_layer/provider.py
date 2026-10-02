@@ -16,16 +16,16 @@ import gws.lib.net
 
 
 class Config(gws.Config):
-    """Tile provider configuration."""
+    """XYZ tile service."""
     
     maxLevel: int = 19
-    """Max zoom level the source provides. (added in 8.5)"""
+    """Finest zoom level the source provides. (added in 8.5)"""
     maxRequests: int = 0
-    """Max concurrent requests to this source."""
+    """Max. concurrent requests to this source."""
     url: gws.Url
-    """Rest url with placeholders {x}, {y} and {z}."""
+    """REST URL with placeholders {x}, {y} and {z}."""
     grid: Optional[gws.lib.grid.Config]
-    """Source grid. (changed in 8.5)"""
+    """Tile grid of the source. (changed in 8.5)"""
 
 
 class Object(gws.Node):

@@ -14,10 +14,10 @@ from . import provider
 
 @gws.ext.config.model('geojson')
 class Config(gws.base.model.Config):
-    """Configuration for GeoJSON model."""
+    """Model for features from a GeoJSON file."""
 
     provider: Optional[provider.Config]
-    """GeoJSON provider."""
+    """GeoJSON file with the model features."""
 
 
 @gws.ext.object.model('geojson')

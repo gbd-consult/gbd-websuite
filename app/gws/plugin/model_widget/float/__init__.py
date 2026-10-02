@@ -6,12 +6,12 @@ import gws.base.model.widget
 
 @gws.ext.config.modelWidget('float')
 class Config(gws.base.model.widget.Config):
-    """Float input widget configuration."""
+    """Input for decimal numbers."""
 
     step: int = 1
-    """Numeric step."""
+    """Increment of the up/down buttons."""
     placeholder: str = ''
-    """Input box placeholder."""
+    """Hint text shown in the empty input."""
 
 
 @gws.ext.props.modelWidget('float')

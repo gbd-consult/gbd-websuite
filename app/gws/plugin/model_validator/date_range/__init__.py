@@ -9,12 +9,12 @@ import gws.lib.datetimex as dt
 
 @gws.ext.config.modelValidator('dateRange')
 class Config(gws.base.model.validator.Config):
-    """Validator for date ranges."""
+    """Checks that a date lies within a range."""
 
     min: Optional[gws.ext.config.modelValue]
-    """Minimum date for the range."""
+    """Earliest allowed date."""
     max: Optional[gws.ext.config.modelValue]
-    """Maximum date for the range."""
+    """Latest allowed date."""
 
 
 @gws.ext.object.modelValidator('dateRange')

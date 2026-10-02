@@ -21,7 +21,7 @@ class GetSchemaRequest(gws.Request):
 
 @gws.ext.config.action('ows')
 class Config(gws.base.action.Config):
-    """OWS server action"""
+    """Action that serves the configured OWS services."""
 
 
 @gws.ext.object.action('ows')

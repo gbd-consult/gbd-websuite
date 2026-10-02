@@ -11,17 +11,17 @@ class Config(gws.ConfigWithAccess):
     """Template configuration."""
 
     mapSize: Optional[gws.UomSizeStr]
-    """Map size."""
+    """Size of the map on the page."""
     mimeTypes: Optional[list[gws.MimeType]]
-    """Mime types this template can generate."""
+    """Output MIME types of the template."""
     pageSize: Optional[gws.UomSizeStr]
     """Page size."""
     pageMargin: Optional[gws.UomExtentStr]
-    """Page margin."""
+    """Page margins in the order top, right, bottom, left."""
     subject: str = ''
-    """Template purpose."""
+    """Purpose of the template."""
     title: str = ''
-    """Template title."""
+    """Template title, shown in the client."""
 
 
 class Props(gws.Props):

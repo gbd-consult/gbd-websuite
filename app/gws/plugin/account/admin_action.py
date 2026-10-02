@@ -13,7 +13,7 @@ from . import helper
 
 @gws.ext.config.action('accountadmin')
 class Config(gws.base.action.Config):
-    """Account Admin action."""
+    """Administration of user accounts by account administrators."""
 
     models: Optional[list[gws.ext.config.model]]
     """Account data models."""

@@ -10,16 +10,16 @@ import gws.lib.style
 
 @gws.ext.config.printer('default')
 class Config(gws.ConfigWithAccess):
-    """Printer configuration"""
+    """Print template offered to users."""
 
     template: gws.ext.config.template
-    """Print template"""
+    """Template that renders the print output."""
     title: str = ''
-    """Printer title"""
+    """Printer title shown to users."""
     models: Optional[list[gws.ext.config.model]]
-    """Data models"""
+    """Models whose fields are shown as input fields in the print dialog."""
     qualityLevels: Optional[list[gws.TemplateQualityLevel]]
-    """Quality levels supported by this printer"""
+    """Quality levels users can choose from."""
 
 
 @gws.ext.props.printer('default')

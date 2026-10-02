@@ -6,7 +6,7 @@ import gws.base.model.scalar_field
 
 @gws.ext.config.modelField('float')
 class Config(gws.base.model.scalar_field.Config):
-    """Configuration for float field."""
+    """Field for floating-point numbers."""
 
     pass
 

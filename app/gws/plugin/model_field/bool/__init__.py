@@ -6,7 +6,7 @@ import gws.base.model.scalar_field
 
 @gws.ext.config.modelField('bool')
 class Config(gws.base.model.scalar_field.Config):
-    """Configuration for boolean field."""
+    """Field for boolean values."""
 
     pass
 

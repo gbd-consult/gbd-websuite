@@ -11,10 +11,10 @@ from . import provider
 
 @gws.ext.config.finder('geojson')
 class Config(gws.base.search.finder.Config):
-    """GeoJSON Finder configuration."""
+    """Search in features from a GeoJSON file."""
     
     provider: Optional[provider.Config]
-    """Provider configuration."""
+    """GeoJSON file to search in."""
 
 
 @gws.ext.object.finder('geojson')

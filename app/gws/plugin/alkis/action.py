@@ -21,14 +21,14 @@ from .data import types as dt
 
 
 class EigentuemerConfig(gws.ConfigWithAccess):
-    """Access to the Eigentümer (owner) information"""
+    """Access to the Eigentümer (owner) information."""
 
     controlMode: bool = False
-    """Restricted mode enabled."""
+    """Require a control input before owner data is shown."""
     controlRules: Optional[list[str]]
-    """Regular expression for the restricted input control."""
+    """Regular expressions the control input must match."""
     logTable: str = ''
-    """Data access protocol table name."""
+    """Table for logging access to owner data."""
 
 
 class EigentuemerOptions(gws.Node):
@@ -45,7 +45,7 @@ class EigentuemerOptions(gws.Node):
 
 
 class BuchungConfig(gws.ConfigWithAccess):
-    """Access to the Grundbuch (register) information"""
+    """Access to the Grundbuch (register) information."""
 
     pass
 
@@ -55,98 +55,98 @@ class BuchungOptions(gws.Node):
 
 
 class GemarkungListMode(gws.Enum):
-    """Gemarkung (Administrative Unit) list mode."""
+    """How the Gemarkung list is shown."""
 
     none = 'none'
     """Do not show the list."""
     plain = 'plain'
-    """Show only gemarkung."""
+    """Show only the Gemarkung."""
     combined = 'combined'
-    """Show gemarkung(gemeinde)."""
+    """Show 'Gemarkung (Gemeinde)'."""
     tree = 'tree'
-    """A tree with level 1 = gemeinde and level 2 = gemarkung."""
+    """A tree with level 1 = Gemeinde and level 2 = Gemarkung."""
 
 
 class StrasseListMode(gws.Enum):
     """Strasse (street) list entry format."""
 
     plain = 'plain'
-    """Just strasse."""
+    """Show only the street name."""
     withGemeinde = 'withGemeinde'
-    """Strasse (gemeinde)."""
+    """Show 'Strasse (Gemeinde)'."""
     withGemarkung = 'withGemarkung'
-    """Strasse (gemarkung)."""
+    """Show 'Strasse (Gemarkung)'."""
     withGemeindeIfRepeated = 'withGemeindeIfRepeated'
-    """Strasse (gemeinde), when needed for disambiguation."""
+    """Show 'Strasse (Gemeinde)' when needed for disambiguation."""
     withGemarkungIfRepeated = 'withGemarkungIfRepeated'
-    """Strasse (gemarkung), when needed for disambiguation."""
+    """Show 'Strasse (Gemarkung)' when needed for disambiguation."""
 
 
 class Ui(gws.Config):
-    """Flurstückssuche UI configuration."""
+    """User interface options for the Flurstückssuche."""
 
     useExport: bool = False
-    """Export function enabled."""
+    """Enable the export of search results."""
     useSelect: bool = False
-    """Select mode enabled."""
+    """Enable the selection storage for parcels."""
     usePick: bool = False
-    """Pick mode enabled."""
+    """Enable picking single parcels in the map."""
     useHistory: bool = False
-    """History controls enabled."""
+    """Enable options to search and display historic parcels."""
     searchSelection: bool = False
-    """Search in selection enabled."""
+    """Enable searching within the geometries of the current map selection."""
     searchSpatial: bool = False
-    """Spatial search enabled."""
+    """Enable spatial search with a search area drawn in the map."""
     gemarkungListMode: GemarkungListMode = GemarkungListMode.combined
-    """Gemarkung list mode."""
+    """How the Gemarkung list is shown in the search form."""
     strasseListMode: StrasseListMode = StrasseListMode.plain
-    """Strasse list entry format."""
+    """How entries in the street list are shown."""
     autoSpatialSearch: bool = False
-    """Activate spatial search after submit."""
+    """Start the spatial search tool after a form search."""
 
 
 @gws.ext.config.action('alkis')
 class Config(gws.ConfigWithAccess):
-    """Flurstückssuche action configuration."""
+    """Parcel search in ALKIS data."""
 
     dbUid: str = ''
-    """Database provider ID."""
+    """UID of the PostgreSQL database provider with the ALKIS data."""
     crs: gws.CrsName
     """CRS for the ALKIS data."""
     dataSchema: str = 'public'
     """Schema where ALKIS tables are stored."""
     indexSchema: str = 'gws8'
-    """Schema to store GWS internal indexes."""
+    """Schema for the GWS search indexes built from the ALKIS data."""
     excludeGemarkung: Optional[list[str]]
     """Gemarkung (Administrative Unit) IDs to exclude from indexing."""
     gemarkungFilter: Optional[list[str]]
-    """Restrict search to Gemarkung (Administrative Unit) IDs."""
+    """Gemarkung IDs to restrict the search to."""
 
     eigentuemer: Optional[EigentuemerConfig]
-    """Access to the Eigentümer (owner) information."""
+    """Access to the owner information."""
     buchung: Optional[BuchungConfig]
-    """Access to the Grundbuch (register) information."""
+    """Access to the land register information."""
     limit: int = 100
-    """Search results limit."""
+    """Maximum number of parcels returned by a search."""
     templates: Optional[list[gws.ext.config.template]]
-    """Templates for Flurstueck details."""
+    """Templates for parcel details."""
     printers: Optional[list[gws.base.printer.Config]]
-    """Print configurations."""
+    """Print templates for parcels."""
     ui: Optional[Ui]
-    """Ui options."""
+    """User interface options for the search form and results."""
 
     strasseSearchOptions: Optional[gws.TextSearchOptions]
-    """Search options for street names."""
+    """How street names are matched."""
     nameSearchOptions: Optional[gws.TextSearchOptions]
-    """Search options for person names."""
+    """How person names are matched."""
     buchungsblattSearchOptions: Optional[gws.TextSearchOptions]
-    """Search options for book and page numbers."""
+    """How book and page numbers are matched."""
 
     storage: Optional[gws.base.storage.Config]
-    """Storage configuration."""
+    """Storage for saved parcel selections."""
 
     exporters: Optional[list[exporter.Config]]
-    """Export configurations."""
+    """Export formats for parcel data."""
 
 
 ##

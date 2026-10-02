@@ -15,16 +15,16 @@ from . import grabber, provider
 
 @gws.ext.config.layer('wmts')
 class Config(gws.base.layer.Config):
-    """WMTS layer"""
+    """Layer that shows tiles from a WMTS service."""
 
     provider: provider.Config
-    """WMTS provider."""
+    """WMTS service the layer is loaded from."""
     display: gws.LayerDisplayMode = gws.LayerDisplayMode.tile
-    """Layer display mode."""
+    """The way the layer is rendered in the client."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]
-    """Source layer filter."""
+    """Source layer to show."""
     style: Optional[str]
-    """WMTS style name."""
+    """Source style to request."""
 
 
 class TileMatrixSetProps(gws.Props):

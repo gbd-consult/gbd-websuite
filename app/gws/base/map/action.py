@@ -19,7 +19,7 @@ LEGEND_IMAGE_FORMAT = gws.ImageFormat(name='png', mimeTypes=['image/png'], optio
 
 @gws.ext.config.action('map')
 class Config(gws.base.action.Config):
-    """Configuration for the map action."""
+    """Serves map images, tiles, legends and features to the client."""
 
     pass
 

@@ -6,18 +6,18 @@ import gws.base.model.widget
 
 @gws.ext.config.modelWidget('featureList')
 class Config(gws.base.model.widget.Config):
-    """Feature list widget configuration."""
+    """List of related features."""
 
     withNewButton: bool = True
-    """Display the new button."""
+    """Show a button to create a new related feature."""
     withLinkButton: bool = True
-    """Display the link button."""
+    """Show a button to link an existing feature."""
     withEditButton: bool = True
-    """Display the edit button."""
+    """Show a button to edit the selected feature."""
     withUnlinkButton: bool = False
-    """Display the unlink button."""
+    """Show a button to unlink the selected feature without deleting it."""
     withDeleteButton: bool = False
-    """Display the delete button."""
+    """Show a button to delete the selected feature."""
 
 
 @gws.ext.props.modelWidget('featureList')

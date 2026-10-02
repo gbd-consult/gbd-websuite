@@ -15,12 +15,12 @@ import gws.lib.bounds
 
 @gws.ext.config.model('nominatim')
 class Config(gws.base.model.Config):
-    """Nominatim model"""
+    """Data model for places and addresses from Nominatim."""
 
     country: Optional[str]
-    """Country to limit the search."""
+    """Countries to limit the results to."""
     language: Optional[str]
-    """Language to return the results in."""
+    """Preferred language of the results."""
 
 
 @gws.ext.object.model('nominatim')

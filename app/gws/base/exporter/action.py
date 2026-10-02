@@ -11,7 +11,7 @@ import gws.lib.mime
 
 @gws.ext.config.action('exporter')
 class Config(gws.base.action.Config):
-    """Configuration for the exporter action. (added in 8.4)"""
+    """Feature export in the client, run as background jobs."""
 
     pass
 

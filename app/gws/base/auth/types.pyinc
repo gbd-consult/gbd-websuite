@@ -149,7 +149,7 @@ class AuthManager(Node):
         """Authenticate a user."""
 
     def create_transient_session(self, method: 'AuthMethod', user: 'User', data: Optional[dict] = None) -> 'AuthSession':
-        """Create a Session which only lives for the duration of the request. (added in 8.4)
+        """Create a Session which only lives for the duration of the request.
 
         Args:
             method: Auth Method that creates the Session.

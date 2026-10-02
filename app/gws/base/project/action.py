@@ -8,7 +8,7 @@ import gws.lib.intl
 
 @gws.ext.config.action('project')
 class Config(gws.base.action.Config):
-    """Project info action configuration."""
+    """Returns the project configuration to the client."""
 
     pass
 

@@ -7,7 +7,7 @@ import gws.lib.datetimex
 
 @gws.ext.config.modelValue('currentTimestamp')
 class Config(gws.base.model.value.Config):
-    """Current timestamp value configuration."""
+    """Value set to the current date and time."""
 
     pass
 

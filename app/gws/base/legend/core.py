@@ -12,9 +12,9 @@ class Config(gws.ConfigWithAccess):
     """Layer legend confuguration."""
 
     cacheMaxAge: gws.Duration = '1d'
-    """Max cache age for remote legends."""
+    """How long legend images from remote sources are cached."""
     options: Optional[dict]
-    """Provider-dependent legend options."""
+    """Provider-specific legend options."""
 
 
 class Object(gws.Legend):

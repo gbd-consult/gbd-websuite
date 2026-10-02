@@ -38,7 +38,7 @@ import gws.lib.osx
 
 @gws.ext.config.helper('upload')
 class Config(gws.Config):
-    """Upload helper."""
+    """Helper that receives chunked file uploads."""
 
     maxSize: int = 1000
     """Maximum upload size in megabytes."""

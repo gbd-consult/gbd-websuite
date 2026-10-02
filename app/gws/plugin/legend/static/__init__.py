@@ -7,10 +7,10 @@ import gws.base.legend
 
 @gws.ext.config.legend('static')
 class Config(gws.base.legend.Config):
-    """Static legend."""
+    """Legend from a static image file."""
 
     path: gws.FilePath
-    """Path to the image file."""
+    """Path to the legend image file."""
 
 
 @gws.ext.object.legend('static')

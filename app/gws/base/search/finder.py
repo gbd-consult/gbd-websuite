@@ -9,33 +9,33 @@ import gws.lib.uom
 
 
 class SpatialContext(gws.Enum):
-    """Spatial context for keyword searches."""
+    """Area searched by keyword searches without a user geometry."""
 
     map = 'map'
-    """Search in the map extent."""
+    """Search the whole map extent."""
     view = 'view'
-    """Search in the client view extent."""
+    """Search the extent currently visible in the client."""
 
 
 class Config(gws.ConfigWithAccess):
     """Finder configuration."""
 
     models: Optional[list[gws.ext.config.model]]
-    """Data models for features."""
+    """Models used to read the features."""
     spatialContext: Optional[SpatialContext] = SpatialContext.map
-    """Spatial context for keyword searches."""
+    """Area searched by keyword searches without a user geometry."""
     templates: Optional[list[gws.ext.config.template]]
-    """Feature formatting templates."""
+    """Templates to format the found features."""
     title: Optional[str]
     """Finder title."""
     category: Optional[str]
-    """Category for the finder."""
+    """Category assigned to the results."""
     withGeometry: bool = True
-    """Enable geometry search."""
+    """Use this finder for geometry searches."""
     withKeyword: bool = True
-    """Enable keyword search."""
+    """Use this finder for keyword searches."""
     withFilter: bool = True
-    """Enable filter search."""
+    """Use this finder for filter searches."""
 
 
 class Object(gws.Finder):

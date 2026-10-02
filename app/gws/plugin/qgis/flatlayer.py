@@ -13,14 +13,14 @@ from . import grabber, provider
 
 @gws.ext.config.layer('qgisflat')
 class Config(gws.base.layer.Config):
-    """Flat Qgis layer"""
+    """Layer that renders selected QGIS project layers as a single image."""
 
     provider: Optional[provider.Config]
-    """Qgis provider."""
+    """QGIS project the layer is rendered from."""
     sourceLayers: Optional[gws.gis.source.LayerFilter]
-    """Source layers to use."""
+    """Source layers to render."""
     sqlFilters: Optional[dict]
-    """Per-layer sql filters."""
+    """SQL filters for source layers, passed to QGIS Server."""
 
 
 @gws.ext.object.layer('qgisflat')

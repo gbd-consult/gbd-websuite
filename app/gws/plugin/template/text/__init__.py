@@ -19,12 +19,12 @@ import gws.lib.vendor.jump
 
 @gws.ext.config.template('text')
 class Config(gws.base.template.Config):
-    """Text-only template."""
+    """Jump template for plain text output."""
 
     path: Optional[gws.FilePath]
-    """Path to a template file."""
+    """Template file."""
     text: str = ''
-    """Template content."""
+    """Template source."""
 
 
 @gws.ext.props.template('text')

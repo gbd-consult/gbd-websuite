@@ -6,26 +6,26 @@ import gws.lib.xmlx
 
 
 class NamespaceConfig(gws.Config):
-    """XML Namespace configuration."""
+    """Custom XML namespace for generated XML documents."""
 
     xmlns: str
-    """Default prefix for this Namespace."""
+    """Default prefix for this namespace."""
     uri: gws.Url
-    """Namespace uri."""
+    """Namespace URI."""
     schemaLocation: Optional[gws.Url]
-    """Namespace schema location."""
+    """URL of the namespace XML schema."""
     version: str = ''
-    """Namespace version. (deprecated in 8.5)"""
+    """Ignored. (deprecated in 8.5)"""
     extendsGml: bool = True
     """Namespace schema extends the GML3 schema."""
 
 
 @gws.ext.config.helper('xml')
 class Config(gws.Config):
-    """XML helper."""
+    """Custom XML namespaces for generated XML documents."""
 
     namespaces: list[NamespaceConfig]
-    """List of custom namespaces for XML generation."""
+    """Custom namespaces to register."""
 
 
 @gws.ext.object.helper('xml')

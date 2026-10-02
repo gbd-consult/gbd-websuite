@@ -10,7 +10,7 @@ import gws.lib.mime
 
 @gws.ext.config.exporter('csv')
 class Config(gws.base.exporter.Config):
-    """CSV Exporter configuration."""
+    """Export of features to CSV."""
 
     pass
 

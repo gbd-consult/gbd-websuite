@@ -19,12 +19,12 @@ from . import core, packager, patcher, api, caps
 
 @gws.ext.config.action('qfieldcloud')
 class Config(gws.ConfigWithAccess):
-    """QField Cloud action."""
+    """Endpoint for QField clients that emulates the QFieldCloud API."""
 
     projects: list[core.ProjectConfig]
-    """QField Cloud projects."""
+    """Projects offered to QField clients."""
     auth: Optional[gws.base.auth.method.Config]
-    """Options for the token authorization method. (added in 8.4)"""
+    """Token authentication method for QField clients."""
 
 
 @gws.ext.props.action('qfieldcloud')

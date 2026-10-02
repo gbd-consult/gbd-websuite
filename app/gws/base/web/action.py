@@ -44,7 +44,7 @@ class TemplateArgs(gws.TemplateArgs):
 
 @gws.ext.config.action('web')
 class Config(gws.base.action.Config):
-    """Web action configuration."""
+    """Serves web pages, assets and files to the browser."""
 
     pass
 

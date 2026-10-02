@@ -11,7 +11,7 @@ import gws.base.model.validator
 
 @gws.ext.config.modelValidator('format')
 class Config(gws.base.model.validator.Config):
-    """Validator for correct values."""
+    """Checks that a value could be parsed for the field type."""
 
     pass
 

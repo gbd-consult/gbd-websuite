@@ -65,11 +65,11 @@ UomSize: TypeAlias = tuple[float, float, Uom]
 """A Size with a unit."""
 
 UomSizeStr: TypeAlias = list[str]
-"""A Size with a unit like ``["1mm", "2mm"]``."""
+"""A size with a unit like ``["1mm", "2mm"]``."""
 
 UomExtent: TypeAlias = tuple[float, float, float, float, Uom]
 """Extent with a unit."""
 
 UomExtentStr: TypeAlias = list[str]
-"""Extent with a unit like ``["1mm", "2mm", "3mm", "4mm"]``."""
+"""An extent with a unit like ``["1mm", "2mm", "3mm", "4mm"]``."""
 

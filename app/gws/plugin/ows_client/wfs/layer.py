@@ -9,10 +9,10 @@ from . import provider
 
 @gws.ext.config.layer('wfs')
 class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
-    """WFS tree layer configuration."""
+    """Layer group with a sublayer for each WFS feature type."""
 
     provider: provider.Config
-    """WFS provider."""
+    """WFS service the layers are loaded from."""
 
 
 @gws.ext.object.layer('wfs')

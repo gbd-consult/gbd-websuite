@@ -5,47 +5,47 @@ import gws
 
 
 class PositionConfig(gws.Config):
-    """Position correction for points."""
+    """Correction of point positions in the GekoS index."""
 
     offsetX: int
-    """X-offset for points."""
+    """Offset added to X coordinates of points."""
     offsetY: int
-    """Y-offset for points."""
+    """Offset added to Y coordinates of points."""
     distance: int = 0
-    """Radius for points repelling."""
+    """Radius of the circle on which points with the same location are spread."""
     angle: int = 0
-    """Angle for points repelling."""
+    """Angle step in degrees for spreading points with the same location."""
 
 
 class SourceConfig(gws.Config):
-    """Configuration for a gek-online source."""
+    """Gek-online source configuration."""
 
     url: gws.Url
     """Base URL for gek-online calls."""
     params: dict
-    """Parameters for gek-online calls."""
+    """Query parameters for gek-online calls."""
     instance: str
-    """Instance name for gek-online calls, used to create unique uids."""
+    """Instance name for gek-online calls, used to create unique UIDs."""
 
 
 class IndexConfig(gws.Config):
-    """Configuration for the GekoS index."""
+    """Index of GekoS records in a database table."""
 
     sources: list[SourceConfig]
-    """List of gek-online sources."""
+    """gek-online sources to load records from."""
     position: Optional[PositionConfig]
     """Position correction for points."""
     tableName: str
-    """SQL table name for storing GekoS data."""
+    """Database table for the GekoS index."""
     crs: gws.CrsName
     """CRS for GekoS data."""
     crs: gws.CrsName
-    """CRS for gekos data."""
+    """CRS for GekoS data."""
     dbUid: Optional[str]
-    """Database provider uid."""
+    """UID of the database provider for the index table."""
     sources: list[SourceConfig]
-    """Gek-online instance names."""
+    """gek-online sources to load records from."""
     position: Optional[PositionConfig]
     """Position correction for points."""
     tableName: str
-    """Sql table name."""
+    """Database table for the GekoS index."""

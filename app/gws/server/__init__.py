@@ -1,6 +1,6 @@
 """Configuration and management of embedded servers.
 
-GWS runs several servers in the container: WSGI backend servers (Web and Mapproxy), the Spool server for background jobs and the frontend NGINX proxy.
+GWS runs several servers in the container: WSGI app server (Web), the Spool server for background jobs and the frontend NGINX proxy.
 
 This module provides configuration and control utilities for these facilities. It handles GWS startups and reloads.
 

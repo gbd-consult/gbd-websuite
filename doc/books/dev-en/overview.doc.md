@@ -7,7 +7,6 @@ The server runs in a docker container that incorporates necessary software and l
 nginx server and several backend wsgi applications:
 
 - main GWS application
-- MapProxy server, responsible for caching and reprojecting raster services
 - spool server that handles background tasks, like printing
 
 Some parts of the application are also accessible as CLI scripts.

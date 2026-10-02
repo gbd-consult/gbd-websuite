@@ -42,16 +42,16 @@ from . import caps, project, provider
 
 @gws.ext.config.template('qgis')
 class Config(gws.base.template.Config):
-    """QGIS Print template configuration."""
+    """Print template based on a print layout of a QGIS project."""
     
     provider: Optional[provider.Config]
-    """Qgis provider."""
+    """QGIS project that contains the print layout."""
     index: Optional[int]
-    """Template index."""
+    """Print layout index in the QGIS project."""
     mapPosition: Optional[gws.UomSizeStr]
-    """Position for the main map."""
+    """Position of the main map on the page."""
     cssPath: Optional[gws.FilePath]
-    """Css file."""
+    """Stylesheet for the HTML map overlay."""
 
 
 class _HtmlBlock(gws.Data):

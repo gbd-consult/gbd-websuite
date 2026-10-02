@@ -73,13 +73,13 @@ class Config(gws.base.auth.provider.Config):
     """SQL-based authorization provider"""
 
     dbUid: Optional[str]
-    """Database provider uid"""
+    """UID of the database provider."""
 
     authorizationSql: str
-    """Authorization SQL statement"""
+    """SQL query that checks user credentials."""
 
     getUserSql: str
-    """User data SQL statement"""
+    """SQL query that returns the user record for the {uid} placeholder."""
 
 
 class Placeholders(gws.Enum):

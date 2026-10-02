@@ -7,10 +7,10 @@ import gws.lib.sqlitex
 
 @gws.ext.config.storageProvider('sqlite')
 class Config(gws.Config):
-    """Configuration for sqlite storage."""
+    """Storage provider that keeps saved user data in an SQLite file."""
 
     path: Optional[str]
-    """Storage path."""
+    """Database file."""
 
 
 @gws.ext.object.storageProvider('sqlite')

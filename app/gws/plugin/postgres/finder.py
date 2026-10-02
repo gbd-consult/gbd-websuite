@@ -9,14 +9,14 @@ import gws.config.util
 
 @gws.ext.config.finder('postgres')
 class Config(gws.base.search.finder.Config):
-    """Database-based search"""
+    """Search in a PostgreSQL table."""
 
     dbUid: Optional[str]
-    """Database provider uid."""
+    """UID of the database provider."""
     tableName: str
-    """Database table name."""
+    """Table to search, optionally schema-qualified."""
     sqlFilter: Optional[str]
-    """extra SQL filter"""
+    """SQL condition added to all search queries."""
 
 
 @gws.ext.object.finder('postgres')

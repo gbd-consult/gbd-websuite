@@ -6,7 +6,7 @@ from . import provider
 
 @gws.ext.config.layer('postgres')
 class Config(gws.base.database.layer.Config):
-    """Postgres layer"""
+    """Layer that shows features from a PostgreSQL table."""
     pass
 
 

@@ -39,12 +39,12 @@ from . import caps
 
 
 class Config(gws.base.ows.client.provider.Config):
-    """WMS provider configuration."""
+    """Connection to a WMS service."""
 
     bottomFirst: bool = False
-    """True if layers are listed from bottom to top."""
+    """The service lists layers in its capabilities from bottom to top."""
     maxRequestPixels: int = 4096
-    """Max pixel size of a single map request. (added in 8.5)"""
+    """Max. size of a single map request in pixels. (added in 8.5)"""
 
 
 class Object(gws.base.ows.client.provider.Object):

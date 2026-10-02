@@ -12,12 +12,12 @@ import gws.lib.sa as sa
 
 @gws.ext.config.modelField('geometry')
 class Config(gws.base.model.scalar_field.Config):
-    """Geometry field configuration."""
+    """Field for geometries."""
 
     geometryType: Optional[gws.GeometryType]
-    """Geometry type, e.g. point, line, polygon."""
+    """Geometry type."""
     crs: Optional[gws.CrsName]
-    """Coordinate Reference System (CRS) name, e.g. 'EPSG:4326'."""
+    """CRS of the geometries."""
 
 
 @gws.ext.props.modelField('geometry')
