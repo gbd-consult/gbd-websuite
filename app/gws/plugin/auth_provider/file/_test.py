@@ -54,7 +54,7 @@ def test_authenticate_valid_user(root: gws.Root):
 
 
 def test_authenticate_wrong_password(root: gws.Root):
-    with u.raises(gws.ForbiddenError):
+    with u.raises(gws.AuthenticationError):
         _auth(root, 'me', 'WRONG')
 
 
@@ -87,7 +87,7 @@ def test_authenticate_unknown_user_costs_the_same_as_a_known_one(root: gws.Root)
     unknown_user = time.time() - t
 
     t = time.time()
-    with u.raises(gws.ForbiddenError):
+    with u.raises(gws.AuthenticationError):
         _auth(root, 'me', 'WRONG')
     known_user = time.time() - t
 

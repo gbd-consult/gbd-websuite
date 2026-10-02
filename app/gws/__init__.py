@@ -482,6 +482,11 @@ class ForbiddenError(Error):
     pass
 
 
+class AuthenticationError(ForbiddenError):
+    """Credentials are missing, wrong or expired."""
+    pass
+
+
 class BadRequestError(Error):
     """Generic 'bad request' error."""
     pass

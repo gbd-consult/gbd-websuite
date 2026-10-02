@@ -142,7 +142,7 @@ class Object(gws.base.auth.provider.Object):
         if len(users) == 0:
             return
         if len(users) > 1:
-            raise gws.ForbiddenError(f'multiple entries for {username!r}')
+            raise gws.AuthenticationError(f'multiple entries for {username!r}')
 
         rec = users[0]
 
@@ -156,7 +156,7 @@ class Object(gws.base.auth.provider.Object):
             conn.simple_bind_s(rec['dn'], password)
             return rec
         except ldap.INVALID_CREDENTIALS:
-            raise gws.ForbiddenError(f'wrong password for {username!r}')
+            raise gws.AuthenticationError(f'wrong password for {username!r}')
         except ldap.LDAPError as exc:
             gws.log.exception()
             raise gws.ForbiddenError(f'LDAP error {exc.__class__.__name__}') from exc

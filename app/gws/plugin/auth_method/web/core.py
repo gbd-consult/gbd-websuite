@@ -163,7 +163,7 @@ class Object(gws.base.auth.method.Object):
 
         user = self.root.app.authMgr.authenticate(self, p, req)
         if not user:
-            raise gws.ForbiddenError('login: user not found')
+            raise gws.AuthenticationError('login: user not found')
 
         if user.mfaUid:
             mfa = self._mfa_start(req, user)
@@ -188,7 +188,7 @@ class Object(gws.base.auth.method.Object):
             return self._mfa_response(mfa)
 
         self._delete_session(req)
-        raise gws.ForbiddenError(f'MFA: verify failed {mfa.state=}')
+        raise gws.AuthenticationError(f'MFA: verify failed {mfa.state=}')
 
     def handle_mfa_restart(self, req: gws.WebRequester, p: gws.Request) -> LoginResponse:
         try:

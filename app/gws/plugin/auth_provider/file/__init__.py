@@ -44,7 +44,7 @@ class Object(gws.base.auth.provider.Object):
         found = [rec for rec in self.db if gws.lib.password.compare(username, rec['login'])]
 
         if len(found) > 1:
-            raise gws.ForbiddenError(f'multiple entries for {username!r}')
+            raise gws.AuthenticationError(f'multiple entries for {username!r}')
 
         if not found:
             # verify against a dummy hash, so that the time spent here
@@ -53,7 +53,7 @@ class Object(gws.base.auth.provider.Object):
             return
 
         if not gws.lib.password.check(password, found[0]['password']):
-            raise gws.ForbiddenError(f'wrong password for {username!r}')
+            raise gws.AuthenticationError(f'wrong password for {username!r}')
 
         return self._make_user(found[0])
 

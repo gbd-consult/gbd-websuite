@@ -77,13 +77,13 @@ def test_authenticate_valid_user(root: gws.Root):
 
 
 def test_authenticate_wrong_password(root: gws.Root):
-    """Test authentication with wrong password raises ForbiddenError"""
+    """Test authentication with wrong password raises AuthenticationError"""
     am = root.app.authMgr
     prv = am.providers[0]
     try:
         prv.authenticate(am.methods[0], gws.Data(username='a', password='wrongpass'))
-        assert False, "Should have raised ForbiddenError"
-    except gws.ForbiddenError:
+        assert False, "Should have raised AuthenticationError"
+    except gws.AuthenticationError:
         pass
 
 
