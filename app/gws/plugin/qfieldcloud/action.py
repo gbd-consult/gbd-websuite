@@ -329,6 +329,14 @@ class Object(gws.base.action.Object):
         path_map = self.get_latest_package_path_map(rx)
         for fname, p in path_map.items():
             if file_name == fname:
+                # QField resumes interrupted downloads with "Range: bytes=N-" and appends the body to its partial file.
+                # Ranges are not supported, so refuse with 416: QField then drops the partial file and downloads in full.
+                if rx.req.header('Range'):
+                    return gws.ContentResponse(
+                        status=416,
+                        content='',
+                        headers={'Content-Range': f'bytes */{osx.file_size(p)}'},
+                    )
                 return gws.ContentResponse(contentPath=p)
         raise gws.NotFoundError(f'file {file_name!r} not found')
 

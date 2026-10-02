@@ -423,6 +423,19 @@ def test_package_file_download(root: gws.Root, token):
     assert res.get_data().startswith(b'<qgis')
 
 
+def test_package_file_range_request_is_refused(root: gws.Root, token):
+    _package(root, token)
+
+    url = _url('api/v1/packages/QFC_1/latest/files/QFC_1.qgs')
+    size = len(u.http.get(root, url, headers=_auth(token)).get_data())
+
+    res = u.http.get(root, url, headers={**_auth(token), 'Range': 'bytes=10-'})
+
+    assert res.status_code == 416
+    assert res.headers['Content-Range'] == f'bytes */{size}'
+    assert res.get_data() == b''
+
+
 def test_unknown_package_file(root: gws.Root, token):
     _package(root, token)
 
