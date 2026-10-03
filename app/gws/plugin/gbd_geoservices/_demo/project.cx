@@ -1,19 +1,19 @@
 uid "gbd_geoservices"
 
-title "GBD Geoservices"
+title "GBD Geoservices: Karten und Suche"
 
-metadata.keywords [ "search" "raster" ]
+metadata.keywords [ "suche" "karte" ]
 
 metadata.abstract """
-Rasterkarten und Volltextsuche mit [GBD Geoservices](https://geoservices.gbd-consult.de) für ganz Deutschland.
-Die Karten stehen in drei Detailstufen (Standard, Erweitert, Einfach) und vier Farbschemata (Default, Hell, Dunkel, Kontrast) zur Verfügung.
-Die Suche findet Orte, Straßen, Punkte von Interesse und Adressen.
+Hintergrundkarten und Volltextsuche aus den [GBD Geoservices](https://geoservices.gbd-consult.de) für ganz Deutschland.
+
+Im Seitenleisten-Reiter „Layer“ eine der Karten der Gruppe „Karten“ wählen; es ist immer nur eine sichtbar. Die Karten gibt es in vier Farbschemata (Standard, Hell, Dunkel, Kontrast) mit je drei Detailstufen (normal, Minimal, Alles). Im Suchfeld in der oberen Leiste oder im Reiter „Suche“ nach Orten, Straßen, Adressen und Punkten von Interesse suchen.
+
+Die Karten sind `tile` Layer mit `display "client"`, die Kacheln also direkt vom Dienst laden; sie werden über das Makro `@def TILES` erzeugt. Die Gruppe hat `clientOptions {{ expanded true exclusive true }}`. Für die Suche wird ein Finder vom Typ `gbd_geoservices` mit `apiKey` und `spatialContext "map"` konfiguriert.
 """
 
 client.addElements+ { tag "Sidebar.Search" }
 client.addElements+ { tag "Altbar.Search" }
-
-client.options.sidebarActiveTab "Sidebar.Layers"
 
 actions+ { type "search" tolerance "5px" }
 

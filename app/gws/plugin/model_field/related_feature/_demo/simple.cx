@@ -1,11 +1,15 @@
 uid "field_related_feature"
 
-title "relatedFeature"
+title "Editieren N:1-Beziehung mit Auswahlliste"
 
-metadata.keywords [ "edit" "model-field" "database" ]
+metadata.keywords [ "edit" "datenbank" ]
 
 metadata.abstract """
-Editing related 'parent' feature
+Einem POI eine Kategorie aus einer Auswahlliste zuordnen (N:1-Beziehung).
+
+Im Reiter "Editieren" das Modell "POIs" wählen und ein Objekt öffnen. Das Feld "Category" bietet die vorhandenen Kategorien zur Auswahl an.
+
+Das Feld ist vom Typ `relatedFeature`: `fromColumn "category_id"` ist die Fremdschlüsselspalte der POI-Tabelle, `toModel` und `toColumn "id"` bezeichnen das Kategorie-Modell und dessen Schlüssel. Das Widget `featureSelect` zeigt die Kategorien als Auswahlliste. Das Kategorie-Modell ist mit `permissions.edit "deny all"` schreibgeschützt und dient nur als Nachschlagetabelle.
 """
 
 actions+ { type "edit" }

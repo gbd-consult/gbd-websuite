@@ -1,11 +1,15 @@
 uid "geometry_inline"
 
-title "Geometry widget"
+title "Editieren mit eingebettetem Geometrie-Widget"
 
-metadata.keywords [ "edit" "geometry" ]
+metadata.keywords [ "edit" "vektordaten" ]
 
 metadata.abstract """
-Geometry widget rendered in the bottom bar per default, unless `isInline: true` is specified.
+Zwei Platzierungen der Schaltflächen zum Zeichnen und Bearbeiten der Geometrie im Bearbeitungsformular.
+
+Im Reiter "Editieren" ein Modell wählen und ein Objekt öffnen. Beim Modell "POI (default geometry)" stehen die Geometrie-Schaltflächen in der Fußleiste des Formulars neben Speichern und Löschen. Beim Modell "Districts (inline geometry)" erscheinen sie als eigene Zeile zwischen den übrigen Formularfeldern.
+
+Beide Modelle haben ein Feld `type "geometry"`. Das Widget `geometry` ist beim zweiten Modell explizit mit `isInline true` konfiguriert, was die Schaltflächen in das Formular verschiebt.
 """
 
 actions+ { type "edit" }

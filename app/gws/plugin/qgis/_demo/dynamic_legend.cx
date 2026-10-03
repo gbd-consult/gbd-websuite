@@ -1,11 +1,17 @@
 uid "qgis_dynamic_legend"
 
-title "QGIS Dynamic Legend"
+title "QGIS Druckvorlage mit dynamischer Legende"
 
-metadata.keywords [ "qgis" "print" ]
+metadata.keywords [ "qgis" "drucken" ]
 
 metadata.abstract """
-Use a dynamic legend from a QGIS Project
+Druck mit einer QGIS-Druckvorlage, deren Legende nur die Layer zeigt, die im gedruckten Kartenausschnitt vorkommen.
+
+Zum Ausprobieren den Druck in der Werkzeugleiste öffnen, einen Ausschnitt wählen und drucken. Je nach Ausschnitt enthält die Legende im PDF unterschiedliche Einträge.
+
+Die Vorlage `type "qgis"` stammt aus dem QGIS-Projekt, das auch den `qgisflat`-Layer "Düsseldorf" liefert. Im Layout ist die Legende so eingestellt, dass sie nach dem Inhalt der Karte gefiltert wird. Die Karte selbst rendert die WebSuite; dem QGIS Server werden Ausdehnung und Maßstab der Druckkarte übergeben, sodass QGIS die Legende danach filtert.
+
+Als zweiter Layer ist ein `wmts`-Layer mit Luftbildern (DOP) mit `withCache true` konfiguriert.
 """
 
 printers+ {

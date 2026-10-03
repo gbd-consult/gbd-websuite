@@ -1,18 +1,17 @@
 uid "overview_map"
 
-title "Overview map"
+title "Übersichtskarte in Seitenleiste und Druck"
 
-metadata.keywords [ "client" ]
+metadata.keywords [ "karte" "drucken" ]
 
 metadata.abstract """
-An overview map can contain any type of layers.
+Eine Übersichtskarte mit eigenen Layern, angezeigt in der Seitenleiste und in der Druckvorschau.
 
-The `extent` configuration is mandatory for the overview map,
-you can conveniently use arithmetic expressions to define the extent
-relatively to the map center.
+Der Reiter "Übersicht" der Seitenleiste (`Sidebar.Overview`) zeigt die Übersichtskarte mit einem Rahmen um den aktuellen Kartenausschnitt; Klicken oder Ziehen in der Übersichtskarte verschiebt die Hauptkarte. Darunter können Mittelpunkt, Maßstab und Drehung der Hauptkarte eingegeben werden.
 
-The print templates demonstrate how overview maps work
-for different page and map sizes.
+In der Druckvorschau ("Drucken" in der Werkzeugleiste) erscheint die Übersichtskarte mit einem Rahmen in der Größe des Kartenausschnitts der gewählten Vorlage. Die vier Vorlagen (A4 und A2, jeweils hoch und quer) zeigen das für verschiedene `mapSize`.
+
+Die Übersichtskarte wird unter `overviewMap` konfiguriert und kann beliebige Layer enthalten, hier die Stadtteile aus PostgreSQL und die OSM-Hintergrundkarte. `extent` ist Pflicht; im Beispiel wird die Ausdehnung mit arithmetischen Ausdrücken relativ zum Kartenmittelpunkt berechnet.
 """
 
 client.addElements+ { tag "Sidebar.Overview" }

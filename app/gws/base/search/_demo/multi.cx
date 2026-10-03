@@ -2,16 +2,16 @@ uid "search_multi"
 
 title "Suche mit Kategorien"
 
-metadata.keywords [ "client" "postgres" "search" "vector-data" ]
+metadata.keywords [ "suche" "datenbank" "qgis" ]
 
 metadata.abstract """
-Es können bei einem Projekt, bzw global, mehrere Finder Objekte definiert werden, die verschiedene Datenquellen durchsuchen. 
-Bei einer Suche werden dann die Ergebnisse aller Finder gesammelt und dem Benutzer in einer gemeinsamen Ergebnisliste präsentiert.
+Mehrere Finder, die verschiedene PostgreSQL Tabellen durchsuchen und deren Treffer nach Kategorien gefiltert werden können.
 
-Optional, können die Finder in Kategorien gruppiert werden, so dass der Benutzer die Ergebnisse nach Kategorien filtern kann.
-Die Liste der Kategorien wird unter Alktion "search" konfiguriert. Jeder Finder kann einer Kategorie zugewiesen werden.
+Einen Suchbegriff in das Suchfeld in der oberen Leiste oder im Seitenleisten-Reiter „Suche“ eingeben. Die Treffer aller Finder erscheinen in einer gemeinsamen Liste. Über die Optionen der Suche lassen sich Kategorien („Interessante Orte“, „Stadtbezirke“, „Natur“) an- und abwählen.
 
-Zusätzlich können für jeden Finder eigene Templates definiert werden, sodass die Suchergebnisse unterschiedlich dargestellt werden können.
+Die Kategorien werden in der Aktion `search` unter `categories` aufgezählt. Jeder Finder vom Typ `postgres` verweist mit `tableName` auf eine Tabelle und ordnet sich mit `category` einer Kategorie zu; mehrere Finder können dieselbe Kategorie haben (Parks und Gewässer unter „Natur“). Das Modell jedes Finders definiert das Feld `name` mit `textSearch {{ type "any" minLength 1 }}`.
+
+Jeder Finder hat eine eigene `feature.teaser` Vorlage mit einer eigenen CSS-Klasse, so dass die Treffer je nach Quelle unterschiedlich dargestellt werden.
 """
 
 client.addElements+ { tag "Sidebar.Search" }

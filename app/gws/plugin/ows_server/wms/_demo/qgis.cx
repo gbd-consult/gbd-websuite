@@ -1,11 +1,15 @@
 uid "service_wms_qgis_demo"
 
-title "WMS service from QGIS"
+title "WMS Dienst aus QGIS Projekt"
 
-metadata.keywords [ "wms" "ows-service" "qgis" ]
+metadata.keywords [ "ows-dienste" "wms" "qgis" ]
 
 metadata.abstract """
-`WMS` service with qgis layers
+Ein von der WebSuite bereitgestellter WMS-Dienst, der die Layer eines QGIS-Projekts veröffentlicht.
+
+Beim Laden des Dienstes in einer externen Anwendung wie QGIS erscheint der Layerbaum des QGIS-Projekts „Düsseldorf“.
+
+Die Projektkarte enthält einen Layer vom Typ `qgis`, der den Layerbaum des QGIS-Projekts übernimmt; der `owsServices`-Eintrag vom Typ `wms` veröffentlicht diese Layer. `provider.directSearch [ "postgres" ]` lässt PostgreSQL-Layer des Projekts direkt in der Datenbank abfragen statt über QGIS Server.
 
 [Service URL](/_/owsService/serviceUid/service_wms_qgis?request=GetCapabilities)
 

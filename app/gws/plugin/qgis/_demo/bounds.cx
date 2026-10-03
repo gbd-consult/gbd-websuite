@@ -1,11 +1,15 @@
 uid "qgis_bounds"
 
-title "QGIS bounds"
+title "QGIS Layer, automatische Ausdehnung"
 
-metadata.keywords [ "qgis" ]
+metadata.keywords [ "qgis" "karte" ]
 
 metadata.abstract """
-Show automatic QGIS layer bounds
+Ein `qgis`-Layer, dessen Ausdehnung die WebSuite aus den Daten des QGIS-Projekts berechnet.
+
+Das Projekt enthält keine WMS-Ausdehnung (Projekteigenschaften, QGIS Server). Die WebSuite bildet die Ausdehnung des Projekts dann aus der Vereinigung der Datenausdehnungen aller Layer und erweitert sie um `provider.extentBuffer` (hier 5000 Meter). Diese Ausdehnung wird beim Rendern verwendet; die Datenausdehnung jedes einzelnen Layers dient als Zoom-Ausdehnung des Layers.
+
+Weitere Möglichkeiten: Hat das Projekt eine explizite WMS-Ausdehnung, wird diese verwendet; mit `provider.useCanvasExtent` kann stattdessen die Kartenausdehnung des Projekts übernommen werden.
 """
 
 map {

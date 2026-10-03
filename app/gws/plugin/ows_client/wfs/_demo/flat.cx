@@ -1,11 +1,15 @@
 uid "wfs_flat"
 
-title "Flat layer"
+title "WFS Layer, flach"
 
-metadata.keywords [ "wfs" "ows" ]
+metadata.keywords [ "wfs" "vektordaten" ]
 
 metadata.abstract """
-`wfsflat` layers display a single "feature type" from a WFS services.
+Ein einzelner „feature type“ eines externen WFS-Dienstes als Vektorlayer: die Kreise und kreisfreien Städte aus dem WFS „Digitale Verwaltungsgrenzen NRW“.
+
+Der Layer erscheint als ein Eintrag im Layer-Panel. Die Features werden im Client als Vektoren gezeichnet und mit dem Namen des Kreises beschriftet.
+
+Konfiguriert ist ein Layer vom Typ `wfsflat`. `provider.url` verweist auf den WFS-Dienst, `sourceLayers.names` wählt daraus genau einen „feature type“ (`dvg:nw_dvg1_krs`) aus. Die Vorlage mit dem Subject `feature.label` beschriftet jedes Feature mit dem Attribut `gn`, `cssSelector` weist den Features einen Stil zu.
 """
 
 map {

@@ -1,18 +1,15 @@
 uid "auth_user"
 
-title "User tab"
+title "Anmeldung mit Passwort und MFA"
 
-metadata.keywords [ "auth" ]
+metadata.keywords [ "authentifizierung" "werkzeuge" ]
 
 metadata.abstract """
-This demo shows the "User" tab in the client.
+Anmeldung im Client über den Reiter "User" der Seitenleiste (`Sidebar.User`), mit Passwort oder mit Multi-Faktor-Authentifizierung (MFA).
 
-You can use login name **demo1** for a simple password-based login,
-or **demo_mfa** for the multi-factor authorization.
+Für eine einfache Anmeldung den Login **demo1** verwenden, für eine Anmeldung mit MFA den Login **demo_mfa**. Das Passwort ist für alle Logins **demo**. Bei `demo_mfa` fragt der Client nach dem Passwort zusätzlich einen Einmalcode ab; den Code erzeugt [der TOTP-Generator](/asset/totp).
 
-The password for all logins is **demo**.
-
-To configure and obtain the MFA one-time code use [the TOTP generator](/asset/totp).
+Die Nutzer stammen aus dem Auth-Provider `file` (`demos/users.json`). Dort ist `demo_mfa` mit `mfaUid "AUTH_MFA_TOTP"` dem MFA-Adapter vom Typ `totp` zugeordnet, der in `auth.mfa` konfiguriert ist.
 """
 
 map {

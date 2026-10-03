@@ -1,11 +1,15 @@
 uid "wms_layer"
 
-title "Tree layer"
+title "WMS Layer als Baumstruktur"
 
-metadata.keywords [ "wms" "ows" ]
+metadata.keywords [ "wms" "karte" ]
 
 metadata.abstract """
-`wms` layers display separate WMS layers as WebSuite layers, keeping the tree structure.
+Ein externer WMS-Dienst als Layerbaum, der die Struktur des Dienstes übernimmt, am Beispiel des ALKIS-WMS NRW.
+
+Im Layer-Panel erscheint unter „NRW ALKIS“ der vollständige Layerbaum des Dienstes. Gruppen und Einzellayer können wie WebSuite-Layer auf- und zugeklappt sowie ein- und ausgeschaltet werden. Die ALKIS-Layer des Dienstes werden erst in großen Maßstäben dargestellt, die Karte startet deshalb bei 1:4.000.
+
+Konfiguriert ist ein Layer vom Typ `wms` mit `provider.url`. Jeder Quelllayer wird zu einem eigenen WebSuite-Layer, jede Quellgruppe zu einer Gruppe. Titel, Sichtbarkeit und Aufklappzustand werden aus den Capabilities des Dienstes übernommen. Mit `rootLayers`, `excludeLayers` und `flattenLayers` lässt sich der Baum anpassen (siehe die übrigen WMS-Demos).
 """
 
 map {

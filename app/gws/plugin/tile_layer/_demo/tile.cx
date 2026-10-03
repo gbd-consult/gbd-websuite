@@ -1,11 +1,13 @@
 uid "tile_layer_server"
 
-title "Tile layer"
+title "Kachellayer mit Server-Cache"
 
-metadata.keywords [ "tile" "ows" ]
+metadata.keywords [ "karte" "rasterdaten" ]
 
 metadata.abstract """
-Tile layer, cached on the server.
+Ein XYZ-Kacheldienst (OpenStreetMap), dessen Kacheln über den Server ausgeliefert und dort zwischengespeichert werden.
+
+Der Layer hat `type "tile"`, die Kachel-URL wird mit `provider.url` und den Platzhaltern `{{x}}`, `{{y}}`, `{{z}}` angegeben. Mit `display "tile"` ruft der Browser die Kacheln von der WebSuite ab, nicht direkt vom Dienst; `withCache true` speichert sie auf dem Server.
 """
 
 map {

@@ -1,11 +1,15 @@
 uid "service_wfs_name_demo"
 
-title "WFS service with custom feature name"
+title "WFS Dienst mit eigenem Feature-Namen"
 
-metadata.keywords [ "wfs" "ows-service" ]
+metadata.keywords [ "ows-dienste" "wfs" "vektordaten" ]
 
 metadata.abstract """
-`WFS` service with a custom feature name.
+Ein von der WebSuite bereitgestellter WFS-Dienst, in dem ein PostgreSQL-Layer unter einem frei gewählten Namen erscheint.
+
+In den Capabilities des Dienstes und in QGIS heißt die Objektart der Punkte `demo:customFeatureName` statt eines aus dem Layer abgeleiteten Namens.
+
+Am Layer setzt `ows.featureName "demo:customFeatureName"` den Namen der Objektart einschließlich des Namensraum-Präfixes `demo`; ein separates `ows.xmlns` ist damit nicht nötig. Im `metadata`-Block des Dienstes sind Name, Titel, Beschreibung und Schlagworte für das Capabilities-Dokument hinterlegt.
 
 [Service URL](/_/owsService/serviceUid/service_wfs_name?request=GetCapabilities)
 

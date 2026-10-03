@@ -1,11 +1,15 @@
 uid "search_view"
 
-title "Search in map view"
+title "Suche im aktuellen Kartenausschnitt"
 
-metadata.keywords [ "client" "postgres" "search" "vector-data" ]
+metadata.keywords [ "suche" "datenbank" ]
 
 metadata.abstract """
-Text search, limited to the current map extent
+Textsuche, die nur Objekte im aktuell sichtbaren Kartenausschnitt findet.
+
+Im Seitenleisten-Reiter „Suche“ mindestens drei Zeichen eines Namens eingeben. Es werden nur Treffer im sichtbaren Kartenausschnitt geliefert; nach dem Verschieben oder Zoomen der Karte ändert sich die Trefferliste bei erneuter Suche.
+
+Der Finder vom Typ `postgres` durchsucht die Tabelle `edit.poi`. Mit `spatialContext "view"` wird eine Stichwortsuche ohne Suchgeometrie auf den Kartenausschnitt beschränkt; der Standardwert `map` durchsucht die gesamte Kartenausdehnung. Die Trefferliste zeigt den Namen über eine Vorlage mit `subject "feature.title"`.
 """
 
 client.addElements+ { tag "Sidebar.Search" }

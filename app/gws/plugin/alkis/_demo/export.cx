@@ -1,28 +1,23 @@
 uid "alkis_export"
 
-title "ALKIS Export"
+title "ALKIS Flurstückssuche mit Export"
 
-metadata.keywords [ "alkis" ]
+metadata.keywords [ "alkis" "suche" ]
 
 metadata.abstract """
-ALKIS Plugin mit angepasster Export-Konfiguration.
+ALKIS Flurstückssuche mit mehreren angepassten Export-Konfigurationen.
 
-Aus verschachtelten Flurstück-Strukturen werden beim Exportieren "flache" Schlüssel-Wert-Objekte generiert, 
-wobei die Schlüssel den Pfad zu den ursprünglichen Werten repräsentieren.
+Im Seitenleisten-Reiter der Flurstückssuche Flurstücke suchen und die Treffer exportieren. Beim Export wählt der Nutzer eine der Konfigurationen und, falls sie mehrere Modelle enthält, die Modelle, deren Felder in die Ausgabe sollen.
 
-Eine Liste von möglichen Schlüsseln kann mit dem Befehl `gws alkis keys` im Terminal angezeigt werden.
+Für den Export werden die verschachtelten Flurstück-Strukturen in „flache“ Schlüssel-Wert-Objekte umgewandelt, deren Schlüssel den Pfad zum ursprünglichen Wert wiedergeben (z. B. `fs_recs_gemarkung_text`). Die möglichen Schlüssel zeigt der Befehl `gws alkis keys` im Terminal.
 
-In der Export-Konfiguration können mehrere `exporter` Konfigurationen definiert werden, für jede Export-Konfiguration können mehrere Modelle definiert werden. 
-Die Modelle definieren die Felder, die im Export enthalten sein sollen.
+Die Aktion `alkis` schaltet mit `ui.useExport` den Export frei und definiert unter `exporters` drei Konfigurationen:
 
-In der Web-Oberfläche kann der Nutzer die Konfiguration auswählen, die angwendet werden soll. Falls die Konfiguration mehrere Modelle enthält, 
-kann der Nutzer auch die Modelle auswählen, die im Export enthalten sein sollen.
+- „Basisinformationen (JSON)“: `type "geojson"` mit einem Modell
+- „flexible Ausgabe (CSV)“: `type "csv"` mit mehreren `models` (Basisdaten, Lage, Gebäude, Buchungsblatt, Eigentümer, Nutzung)
+- „Adressen (JSON)“: ein `model` mit berechneten Feldern
 
-Die Felder sind herkömmliche Modellfelder, die auf die "flachen" Schlüssel verweisen.
-Mit "value" Objekten vom Typ "format" bzw. "expression" können mehrere Schlüssel-Werte einem Feld zusammengefasst werden.
-Die Felder können auch als "isHidden" markiert werden, so dass sie im Export nicht auftauchen, aber für die Definition von "value" Objekten verwendet werden können.
-
-Als Export-Typ sind aktuell "geojson" und "csv" verfügbar.
+Die Felder sind gewöhnliche Modellfelder, deren `name` auf einen flachen Schlüssel verweist. Mit `values` vom Typ `format` oder `expression` werden Werte aus mehreren Schlüsseln berechnet; Hilfsfelder mit `isHidden true` werden nicht ausgegeben. Modelle mit Eigentümerdaten stehen nur berechtigten Nutzern zur Verfügung.
 """
 
 actions+ {

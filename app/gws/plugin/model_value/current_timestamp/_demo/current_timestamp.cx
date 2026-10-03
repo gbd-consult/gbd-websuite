@@ -1,12 +1,15 @@
 uid "value_current_timestamp"
 
-title "currentTimestamp"
+title "Editieren mit automatischem Zeitstempel"
 
-metadata.keywords [ "edit" "database" "model-value" ]
+metadata.keywords [ "edit" "datenbank" ]
 
 metadata.abstract """
-Model value `currentTimestamp` tells the editor
-to automatically insert the current timestamp in the edited field.
+Ein Feld, das beim Speichern automatisch das aktuelle Datum erhält.
+
+Im Reiter "Editieren" das Modell "Districts" wählen, einen Stadtteil öffnen, z. B. den Namen ändern und speichern. Das Feld "Date updated" zeigt danach das Datum der Änderung.
+
+Das Feld hat die Wertquelle `values` mit `type "currentTimestamp"`. `forUpdate true` und `forRead false` bewirken, dass der Wert beim Speichern gesetzt wird, nicht beim Lesen. `permissions.edit "deny all"` verhindert eine manuelle Eingabe.
 """
 
 actions+ { type "edit" }

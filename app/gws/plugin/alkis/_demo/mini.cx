@@ -1,17 +1,18 @@
 uid "alkis_mini"
 
-title "ALKIS Mini"
+title "ALKIS Flurstückssuche, minimal"
 
-metadata.keywords [ "alkis" ]
+metadata.keywords [ "alkis" "suche" ]
 
 metadata.abstract """
-ALKIS Plugin mit minimaler Konfiguration.
+ALKIS Flurstückssuche mit minimaler Konfiguration.
 
-URL-basierte Suchanfragen:
+Im Seitenleisten-Reiter der Flurstückssuche nach Gemarkung, Straße und Hausnummer oder Flurstückskennzeichen suchen. Die Suche kann auch über URL-Parameter gestartet werden, der Treffer wird dann auf der Karte markiert:
 
-- [Hausnummer-Suche](/project/alkis_mini?alkisAd=Unnaer%20Straße_50)
-- [Flurstückssuche](/project/alkis_mini?alkisFs=05_051409_0_183_115)
+- [Hausnummer-Suche](/project/alkis_mini?alkisAd=Unnaer%20Straße_50) mit `alkisAd`
+- [Flurstückssuche](/project/alkis_mini?alkisFs=05_051409_0_183_115) mit `alkisFs`
 
+Die Aktion `alkis` benötigt nur die Datenbankanbindung: `dbUid`, `dataSchema` (Schema der ALKIS-Daten), `indexSchema` (Schema des Suchindex) und `crs`. Im Client wird das Element `Sidebar.Alkis` hinzugefügt. Die Flurstücksgrenzen kommen aus dem ALKIS WMS von Geobasis NRW.
 """
 
 actions+ {

@@ -1,11 +1,15 @@
 uid "service_wfs_auth_demo"
 
-title "WFS service with authorization"
+title "WFS Dienst mit Zugriffsbeschränkung"
 
-metadata.keywords [ "wfs" "ows-service" "auth" ]
+metadata.keywords [ "ows-dienste" "wfs" "authentifizierung" ]
 
 metadata.abstract """
-This WFS service is only allowed for authorized users.
+Ein von der WebSuite bereitgestellter WFS-Dienst, den nur angemeldete Benutzer nutzen dürfen. Er stellt die PostgreSQL-Layer „Districts“ und „POI“ bereit.
+
+Ohne Anmeldung wird die Anfrage abgelehnt. Externe Anwendungen wie QGIS melden sich per HTTP Basic-Authentifizierung an, z. B. mit dem Login **demo1** und dem Passwort **demo**.
+
+Der Dienst ist als `owsServices` vom Typ `wfs` mit `permissions.read "allow user,deny all"` konfiguriert. Die Layer erhalten mit `ows.xmlns "demo"` ein Namensraum-Präfix; ohne Namensraum werden Layer nicht im WFS veröffentlicht.
 
 [Service URL](/_/owsService/serviceUid/service_wfs_auth?request=GetCapabilities)
 

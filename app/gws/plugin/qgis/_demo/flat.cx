@@ -1,11 +1,15 @@
 uid "qgis_flat"
 
-title "QGIS flat layer"
+title "QGIS Layer, flach"
 
-metadata.keywords [ "qgis" ]
+metadata.keywords [ "qgis" "karte" ]
 
 metadata.abstract """
-`qgisflat` layers display multiple layers from a QGIS project as a single WebSuite layer.
+Ein ganzes QGIS-Projekt als ein einzelner WebSuite-Layer.
+
+Im Layer-Panel erscheint nur der Layer "Essen und Trinken in Düsseldorf", ohne die Gruppen und Layer des QGIS-Projekts; er lässt sich nur als Ganzes ein- und ausschalten.
+
+Der Layer `type "qgisflat"` rendert alle Layer des über `provider.path` angegebenen Projekts gemeinsam als ein Bild. Darstellung, Beschriftungen und Maßstabsgrenzen kommen unverändert aus QGIS. Eine Auswahl einzelner Quelllayer zeigt die Demo "QGIS Layer, flach mit Layerauswahl", die Baumstruktur die Demo "QGIS Layer als Baumstruktur".
 """
 
 map {

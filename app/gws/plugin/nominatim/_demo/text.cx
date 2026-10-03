@@ -1,11 +1,15 @@
 uid "nominatim_search"
 
-title "Nominatim"
+title "Ortssuche mit Nominatim"
 
-metadata.keywords [ "search" ]
+metadata.keywords [ "suche" "karte" ]
 
 metadata.abstract """
-Full-text search with [Nominatim](https://nominatim.openstreetmap.org/)
+Volltextsuche nach Orten und Adressen mit dem OpenStreetMap-Dienst [Nominatim](https://nominatim.openstreetmap.org/).
+
+Im Seitenleisten-Reiter „Suche“ einen Ort, eine Straße oder eine Adresse eingeben. Die Treffer werden aufgelistet und können auf der Karte angezeigt werden.
+
+Konfiguriert wird ein Finder vom Typ `nominatim`. Mit `spatialContext "map"` wird die Suche auf die Kartenausdehnung beschränkt, die hier über `map.extent` auf NRW und Umgebung gesetzt ist. Mit den Optionen `country` und `language` lassen sich die Ergebnisse zusätzlich auf ein Land bzw. eine Sprache einschränken.
 """
 
 client.addElements+ { tag "Sidebar.Search" }

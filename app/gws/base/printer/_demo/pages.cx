@@ -1,11 +1,17 @@
 uid "print_multi_page"
 
-title "Multi-page printing"
+title "Mehrseitige HTML Druckvorlage"
 
-metadata.keywords [ "print" ]
+metadata.keywords [ "drucken" "qgis" ]
 
 metadata.abstract """
-Multi-page print template with headers and footers.
+Eine HTML Druckvorlage über drei Seiten mit Kopf- und Fußzeile und Seitennummerierung.
+
+Über das Werkzeug „Drucken“ in der Werkzeugleiste den Kartenausschnitt wählen und drucken. Das PDF enthält auf der ersten Seite die Karte, auf der zweiten Angaben zum Druckauftrag (Projekt, Nutzer, Maßstab, Drehung, KBS, Auflösung, Datum) und auf der dritten einen festen Text.
+
+Die Vorlage `pages.cx.html` legt mit `@page` Format und Ränder fest. Die Blockbefehle `@header` und `@footer` definieren Kopf- und Fußzeile, die auf jeder Seite wiederholt werden; in der Fußzeile stehen `{{page}}` und `{{numpages}}` für die aktuelle Seite und die Seitenzahl. Seitenumbrüche werden mit CSS `page-break-after: always` erzeugt.
+
+Da keine `qualityLevels` konfiguriert sind, gibt es nur eine Standardstufe ohne Auswahl im Druckdialog.
 """
 
 printers+ {

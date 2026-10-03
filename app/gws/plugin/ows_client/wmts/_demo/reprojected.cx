@@ -1,11 +1,15 @@
 uid "wmts_reprojected"
 
-title "Reprojected WMTS layer"
+title "WMTS Layer, umprojiziert"
 
-metadata.keywords [ "wmts" "ows" "crs" ]
+metadata.keywords [ "wmts" "koordinatensysteme" ]
 
 metadata.abstract """
-Cached and reprojected `wmts` layer.
+Ein WMTS-Layer, der in ein anderes Koordinatenbezugssystem umprojiziert wird: die Digitale Topographische Karte NRW in einer Karte mit EPSG:25830 (UTM Zone 30N).
+
+Da NRW weit außerhalb der UTM-Zone 30 liegt, erscheint die Karte in dieser Projektion deutlich gedreht. Die Umprojektion übernimmt die WebSuite; der Client erhält fertige Kacheln im KBS der Karte.
+
+Konfiguriert ist die Karte mit `crs 25830` und einem `extent` in diesem KBS, der Layer vom Typ `wmts` mit `withCache true`. Die umprojizierten Kacheln werden auf dem Server zwischengespeichert, sodass sie bei weiteren Anfragen nicht neu berechnet werden müssen.
 """
 
 map {

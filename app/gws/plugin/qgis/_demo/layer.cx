@@ -1,12 +1,15 @@
 uid "qgis_layer"
 
-title "QGIS layer"
+title "QGIS Layer als Baumstruktur"
 
-metadata.keywords [ "qgis" ]
+metadata.keywords [ "qgis" "karte" ]
 
 metadata.abstract """
-`qgis` layers display complete QGIS Projects as WebSuite layers, keeping the structure.
-Each layer is rendered as a separate image.
+Ein QGIS-Projekt als Layerbaum, der die Struktur des Projekts übernimmt.
+
+Im Layer-Panel erscheinen die Gruppen "Einkaufen", "Essen & Trinken", "Kultur" und "Sonstiges" mit ihren Layern sowie der Layer "Districts" so, wie sie im QGIS-Projekt angelegt sind. Jeder Layer lässt sich einzeln ein- und ausschalten.
+
+Der Layer `type "qgis"` liest das über `provider.path` angegebene Projekt und erzeugt für jeden Layer des Projekts einen eigenen WebSuite-Layer, der als separates Bild gerendert wird. Sichtbarkeit und Aufklappzustand werden aus dem Projekt übernommen. Den Aufbau des Baums steuern bei Bedarf `rootLayers`, `excludeLayers` und `flattenLayers`.
 """
 
 map {

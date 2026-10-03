@@ -1,24 +1,23 @@
 uid "qfield_demo"
 
-title "Editieren mit QField"
+title "QField mit konfigurierten Modellen"
 
-metadata.keywords [ "qgis" "postgres" "qfield" ]
+metadata.keywords [ "qfield" "qgis" "edit" "datenbank" ]
 
 metadata.abstract """
-Diese Daten können mit QField auf einem mobilen Gerät
-bearbeitet werden.
+Feldbearbeitung mit der QField App: die Daten eines QGIS-Projekts werden auf einem mobilen Gerät bearbeitet und über die QFieldCloud-Schnittstelle der WebSuite zurück in die PostgreSQL-Datenbank geschrieben.
 
-Um die Daten zu bearbeiten, benutzen Sie bitte die QField App.
-Unter "QFieldCloud Projekte" melden Sie sich zunächst mit folgenden
-Zugangsdaten an:
+Zum Ausprobieren in der QField App unter "QFieldCloud Projekte" mit folgenden Zugangsdaten anmelden:
 
 - **Server**: https://docs.gbd-websuite.de/qfc
 - **Benutzername**: demo1
 - **Passwort**: demo
 
-Laden Sie das Projekt "QField Demo" herunter und öffnen Sie es in QField.
-Editieren Sie die Daten, danach aus der QFieldCloud Menu "Synchronisieren" wählen.
-Anschließend laden Sie diese Seite neu, um die Änderungen in der Webkarte zu sehen.
+Das Projekt "QField Demo" herunterladen und öffnen, die Daten bearbeiten und danach im QFieldCloud-Menü "Synchronisieren" wählen. Nach dem Neuladen dieser Seite zeigt der Layer "QGIS Project" die Änderungen in der Webkarte.
+
+Die Aktion `type "qfieldcloud"` bindet unter `projects` das QGIS-Projekt über `provider.path` an. In QFieldSync sind die Layer "Districts", "Parks" und "Points of interest" für die Offline-Bearbeitung markiert. Für die Tabelle `edit.district_photo` ist ein eigenes `postgres`-Modell konfiguriert: `withAutoFields` übernimmt alle Spalten, `permissions.edit "allow user, deny all"` erlaubt das Schreiben nur angemeldeten Nutzern, und ein Feld vom Typ `file` legt Fotos aus der App in der Datenbank ab (`nameColumn` für den Dateinamen, `contentColumn` für den Inhalt). Für die übrigen Layer erzeugt die WebSuite die Modelle automatisch.
+
+`mapCacheLifeTime "7d"` hält die vom QGIS Server gerenderte Hintergrundkarte des Pakets sieben Tage im Cache.
 """
 
 actions+ {
@@ -39,8 +38,8 @@ actions+ {
             fields+ {
                 type "file"
                 name "image_file"
-                contentColumn "image_content"
-                nameColumn "image"
+                contentColumn "image_1"
+                nameColumn "path_1"
             }
         }
 

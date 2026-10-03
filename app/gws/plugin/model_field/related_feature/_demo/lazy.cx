@@ -1,16 +1,17 @@
 uid "field_related_feature_lazy"
 
-title "relatedFeature (lazy)"
+title "Editieren N:1-Beziehung mit Suchvorschlägen"
 
-metadata.keywords [ "edit" "model-field" "database" ]
+metadata.keywords [ "edit" "datenbank" ]
 
 metadata.abstract """
-Editing 1:M relationships (`person -<< poi`).
+Einer Person einen Lieblingsort und einen Stadtteil zuordnen, wobei das Zielobjekt über Suchvorschläge statt aus einer vollständigen Liste gewählt wird. Geeignet für große Tabellen.
 
-Using `featureSuggest` widgets and `loadingStrategy lazy`
-to facilitate lazy loading: useful for big tables.
+Im Reiter "Editieren" das Modell "People" wählen und eine Person öffnen. In die Felder "Favourite Location" und "Lives in" einige Buchstaben eingeben; passende POIs bzw. Stadtteile werden vorgeschlagen.
 
-The "parent" model must have at least one field with `textSearch` defined.
+Beide Felder sind vom Typ `relatedFeature` mit dem Widget `featureSuggest`. Die Zielmodelle "POIs" und "Districts" haben `loadingStrategy "lazy"`, ihre Objekte werden also erst nach Eingabe eines Suchbegriffs geladen. Gesucht wird in den Feldern mit `textSearch`; das Zielmodell braucht daher mindestens ein solches Feld.
+
+Die Beziehung "Lives in" verwendet keinen Primärschlüssel: `fromColumn "district_name"` verweist auf die Spalte `name` der Stadtteile (`toColumn "name"`).
 """
 
 actions+ { type "edit" }

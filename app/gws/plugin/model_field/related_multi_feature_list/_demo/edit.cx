@@ -1,21 +1,17 @@
 uid "field_related_multi_feature_list"
 
-title "relatedMultiFeatureList"
+title "Editieren 1:N-Beziehung zu mehreren Tabellen"
 
-metadata.keywords [ "edit" "model-field" "database" ]
+metadata.keywords [ "edit" "datenbank" ]
 
 metadata.abstract """
-Editing 1:M relationships to multiple tables:
+Einer Baustelle Objekte aus drei Tabellen zuordnen: Kanalarbeiten (Flächen), Sperrungen (Punkte) und Umleitungen (Linien).
 
-    baustelle -<< kanalarbeiten
-    baustelle -<< sperrung
-    baustelle -<< umleitung
+Im Reiter "Editieren" das Modell "Baustellen" wählen und eine Baustelle öffnen. Das Feld "Objekte" listet die zugehörigen Objekte aller drei Typen gemeinsam.
 
-Using `relatedMultiFeatureList` for the parent table
-and `relatedFeature` as backlinks in child tables.
+Das Feld ist vom Typ `relatedMultiFeatureList`. Unter `related` steht für jede Zieltabelle ein Eintrag mit `toModel` und der Fremdschlüsselspalte `toColumn "baustelle_id"`. Die Modelle sind auf Projektebene unter `models` definiert; die drei Layer der Karte dienen nur der Anzeige und haben für das Bearbeiten keine Bedeutung.
 
-Models are defined directly in the project,
-map layers are for view only, have no relevance for editing.
+Die Karte verwendet das KBS EPSG:25832.
 """
 
 actions+ { type "edit" }

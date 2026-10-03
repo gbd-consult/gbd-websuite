@@ -1,13 +1,15 @@
 uid "print_fields_qgis"
 
-title "Freie Felder für QGIS Druckvorlagen"
+title "QGIS Druckvorlage mit freien Feldern"
 
-metadata.keywords [ "print" "qgis" ]
+metadata.keywords [ "qgis" "drucken" ]
 
 metadata.abstract """
-Es besteht die Möglichkeit, freie Felder für QGIS Druckvorlagen zu definieren. 
-Diese können in der QGIS Druckvorlage verwendet werden, um zusätzliche Informationen anzuzeigen. 
-Diese Felder werden innerhalb der Text- und HTML-Elemente in der QGIS Druckvorlage als Variablen in geschweiften Klammern referenziert.
+Druck mit einer QGIS-Druckvorlage, die vom Nutzer eingegebene Texte enthält.
+
+Zum Ausprobieren den Druck in der Werkzeugleiste öffnen. Der Druckdialog zeigt die Eingabefelder "Seitentitel" und "Ihre Kommentare"; die eingegebenen Texte erscheinen im PDF als Titel und im Kommentarblock.
+
+Die freien Felder werden im Block `models` des Druckers definiert, mit `type "text"` und den Widgets `input` und `textarea`; `permissions.write "allow all"` erlaubt allen Nutzern die Eingabe. Im QGIS-Layout werden sie in Text- und HTML-Elementen über ihren Namen in geschweiften Klammern referenziert, hier `{{title}}` und `{{comments}}`, zusammen mit Platzhaltern der WebSuite wie `{{date.medium}}`.
 """
 
 printers+ {

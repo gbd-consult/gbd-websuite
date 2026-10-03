@@ -1,11 +1,17 @@
 uid "print_templates"
 
-title "Template chooser"
+title "Druck mit Vorlagenauswahl"
 
-metadata.keywords [ "print" ]
+metadata.keywords [ "drucken" "qgis" ]
 
 metadata.abstract """
-Multiple HTML templates with custom quality levels.
+Zwei Druckvorlagen im Quer- und Hochformat, zwischen denen der Nutzer im Druckdialog wählt.
+
+Im Druckdialog (Werkzeug „Drucken“ in der Werkzeugleiste) erscheinen eine Auswahl der Vorlage („A4 landscape“, „A4 portrait“) und eine Auswahl der Qualitätsstufe. Der Druckrahmen auf der Karte richtet sich nach dem Kartenformat der gewählten Vorlage.
+
+Jede Vorlage ist ein eigener Eintrag in `printers`. Im `template` bestimmt `title` den Namen in der Auswahl und `mapSize` die Größe des Kartenbildes (250 × 150 mm bzw. 150 × 250 mm). `qualityLevels` legt die wählbaren Auflösungen fest, `name` erscheint in der Auswahl, `dpi` bestimmt die Auflösung. Die Vorlagen geben die gewählte Auflösung mit `{{dpi}}` aus.
+
+Die Auswahlfelder erscheinen nur, wenn es mehr als einen Drucker bzw. mehr als eine Qualitätsstufe gibt.
 """
 
 printers+ {

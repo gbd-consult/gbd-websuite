@@ -1,11 +1,15 @@
 uid "qgis_print"
 
-title "QGIS Print Template"
+title "QGIS Druckvorlage, Hoch- und Querformat"
 
-metadata.keywords [ "qgis" "print" ]
+metadata.keywords [ "qgis" "drucken" ]
 
 metadata.abstract """
-Use a print template from a QGIS Project
+Druck mit Layouts aus einem QGIS-Projekt.
+
+Zum Ausprobieren den Druck in der Werkzeugleiste öffnen, die Druckvorlage "Portrait" oder "Landscape" und eine Druckqualität wählen und drucken.
+
+Die beiden `printers` verwenden Vorlagen `type "qgis"`; `provider.path` nennt das QGIS-Projekt, `index` wählt das Layout aus (`0` ist das erste). Die Karte rendert die WebSuite mit den Layern dieses Projekts, QGIS liefert das Layout mit Titel, Nordpfeil und Maßstabsleiste, und beide werden zu einem PDF übereinandergelegt. Die Kartenelemente des Layouts müssen dafür transparent sein. `qualityLevels` legt die im Druckdialog wählbaren Auflösungen fest.
 """
 
 printers+ {

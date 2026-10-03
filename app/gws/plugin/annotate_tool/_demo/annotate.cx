@@ -1,11 +1,15 @@
 uid "annotate_tool"
 
-title "Map Annotations"
+title "Markieren und Messen"
 
-metadata.keywords [ "client" "draw" ]
+metadata.keywords [ "werkzeuge" "vektordaten" ]
 
 metadata.abstract """
-Annotation function with storage.
+Geometrien auf der Karte zeichnen, mit Maßen beschriften und die Markierungen speichern.
+
+Das Werkzeug „Markieren und Messen“ in der Werkzeugleiste aktivieren und einen Punkt, eine Linie, ein Polygon, einen Kreis oder ein Rechteck zeichnen. Die Markierungen erscheinen im Seitenleisten-Reiter „Markierungen“; dort lassen sich Beschriftung und Darstellung bearbeiten. Die Beschriftung kann Platzhalter für Koordinaten, Länge, Umfang, Fläche oder Radius enthalten, z. B. `{{area | ha | 2}}`. Über „Speichern“ und „Laden“ werden Markierungen auf dem Server abgelegt und wieder geladen.
+
+Konfiguriert wird die Aktion `annotate` mit `storage`; dessen `permissions` legen fest, wer gespeicherte Markierungen lesen (`read`), überschreiben (`write`) und neu anlegen (`create`) darf. Im Client werden die Elemente `Sidebar.Annotate`, `Toolbar.Annotate.Draw` und `Task.Annotate` (Eintrag im Kontextmenü eines Objekts) hinzugefügt.
 """
 
 actions+ {

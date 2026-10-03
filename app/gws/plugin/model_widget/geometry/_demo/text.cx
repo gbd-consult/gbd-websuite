@@ -1,17 +1,15 @@
 uid "geometry_text"
 
-title "Geometrien mit Texteditor erfassen und bearbeiten"
+title "Editieren von Geometrien als Text"
 
-metadata.keywords [ "edit" "geometry" ]
+metadata.keywords [ "edit" "vektordaten" ]
 
 metadata.abstract """
-Dieses Beispiel zeigt, wie in der GBD WebSuite Geometrien mit einem Texteditor erfasst und bearbeitet werden können.
-Die Geometrien werden dabei direkt in der Datenbank gespeichert.
-Für den Texteditor kein ein Widget an zwei Stellen eingesetzt werden. Für den Layer "Districts" kann die Geometrie eines Objektes nach dem Zeichnen über das "Geometrie als Text bearbeiten" Widget bearbeitet werden.
-Für den Layer "POI" kann man ein neues Objekt auch direkt per Texteditor erstellen. Dafür kann das "Geometrie als Text erfassen" Widget am unteren Rand der Sidebar genutzt werden.
+Geometrien als Text eingeben und ändern, statt sie auf der Karte zu zeichnen.
 
+Beim Modell "POI (default geometry)" steht unten in der Objektliste die Schaltfläche "Geometrie als Text erfassen", mit der ein neuer Punkt über seine Koordinaten angelegt wird. Beim Modell "Districts (inline geometry)" wird die Geometrie eines geöffneten Objekts mit "Geometrie als Text bearbeiten" geändert. Der Dialog zeigt die Geometrie als WKT, bei Punkten zusätzlich Eingabefelder für X und Y.
 
-Geometry widget with the text editor enabled (`withText:true`).
+Konfiguriert wird das mit `withText true` am Widget `geometry`. Die Schaltfläche zum Erfassen eines neuen Objekts als Text gibt es nur für Punkt-Modelle. Beim Stadtteil-Modell ist das Widget zusätzlich mit `isInline true` in das Formular eingebettet.
 """
 
 actions+ { type "edit" }

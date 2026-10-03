@@ -1,18 +1,22 @@
 uid "edit_users"
 
-title "Einfache Nutzerverwaltung mit Modellen"
+title "Editieren einer Tabelle ohne Geometrie"
 
-metadata.keywords [ "edit" "auth" ]
+metadata.keywords [ "edit" "datenbank" ]
 
 metadata.abstract """
+Bearbeiten einer PostgreSQL Tabelle ohne Geometrie, hier einer einfachen Nutzerliste.
+
+Im Seitenleisten-Reiter "Editieren" das Modell "Nutzer" wählen. Da es nichts zu zeichnen gibt, werden neue Einträge mit "Neues Objekt über Formular erstellen" angelegt.
+
+Das Modell ist auf Projektebene unter `models` definiert und gehört zu keinem Layer. Die Felder sind einzeln konfiguriert; `textSearch` an `nachname` macht die Liste durchsuchbar, die Vorlage `feature.title` zeigt "Nachname, Vorname".
+
+Die Tabelle `edit.nutzer` dient in der Demo [Benutzerkonten in PostgreSQL verwalten](/project/account_admin) auch als Kontentabelle. Hier wird sie nur als gewöhnliches Modell bearbeitet, ohne Bezug zur Anmeldung.
 """
 
 actions+ { type "edit" }
 client.addElements+ { tag "Sidebar.Edit" }
 client.addElements+ { tag "Toolbar.Edit" }
-
-client.options.sidebarActiveTab "Sidebar.Edit"
-
 
 map {
     center {demo_point_duesseldorf_3857}

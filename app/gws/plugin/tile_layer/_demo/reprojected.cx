@@ -1,11 +1,13 @@
 uid "tile_reprojected"
 
-title "Reprojected tile layer"
+title "Kachellayer, umprojiziert"
 
-metadata.keywords [ "tile" "ows" "crs" ]
+metadata.keywords [ "koordinatensysteme" "rasterdaten" ]
 
 metadata.abstract """
-Tile layer, cached on the server and reprojected to another CRS.
+Ein XYZ-Kacheldienst, der auf dem Server in ein anderes KBS umprojiziert wird.
+
+Die Karte ist mit `crs 25830` (ETRS89 / UTM Zone 30N) konfiguriert, die Kacheln der Quelle liegen in Web Mercator vor. Mit `display "tile"` holt der Server die Quellkacheln, projiziert sie um und liefert sie im Raster der Karte aus; die Kacheln werden dabei auf dem Server zwischengespeichert.
 """
 
 map {

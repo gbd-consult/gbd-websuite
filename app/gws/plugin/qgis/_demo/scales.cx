@@ -1,11 +1,15 @@
 uid "qgis_scales"
 
-title "QGIS scales"
+title "QGIS maßstabsabhängige Darstellung"
 
-metadata.keywords [ "qgis" ]
+metadata.keywords [ "qgis" "karte" ]
 
 metadata.abstract """
-Test QGIS scale-based visibility rules.
+Prüft, ob die WebSuite maßstabsabhängige Regeln aus QGIS beim jeweiligen Maßstab genau einhält.
+
+Das QGIS-Projekt enthält Punkte, die mit Maßstabszahlen von 50 bis 100 (in Tausend) beschriftet sind. Eine regelbasierte Darstellung zeigt jeden Punkt nur in einem 1000er-Maßstabsbereich, z. B. die Punkte "60" nur zwischen 1:60 000 und 1:61 000. Beim Zoomen sollen daher immer nur die Punkte sichtbar sein, deren Beschriftung dem aktuellen Maßstab in der Infoleiste entspricht.
+
+Die Karte verwendet dafür mit `zoom.scales` eine Liste fester Maßstäbe in Schritten von 1000.
 """
 
 map {

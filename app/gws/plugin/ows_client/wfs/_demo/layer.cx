@@ -1,11 +1,15 @@
 uid "wfs_layer"
 
-title "Tree layer"
+title "WFS Layer als Baumstruktur"
 
-metadata.keywords [ "wfs" "ows" ]
+metadata.keywords [ "wfs" "vektordaten" ]
 
 metadata.abstract """
-`wfs` layers display WFS "feature types" as separate WebSuite layers
+Alle „feature types“ eines externen WFS-Dienstes als Gruppe von Vektorlayern, am Beispiel des WFS „Digitale Verwaltungsgrenzen NRW“.
+
+Im Layer-Panel erscheint die Gruppe „Digitalen Verwaltungsgrenzen NRW“ mit je einem Unterlayer pro „feature type“, die einzeln ein- und ausgeschaltet werden können.
+
+Konfiguriert ist ein Layer vom Typ `wfs` mit `provider.url`. Die WebSuite liest die „feature types“ aus den Capabilities des Dienstes und bildet sie automatisch als Einzellayer nach. Mit `rootLayers`, `excludeLayers` und `flattenLayers` lässt sich der übernommene Baum einschränken; diese Optionen werden hier nicht verwendet.
 """
 
 map {

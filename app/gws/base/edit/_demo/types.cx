@@ -1,15 +1,15 @@
 uid "edit_types"
 
-title "Editieren und Darstellen unterschiedlicher PostgreSQL Datentypen"
+title "Editieren von PostgreSQL Datentypen"
 
-metadata.keywords [ "edit" "postgres" ]
+metadata.keywords [ "edit" "datenbank" ]
 
 metadata.abstract """
-Dieses Beispiel zeigt, wie unterschiedliche PostgreSQL Datentypen über den GBD WebSuite Client dargestellt werden.
+Darstellung und Bearbeitung einer PostgreSQL Tabelle mit Spalten vieler verschiedener Datentypen im automatisch erzeugten Formular.
 
-Über die [SQL-Anweisung in Github](https://github.com/gbd-consult/gbd-websuite/blob/master/demos/demo_db.sql) können Sie die Erstellung der in der Demo genutzten PostgreSQL Tabelle `pg_types` nachvollziehen.
+Im Reiter "Editieren" das Modell "PostgreSQL Datentypen" wählen und ein Objekt öffnen oder ein neues anlegen. Das Formular zeigt, welches Widget für welchen Spaltentyp verwendet wird.
 
-Dabei handelt es sich um das Thema "Baustellenmanagement" mit Tabellen kanalarbeiten (Polygon), sperrung (Punkt) und umleitung (Linie).
+Das Modell hat keine `fields`. Die Felder werden aus den Spalten der Tabelle `public.pg_types` abgeleitet; Spalten, für die es keinen passenden Feldtyp gibt (z. B. Array-Spalten oder `bytea`), werden ausgelassen. Die Tabelle wird im [SQL-Skript der Demos](https://github.com/gbd-consult/gbd-websuite/blob/master/demos/demo_db.sql) angelegt.
 """
 
 actions+ { type "edit" }

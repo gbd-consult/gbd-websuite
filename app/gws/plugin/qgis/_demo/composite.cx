@@ -1,12 +1,15 @@
 uid "qgis_composite"
 
-title "QGIS composite render"
+title "QGIS Layer als Gesamtbild"
 
-metadata.keywords [ "qgis" ]
+metadata.keywords [ "qgis" "karte" ]
 
 metadata.abstract """
-`qgis` layers display complete QGIS Projects as WebSuite layers, keeping the structure. 
-With `compositeRender=true`, all layers are rendered as a single image, which is then displayed in the map.
+Ein QGIS-Projekt als Layerbaum, dessen sichtbare Layer gemeinsam als ein einziges Bild gerendert werden.
+
+Im Layer-Panel bleibt die Struktur des QGIS-Projekts mit Gruppen und einzelnen Layern erhalten. Werden Layer ein- oder ausgeschaltet, ändert sich die Zusammensetzung des einen Bildes, statt dass einzelne Bilder hinzukommen oder wegfallen.
+
+Mit `compositeRender true` fasst der `qgis`-Layer alle sichtbaren Unterlayer zu einer Anfrage an den QGIS Server zusammen. Berücksichtigt werden dabei die Unterlayer vom Typ `qgisflat`. Im Vergleich dazu rendert die Demo "QGIS Layer als Baumstruktur" jeden Layer als eigenes Bild.
 """
 
 map {

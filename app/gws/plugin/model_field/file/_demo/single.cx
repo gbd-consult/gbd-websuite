@@ -1,11 +1,15 @@
 uid "field_file"
 
-title "File field"
+title "Editieren mit Datei als Attribut"
 
-metadata.keywords [ "edit" "model-field" "database" ]
+metadata.keywords [ "edit" "datenbank" ]
 
 metadata.abstract """
-Editing files.
+Eine Datei als Attribut eines Objekts in der Datenbank speichern.
+
+Im Reiter "Editieren" das Modell "Documents" wählen, ein Objekt öffnen oder mit "Neues Objekt über Formular erstellen" anlegen und im Feld "File" eine Datei hochladen.
+
+Das Feld ist vom Typ `file`: `contentColumn "content"` speichert den Dateiinhalt in der Tabelle `edit.document`, `nameColumn "filename"` den Dateinamen. Das Modell hat keine Geometrie und ist auf Projektebene unter `models` definiert.
 """
 
 actions+ { type "edit" }

@@ -1,11 +1,15 @@
 uid "qgis_direct_render"
 
-title "Direct render"
+title "QGIS Layer, Dienste direkt rendern"
 
-metadata.keywords [ "qgis" "ows" ]
+metadata.keywords [ "qgis" "wms" "wmts" ]
 
 metadata.abstract """
-`qgis` layers with direct rendering of external services.
+Ein QGIS-Projekt mit externen Diensten, deren Bilder die WebSuite direkt von der Quelle lädt statt über den QGIS Server.
+
+Das Projekt enthält einen WMS-Layer ("Wasserkörper"), einen XYZ-Kachel-Layer ("OpenStreetMap") und einen WMTS-Layer ("DOP") sowie PostgreSQL- und WFS-Layer. Im Layer-Panel erscheinen alle Layer wie gewohnt in der Struktur des QGIS-Projekts.
+
+`provider.directRender [ "wms" "wmts" "xyz" ]` legt fest, für welche Quellenarten der Umweg über QGIS entfällt: für diese Layer erzeugt die WebSuite einen `wmsflat`-, `wmts`- bzw. `tile`-Layer mit der Adresse aus dem QGIS-Projekt. Die übrigen Layer rendert weiterhin der QGIS Server. Das verbessert die Antwortzeiten.
 """
 
 map {

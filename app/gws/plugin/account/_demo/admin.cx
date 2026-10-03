@@ -1,32 +1,17 @@
 uid "account_admin"
 
-title "Benutzerverwaltung mittels PostgreSQL Tabelle und Formular"
+title "Benutzerkonten in PostgreSQL verwalten"
 
-metadata.keywords [ "auth" "user" ]
+metadata.keywords [ "authentifizierung" "datenbank" ]
 
 metadata.abstract """
-Dieses Beispiel zeigt eine Konfiguration zur Benutzerverwaltung der GBD WebSuite über eine PostgreSQL Tabelle mit einem angepassten Formular.
+Verwaltung von Benutzerkonten, die in einer PostgreSQL Tabelle gespeichert sind, über ein Formular im Client.
 
-Folgende Funktionalität kann hiermit verwaltet werden:
+Die Verwaltung im Reiter "Benutzer" der Seitenleiste (`Sidebar.AccountAdmin`) ist nur für Nutzer mit der Rolle `admin` freigegeben (`permissions.read "allow admin, deny all"` an der Aktion `accountadmin`). Dort werden Konten angelegt, bearbeitet und gelöscht. Die Reset-Schaltfläche eines Kontos löscht Passwort und MFA-Geheimnis, setzt den Status auf "neu" und sendet eine Freischaltungs-Mail an die E-Mail-Adresse des Kontos.
 
-- Users können selber registrieren
-- Passwort Hash Algo (md5, pgcrypto usw)
-- ggf Passwort Stärke Regel
-- MFA Regel - welche Multi-Faktor-Authentisierung können bzw. müssen User verwenden
+Die Konten werden im Helfer `account` konfiguriert: `adminModel` beschreibt das Formular für die Tabelle `edit.nutzer` (Anmeldename, E-Mail, Status, Vor- und Nachname, Kommentar), `usernameColumn "login"` die Spalte mit dem Anmeldenamen und `mfa` die wählbaren Verfahren zur Multi-Faktor-Authentifizierung. Passwort-Hash, MFA-Geheimnis und Freischaltungs-Code stehen in festen Spalten der Tabelle und sind im Formular nicht bearbeitbar.
 
-Standard CRUD Funktionen für die PostgreSQL Tabelle mit zumindest diesen Spalten im Formular
-
-- Real Name, (Vorname, Name)
-- Email
-- GBD WebSuite Rollen
-- Aktiv ja/nein
-- MFA Uid - aktuell gewählte MFA
-
-Nicht direkt editierbar ist:
-
-- Passwort (Hash)
-- MFA Secret
-- One-time Code (OTC)
+Nutzer registrieren sich nicht selbst. Ein Konto wird über den Link in der Freischaltungs-Mail aktiviert, der auf die Demo [Nutzerkonto aktivieren](/project/user_account) verweist.
 """
 
 access "allow all"

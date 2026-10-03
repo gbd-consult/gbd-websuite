@@ -1,11 +1,15 @@
 uid "lens_tool"
 
-title "Lens Tool"
+title "Räumliche Suche mit Lupe"
 
-metadata.keywords [ "client" "search" ]
+metadata.keywords [ "werkzeuge" "suche" "datenbank" ]
 
 metadata.abstract """
-The lens tool provides dynamic spatial search.
+Räumliche Suche mit einer verschiebbaren Suchfläche („Lupe“).
+
+Das Werkzeug „Räumliche Suche“ in der Werkzeugleiste aktivieren und eine Suchfläche zeichnen, standardmäßig ein Rechteck; Punkt, Linie, Polygon und Kreis lassen sich in der Werkzeugbox wählen. Die gefundenen Objekte werden markiert und in einer Infobox aufgelistet. Die Lupe kann über den Anfasser in ihrer Mitte verschoben oder in ihrer Form geändert werden; die Suche läuft dann erneut.
+
+Die Lupe sucht in allen durchsuchbaren Layern der Karte, hier im `postgres` Layer „POIs“. Im Client werden `Toolbar.Lens` und `Task.Lens` (räumliche Suche um ein Objekt aus dem Kontextmenü) hinzugefügt; die Suche läuft über die Aktion `search`.
 """
 
 client.addElements+ { tag "Sidebar.Search" }

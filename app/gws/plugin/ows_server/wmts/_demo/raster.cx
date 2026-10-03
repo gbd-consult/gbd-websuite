@@ -1,11 +1,15 @@
 uid "service_wmts_raster_demo"
 
-title "WMTS service from a raster layer"
+title "WMTS Dienst aus Rasterlayer"
 
-metadata.keywords [ "wmts" "ows-service" "raster" ]
+metadata.keywords [ "ows-dienste" "wmts" "rasterdaten" ]
 
 metadata.abstract """
-`WMTS` service, based on a raster layer.
+Ein von der WebSuite bereitgestellter WMTS-Dienst, der Kacheln aus einem GeoTIFF liefert, einer Sentinel-2-Aufnahme in Echtfarben.
+
+Beim Laden des Dienstes in einer externen Anwendung wie QGIS stehen Kachelmatrix-Sätze für EPSG:3857, EPSG:25832 und EPSG:25833 zur Auswahl.
+
+Den Karteninhalt liefert ein Layer vom Typ `raster` mit `provider.paths`. Der `owsServices`-Eintrag vom Typ `wmts` erzeugt mit `supportedCrs [ 3857 25832 25833 ]` je einen `TileMatrixSet` pro KBS; `map.extent` begrenzt die Kachelmatrix auf die Umgebung von Düsseldorf.
 
 [Service URL](/_/owsService/serviceUid/service_wmts_raster?request=GetCapabilities)
 

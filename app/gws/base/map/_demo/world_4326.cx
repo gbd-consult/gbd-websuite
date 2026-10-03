@@ -1,11 +1,15 @@
 uid "map_world_4326"
 
-title "World WGS"
+title "Weltkarte in EPSG:4326"
 
-metadata.keywords [ "map" "crs" ]
+metadata.keywords [ "karte" "koordinatensysteme" "vektordaten" ]
 
 metadata.abstract """
-Whole world map in EPSG:4326.
+Eine Karte der ganzen Welt im geographischen KBS EPSG:4326 (WGS 84).
+
+Die Karte ist mit `crs 4326` und `center [0 0]` konfiguriert. Die Maßstäbe sind mit `zoom.scales` explizit vorgegeben, `zoom.initScale` wählt einen davon als Anfangsmaßstab. Mit `wrapX true` wird die Welt in Ost-West-Richtung wiederholt.
+
+Die Ländergrenzen (Natural Earth) kommen aus einer PostgreSQL Tabelle und werden mit `cssSelector` gestaltet. Die OSM-Hintergrundkarte wird in das KBS der Karte umprojiziert. Dieselbe Karte in EPSG:3857 zeigt die Demo [Weltkarte in EPSG:3857](/project/map_world_3857).
 """
 
 map {

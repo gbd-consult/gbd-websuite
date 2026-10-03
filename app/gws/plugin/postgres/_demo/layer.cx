@@ -1,11 +1,15 @@
 uid "postgres_layer"
 
-title "Postgres layer"
+title "PostgreSQL Layer mit Beschriftung"
 
-metadata.keywords [ "postgres" "vector-data" ]
+metadata.keywords [ "vektordaten" "datenbank" ]
 
 metadata.abstract """
-`postgres` layers display vector features from Postgis tables.
+Vektorlayer aus PostGIS-Tabellen: Points of Interest und Stadtbezirke in Düsseldorf, mit dem Namen als Beschriftung.
+
+Beide Layer erscheinen im Layerbaum und können dort ein- und ausgeblendet werden.
+
+Jeder Layer hat `type "postgres"`, die Tabelle wird mit `tableName` im Format `schema.tabelle` angegeben. Geometrietyp, KBS und Attribute werden aus der Tabelle ermittelt. Die Vorlage mit `subject "feature.label"` beschriftet jedes Feature mit dem Wert des Feldes `name`.
 """
 
 map {

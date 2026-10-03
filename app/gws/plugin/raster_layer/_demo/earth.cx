@@ -1,14 +1,20 @@
 uid "raster_layer"
 
-title "Raster layer"
+title "GeoTIFF Layer mit Processing und SLD"
 
-metadata.keywords [ "raster" ]
+metadata.keywords [ "rasterdaten" "karte" ]
 
 metadata.abstract """
-`raster` Layer zeigen Rasterdaten an, die im Dateisystem gespeichert sind.
-Die Daten können in verschiedenen Formaten vorliegen, wie GeoTIFF, JPEG, PNG usw.
-Die Layer können mit Processing-Optionen (https://mapserver.org/input/raster.html#special-processing-directives)
-oder SLD-Dateien für die Darstellung angepasst werden.
+Eine Weltkarte (Natural Earth) aus einer GeoTIFF-Datei, in drei Varianten dargestellt.
+
+Im Layerbaum ist zunächst nur die unveränderte Variante sichtbar, die beiden anderen sind mit `clientOptions.hidden true` ausgeblendet und können dort eingeschaltet werden.
+
+`raster`-Layer zeigen Rasterdaten aus dem Dateisystem an, die Dateien werden mit `provider.paths` angegeben. Die Darstellung lässt sich auf zwei Arten anpassen:
+
+- mit MapServer-Direktiven in `processing` (siehe [Raster Data](https://mapserver.org/input/raster.html#special-processing-directives)), hier `BANDS=3` und `GAMMA=0.7`,
+- mit einer SLD-Datei über `sldPath` und `sldName`.
+
+Mit `zoom.minScale` und `zoom.maxScale` ist die Karte auf kleine Maßstäbe beschränkt.
 """
 
 map {

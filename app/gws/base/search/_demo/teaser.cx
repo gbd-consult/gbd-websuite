@@ -1,11 +1,15 @@
 uid "search_teaser"
 
-title "Search with teaser"
+title "Suchergebnisse mit Teaser-Vorlage"
 
-metadata.keywords [ "client" "postgres" "search" "vector-data" ]
+metadata.keywords [ "suche" "datenbank" ]
 
 metadata.abstract """
-Text search with `teaser` views.
+Textsuche in einer PostgreSQL Tabelle, deren Treffer mit einer eigenen Teaser-Vorlage dargestellt werden.
+
+Im Seitenleisten-Reiter „Suche“ mindestens drei Zeichen eines Namens eingeben. Jeder Treffer zeigt die Kategorie als Überschrift, den Namen sowie Kategorie-ID und ID; ein Klick auf den Treffer zeigt das Objekt auf der Karte an.
+
+Der Finder vom Typ `postgres` durchsucht die Tabelle `edit.poi`. Das Modell listet die Felder explizit auf; nur `name` ist mit `textSearch {{ type "any" minLength 3 }}` durchsuchbar. Die Vorlage mit `subject "feature.teaser"` liegt in der Datei `teaser.html` und setzt die Kategorie-ID mit `@let` über eine Tabelle in einen Klartext um.
 """
 
 client.addElements+ { tag "Sidebar.Search" }

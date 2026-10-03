@@ -1,18 +1,19 @@
 uid "templates"
 
-title "Templates"
+title "Vorlagen als Web-Assets"
 
-metadata.keywords [ "template" ]
+metadata.keywords [ "drucken" "karte" ]
 
 metadata.abstract """
-Usage of different template types and template arguments.
+Verschiedene Vorlagentypen, die als Web-Assets des Projekts abgerufen und dabei auf dem Server ausgewertet werden.
 
-Template demos:
+Vorlagen:
 
-- [Simple HTML template](/_/webAsset/projectUid/templates/path/simple.cx.html)
-- [HTML Template with conditional logic](/_/webAsset/projectUid/templates/path/logic.cx.html)
-- [Pure python template](/_/webAsset/projectUid/templates/path/python.cx.py)
+- [Einfache HTML-Vorlage](/_/webAsset/projectUid/templates/path/simple.cx.html): die Standardvariablen (`app`, `locale`, `date`, `time`, `number`, `params`, `project`, `projects`, `user`) mit Beispielen für Formatierungsfilter, dazu eine Liste aller Projekte.
+- [HTML-Vorlage mit Logik](/_/webAsset/projectUid/templates/path/logic.cx.html): liefert je nach Parameter `action` HTML, ein Bild, einen Download, eine Weiterleitung oder ein mit eingebettetem Python-Code berechnetes Ergebnis (`gws.ContentResponse`, `gws.RedirectResponse`).
+- [Python-Vorlage](/_/webAsset/projectUid/templates/path/python.cx.py): eine Funktion `main(args)` erzeugt die Antwort als reinen Text.
 
+Die Dateien liegen im Asset-Verzeichnis des Projekts (`assets.dir`). Dateien mit der Endung einer Vorlage (z. B. `.cx.html`, `.cx.py`) werden bei einer `webAsset`-Anfrage nicht unverändert ausgeliefert, sondern als Vorlage gerendert.
 """
 
 

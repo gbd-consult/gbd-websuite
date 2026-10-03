@@ -1,12 +1,15 @@
 uid "service_wms_auth2_demo"
 
-title "WMS service with private layer"
+title "WMS Dienst mit geschütztem Layer"
 
-metadata.keywords [ "wms" "ows-service" "qgis" "auth" ]
+metadata.keywords [ "ows-dienste" "wms" "qgis" "authentifizierung" ]
 
 metadata.abstract """
-This WMS service is public, but the layer "Points of interest"
-is only allowed for authorized users.
+Ein öffentlicher, von der WebSuite bereitgestellter WMS-Dienst, in dem ein einzelner Layer nur für angemeldete Benutzer sichtbar ist.
+
+Ohne Anmeldung enthält der Dienst nur den Layer „Districts“. Nach Anmeldung per HTTP Basic-Authentifizierung, z. B. mit dem Login **demo1** und dem Passwort **demo**, ist zusätzlich der Layer „Points of interest“ verfügbar.
+
+Der Dienst selbst hat keine Zugriffsbeschränkung. Der Layer „Points of interest“ hat `permissions.read "allow user,deny all"`; der Dienst veröffentlicht nur Layer, die der anfragende Benutzer lesen darf.
 
 [Service URL](/_/owsService/serviceUid/service_wms_auth2?request=GetCapabilities)
 

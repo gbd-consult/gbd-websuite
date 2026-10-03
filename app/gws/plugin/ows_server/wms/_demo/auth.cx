@@ -1,11 +1,15 @@
 uid "service_wms_auth_demo"
 
-title "WMS service with authorization"
+title "WMS Dienst mit Zugriffsbeschränkung"
 
-metadata.keywords [ "wms" "ows-service" "qgis" "auth" ]
+metadata.keywords [ "ows-dienste" "wms" "qgis" "authentifizierung" ]
 
 metadata.abstract """
-This WMS service is only allowed for authorized users.
+Ein von der WebSuite bereitgestellter WMS-Dienst, den nur angemeldete Benutzer nutzen dürfen. Er stellt die Layer „Points of interest“ und „Districts“ aus einem QGIS-Projekt bereit.
+
+Ohne Anmeldung wird die Anfrage abgelehnt. Externe Anwendungen wie QGIS melden sich per HTTP Basic-Authentifizierung an, z. B. mit dem Login **demo1** und dem Passwort **demo**.
+
+Der Dienst ist als `owsServices` vom Typ `wms` mit `permissions.read "allow user,deny all"` konfiguriert. Die Layer sind `qgisflat`-Layer mit `finders`, sodass sie über `GetFeatureInfo` abfragbar sind. Zum Schutz einzelner Layer statt des ganzen Dienstes siehe die Demo „WMS Dienst mit geschütztem Layer“.
 
 [Service URL](/_/owsService/serviceUid/service_wms_auth?request=GetCapabilities)
 

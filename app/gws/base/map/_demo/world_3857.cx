@@ -1,11 +1,15 @@
 uid "map_world_3857"
 
-title "World 3857"
+title "Weltkarte in EPSG:3857"
 
-metadata.keywords [ "tile" "crs" ]
+metadata.keywords [ "karte" "koordinatensysteme" "vektordaten" ]
 
 metadata.abstract """
-Whole world map in EPSG:3857.
+Eine Karte der ganzen Welt im KBS EPSG:3857 (Web Mercator).
+
+Die Karte ist mit `crs 3857`, `center [0 0]` und einem kleinen Anfangsmaßstab (`zoom.initScale`) konfiguriert. Mit `wrapX true` wird die Welt in Ost-West-Richtung wiederholt, so dass die Karte über die Datumsgrenze hinaus verschoben werden kann.
+
+Die Ländergrenzen (Natural Earth) kommen aus einer PostgreSQL Tabelle und werden mit `cssSelector` gestaltet. Dieselbe Karte in EPSG:4326 zeigt die Demo [Weltkarte in EPSG:4326](/project/map_world_4326).
 """
 
 map {

@@ -1,11 +1,15 @@
 uid "location_tool"
 
-title "Location tool"
+title "Eigenen Standort anzeigen"
 
-metadata.keywords [ "client" ]
+metadata.keywords [ "werkzeuge" "karte" ]
 
 metadata.abstract """
-Use browser geolocation to display the current position.
+Den aktuellen Standort des Geräts auf der Karte anzeigen.
+
+Das Werkzeug „Mein Standort“ in der Werkzeugleiste anklicken und der Standortfreigabe im Browser zustimmen. Die Karte zoomt auf die Position und zeigt einen Kreis mit dem Radius der gemeldeten Genauigkeit; eine Infobox nennt die Koordinaten.
+
+Das Werkzeug nutzt die Geolocation-Schnittstelle des Browsers und braucht keine Server-Aktion; konfiguriert wird nur das Element `Toolbar.Location`. Liegt der Standort außerhalb der Kartenausdehnung, erscheint eine Fehlermeldung. Browser geben den Standort in der Regel nur über HTTPS frei.
 """
 
 client.addElements+ { tag "Toolbar.Location" }

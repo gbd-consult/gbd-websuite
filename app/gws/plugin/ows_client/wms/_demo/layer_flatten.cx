@@ -1,11 +1,17 @@
 uid "wms_layer_flatten"
 
-title "Flat groups"
+title "WMS Layerbaum mit zusammengefassten Gruppen"
 
-metadata.keywords [ "wms" "ows" ]
+metadata.keywords [ "wms" "karte" ]
 
 metadata.abstract """
-Flatten WMS groups with `flattenLayers`.
+Ein WMS-Layerbaum, in dem Gruppen des Dienstes zu einzelnen Layern zusammengefasst werden, am Beispiel des ALKIS-WMS NRW.
+
+Im Layer-Panel ist unter „NRW ALKIS“ die Struktur des Dienstes nur bis zur zweiten Ebene zu sehen. Jede Gruppe auf dieser Ebene ist ein einzelner Layer, ihre Unterlayer sind nicht mehr einzeln schaltbar.
+
+Konfiguriert ist ein Layer vom Typ `wms` mit `flattenLayers.level 2`. Gruppen ab der angegebenen Ebene der Quellhierarchie (Ebene 1 ist die oberste) werden zu einem Layer zusammengefasst, der alle Bildlayer der Gruppe anfordert. Mit `flattenLayers.useGroups true` würde stattdessen die Gruppe über ihren eigenen Namen angefordert.
+
+Zum Vergleich zeigt die Demo „WMS Layer als Baumstruktur“ denselben Dienst ohne `flattenLayers`.
 """
 
 map {

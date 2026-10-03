@@ -1,12 +1,21 @@
 uid "map_raster"
 
-title "Darstellung von Rasterlayern"
+title "Rasterlayer aus verschiedenen Quellen"
 
-metadata.keywords [ "tile" "wms" "wmts" "raster" ]
+metadata.keywords [ "rasterdaten" "wms" "wmts" ]
 
 metadata.abstract """
-Rasterlayer aus verschiedenen Quellen (WMTS, WMS, GeoTIFF, Kachel-Dienste),
-alle auf dem Server gerendert.
+Rasterlayer aus verschiedenen Quellen (WMS, WMTS, GeoTIFF), alle auf dem Server gerendert und als Kacheln an den Client ausgeliefert.
+
+Die Layer sind beim Start ausgeblendet (`clientOptions.hidden true`) und werden im Reiter "Layer" einzeln eingeschaltet. Zum Vergleich der Druckqualität gibt es zwei Druckvorlagen (A4 und A2) mit je drei Qualitätsstufen (`qualityLevels`: 90, 150 und 300 dpi).
+
+Konfiguration der Layer:
+
+- "NRW ALKIS (WMS)": `type "wmsflat"` mit ausgewählten `sourceLayers` und `display "tile"`.
+- "basemap.de (WMTS)": `type "wmts"`; für diesen Typ ist `display "tile"` die Vorgabe.
+- "Sentinel-2 (GeoTIFF)": `type "raster"` mit einer GeoTIFF-Datei unter `provider.paths` und `display "tile"`.
+
+Alle drei Layer sind mit `withCache false` ohne Kachel-Cache konfiguriert.
 """
 
 map {

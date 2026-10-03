@@ -1,19 +1,15 @@
 uid "qfield_simple"
 
-title "QField (minimale Konfiguration)"
+title "QField mit Minimalkonfiguration"
 
-metadata.keywords [ "qgis" "postgres" "qfield" ]
+metadata.keywords [ "qfield" "qgis" "datenbank" ]
 
 metadata.abstract """
-Minimale QField-Konfiguration: angegeben wird nur der Pfad zum QGIS-Projekt.
+Kleinstmögliche Konfiguration der QFieldCloud-Schnittstelle: angegeben wird nur der Pfad zum QGIS-Projekt.
 
-Für jeden Postgres-Layer, der in QFieldSync als "offline editing" markiert ist,
-erzeugt GWS automatisch ein Modell mit allen Spalten der Tabelle.
-Modelle müssen erst dann konfiguriert werden, wenn die Feldauswahl,
-die Filterung oder die Berechtigungen angepasst werden sollen,
-siehe die Demo "Editieren mit QField".
+Die Aktion `type "qfieldcloud"` enthält unter `projects` lediglich `uid` und `provider.path`. Für jeden PostgreSQL-Layer, der in QFieldSync als "offline editing" markiert ist, erzeugt die WebSuite automatisch ein `postgres`-Modell mit allen Spalten der Tabelle, das uneingeschränkt bearbeitbar ist. Eigene `models` sind erst nötig, wenn die Feldauswahl, die Filterung oder die Berechtigungen angepasst oder Dateianhänge gespeichert werden sollen, siehe die Demo "QField mit konfigurierten Modellen".
 
-Das Projekt heißt in der QField App "qfield_simple".
+Ohne `title` erscheint das Projekt in der QField App unter seiner Kennung "qfield_simple". Die Webkarte zeigt dasselbe QGIS-Projekt als Layer "QGIS Project".
 """
 
 actions+ {

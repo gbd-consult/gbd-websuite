@@ -1,11 +1,17 @@
 uid "wmts_client_layer"
 
-title "Client-side WMTS layer"
+title "WMTS Layer, Darstellung im Client"
 
-metadata.keywords [ "wmts" "ows" ]
+metadata.keywords [ "wmts" "karte" ]
 
 metadata.abstract """
-Client-side display of `wmts` layers
+Ein WMTS-Layer, dessen Kacheln der Browser direkt vom Dienst lädt: die farbige Rasterkarte von basemap.de.
+
+Im Netzwerk-Tab der Entwicklerwerkzeuge des Browsers ist zu sehen, dass die Kacheln von `sgx.geodatenzentrum.de` und nicht von der WebSuite abgerufen werden.
+
+Konfiguriert ist ein Layer vom Typ `wmts` mit `display "client"`. `provider.url` verweist auf das Capabilities-Dokument des Dienstes, `sourceLayers.names` wählt den Quelllayer `de_basemapde_web_raster_farbe` aus. Die WebSuite übergibt dem Client nur die Kachelmatrix und die URL-Vorlage; `withCache false` schaltet das serverseitige Zwischenspeichern ab.
+
+Der Modus `client` setzt voraus, dass der Dienst einen Kachelmatrix-Satz im KBS der Karte anbietet; andernfalls bricht die Konfiguration mit einem Fehler ab. Die Kachel-URLs des Dienstes sind dabei im Client sichtbar.
 """
 
 map {

@@ -1,11 +1,15 @@
 uid "geojson_layer"
 
-title "Simple layer"
+title "GeoJSON Layer aus Dateien"
 
-metadata.keywords [ "geojson" "vector-data" ]
+metadata.keywords [ "vektordaten" "karte" ]
 
 metadata.abstract """
-`geojson` layers display vector features from Geojson files.
+Vektorlayer aus GeoJSON-Dateien: Banken als Punkte und Stadtbezirke als Flächen in Düsseldorf.
+
+Beide Layer erscheinen im Layerbaum und können dort ein- und ausgeblendet werden.
+
+Jeder Layer hat `type "geojson"`, die Datei wird mit `provider.path` angegeben. Die Features werden als Vektordaten an den Client übertragen und dort gezeichnet.
 """
 
 map {

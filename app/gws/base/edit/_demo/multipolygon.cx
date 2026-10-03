@@ -1,10 +1,15 @@
 uid "edit_multipolygon"
 
-title "PostgreSQL Daten mit Multi-Polygon Geometrien"
+title "Editieren von MultiPolygon-Geometrien"
 
-metadata.keywords [ "edit" "postgres" "vector-data" ]
+metadata.keywords [ "edit" "datenbank" "vektordaten" ]
 
 metadata.abstract """
+Bearbeiten von Wasserflächen aus einer PostgreSQL Tabelle, deren Geometriespalte den Typ MultiPolygon hat.
+
+Im Reiter "Editieren" den Layer "Wasser" wählen. Zum Zeichnen neuer Objekte bietet der Client für MultiPolygon-Geometrien dieselben Formen an wie für Polygone: Polygon, Kreis und Rechteck.
+
+Das Modell hat keine `fields`; Formular und Geometrietyp werden aus der Tabelle `edit.water` abgeleitet. Die Vorlagen `feature.title` und `feature.label` vom Typ `text` zeigen den Namen in der Liste und auf der Karte.
 """
 
 actions+ { type "edit" }

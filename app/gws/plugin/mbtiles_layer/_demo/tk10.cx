@@ -1,11 +1,18 @@
 uid "mbtiles_layer"
 
-title "MBTiles layer"
+title "MBTiles Layer mit Transparenz"
 
-metadata.keywords [ "raster" ]
+metadata.keywords [ "rasterdaten" "karte" ]
 
 metadata.abstract """
-Rasterlayer aus einer MB-Tiles Datei.
+Ein Rasterlayer aus einer MBTiles-Datei (Topographische Karte 1:10.000), dessen weißer Hintergrund transparent dargestellt wird, so dass die OSM-Karte darunter sichtbar bleibt.
+
+Der Layer hat `type "mbtiles"`, die Datei wird mit `provider.path` angegeben, mit `display "tile"` wird er gekachelt über den Server ausgeliefert.
+
+Die Transparenz wird mit zwei Optionen erreicht:
+
+- `transparentColor '#ffffff'` behandelt reines Weiß als transparent,
+- die MapServer-Direktive `SCALE=0,240` in `processing` zieht nahezu weiße Farbwerte auf Weiß, damit auch diese transparent werden.
 """
 
 map {

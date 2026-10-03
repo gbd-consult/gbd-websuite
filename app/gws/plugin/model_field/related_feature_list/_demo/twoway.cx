@@ -1,11 +1,15 @@
 uid "field_related_feature_list_2"
 
-title "relatedFeatureList (two-way)"
+title "Editieren 1:N-Beziehung in beide Richtungen"
 
-metadata.keywords [ "edit" "model-field" "database" ]
+metadata.keywords [ "edit" "datenbank" ]
 
 metadata.abstract """
-Editing related 'child' and 'parent' features
+Eine 1:N-Beziehung zwischen Kategorien und POIs, die in beiden Modellen bearbeitet werden kann.
+
+Im Reiter "Editieren" das Modell "POIs" wählen und ein Objekt öffnen: Das Feld "Category" wählt die Kategorie aus einer Auswahlliste. Im Modell "Categories" listet das Feld "POIs" alle POIs der Kategorie.
+
+Beide Felder beschreiben dieselbe Fremdschlüsselspalte `category_id` der POI-Tabelle: auf der POI-Seite als `type "relatedFeature"` mit dem Widget `featureSelect` (`fromColumn "category_id"`, `toColumn "id"`), auf der Kategorie-Seite als `type "relatedFeatureList"` mit dem Widget `featureList` (`fromColumn "id"`, `toColumn "category_id"`). Eine Änderung auf einer Seite ist deshalb auch auf der anderen sichtbar.
 """
 
 actions+ { type "edit" }

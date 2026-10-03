@@ -1,11 +1,15 @@
 uid "qgis_flat_partial"
 
-title "QGIS partial flat layer"
+title "QGIS Layer, flach mit Layerauswahl"
 
-metadata.keywords [ "qgis" ]
+metadata.keywords [ "qgis" "karte" ]
 
 metadata.abstract """
-Display only some QGIS layers in a `qgisflat` layer.
+Ein einzelner WebSuite-Layer, der nur ausgewählte Layer eines QGIS-Projekts zeigt.
+
+Im Layer-Panel erscheint nur der Layer "Bars und Kneipen in Düsseldorf"; die übrigen Layer des Projekts werden nicht dargestellt.
+
+Der Layer `type "qgisflat"` rendert die Quelllayer als ein Bild. Mit `sourceLayers.names` werden die zu verwendenden Layer über ihre Namen im QGIS-Projekt ausgewählt, hier "Bar" und "Kneipe". Ohne `sourceLayers` zeigt der Layer das ganze Projekt, siehe die Demo "QGIS Layer, flach".
 """
 
 map {

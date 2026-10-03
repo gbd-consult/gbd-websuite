@@ -1,11 +1,17 @@
 uid "field_related_feature_list"
 
-title "relatedFeatureList"
+title "Editieren 1:N-Beziehung als Feature-Liste"
 
-metadata.keywords [ "edit" "model-field" "database" ]
+metadata.keywords [ "edit" "datenbank" ]
 
 metadata.abstract """
-Editing related 'child' features
+Zu einer Kategorie die zugehörigen POIs als Liste im Formular anzeigen und bearbeiten.
+
+Im Reiter "Editieren" das Modell "Categories" wählen und eine Kategorie öffnen. Das Feld "POIs" listet alle POIs dieser Kategorie; über die Schaltflächen der Liste werden POIs neu angelegt, verknüpft oder geöffnet.
+
+Das Feld ist vom Typ `relatedFeatureList`: `toModel` verweist auf das POI-Modell, `toColumn "category_id"` ist die Fremdschlüsselspalte in dessen Tabelle und `fromColumn "id"` der Schlüssel der Kategorie. Das Widget `featureList` zeigt die Kindobjekte als Liste; per Vorgabe sind `withNewButton`, `withLinkButton` und `withEditButton` aktiv, `withUnlinkButton` nicht.
+
+Das POI-Modell hat hier kein Feld für die Kategorie. Beide Richtungen zeigt die Demo [Editieren 1:N-Beziehung in beide Richtungen](/project/field_related_feature_list_2).
 """
 
 actions+ { type "edit" }

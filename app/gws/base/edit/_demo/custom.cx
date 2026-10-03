@@ -1,17 +1,17 @@
 uid "edit_custom"
 
-title "Angepasstes Laden und Editieren von PostgreSQL Daten"
+title "Editieren mit angepasstem Formular"
 
-metadata.keywords [ "edit" "postgres" "vector-data" ]
+metadata.keywords [ "edit" "datenbank" ]
 
 metadata.abstract """
-Dieses Beispiel zeigt eine angepasste Konfiguration zum Editieren einer Untermenge von Attributen eines Vektor Punktlayers aus einer PostgreSQL Tabelle mit einem angepassten Formular.
+Bearbeiten eines PostgreSQL Punktlayers mit einem selbst definierten Formular, das nur einen Teil der Tabellenspalten enthält.
 
-Über Templates können die Objektliste (`feature.title`) und Objektbeschreibungen (`feature.label`) angepasst werden.
+Die Felder werden im Modell unter `fields` einzeln konfiguriert, jeweils mit `type`, `title` und einem `widget`: `input` für Text, `select` mit festen `items` für den Code, `date` für das Datum und `textarea` für die Kommentare. Der Primärschlüssel `id` ist mit `permissions.edit "deny all"` schreibgeschützt, `isRequired true` macht `name` zum Pflichtfeld.
 
-Mit der Option `textSearch` wird die Objektliste durchsuchbar.
+Durch `textSearch` am Feld `name` erhält die Objektliste im Reiter "Editieren" ein Suchfeld. Die Vorlagen `feature.title` und `feature.label` bestimmen den Eintrag in der Objektliste und die Beschriftung auf der Karte.
 
-Die Ausdehnung (`extent`) des Punktlayers ist explizit definiert, um das Erstellen neuer Objekte außerhalb der automatisch berechneten Ausdehnung des Layers zu ermöglichen.
+Der Layer hat eine feste Ausdehnung (`extent`), damit neue Objekte auch außerhalb der aus den Daten berechneten Ausdehnung gezeichnet werden können.
 """
 
 actions+ { type "edit" }

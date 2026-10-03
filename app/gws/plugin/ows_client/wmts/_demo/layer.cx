@@ -1,11 +1,15 @@
 uid "wmts_layer"
 
-title "Simple layer"
+title "WMTS Layer, einfach"
 
-metadata.keywords [ "wmts" "ows" ]
+metadata.keywords [ "wmts" "karte" ]
 
 metadata.abstract """
-`wmts` layers display external WMTS layers
+Ein externer WMTS-Dienst als Rasterlayer: die Digitale Topographische Karte NRW.
+
+Der Layer erscheint als ein Eintrag im Layer-Panel. Die Kacheln werden über die WebSuite ausgeliefert, die sie vom WMTS-Dienst bezieht.
+
+Konfiguriert ist nur ein Layer vom Typ `wmts` mit `provider.url`. Da `sourceLayers` fehlt, wird der erste Quelllayer des Dienstes verwendet. Es gilt der Standard-Anzeigemodus `display "tile"`; zum direkten Laden der Kacheln im Browser siehe die Demo „WMTS Layer, Darstellung im Client“.
 """
 
 map {

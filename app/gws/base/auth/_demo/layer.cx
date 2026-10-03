@@ -1,15 +1,15 @@
 uid "auth_layer"
 
-title "Layer access"
+title "Layer-Sichtbarkeit nach Rolle"
 
-metadata.keywords [ "auth" ]
+metadata.keywords [ "authentifizierung" "karte" ]
 
 metadata.abstract """
-Show specific layers to specific users.
+Layer, die nur für bestimmte Rollen sichtbar sind.
 
-This project is only accessible to logged-in users ("allow user"),
-while the first layer is only accessible by the `groupA`,
-and the second one - only by the `groupB`.
+Das Projekt selbst ist mit `access "allow user, deny all"` nur für angemeldete Nutzer zugänglich. Der Layer "POIs" ist mit `access "allow groupA, deny all"` nur für die Rolle `groupA` sichtbar, der Layer "Districts" entsprechend nur für `groupB`.
+
+Zum Vergleich mit `demo1` (Rolle `groupA`) oder `demo3` (Rolle `groupB`) anmelden, Passwort jeweils **demo**. Im Reiter "Layer" der Seitenleiste erscheint dann nur der Layer der eigenen Rolle neben der Hintergrundkarte.
 """
 
 access "allow user, deny all"

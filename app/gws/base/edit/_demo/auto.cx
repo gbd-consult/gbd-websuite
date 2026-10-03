@@ -1,11 +1,15 @@
 uid "edit_auto"
 
-title "PostgreSQL Daten mit automatischem Formular editieren"
+title "Editieren mit automatischem Formular"
 
-metadata.keywords [ "edit" "postgres" "vector-data" ]
+metadata.keywords [ "edit" "datenbank" "vektordaten" ]
 
 metadata.abstract """
-Dieses Beispiel zeigt eine einfache, minimale Konfiguration zum Editieren von Vektordaten (Punkte und Flächen) aus einer PostgreSQL Tabelle. Das Formular zum Editieren der Objekte wird automatisch erzeugt.
+Minimale Konfiguration zum Bearbeiten von Punkten und Flächen aus PostgreSQL Tabellen. Das Formular wird automatisch aus den Tabellenspalten erzeugt.
+
+Im Reiter "Editieren" der Seitenleiste (`Sidebar.Edit`) einen Layer wählen und ein Objekt in der Liste anklicken, oder mit "Objekt zum Editieren auswählen" in der Werkzeugleiste (`Toolbar.Edit`) ein Objekt auf der Karte auswählen. Neue Objekte werden mit "Neues Objekt zeichnen" angelegt.
+
+Jeder Layer hat ein Modell `type "postgres"` ohne `fields`. Die Felder werden dann aus der Tabellenbeschreibung abgeleitet; Spalten ohne passenden Feldtyp werden ausgelassen. `isEditable true` gibt das Modell zum Bearbeiten frei, `permissions.edit 'allow all'` erlaubt das allen Nutzern.
 """
 
 actions+ { type "edit" }

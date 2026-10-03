@@ -1,17 +1,17 @@
 uid "select_tool"
 
-title "Select Tool"
+title "Objekte auswählen und speichern"
 
-metadata.keywords [ "client" "search" ]
+metadata.keywords [ "werkzeuge" "suche" "datenbank" "wms" ]
 
 metadata.abstract """
-Select function with "storage".
+Objekte auf der Karte per Klick oder gezeichneter Fläche auswählen und die Auswahl speichern.
 
-The point-and-click selection works by running a search query around the clicked point,
-and then selecting returned features. It works with any kind of layer (in this example, postgres and wms),
-as long as this layer can return geometric features.
+Das Werkzeug „Auswählen“ in der Werkzeugleiste aktivieren und auf ein Objekt klicken, oder mit „Auswahl mithilfe eines Polygons“ eine Fläche zeichnen. Die gewählten Objekte erscheinen im Seitenleisten-Reiter „Auswahl“; dort lässt sich die Auswahl verwerfen, speichern und wieder laden.
 
-The polygon selection only works with sources which support geometry queries like "intersects".
+Die Auswahl per Klick führt eine Suche um den angeklickten Punkt aus und wählt die gefundenen Objekte. Sie funktioniert mit jedem Layer, der Geometrien liefert, hier mit einem `postgres` Layer und einem `wmsflat` Layer (über GetFeatureInfo). Die Auswahl per Fläche funktioniert nur mit Quellen, die räumliche Abfragen wie „intersects“ unterstützen.
+
+Die Aktion `select` aktiviert mit `storage` und dessen `permissions` das Speichern der Auswahllisten. Im Client werden `Sidebar.Select`, `Toolbar.Select`, `Toolbar.Select.Draw` und `Task.Select` hinzugefügt.
 """
 
 actions+ {

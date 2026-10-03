@@ -1,11 +1,22 @@
 uid "qgis_auto"
 
-title "Custom configuration"
+title "QGIS Unterlayer mit autoLayers anpassen"
 
-metadata.keywords [ "qgis" ]
+metadata.keywords [ "qgis" "karte" ]
 
 metadata.abstract """
-Change automatically created QGIS sub-layers with `autoLayers`.
+Die automatisch aus einem QGIS-Projekt erzeugten Unterlayer eines `qgis`-Layers werden mit `autoLayers` nachträglich angepasst.
+
+Im Layer-Panel lassen sich die Unterschiede ansehen: alle Layer haben eigene Metadaten, die Layer der Gruppe "Sonstiges" eine eigene Feature-Beschreibung beim Abfragen, und "Bäckerei", "Kiosk" und "Supermarkt" werden halbtransparent und mit roter Legendenschrift dargestellt.
+
+Jeder Eintrag in `autoLayers` besteht aus einem Filter `applyTo` und einem Block `config`, der in die Konfiguration jedes passenden Layers gemischt wird:
+
+- ohne `applyTo` gilt der Eintrag für alle Layer, hier für `metadata.abstract`,
+- `applyTo {{ isImage true }}` wählt die Bild- (Blatt-) Layer aus, hier für die `legend`-Optionen,
+- `applyTo {{ pattern "sonstiges" }}` prüft einen regulären Ausdruck gegen den Layerpfad (aus den kleingeschriebenen Layernamen gebildet, z. B. `/sonstiges/hotel`), hier für eine `templates`-Vorlage,
+- `applyTo {{ names [...] }}` wählt Layer über ihre Namen im QGIS-Projekt aus, hier für `opacity` und `legend`.
+
+Passen mehrere Einträge auf einen Layer, werden sie nacheinander angewendet.
 """
 
 map {

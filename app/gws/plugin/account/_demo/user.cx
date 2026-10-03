@@ -1,11 +1,16 @@
 uid "user_account"
 
-title "Nutzerkonto"
+title "Nutzerkonto aktivieren (Onboarding)"
 
-metadata.keywords [ "auth" "user" ]
+metadata.keywords [ "authentifizierung" "datenbank" ]
 
 metadata.abstract """
-Diese Demo zeigt das einfache User Interface nach der Anmeldung am Nutzerkonto. Nach der Anmeldung mit dem Benutzer `demo1` und dem Passwort `demo1` wird im Reiter `User` der Seitenleiste der Names des Benutzers angezeigt."""
+Zielseite für die Aktivierung eines Benutzerkontos: Hier setzt ein Nutzer über den Link aus der Freischaltungs-Mail sein Passwort und wählt ein Verfahren zur Multi-Faktor-Authentifizierung.
+
+Der Link hat die Form `/project/user_account?onboarding=<Code>`. Er wird vom Helfer `account` anhand von `onboardingUrl` erzeugt, z. B. beim Zurücksetzen eines Kontos in der Demo [Benutzerkonten in PostgreSQL verwalten](/project/account_admin). Beim Öffnen zeigt der Dialog `Account.Dialog` die Eingabe von E-Mail-Adresse und Kennwort und danach die Auswahl der MFA-Verfahren aus `mfa`.
+
+Die Aktion `account` stellt die Onboarding-Schnittstelle bereit und ist mit `permissions.read "allow all"` auch für nicht angemeldete Nutzer freigegeben. Nach der Aktivierung meldet sich der Nutzer im Reiter "User" (`Sidebar.User`) an; dort wird dann sein Name angezeigt.
+"""
 
 access "allow all"
 

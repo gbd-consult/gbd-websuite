@@ -1,8 +1,8 @@
 uid "mapshare"
 
-title "Karte teilen"
+title "Kartenposition per Link teilen"
 
-metadata.keywords [ "client" ]
+metadata.keywords [ "werkzeuge" "karte" ]
 
 metadata.abstract """
 Eine Kartenposition teilen.

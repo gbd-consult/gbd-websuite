@@ -1,13 +1,15 @@
 uid "edit_bbox"
 
-title "PostgreSQL Daten des aktuellen Kartenausschnitts laden und editieren"
+title "Editieren im aktuellen Kartenausschnitt"
 
-metadata.keywords [ "edit" "postgres" "vector-data" ]
+metadata.keywords [ "edit" "datenbank" "vektordaten" ]
 
 metadata.abstract """
-Dieses Beispiel zeigt eine Konfiguration zum Editieren von Vektordaten (Punkte) aus einer PostgreSQL Tabelle, bei der nur die Daten geladen werden, die sich im aktuellen Kartenausschnitt befinden.
+Bearbeiten von Punkten aus einer PostgreSQL Tabelle, wobei nur die Objekte im aktuellen Kartenausschnitt geladen werden.
 
-In der Konfiguration wird dazu die Option `loadingStrategy bbox` verwendet.
+Mit `loadingStrategy "bbox"` am Layer lädt der Client die Objekte bei jeder Änderung des Kartenausschnitts neu; das Modell übernimmt die Ladestrategie des Layers. Beim Verschieben oder Zoomen der Karte ändert sich die Objektliste im Reiter "Editieren" entsprechend.
+
+Das Modell hat keine `fields`, das Formular wird automatisch erzeugt; `sort` sortiert die Liste nach `name`. Die Vorlagen `feature.title` und `feature.label` zeigen den Namen in der Liste und als Beschriftung auf der Karte, die Darstellung kommt aus `cssSelector ".custom_poi"`.
 """
 
 actions+ { type "edit" }

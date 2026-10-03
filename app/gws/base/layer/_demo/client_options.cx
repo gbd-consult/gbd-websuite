@@ -1,11 +1,21 @@
 uid "client_options"
 
-title "Layer client options"
+title "Layerbaum-Optionen im Client"
 
-metadata.keywords [ "client" ]
+metadata.keywords [ "karte" "vektordaten" ]
 
 metadata.abstract """
-Various layer client options.
+Optionen, mit denen Layer im Layerbaum des Clients ein- und ausgeblendet, ausgewählt oder gruppiert werden.
+
+Im Reiter "Layer" der Seitenleiste sind die Varianten an den Layertiteln erkennbar:
+
+- `clientOptions.hidden`: der Layer ist beim Start ausgeblendet ("Bar").
+- `clientOptions.selected`: der Layer ist beim Start ausgewählt ("Biergarten").
+- `zoom.minScale` und `zoom.maxScale`: der Layer ist nur in einem Maßstabsbereich sichtbar ("Hotel" bis 1:10.000, "Cafe" zwischen 1:10.000 und 1:50.000).
+- `clientOptions.expanded`: die Gruppe ist beim Start aufgeklappt ("Einkaufen"); "Kultur" ist eine normale Gruppe zum Vergleich.
+- `clientOptions.unfolded`: die Gruppe selbst erscheint nicht im Baum, nur ihre Layer ("Essen").
+- `clientOptions.unlisted`: der Layer wird angezeigt, ist aber nicht im Baum aufgeführt ("Districts").
+- `clientOptions.exclusive`: von den Layern der Gruppe ist jeweils nur einer sichtbar ("Background" mit vier Google-Karten).
 """
 
 map {

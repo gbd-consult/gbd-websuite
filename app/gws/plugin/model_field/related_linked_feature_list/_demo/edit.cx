@@ -1,11 +1,15 @@
 uid "field_related_linked_feature_list"
 
-title "relatedLinkedFeatureList"
+title "Editieren N:M-Beziehung über Verknüpfungstabelle"
 
-metadata.keywords [ "edit" "model-field" "database" ]
+metadata.keywords [ "edit" "datenbank" ]
 
 metadata.abstract """
-Editing two models connected via a link table.
+POIs mit Tags verknüpfen, wobei ein POI mehrere Tags und ein Tag mehrere POIs haben kann (N:M-Beziehung).
+
+Im Reiter "Editieren" das Modell "POIs" wählen und ein Objekt öffnen. Das Feld "Tags" listet die verknüpften Tags; über die Schaltflächen der Liste werden Tags verknüpft, neu angelegt oder Verknüpfungen gelöst.
+
+Das Feld ist vom Typ `relatedLinkedFeatureList`. Die Verknüpfungen stehen in der Tabelle `edit.tagging` (`linkTableName`), deren Spalten `poi_id` (`linkFromColumn`) und `tag_id` (`linkToColumn`) auf POI und Tag verweisen. Im Widget `featureList` schaltet `withUnlinkButton true` die Schaltfläche zum Lösen einer Verknüpfung ein.
 """
 
 

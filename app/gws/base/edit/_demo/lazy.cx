@@ -1,13 +1,15 @@
 uid "edit_lazy"
 
-title "Selektives Laden und Editieren von PostgreSQL Daten"
+title "Editieren mit Laden nach Suchbegriff"
 
-metadata.keywords [ "edit" "postgres" "vector-data" ]
+metadata.keywords [ "edit" "suche" "datenbank" ]
 
 metadata.abstract """
-Dieses Beispiel zeigt eine Konfiguration, bei der nur Objekte eines Vektor Punktlayers aus einer PostgreSQL Tabelle zum Editieren geladen werden, die mit einem zuvor angegebenen Suchbegriff übereinstimmen.
+Bearbeiten eines PostgreSQL Punktlayers, bei dem Objekte erst nach Eingabe eines Suchbegriffs geladen werden. Geeignet für große Tabellen.
 
-In der Konfiguration wird das über die `loadingStrategy lazy` Option erreicht.
+Im Reiter "Editieren" den Layer "Interessante Orte" wählen und in das Suchfeld einen Namen oder Namensteil eingeben. Die Liste zeigt dann nur die passenden Objekte.
+
+Konfiguriert wird das mit `loadingStrategy "lazy"` am Layer. Durchsucht werden die Felder mit `textSearch`, hier `name` mit `type "any"` (Treffer an beliebiger Stelle im Text).
 """
 
 actions+ { type "edit" }

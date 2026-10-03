@@ -1,11 +1,15 @@
 uid "wms_flat_partial"
 
-title "Partial flat layer"
+title "WMS Layer, flach, ausgewählte Quelllayer"
 
-metadata.keywords [ "wms" "ows" ]
+metadata.keywords [ "wms" "karte" ]
 
 metadata.abstract """
-Select specific source layers from a WMS service.
+Ausgewählte Layer eines externen WMS-Dienstes, zusammengefasst zu einem einzigen WebSuite-Layer: Gewässer, Vegetation und Bodenschätzung aus dem ALKIS-WMS NRW.
+
+Im Layer-Panel erscheint nur der Eintrag „NRW ALKIS“. Die drei Quelllayer werden gemeinsam ein- und ausgeschaltet und mit einer einzigen `GetMap`-Anfrage abgerufen. Die ALKIS-Layer des Dienstes werden erst in großen Maßstäben dargestellt, die Karte startet deshalb bei 1:4.000.
+
+Konfiguriert ist ein Layer vom Typ `wmsflat`. `sourceLayers.names` wählt die Quelllayer über ihre Namen aus (`adv_alkis_gewaesser`, `adv_alkis_vegetation`, `adv_alkis_bodensch`). Die Reihenfolge der Liste ist die Zeichenreihenfolge von oben nach unten. Ohne `sourceLayers` würden alle Quelllayer verwendet (siehe Demo „WMS Layer, flach“).
 """
 
 map {

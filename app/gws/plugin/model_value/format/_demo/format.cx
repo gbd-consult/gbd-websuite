@@ -1,15 +1,15 @@
 uid "value_format"
 
-title "format"
+title "Editieren mit Feldwert aus Vorlage"
 
-metadata.keywords [ "edit" "database" "model-value" ]
+metadata.keywords [ "edit" "datenbank" ]
 
 metadata.abstract """
-Model value `format` populates a field with a string value
-composed from other other attributes.
+Ein Feld, dessen Vorgabewert aus anderen Attributen des Objekts zusammengesetzt wird.
 
-In this demo, we use fields `name` and `sid` to
-create a default value for `description`.
+Im Reiter "Editieren" das Modell "Districts" wählen und einen Stadtteil öffnen. Ist das Feld "Description" leer, wird es mit einem Text aus Name und Kennung vorbelegt, der weiter bearbeitet werden kann.
+
+Die Wertquelle `type "format"` bildet den Text aus der Vorlage `format`, in die die Attribute `name` und `sid` in doppelten geschweiften Klammern eingesetzt werden. Mit `isDefault true` wird der Wert nur verwendet, wenn das Feld keinen anderen Wert hat.
 """
 
 actions+ { type "edit" }

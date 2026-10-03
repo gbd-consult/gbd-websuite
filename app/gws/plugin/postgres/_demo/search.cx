@@ -1,11 +1,22 @@
 uid "postgres_search"
 
-title "Postgres search"
+title "Textsuche mit PostgreSQL Finder"
 
-metadata.keywords [ "postgres" "search" "vector-data" ]
+metadata.keywords [ "suche" "datenbank" "vektordaten" ]
 
 metadata.abstract """
-Text search with a `postgres` Finder.
+Stichwortsuche in einer PostGIS-Tabelle mit Points of Interest.
+
+Einen Suchbegriff (mindestens 3 Zeichen) in das Suchfeld oben oder in die Suche in der Seitenleiste eingeben. Die Treffer werden nach Namen sortiert aufgelistet, ein Klick auf einen Treffer zeigt ihn auf der Karte.
+
+Konfiguration:
+
+- die Aktion `type "search"` und die Client-Elemente `Sidebar.Search` und `Altbar.Search` aktivieren die Suche,
+- der Finder `type "postgres"` durchsucht die Tabelle `edit.poi`,
+- im Modell des Finders ist das Feld `name` mit `textSearch {{ type "any" minLength 3 }}` für die Suche nach beliebigen Teilzeichenketten freigegeben, `sort` sortiert die Treffer,
+- die Vorlage mit `subject "feature.title"` bestimmt den angezeigten Titel der Treffer.
+
+Der Finder ist unabhängig von den Layern der Karte; der sichtbare Layer zeigt nur einen Ausschnitt der Daten (`edit.poi_small`).
 """
 
 client.addElements+ { tag "Sidebar.Search" }

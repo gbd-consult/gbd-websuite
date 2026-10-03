@@ -1,11 +1,15 @@
 uid "postgres_reprojected"
 
-title "Reprojected Postgres layer"
+title "PostgreSQL Layer, umprojiziert"
 
-metadata.keywords [ "postgres" "vector-data" "crs" ]
+metadata.keywords [ "vektordaten" "datenbank" "koordinatensysteme" ]
 
 metadata.abstract """
-`postgres` layers with CRS re-projection.
+PostGIS-Tabellen mit Points of Interest und Stadtbezirken in einer Karte, deren KBS sich vom KBS der Tabellen unterscheidet.
+
+Die Karte ist mit `crs 25838` (ETRS89 / UTM Zone 38N) konfiguriert. Düsseldorf liegt weit außerhalb dieser Zone, daher erscheint die Karte deutlich gedreht. Die Geometrien der `postgres`-Layer werden automatisch in das KBS der Karte umprojiziert; dafür ist am Layer keine zusätzliche Konfiguration nötig.
+
+Der OSM-Hintergrund wird ebenfalls in das KBS der Karte umprojiziert.
 """
 
 map {

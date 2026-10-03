@@ -1,11 +1,15 @@
 uid "qgis_print_html"
 
-title "QGIS Print + HTML Template"
+title "QGIS Druckvorlage mit HTML-Element"
 
-metadata.keywords [ "qgis" "print" ]
+metadata.keywords [ "qgis" "drucken" ]
 
 metadata.abstract """
-Use a QGIS print template with embedded HTML
+Druck mit QGIS-Druckvorlagen, deren HTML-Element mit Platzhaltern der WebSuite gefüllt wird.
+
+Zum Ausprobieren den Druck in der Werkzeugleiste öffnen, eine der Druckvorlagen "Portrait" oder "Landscape" und eine Druckqualität wählen und drucken. Das HTML-Element im PDF zeigt u. a. Projekttitel, Benutzer, Version, Maßstab, Drehung, KBS, Auflösung, Datum und Uhrzeit.
+
+Die beiden `printers` verwenden Vorlagen `type "qgis"` aus demselben QGIS-Projekt; `index` wählt das Layout aus. Text- und HTML-Elemente des Layouts werden als HTML-Vorlagen der WebSuite ausgewertet, sodass Platzhalter wie `{{project.title}}`, `{{scale}}` oder `{{date.medium}}` beim Drucken ersetzt werden. `qualityLevels` legt die wählbaren Auflösungen fest.
 """
 
 printers+ {

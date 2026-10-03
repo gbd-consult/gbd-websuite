@@ -1,13 +1,17 @@
 uid "edit_tabview"
 
-title "PostgreSQL Daten mit angepasster und automatischer Ansicht einer Attributtabelle editieren"
+title "Editieren in der Attributtabelle"
 
-metadata.keywords [ "edit" "postgres" "vector-data" ]
+metadata.keywords [ "edit" "datenbank" ]
 
 metadata.abstract """
-Dieses Beispiel zeigt für den Punktlayer "Kategorisierte Orte" eine automatisch konfigurierte Tabellenansicht zum Editieren und für den Punktlayer "Interessante Orte" eine angepasste Tabellenansicht, bei der Attribute über ein Auswahlmenü oder eine Kalenderfunktion editiert werden können.
+Bearbeiten von PostgreSQL Daten in einer Tabellenansicht, einmal automatisch und einmal angepasst konfiguriert.
 
-Klicken Sie zum Ausprobieren jeweils auf das Icon "Attributtabelle öffnen".
+Im Reiter "Editieren" ein Modell wählen und unten in der Leiste auf "Attributtabelle öffnen" klicken. Die Tabelle zeigt die Objekte des Modells; Werte werden in den Zellen bearbeitet und gespeichert.
+
+Die Modelle sind auf Projektebene unter `models` definiert, nicht an einem Layer. "Kategorisierte Orte" hat keine `tableViewColumns`; die Tabelle zeigt dann alle Felder, deren Widget in einer Tabelle darstellbar ist. "Interessante Orte" legt mit `tableViewColumns` Reihenfolge und Breite der Spalten fest; dort werden der Code mit dem Widget `select` und das Datum mit dem Widget `date` bearbeitet.
+
+Die Tabellenansicht ist per Vorgabe aktiv und lässt sich mit `withTableView false` abschalten.
 """
 
 actions+ { type "edit" }

@@ -1,20 +1,22 @@
 uid "print_vector"
 
-title "vector-data"
+title "Druckqualität für Vektordaten"
 
-metadata.keywords [ "print" "vector-data" ]
+metadata.keywords [ "drucken" "vektordaten" "datenbank" ]
 
 metadata.abstract """
-In this demo, we define two vector layers (`postgres` and `geojson`),
-which have custom css classes attached to them
-(see `/style.css` for their definitions).
+Druck von Vektorlayern mit eigenen CSS-Stilen in vier Qualitätsstufen, die festlegen, welche Layer als Bild und welche als Vektoren gedruckt werden.
 
-The print template defines four quality levels:
+Im Druckdialog (Werkzeug „Drucken“ in der Werkzeugleiste) eine der Qualitätsstufen wählen und drucken. Die Karte enthält einen `geojson` Layer (Banken) und einen `postgres` Layer (Stadtbezirke), beide beschriftet und über `cssSelector` mit eigenen Stilen versehen.
 
-- dpi  0   = everything is printed as a screenshot
-- dpi  90  = rasters are printed as a screenshot, vector data as vectors
-- dpi 150  = everything is printed in medium resolution
-- dpi 300  = everything is printed in high resolution
+Die `qualityLevels` steuern den Druck:
+
+- `dpi 0`: die ganze Karte wird als Bildschirmfoto gedruckt
+- `dpi 72`: Rasterlayer als Bildschirmfoto, Vektordaten als Vektoren
+- `dpi 150`: alles in mittlerer Auflösung
+- `dpi 300`: alles in hoher Auflösung
+
+Stufen bis 90 DPI werden serverseitig auf die OGC-Bildschirmauflösung (ca. 90,7 DPI) angehoben.
 """
 
 printers+ {

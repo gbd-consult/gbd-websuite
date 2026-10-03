@@ -1,11 +1,15 @@
 uid "raster_layer_dir"
 
-title "Raster layer, multiple images"
+title "Rasterlayer aus Bildverzeichnis"
 
-metadata.keywords [ "raster" ]
+metadata.keywords [ "rasterdaten" "karte" ]
 
 metadata.abstract """
-`raster` layers display georeferenced raster images.
+Ein Rasterlayer aus mehreren georeferenzierten Bilddateien: digitale Orthophotos (DOP) von Geobasis NRW im JPEG-2000-Format.
+
+Der Layer hat `type "raster"`. Statt einzelner Dateien in `provider.paths` erfasst `provider.pathPattern` alle Dateien, die auf das Muster `*.jp2` passen; die Bilder werden zu einem Layer zusammengesetzt. Mit `display "tile"` wird der Layer gekachelt über den Server ausgeliefert.
+
+Die Karte ist mit `crs 25832` konfiguriert. Die Quellenangabe kommt aus `metadata.attribution`.
 """
 
 map {

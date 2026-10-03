@@ -1,11 +1,15 @@
 uid "service_wms_simple_demo"
 
-title "Simple WMS Service"
+title "WMS Dienst, einfach"
 
-metadata.keywords [ "wms" "ows-service" ]
+metadata.keywords [ "ows-dienste" "wms" ]
 
 metadata.abstract """
-Simple `WMS` service, provides a single OSM layer.
+Ein einfacher, von der WebSuite bereitgestellter WMS-Dienst mit einem OpenStreetMap-Layer.
+
+Der Dienst kann über die Service-URL in einer externen Anwendung wie QGIS eingebunden werden; das Demo-QGIS-Projekt enthält die Dienste bereits.
+
+Konfiguriert ist ein `owsServices`-Eintrag vom Typ `wms` mit Angaben für das Capabilities-Dokument in `metadata`. Veröffentlicht wird der Kachellayer der Projektkarte (`type "tile"`), dessen statische Legende (`legend.type "static"`) über `GetLegendGraphic` abrufbar ist. `map.extent` begrenzt den Bereich des Dienstes auf die Umgebung von Düsseldorf.
 
 [Service URL](/_/owsService/serviceUid/service_wms_simple?request=GetCapabilities)
 

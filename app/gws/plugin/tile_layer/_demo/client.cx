@@ -1,11 +1,15 @@
 uid "tile_client"
 
-title "Client display for tile layers"
+title "Kachellayer, Darstellung im Client"
 
-metadata.keywords [ "tile" "ows" "client "]
+metadata.keywords [ "karte" "rasterdaten" ]
 
 metadata.abstract """
-Title layer, displayed directly on the client.
+XYZ-Kacheln von Google Maps, die der Browser direkt vom Dienst abruft.
+
+Die vier Varianten (Straßenkarte, Straßennamen, Satellit, Gelände) sind in einer Gruppe zusammengefasst. Die Gruppe ist mit `clientOptions.exclusive true` exklusiv, so dass im Layerbaum immer nur eine Variante sichtbar ist.
+
+Jeder Layer hat `type "tile"`, die Kachel-URL wird mit `provider.url` und den Platzhaltern `{{x}}`, `{{y}}`, `{{z}}` angegeben. Mit `display "client"` werden die Kacheln nicht über den Server geleitet, sondern im Client direkt geladen.
 """
 
 map {

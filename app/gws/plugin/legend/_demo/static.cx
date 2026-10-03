@@ -1,13 +1,15 @@
 uid "legend_static"
 
-title "Static legend"
+title "Statische Legende aus Bilddatei"
 
-metadata.keywords [ "legend" ]
+metadata.keywords [ "karte" "rasterdaten" ]
 
 metadata.abstract """
-Mit dieser Konfiguration wird am Beispiel eines OpenStreetMap (OSM) Open Web Service eine statische Legende auf Basis eines PNG Bildes angezeigt.
+Ein Layer erhält als Legende ein festes PNG-Bild.
 
-Klicken Sie dazu im Layerbereich der Seitenleiste auf den Layer OpenStreetMap.
+Im Seitenleisten-Reiter „Layer“ auf den Layer „OpenStreetMap“ klicken; die Legende erscheint in den Layer-Details.
+
+Ein Kachel-Layer liefert selbst keine Legende. Der Block `legend` mit `type "static"` und `path "osm_legend.png"` bindet stattdessen eine Bilddatei ein. Der Pfad ist relativ zur Konfigurationsdatei.
 """
 
 map {

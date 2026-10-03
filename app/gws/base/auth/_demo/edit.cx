@@ -1,16 +1,15 @@
 uid "auth_edit"
 
-title "Edit access"
+title "Editierrechte pro Layer und Rolle"
 
-metadata.keywords [ "auth" ]
+metadata.keywords [ "authentifizierung" "edit" "datenbank" ]
 
 metadata.abstract """
-This project is readable by everyone.
+Unterschiedliche Bearbeitungsrechte für zwei PostgreSQL Layer, abhängig von der Rolle des angemeldeten Nutzers.
 
-The first layer can be edited by the groupA,
-and the second one - only by the groupB.
+Das Projekt ist für alle lesbar. Die Aktion `edit` und die Elemente `Sidebar.Edit` und `Toolbar.Edit` sind mit `access "allow user, deny all"` nur für angemeldete Nutzer freigegeben, so dass die Bearbeitungswerkzeuge erst nach der Anmeldung erscheinen.
 
-Edit controls are only visible to logged-in users.
+Die Rechte werden pro Layer mit `permissions.edit` vergeben: der Layer "POIs" für die Rolle `groupA` (Logins `demo1`, `demo2`), der Layer "Districts" für die Rolle `groupB` (Logins `demo3`, `demo4`, `demo_mfa`). Das Passwort ist jeweils **demo**. `permissions.edit` setzt die Rechte zum Ändern, Anlegen und Löschen gemeinsam.
 """
 
 map {

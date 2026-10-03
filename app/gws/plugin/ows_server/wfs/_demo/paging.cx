@@ -1,11 +1,15 @@
 uid "service_wfs_paging_demo"
 
-title "WFS service with paging"
+title "WFS Dienst mit seitenweiser Abfrage"
 
-metadata.keywords [ "wfs" "ows-service" ]
+metadata.keywords [ "ows-dienste" "wfs" "vektordaten" ]
 
 metadata.abstract """
-`WFS` service with lots of features. Supports `startIndex` parameter to fetch features in pages.
+Ein von der WebSuite bereitgestellter WFS-Dienst mit vielen Features (12.345 Punkte aus der Tabelle `public.many_points`), die seitenweise abgerufen werden können.
+
+Eine `GetFeature`-Anfrage liefert mit `COUNT` eine bestimmte Anzahl von Features und mit `STARTINDEX` ab einer bestimmten Position. Ohne `COUNT` liefert der Dienst die Standardanzahl von 1000 Features (`defaultFeatureCount`), höchstens jedoch 10.000 pro Anfrage (`maxFeatureCount`).
+
+Der Layer ist ein PostgreSQL-Layer mit `ows.xmlns "demo"`, der Dienst ein `owsServices`-Eintrag vom Typ `wfs` mit eigenen `metadata`.
 
 [Service URL](/_/owsService/serviceUid/service_wfs_paging?request=GetCapabilities)
 

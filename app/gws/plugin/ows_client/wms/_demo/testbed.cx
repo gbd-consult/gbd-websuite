@@ -1,11 +1,15 @@
 uid "wms_testbed"
 
-title "WMS Test Bed"
+title "WMS Testumgebung, mehrere Dienste"
 
-metadata.keywords [ "wms" "ows" ]
+metadata.keywords [ "wms" "karte" ]
 
 metadata.abstract """
-Testing diverse WMS Services
+Testprojekt mit WMS-Diensten verschiedener Anbieter als Layerbäume: ALKIS NRW, Karten der Hessischen Verwaltung für Bodenmanagement und Geoinformation und Verwaltungsgebiete 1:5.000.000 des BKG.
+
+Beim Start ist nur der BKG-Dienst sichtbar. Die beiden anderen Dienste sind mit `clientOptions.hidden true` ausgeblendet und können im Layer-Panel eingeschaltet werden; der ALKIS-Dienst zeigt seine Daten erst in großen Maßstäben.
+
+Alle Dienste sind als Layer vom Typ `wms` eingebunden. Beim BKG-Dienst schließt `excludeLayers.titles` die Quelllayer „Verwaltungsgemeinschaft“ und „Gemeinde“ anhand ihrer Titel aus dem Layerbaum aus. `map.extent` begrenzt die Karte auf die Ausdehnung Deutschlands.
 """
 
 map {

@@ -1,15 +1,15 @@
 uid "wms_roots"
 
-title "Angepasster WMS Layerbaum"
+title "WMS Layerbaum mit ausgewählten Wurzellayern"
 
-metadata.keywords [ "wms" "ows" ]
+metadata.keywords [ "wms" "karte" ]
 
 metadata.abstract """
-In diesem Beispiel wird gezeigt, wie man den Layerbaum eines in die GBD WebSuite eingebundenen WMS Dienstes mit der Option `rootLayers` anpassen kann. 
+Ein angepasster Layerbaum eines externen WMS-Dienstes: aus dem ALKIS-WMS NRW werden nur ausgewählte Layer in einer festgelegten Reihenfolge übernommen.
 
-Es ist möglich, eine Auswahl von Layern eines WMS Dienstes zu bestimmen und die Reihenfolge zur Darstellung der WMS Layer im Layerbaum zu definieren und somit individuell anzupassen. 
+Im Layer-Panel erscheinen unter „NRW ALKIS“ nur die Layer „Weiteres“, „Gebäude“ und „Flurstücke“ mit ihren Unterlayern. Die ALKIS-Layer des Dienstes werden erst ab einem Maßstab von 1:4.000 dargestellt.
 
-Verwendet wird dafür ein ALKIS WMS Dienst des Bundeslandes NRW, dessen Layer ab einem Maßstab <= 1:4.000 dargestellt werden können.   
+Konfiguriert ist ein Layer vom Typ `wms` mit `rootLayers.names`. Die genannten Quelllayer bilden die Wurzeln des Baums; ihre Reihenfolge in der Liste bestimmt die Reihenfolge im Layerbaum (von oben nach unten). Statt über `names` können Wurzellayer auch über `titles`, `pattern` oder `level` ausgewählt werden.
 """
 
 map {

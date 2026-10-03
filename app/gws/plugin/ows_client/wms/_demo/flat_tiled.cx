@@ -1,11 +1,17 @@
 uid "wms_flat_tiled"
 
-title "Flat tiled layer"
+title "WMS Layer, flach und gekachelt"
 
-metadata.keywords [ "wms" "ows" "tile" ]
+metadata.keywords [ "wms" "karte" ]
 
 metadata.abstract """
-Tiled display of a WMS.
+Ein WMS-Layer, der im Client gekachelt statt als ein großes Bild dargestellt wird: die Flurstücke aus dem ALKIS-WMS NRW.
+
+Beim Verschieben der Karte werden nur die fehlenden Kacheln nachgeladen. Die Kacheln liefert die WebSuite, die sie aus `GetMap`-Anfragen an den WMS-Dienst erzeugt.
+
+Konfiguriert ist ein Layer vom Typ `wmsflat` mit `sourceLayers.names [ "adv_alkis_flurstuecke" ]` und `display "tile"`. Der Standard für `wmsflat` ist `display "box"`, bei dem für jeden Kartenausschnitt ein einzelnes Bild angefordert wird.
+
+Die Karte ist mit `zoom.maxScale 15000` auf große Maßstäbe begrenzt, in denen der Dienst die Flurstücke darstellt.
 """
 
 map {

@@ -1,11 +1,15 @@
 uid "wmts_source"
 
-title "Selected WMTS layers"
+title "WMTS Layer mit Quelllayer-Auswahl"
 
-metadata.keywords [ "wmts" "ows" ]
+metadata.keywords [ "wmts" "karte" ]
 
 metadata.abstract """
-Use `sourceLayers` to display specific layers from a WMTS service
+Mehrere Layer desselben WMTS-Dienstes als umschaltbare Varianten: drei Stile des Stadtplanwerks Ruhrgebiet.
+
+Im Layer-Panel ist die Gruppe „Stadtplanwerk Ruhrgebiet“ aufgeklappt. Von ihren Layern „Light“, „Extra Light“ und „Orange“ ist immer nur einer sichtbar; beim Einschalten eines Layers wird der vorher sichtbare ausgeschaltet.
+
+Jeder Layer ist vom Typ `wmts` mit derselben `provider.url` und wählt mit `sourceLayers.names` einen anderen Quelllayer des Dienstes aus. Die Gruppe (`type "group"`) hat `clientOptions {{ exclusive true expanded true }}`; `exclusive` lässt nur einen sichtbaren Unterlayer zu. Die beiden zunächst nicht sichtbaren Layer sind mit `clientOptions.hidden true` ausgeblendet. `withCache true` speichert die Kacheln auf dem Server zwischen.
 """
 
 map {

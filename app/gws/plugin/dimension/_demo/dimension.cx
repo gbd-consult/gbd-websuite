@@ -1,17 +1,17 @@
 uid "dimension_tool"
 
-title "Dimension"
+title "Bemaßung mit Fangfunktion"
 
-metadata.keywords [ "client" "draw" ]
+metadata.keywords [ "werkzeuge" "wfs" "drucken" ]
 
 metadata.abstract """
-This plugin provides tools for drawing dimensions on the map.
+Bemaßungen auf der Karte zeichnen, die an den Geometrien eines WFS Layers einrasten.
 
-For printing dimensions it is important to include dimensionDimXXX styles
-in the print template (see print.cx.html).
+Das Werkzeug „Bemaßung“ in der Werkzeugleiste aktivieren und eine Maßlinie zeichnen. Nahe an den Stützpunkten der Kreisgrenzen rastet der Mauszeiger ein. Im Seitenleisten-Reiter „Bemaßung“ werden die Bemaßungen aufgelistet, beschriftet, gelöscht sowie gespeichert und geladen.
 
-With `layerUids` you can configure which features dimension will snap to
-when drawing.
+Die Aktion `dimension` benennt mit `layerUids` die Layer, an deren Geometrien gefangen wird, hier den `wfsflat` Layer `nrw_kreise_wfs`. `storage` mit eigenen `permissions` aktiviert das Speichern. Im Client werden `Sidebar.Dimension` und `Toolbar.Dimension` hinzugefügt.
+
+Bemaßungen werden mitgedruckt. Ihr Aussehen wird über die CSS-Klassen `.dimensionDimLine`, `.dimensionDimArrow`, `.dimensionDimLabel` usw. bestimmt; damit sie im PDF richtig erscheinen, definiert die Druckvorlage `print.cx.html` diese Klassen selbst.
 """
 
 actions+ {

@@ -1,17 +1,15 @@
 uid "qgis_postgres_storage"
 
-title "QGIS Projekt in Postgres"
+title "QGIS Projekt aus PostgreSQL"
 
-metadata.keywords [ "qgis" ]
+metadata.keywords [ "qgis" "datenbank" ]
 
 metadata.abstract """
-Dieses QGIS-Projekt ist in einer Postgres-Datenbank gespeichert. 
+Ein QGIS-Projekt, das nicht als Datei, sondern in einer PostgreSQL-Datenbank gespeichert ist.
 
-In der Provider-Konfiguration wird das Schema und der Projektname angegeben.
+Statt `provider.path` werden in der Provider-Konfiguration `schema` und `projectName` angegeben; die WebSuite lädt das Projekt aus derselben Ablage, in die QGIS beim Speichern in PostgreSQL schreibt. Ohne `dbUid` wird der erste konfigurierte PostgreSQL-Provider verwendet.
 
-Die Optionen `withWatch` und `watchFrequency` aktivieren die Überwachung des Projekts 
-auf Änderungen uns sorgen dafür, dass das Projekt automatisch neu geladen wird, 
-sowohl in GWS als auch in QGIS Server.
+Die Optionen `withWatch` und `watchFrequency` aktivieren die Überwachung des Projekts auf Änderungen. Wird das Projekt in QGIS gespeichert, erkennt die WebSuite die Änderung bei der nächsten Prüfung (hier alle 30 Sekunden) und lädt das Projekt automatisch neu, sowohl in der WebSuite als auch im QGIS Server.
 """
 
 map {

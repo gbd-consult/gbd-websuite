@@ -1,11 +1,17 @@
 uid "qgis_direct_search"
 
-title "Direct search"
+title "QGIS Layer, Quellen direkt durchsuchen"
 
-metadata.keywords [ "qgis" "postgres" ]
+metadata.keywords [ "qgis" "suche" "wfs" "datenbank" ]
 
 metadata.abstract """
-`qgis` layers with direct search for postgres and OWS layers
+Ein QGIS-Projekt, dessen Layer die WebSuite für die Suche direkt abfragt statt über den QGIS Server.
+
+Zum Ausprobieren das Werkzeug "Abfragen" in der Werkzeugleiste aktivieren und auf ein Objekt in der Karte klicken, z. B. einen Stadtbezirk oder einen Point of Interest.
+
+`provider.directSearch [ "wms" "wfs" "postgres" ]` legt fest, für welche Quellenarten die WebSuite eigene Finder erzeugt: für WMS-Layer einen `wms`-Finder (GetFeatureInfo beim Dienst), für WFS-Layer einen `wfs`-Finder und für PostgreSQL-Tabellen einen `postgres`-Finder mit Modell, der die Datenbank direkt abfragt. Die Verbindung zur Datenbank wird aus der Datenquelle im QGIS-Projekt übernommen.
+
+`directSearch` verbessert die Antwortzeiten und ist zudem Voraussetzung dafür, dass Werkzeuge wie die Auswahl Geometrien aus einem QGIS-Layer erhalten.
 """
 
 actions+ { type "search" }

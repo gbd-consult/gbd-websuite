@@ -1,11 +1,17 @@
 uid "field_file_list"
 
-title "File list"
+title "Editieren von Dokumenten als Dateiliste"
 
-metadata.keywords [ "edit" "model-field" "database" ]
+metadata.keywords [ "edit" "datenbank" ]
 
 metadata.abstract """
-Editing files from a related model.
+Dokumente, die einem POI zugeordnet sind, als Dateiliste im Formular bearbeiten.
+
+Im Reiter "Editieren" das Modell "POIs" wählen und ein Objekt öffnen. Das Feld "Related documents" listet die zugehörigen Dokumente; über die Schaltflächen werden neue Dokumente hochgeladen, bestehende verknüpft oder bearbeitet und Verknüpfungen gelöst.
+
+Die Dokumente sind ein eigenes Modell (Tabelle `edit.document`) mit einem Feld `type "file"`, das den Inhalt in der Spalte `content` und den Dateinamen in `filename` speichert. Das POI-Modell verweist mit einem Feld `type "relatedFeatureList"` über die Spalte `poi_id` darauf.
+
+Das Widget `fileList` zeigt die verknüpften Objekte als Dateien; `toFileField "documentFile"` benennt das Dateifeld des Dokument-Modells. `withNewButton`, `withLinkButton`, `withEditButton` und `withUnlinkButton` schalten die Schaltflächen ein.
 """
 
 actions+ { type "edit" }

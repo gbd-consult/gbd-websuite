@@ -1,11 +1,24 @@
 uid "alkis_ui"
 
-title "ALKIS erweitert"
+title "ALKIS Flurstückssuche, erweiterte Oberfläche"
 
-metadata.keywords [ "alkis" ]
+metadata.keywords [ "alkis" "suche" ]
 
 metadata.abstract """
-ALKIS Plugin mit erweiterten UI Optionen und einer Standard Export-Konfiguration.
+ALKIS Flurstückssuche mit allen wesentlichen Bedienoptionen und der Standard-Export-Konfiguration.
+
+Im Seitenleisten-Reiter der Flurstückssuche stehen zusätzlich zur Formularsuche die räumliche Suche mit einer auf der Karte gezeichneten Fläche, das Auswählen einzelner Flurstücke in der Karte, eine Auswahlliste und der Export der Treffer zur Verfügung.
+
+Die Optionen werden unter `ui` der Aktion `alkis` freigeschaltet:
+
+- `useSelect`: Auswahlliste für Flurstücke
+- `usePick`: Flurstücke durch Klick in die Karte wählen
+- `useExport`: Export; ohne `exporters` wird eine Standard-Konfiguration verwendet
+- `searchSpatial`: räumliche Suche mit gezeichneter Suchfläche
+- `gemarkungListMode "tree"`: Gemarkungen als Baum unter ihrer Gemeinde
+- `strasseListMode "withGemarkung"`: Straßen mit Gemarkung in Klammern
+
+`limit 200` begrenzt die Zahl der Treffer.
 """
 
 actions+ {

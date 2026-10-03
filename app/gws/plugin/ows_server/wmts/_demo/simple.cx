@@ -1,11 +1,15 @@
 uid "service_wmts_simple_demo"
 
-title "Simple WMTS service"
+title "WMTS Dienst, einfach"
 
-metadata.keywords [ "wmts" "ows-service" ]
+metadata.keywords [ "ows-dienste" "wmts" ]
 
 metadata.abstract """
-Simple `WMTS` service.
+Ein einfacher, von der WebSuite bereitgestellter WMTS-Dienst mit einem OpenStreetMap-Layer.
+
+Der Dienst kann über die Service-URL in einer externen Anwendung wie QGIS eingebunden werden; dort stehen Kachelmatrix-Sätze für EPSG:3857, EPSG:25832 und EPSG:25833 zur Auswahl.
+
+Konfiguriert ist ein `owsServices`-Eintrag vom Typ `wmts` mit `supportedCrs [ 3857 25832 25833 ]`; für jedes KBS wird ein eigener `TileMatrixSet` erzeugt, `map.extent` begrenzt die Kachelmatrix. Den Inhalt liefert ein Kachellayer (`type "tile"`) mit `withCache true`.
 
 [Service URL](/_/owsService/serviceUid/service_wmts_simple?request=GetCapabilities)
 

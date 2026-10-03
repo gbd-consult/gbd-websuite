@@ -1,12 +1,15 @@
 uid "value_current_user"
 
-title "currentUser"
+title "Editieren mit automatischem Bearbeiter"
 
-metadata.keywords [ "edit" "database" "model-value" ]
+metadata.keywords [ "edit" "datenbank" ]
 
 metadata.abstract """
-Model value `currentUser` automatically inserts
-the current user's login.
+Ein Feld, das beim Speichern automatisch den Anmeldenamen des aktuellen Nutzers erhält.
+
+Im Reiter "Editieren" das Modell "Districts" wählen, einen Stadtteil öffnen, z. B. den Namen ändern und speichern. Das Feld "Updated by" zeigt danach den Anmeldenamen des Nutzers, der gespeichert hat.
+
+Das Feld hat die Wertquelle `values` mit `type "currentUser"`. `forUpdate true` und `forRead false` bewirken, dass der Wert beim Speichern gesetzt wird, nicht beim Lesen. `permissions.edit "deny all"` verhindert eine manuelle Eingabe.
 """
 
 actions+ { type "edit" }

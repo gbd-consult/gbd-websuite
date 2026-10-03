@@ -1,11 +1,15 @@
 uid "wms_flat"
 
-title "WMS flat layer"
+title "WMS Layer, flach"
 
-metadata.keywords [ "wms" "ows" ]
+metadata.keywords [ "wms" "karte" ]
 
 metadata.abstract """
-`wmsflat` layers display multiple WMS layers as a single WebSuite layer.
+Alle Layer eines externen WMS-Dienstes, zusammengefasst zu einem einzigen WebSuite-Layer, am Beispiel des ALKIS-WMS NRW.
+
+Im Layer-Panel erscheint nur der Eintrag „NRW ALKIS“; die Quelllayer sind nicht einzeln schaltbar und werden mit einer gemeinsamen `GetMap`-Anfrage abgerufen. Der Dienst stellt die ALKIS-Daten erst in großen Maßstäben dar, die Karte startet deshalb bei 1:4.000.
+
+Konfiguriert ist ein Layer vom Typ `wmsflat` mit `provider.url`. Da `sourceLayers` fehlt, werden alle Quelllayer verwendet. Abfragbare Quelllayer werden automatisch für die Objektinformation genutzt.
 """
 
 map {

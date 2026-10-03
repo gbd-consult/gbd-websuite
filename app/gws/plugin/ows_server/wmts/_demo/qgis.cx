@@ -1,11 +1,15 @@
 uid "service_wmts_qgis_demo"
 
-title "WMTS service from QGIS"
+title "WMTS Dienst aus QGIS Projekt"
 
-metadata.keywords [ "wmts" "ows-service" "qgis" ]
+metadata.keywords [ "ows-dienste" "wmts" "qgis" ]
 
 metadata.abstract """
-`WMTS` service from a qgis project.
+Ein von der WebSuite bereitgestellter WMTS-Dienst, der Kacheln aus einem QGIS-Projekt liefert.
+
+Beim Laden des Dienstes in einer externen Anwendung wie QGIS stehen Kachelmatrix-Sätze für EPSG:3857, EPSG:25832 und EPSG:25833 zur Auswahl.
+
+Konfiguriert ist ein `owsServices`-Eintrag vom Typ `wmts` mit `supportedCrs [ 3857 25832 25833 ]`; für jedes KBS wird ein eigener `TileMatrixSet` erzeugt. `map.extent` begrenzt die Kachelmatrix auf die Umgebung von Düsseldorf. Den Karteninhalt liefert ein Layer vom Typ `qgis`.
 
 [Service URL](/_/owsService/serviceUid/service_wmts_qgis?request=GetCapabilities)
 

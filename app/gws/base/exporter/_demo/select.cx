@@ -1,12 +1,17 @@
 uid "select_export"
 
-title "Select Tool mit Exportfunktion"
+title "Feature-Auswahl mit Export"
 
-metadata.keywords [ "client" "search" "export" ]
+metadata.keywords [ "werkzeuge" "vektordaten" "qgis" ]
 
 metadata.abstract """
-In disem Beispiel wird die Select-Funktion des Select Tools mit der Exportfunktion kombiniert.
-Die Objekte (Features), die mit der Select-Funktion ausgewählt wurden, können über die Exportfunktion exportiert werden. 
+Features mit dem Auswahlwerkzeug auswählen und in verschiedenen Dateiformaten exportieren.
+
+In der Werkzeugleiste "Auswählen" aktivieren und Objekte anklicken, oder mit "Auswahl mithilfe eines Polygons" eine Fläche zeichnen. Die ausgewählten Features erscheinen im Reiter "Auswahl" der Seitenleiste. Mit der Export-Schaltfläche unten im Reiter ein Format wählen und den Export starten; die Datei wird heruntergeladen.
+
+Die Aktion `exporter` stellt den Export bereit, die Formate werden unter `exporters` konfiguriert: `shapefile`, `kml`, `gml` und `geojson`, jeweils mit `target "download"`. Der zweite GML-Exporter schreibt mit `withMultiLayer true` alle Layer in eine gemeinsame Datei.
+
+Die Layer sind `qgisflat`-Layer aus einem QGIS-Projekt. Die Features für die Auswahl liefern die `finders` vom Typ `postgres`, die auf die zugehörigen Tabellen zugreifen. Mit `storage` an der Aktion `select` kann eine Auswahl außerdem gespeichert und wieder geladen werden.
 """
 
 client.addElements+ { tag "Sidebar.Select" }

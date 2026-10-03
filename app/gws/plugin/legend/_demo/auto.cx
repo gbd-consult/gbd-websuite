@@ -2,14 +2,14 @@ uid "legend_auto"
 
 title "Automatische WMS Legende"
 
-metadata.keywords [ "legend" "wms" ]
+metadata.keywords [ "karte" "wms" ]
 
 metadata.abstract """
-Mit dieser Konfiguration wird am Beispiel eines Open Web Service (OWS) von Geobasis NRW automatisch die Legende für ausgewählte Layer des ALKIS Dienstes angezeigt.
+Die Legende eines WMS Layers wird automatisch aus den Legendengrafiken des Dienstes erzeugt.
 
-Klicken Sie dazu im Layerbereich der Seitenleiste auf den Layer ALKIS WMS NRW
+Im Seitenleisten-Reiter „Layer“ auf den Layer „NRW ALKIS WMS“ klicken; die Legende erscheint in den Layer-Details.
 
-Bemerkung: Für Layer eines eingebundenen QGIS Projektes funktioniert es genauso.
+Der `wmsflat` Layer hat keine `legend` Konfiguration. Die WebSuite liest dann die Legenden-URLs der unter `sourceLayers.names` gewählten Quell-Layer aus den Capabilities des Dienstes und fügt die Bilder zu einer Legende zusammen. Für Layer aus QGIS Projekten wird die Legende ebenso automatisch erzeugt.
 """
 
 map {

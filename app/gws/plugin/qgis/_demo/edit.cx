@@ -1,18 +1,17 @@
 uid "qgis_edit"
 
-title "QGIS/Postgres editing"
+title "Editieren von QGIS Layern"
 
-metadata.keywords [ "qgis" "edit" "postgres" ]
+metadata.keywords [ "qgis" "edit" "datenbank" ]
 
 metadata.abstract """
-Two qgis "flat" layers with editable "postgres" data models
-attached to them.
+Bearbeiten von PostgreSQL-Daten in Layern, die der QGIS Server darstellt.
 
-This way users can edit postgres-based data,
-while the qgis server takes care of the actual map display.
+Im Panel "Editieren" einen der Layer "Points of interest" oder "Districts" wählen, oder in der Werkzeugleiste "Objekt zum Editieren auswählen" aktivieren und auf ein Objekt in der Karte klicken. Name, Geometrie und bei den Bezirken ein Kommentar lassen sich ändern, neue Objekte zeichnen und vorhandene löschen; die Kennung ist schreibgeschützt.
 
-Note that "dbUid" (= the id of the corresponding postgres `database.provider``)
-is mandatory in this case.
+Beide Layer sind vom Typ `qgisflat` und wählen mit `sourceLayers.names` je einen Layer aus dem QGIS-Projekt aus. Daran hängt jeweils ein Modell `type "postgres"` mit `isEditable true` für dieselbe Tabelle, die das QGIS-Projekt verwendet. Die Felder legen Widgets (`input`, `textarea`), die Textsuche (`textSearch`) und mit `permissions.edit "deny all"` den Schreibschutz für den Primärschlüssel fest; Vorlagen für `feature.title` und `feature.label` bestimmen die Anzeige in den Listen.
+
+`dbUid` nennt den Datenbank-Provider des Modells. Da die Modelle nicht an einem `postgres`-Layer hängen, wird sonst der erste konfigurierte PostgreSQL-Provider verwendet.
 """
 
 actions+ { type "edit" }

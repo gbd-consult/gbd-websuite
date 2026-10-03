@@ -1,11 +1,15 @@
 uid "service_wfs_simple_demo"
 
-title "WFS service"
+title "WFS Dienst, einfach"
 
-metadata.keywords [ "wfs" "ows-service" ]
+metadata.keywords [ "ows-dienste" "wfs" "vektordaten" "datenbank" ]
 
 metadata.abstract """
-Simple `WFS` service, provides two Postgres layers.
+Ein einfacher, von der WebSuite bereitgestellter WFS-Dienst mit zwei PostgreSQL-Layern: Stadtteile („Districts“) und Points of Interest („POI“).
+
+Der Dienst kann über die Service-URL in einer externen Anwendung wie QGIS eingebunden werden; das Demo-QGIS-Projekt enthält die Dienste bereits.
+
+Konfiguriert ist ein `owsServices`-Eintrag vom Typ `wfs` mit Angaben für das Capabilities-Dokument in `metadata`. Veröffentlicht werden die Vektorlayer der Projektkarte, die einen XML-Namensraum haben; hier setzt `ows.xmlns "demo"` das Präfix der Objektarten.
 
 [Service URL](/_/owsService/serviceUid/service_wfs_simple?request=GetCapabilities)
 

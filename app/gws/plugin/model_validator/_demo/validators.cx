@@ -1,11 +1,21 @@
 uid "validators"
 
-title "Validators"
+title "Editieren mit Validierung der Eingaben"
 
-metadata.keywords [ "edit" "forms" "validation" ]
+metadata.keywords [ "edit" "datenbank" ]
 
 metadata.abstract """
-Shows different validator objects.
+Verschiedene Validatoren, die Eingaben im Formular vor dem Speichern prüfen.
+
+Im Reiter "Editieren" das Modell "Things" wählen und ein Objekt öffnen oder anlegen. Die Feldtitel beschreiben jeweils die Regel; bei ungültigen Werten wird das Speichern abgelehnt und eine Fehlermeldung angezeigt.
+
+Gezeigte Validatoren:
+
+- `isRequired true`: Pflichtfeld.
+- `regex`: Länge (5 bis 50 Zeichen) und Format (1 bis 2 Ziffern und 3 Buchstaben) per regulärem Ausdruck.
+- `dateRange` mit festen Grenzen (`static`) und berechneten Grenzen (`expression`, z. B. `date.today()`).
+- `numberRange` mit festen Grenzen, auch als zwei getrennte Validatoren mit eigener Fehlermeldung (`message`) für Unter- und Obergrenze.
+- `numberRange` mit einer Grenze, die von einem anderen Feld abhängt (`feature.get('int3', 0) + 10`).
 """
 
 actions+ { type "edit" }

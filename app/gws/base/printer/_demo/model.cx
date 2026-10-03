@@ -1,13 +1,17 @@
 uid "print_fields"
 
-title "Freie Felder für Druckvorlagen"
+title "Druckvorlage mit freien Feldern"
 
-metadata.keywords [ "print" ]
+metadata.keywords [ "drucken" "werkzeuge" ]
 
 metadata.abstract """
-Es besteht die Möglichkeit, freie Felder für Druckvorlagen zu definieren. 
-Diese können in der Druckvorlage verwendet werden, um zusätzliche Informationen anzuzeigen. 
-Diese Felder werden in der Druckvorlage als Variablen in geschweiften Klammern referenziert.
+Eine HTML Druckvorlage mit freien Feldern, die der Nutzer vor dem Drucken ausfüllt.
+
+Im Druckdialog (Werkzeug „Drucken“ in der Werkzeugleiste) erscheinen neben der Qualitätsstufe die Eingabefelder „Seitentitel“ und „Ihre Kommentare“. Die eingegebenen Texte werden mit dem Druckauftrag übertragen und im PDF neben der Karte ausgegeben.
+
+Die Felder werden am Drucker über `models` definiert: ein Modell mit zwei `fields` vom Typ `text`, eines mit dem Widget `input`, eines mit `textarea`. Der Druckdialog bietet das Modell nur an, wenn der Nutzer Schreibrecht darauf hat, daher `permissions.write "allow all"`. In der Vorlage `model.cx.html` werden die Werte über den Feldnamen in geschweiften Klammern eingesetzt: `{{title}}` und `{{comments}}`.
+
+Mit `qualityLevels` stehen drei Auflösungen (90, 150 und 300 DPI) zur Wahl.
 """
 
 printers+ {
