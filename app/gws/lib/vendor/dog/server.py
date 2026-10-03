@@ -73,11 +73,20 @@ class Server:
         with self.lock:
             res = self.b.content_for_url(url)
         if not res:
+            res = self.fallback_content(path)
+        if not res:
             return self.send(start_response, '404 Not Found', 'text/html', 'Not Found')
         return self.send(start_response, '200 OK', res[0], res[1])
 
+    def fallback_content(self, path):
+        # Override this method to provide custom fallback content for a given path.
+        # Return a tuple of (mime, body) or None if no fallback is available.
+        return None
+
     def send(self, start_response, status, mime, body):
         if mime == 'text/html':
+            if isinstance(body, bytes):
+                body = body.decode('utf8')
             body = str(body) + f'\n<script src="{RELOAD_SCRIPT_URL}"></script>\n'
         body = body.encode('utf8') if isinstance(body, str) else bytes(body)
         headers = [('Content-Type', mime), ('Content-Length', str(len(body)))]
@@ -154,7 +163,7 @@ class Server:
 
     def rebuild(self):
         with self.lock:
-            cs = ", ".join(sorted(self.changes))
+            cs = ', '.join(sorted(self.changes))
             self.changes = set()
             u.log.info(f'server: BEGIN rebuild' + (f' changes: {cs}' if cs else ''))
             self.b.build_html(write=False)

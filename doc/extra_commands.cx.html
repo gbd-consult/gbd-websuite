@@ -11,5 +11,8 @@
 %end
 
 %def pyapi(name)
-<a href="<% options.webRoot %>/<% options.pyapi_url(name) %>" title="<% name %>"><code><% name.split('.')[-1] %></code></a>
+    %let h 
+        <a href="<% options.webRoot %>/<% options.pyapi_url(name) %>" title="<% name %>"><code><% name.split('.')[-1] %></code></a>
+    %end
+    %return h.strip()
 %end

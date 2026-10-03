@@ -4,6 +4,7 @@ import os
 import shutil
 import sys
 import json
+import mimetypes
 import re
 
 APP_DIR = os.path.abspath(os.path.dirname(__file__) + '/../app')
@@ -17,6 +18,8 @@ import gws.spec.generator.main
 import options
 import gws.lib.vendor.dog as dog
 
+API_DIR = 'api'
+
 USAGE = """
 GWS Doc Builder
 ~~~~~~~~~~~~~~~
@@ -25,9 +28,11 @@ GWS Doc Builder
 
 Commands:
 
-    build  - generate docs
-    api    - generate API docs
-    server - start the dev server  
+    build    - generate docs
+    markdown - generate docs as Markdown
+    api      - generate API docs
+    server   - start the dev server
+    dump     - dump the parsed docs as JSON
 
 Options:
 
@@ -38,10 +43,13 @@ Options:
         file with custom options
         
     -pdf
-        generate PDF docs in addition to HTML
+        generate PDF docs in addition to HTML (build)
 
-    -manifest <path>
-        path to MANIFEST.json
+    -nc, -no-cache
+        rebuild API docs from scratch (api)
+
+    -path <path>
+        output JSON path (dump)
         
     -D<option-name> <option-value>
         override an option
@@ -75,8 +83,12 @@ def main(args):
     if not out_dir:
         if cmd in {'build', 'server'}:
             out_dir = opts['BUILD_DIR'] + '/doc/' + opts['VERSION2']
+        if cmd == 'markdown':
+            out_dir = opts['BUILD_DIR'] + '/doc_markdown/' + opts['VERSION2']
         if cmd == 'api':
-            out_dir = opts['BUILD_DIR'] + '/apidoc/' + opts['VERSION2']
+            out_dir = _api_doc_dir(opts)
+    if not out_dir:
+        cli.fatal('invalid arguments, try doc.py -h for help')
 
     opts['outputDir'] = out_dir
     shutil.rmtree(opts['outputDir'], ignore_errors=True)
@@ -111,6 +123,7 @@ def main(args):
 
     if cmd == 'server':
         srv = ServerWithSpecs(opts)
+        srv.apiDocDir = _api_doc_dir(opts)
         srv.start()
         return 0
 
@@ -148,13 +161,21 @@ def main(args):
     cli.fatal('invalid arguments, try doc.py -h for help')
 
 
+def _api_doc_dir(opts):
+    return opts['BUILD_DIR'] + '/apidoc/' + opts['VERSION2']
+
+
 def _pyapi_url(name):
+    # 'gws/Config' would match the 'gws/config' package on case-insensitive filesystems
+    if name == 'gws.Config':
+        return API_DIR + '/py/gws/index.html#gws.Config'
+
     parts = name.split('.')
     for n in range(len(parts), 0, -1):
         path = APP_DIR + '/' + '/'.join(parts[:n])
         if os.path.isfile(path + '.py') or os.path.isfile(path + '/__init__.py'):
             anchor = 'module-' + name if n == len(parts) else name
-            return 'api/py/' + '/'.join(parts[:n]) + '/index.html#' + anchor
+            return API_DIR + '/py/' + '/'.join(parts[:n]) + '/index.html#' + anchor
 
 
 def _add_opts(opts, path):
@@ -174,7 +195,9 @@ def _add_opts(opts, path):
 
 
 class ServerWithSpecs(dog.server.Server):
-    """A custom server that runs the spec maker before reload."""
+    """A custom server that runs the spec maker before reload and serves the API docs."""
+
+    apiDocDir: str
 
     def watches(self, path):
         return os.path.basename(path) == 'strings.ini' or super().watches(path)
@@ -185,6 +208,19 @@ class ServerWithSpecs(dog.server.Server):
             out_dir=options.BUILD_DIR,
         )
         super().rebuild()
+
+    def fallback_content(self, path):
+        prefix = self.b.options.webRoot + '/' + API_DIR + '/'
+        if not path.startswith(prefix):
+            return
+        if path.endswith('/'):
+            path += 'index.html'
+        api_dir = os.path.realpath(self.apiDocDir)
+        file_path = os.path.realpath(api_dir + '/' + path[len(prefix):])
+        if not file_path.startswith(api_dir + '/') or not os.path.isfile(file_path):
+            return
+        mime = mimetypes.guess_type(file_path)[0] or 'application/octet-stream'
+        return mime, dog.util.read_file_b(file_path)
 
 
 if __name__ == '__main__':
