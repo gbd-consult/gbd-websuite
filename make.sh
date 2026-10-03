@@ -8,6 +8,15 @@ BASE_DIR=$(dirname $(realpath $BASH_SOURCE))
 PYTHON="${GWS_PYTHON:-python3} -B"
 NODE="${GWS_NODE:-node}"
 
+VERSION=$(cat $BASE_DIR/app/VERSION)
+VERSION2=$(echo $VERSION | cut -d. -f1-2)
+
+DOCKER_ARCH=amd64
+if [ "$(uname -m)" == "arm64" ] || [ "$(uname -m)" == "aarch64" ]; then
+    DOCKER_ARCH=arm64
+fi
+DOCKER_IMAGE="gbdconsult/gws-$DOCKER_ARCH:$VERSION2"
+DOCKER_CONTAINER=gws-make-container
 
 USAGE() {
   cat <<-EOF
@@ -15,7 +24,7 @@ USAGE() {
 GWS Maker
 ~~~~~~~~~
 
-    make.sh <command> [--manifest <path-to-manifest>] <command-options>
+    make.sh [--docker|d] <command> [--manifest|-m <path-to-manifest>] <command-options>
 
 Commands:
 
@@ -35,6 +44,8 @@ Commands:
 
 Run 'make.sh <command> -h' for more info.
 
+If "--docker" or "-d" is specified, run in a Docker container instead of the local environment.
+
 EOF
 }
 
@@ -46,6 +57,11 @@ TEST_RUNNER=$BASE_DIR/app/gws/test/test.py
 if [ "$1" == "" ] || [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
   USAGE
   exit
+fi
+
+if [ "$1" == "--docker" ] || [ "$1" == "-d" ]; then
+    DOCKER=1
+    shift
 fi
 
 COMMAND=$1
@@ -69,7 +85,38 @@ if [ "$MANIFEST" == "" ]; then
 fi
 
 if [ "$MANIFEST" != "" ]; then
+    MANIFEST=$(realpath $MANIFEST)
     MANIFEST_OPT="--manifest $MANIFEST"
+fi
+
+if [ "$DOCKER" == "1" ]; then
+    case $COMMAND in
+      clean|client|client-dev|client-dev-server|image|test)
+        echo "command '$COMMAND' cannot run in Docker"
+        exit 1
+        ;;
+      *)
+        DOCKER_OPTS=(
+            --rm
+            --name $DOCKER_CONTAINER
+            --volume $BASE_DIR:$BASE_DIR
+            --workdir $CWD
+            --user $(id -u):$(id -g)
+            --env HOME=/tmp
+        )
+        if [ -t 0 ]; then
+            DOCKER_OPTS+=(--interactive --tty)
+        fi
+        if [ "$MANIFEST" != "" ]; then
+            DOCKER_OPTS+=(--volume $(dirname $MANIFEST):$(dirname $MANIFEST))
+        fi
+        if [ "$COMMAND" == "doc-dev-server" ]; then
+            DOCKER_OPTS+=(--publish 5500:5500)
+        fi
+        echo "starting Docker container '$DOCKER_CONTAINER' ($DOCKER_IMAGE)"
+        exec docker run "${DOCKER_OPTS[@]}" $DOCKER_IMAGE $BASE_DIR/make.sh $COMMAND $MANIFEST_OPT "$@"
+        ;;
+    esac
 fi
 
 codegen() {
