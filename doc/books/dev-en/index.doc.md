@@ -1,18 +1,18 @@
 # Developer Documentation :/dev-en
 
-Documentation for developers who work on GBD WebSuite or want to extend it. 
+Documentation for developers who work on GBD WebSuite or extend it with plugins.
 
 %toc depth=2
-    overview
-    debug
-    documentation
+    /dev-en/getting-started
+    /dev-en/overview
+    /dev-en/server
+    /dev-en/documentation
 %end
 
-## :overview
+## :/dev-en/getting-started
 
-## :debug
+## :/dev-en/overview
 
-## :documentation
+## :/dev-en/server
 
-## :client
-
+## :/dev-en/documentation
