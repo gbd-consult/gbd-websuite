@@ -3,6 +3,7 @@
 from .builder import Builder
 from .server import Server
 from .options import Options
+from . import util
 
 
 def build_html(opts: Options | dict):

@@ -9,3 +9,7 @@
     <a target="_blank" href="https://docs.gbd-websuite.de/demo/<% uid %>"><% options.demoProjects.get(uid, uid) %></a>
 </span>
 %end
+
+%def pyapi(name)
+<a href="<% options.webRoot %>/<% options.pyapi_url(name) %>" title="<% name %>"><code><% name.split('.')[-1] %></code></a>
+%end

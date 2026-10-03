@@ -96,6 +96,9 @@ def main(args):
         if uid and title:
             opts['demoProjects'][uid] = title
 
+    # generate API documentation URLs for python objects
+    opts['pyapi_url'] = _pyapi_url
+
     if cmd == 'build':
         dog.build_html(opts)
         if args.get('pdf'):
@@ -145,6 +148,15 @@ def main(args):
     cli.fatal('invalid arguments, try doc.py -h for help')
 
 
+def _pyapi_url(name):
+    parts = name.split('.')
+    for n in range(len(parts), 0, -1):
+        path = APP_DIR + '/' + '/'.join(parts[:n])
+        if os.path.isfile(path + '.py') or os.path.isfile(path + '/__init__.py'):
+            anchor = 'module-' + name if n == len(parts) else name
+            return 'api/py/' + '/'.join(parts[:n]) + '/index.html#' + anchor
+
+
 def _add_opts(opts, path):
     dirname = os.path.dirname(os.path.abspath(path))
     d = json.loads(dog.util.read_file(path))
@@ -164,9 +176,8 @@ def _add_opts(opts, path):
 class ServerWithSpecs(dog.server.Server):
     """A custom server that runs the spec maker before reload."""
 
-    def initialize(self):
-        super().initialize()
-        self.liveServer.watch(APP_DIR + '/**/strings.ini', self.watch_docs, delay=0.1)
+    def watches(self, path):
+        return os.path.basename(path) == 'strings.ini' or super().watches(path)
 
     def rebuild(self):
         gws.spec.generator.main.generate_and_write(
