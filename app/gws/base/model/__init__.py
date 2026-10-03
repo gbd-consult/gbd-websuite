@@ -98,6 +98,47 @@ Field "read" permissions are applied when a feature is converted to props,
 
 If a field has attached value objects, these are applied regardless of field permissions.
 
+Data flow
+---------
+
+Database models (`gws.base.database.model`) move data between three representations:
+the record (``feature.record.attributes``, raw source values), the feature (``feature.attributes``,
+python values) and the props (``feature.props.attributes``, client values).
+Scalar fields convert between them with ``raw_to_python``, ``python_to_raw``,
+``prop_to_python`` and ``python_to_prop``.
+
+Reading::
+
+    find_features(search, mc)
+        for each field: before_select(mc)
+            add columns and conditions to mc.dbSelect
+        run the select, create a feature with a record for each row
+        for each field: after_select(features, mc)
+            from_record: record -> feature
+
+Sending to the client::
+
+    feature_to_props(feature, mc)
+        for each field: to_props(feature, mc)
+            feature -> props, skipped if the user cannot read the field
+
+Writing::
+
+    feature_from_props(props, mc)
+        for each field: from_props(feature, mc)
+            props -> feature
+
+    create_feature(feature, mc) / update_feature(feature, mc)
+        for each field: before_create / before_update
+            to_record: feature -> record, skipped for auto fields
+        insert or update the row from the record
+        for each field: after_create / after_update
+
+When a scalar field reads a value (``from_record``, ``to_record``), it uses the first value
+object configured for the current operation. A value object that is not marked as default
+always provides the value. Otherwise the value is taken from the source, if the user
+has access to the field, and the default value object is used only if the source has no value.
+
 Context
 -------
 
