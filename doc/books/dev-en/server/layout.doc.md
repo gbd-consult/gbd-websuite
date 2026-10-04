@@ -4,6 +4,23 @@
 
 `app` is the Python path root, `app/gws` is the package. Its subpackages are described in [](/dev-en/overview/components). Packages under <% pyapi('gws.base', 'gws.base') %> are always loaded. Packages under <% pyapi('gws.plugin', 'gws.plugin') %> and external plugins are loaded only when the configuration uses them.
 
+## Import hierarchy ::
+
+The subpackages of `gws` form layers. A module imports only from its own layer and the layers below it:
+
+| Layer | Contents |
+|-------|----------|
+| `gws.core`, `gws.ext` | basic types, utilities, extension decorators; available everywhere through `import gws` |
+| `gws.lib` | general purpose libraries |
+| `gws.gis` | GIS functionality built on the libraries |
+| `gws.spec` | specs generator and runtime |
+| `gws.config` | configuration parsing and loading |
+| `gws.server` | server control and processes |
+| `gws.base` | base classes of the configurable objects |
+| `gws.plugin` | concrete object types |
+
+Nothing outside `gws.plugin` imports a plugin. Plugins can import other plugins, for example helpers like `gws.plugin.email_helper` or providers like `gws.plugin.postgres.provider`. Core refers to the application class by name (`gws.base.application.core.Object`) and loads it dynamically. Tests and the test utilities in `gws.test` may import from any layer.
+
 ## Basic types ::
 
 `gws/__init__.py` holds the basic types and the interfaces of all components, so that every module can use them after `import gws`. The file is generated from `gws/__init__.pyinc`, which includes `types.pyinc` files from the packages with `# @include` lines:

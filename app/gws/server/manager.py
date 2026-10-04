@@ -6,7 +6,6 @@ import os
 import re
 
 import gws
-import gws.base.web
 import gws.config
 import gws.config.util
 import gws.lib.osx
