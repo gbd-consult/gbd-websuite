@@ -1,7 +1,7 @@
 """Tests for the writer module"""
 
 import gws
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.crs
 import gws.lib.gml.writer as writer
 import gws.lib.xmlx
@@ -9,7 +9,7 @@ import gws.test.util as u
 
 
 def test_shape_to_element():
-    p = gws.base.shape.from_xy(12.34567, 5.6789, crs=gws.lib.crs.WEBMERCATOR)
+    p = gws.lib.shape.from_xy(12.34567, 5.6789, crs=gws.lib.crs.WEBMERCATOR)
 
     xml = writer.shape_to_element(p).to_string()
     u.check.xml(xml, """
@@ -20,7 +20,7 @@ def test_shape_to_element():
 
 
 def test_shape_to_element_crs_format():
-    p = gws.base.shape.from_xy(12.34567, 5.6789, crs=gws.lib.crs.WEBMERCATOR)
+    p = gws.lib.shape.from_xy(12.34567, 5.6789, crs=gws.lib.crs.WEBMERCATOR)
 
     xml = writer.shape_to_element(p, crs_format=gws.CrsFormat.epsg).to_string()
     u.check.xml(xml, """
@@ -31,7 +31,7 @@ def test_shape_to_element_crs_format():
 
 
 def test_shape_to_element_coordinate_precision():
-    p = gws.base.shape.from_xy(12.34567, 5.6789, crs=gws.lib.crs.WEBMERCATOR)
+    p = gws.lib.shape.from_xy(12.34567, 5.6789, crs=gws.lib.crs.WEBMERCATOR)
     xml = writer.shape_to_element(p, coordinate_precision=4).to_string()
     u.check.xml(xml, """
         <gml:Point srsName="urn:ogc:def:crs:EPSG::3857">
@@ -41,7 +41,7 @@ def test_shape_to_element_coordinate_precision():
 
 
 def test_shape_to_element_xy():
-    p = gws.base.shape.from_xy(12.34567, 5.6789, crs=gws.lib.crs.WGS84)
+    p = gws.lib.shape.from_xy(12.34567, 5.6789, crs=gws.lib.crs.WGS84)
 
     xml = writer.shape_to_element(p, always_xy=True).to_string()
     u.check.xml(xml, """
@@ -59,7 +59,7 @@ def test_shape_to_element_xy():
 
 
 def test_shape_to_element_namespace():
-    p = gws.base.shape.from_xy(12.34567, 5.6789, crs=gws.lib.crs.WEBMERCATOR)
+    p = gws.lib.shape.from_xy(12.34567, 5.6789, crs=gws.lib.crs.WEBMERCATOR)
     ns = gws.lib.xmlx.namespace.c.WMS
     xml = writer.shape_to_element(p, namespace=ns).to_string()
     u.check.xml(xml, """
@@ -70,7 +70,7 @@ def test_shape_to_element_namespace():
 
 
 def test_shape_to_element_with_xmlns():
-    p = gws.base.shape.from_xy(12.34567, 5.6789, crs=gws.lib.crs.WEBMERCATOR)
+    p = gws.lib.shape.from_xy(12.34567, 5.6789, crs=gws.lib.crs.WEBMERCATOR)
     xml = writer.shape_to_element(p, with_xmlns=False).to_string()
     u.check.xml(xml, """
         <Point srsName="urn:ogc:def:crs:EPSG::3857">
@@ -80,7 +80,7 @@ def test_shape_to_element_with_xmlns():
 
 
 def test_shape_to_element_with_inline_xmlns():
-    p = gws.base.shape.from_xy(12.34567, 5.6789, crs=gws.lib.crs.WEBMERCATOR)
+    p = gws.lib.shape.from_xy(12.34567, 5.6789, crs=gws.lib.crs.WEBMERCATOR)
     opts = gws.XmlOptions(withNamespaceDeclarations=True)
     xml = writer.shape_to_element(p, with_inline_xmlns=True).to_string(opts)
     u.check.xml(xml, """

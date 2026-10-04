@@ -36,7 +36,7 @@ interface FormValues {
     hausnummer?: string;
     personName?: string;
     personVorname?: string;
-    shapes?: Array<gc.gws.base.shape.Props>;
+    shapes?: Array<gc.gws.lib.shape.Props>;
     strasseCode?: string;
     fsnummer?: string;
     wantEigentuemer?: boolean;

@@ -139,6 +139,7 @@ u.to_data_object = to_data_object
 # @include lib/xmlx/types.pyinc
 
 # @include lib/crs/types.pyinc
+# @include lib/shape/types.pyinc
 # @include lib/grid/types.pyinc
 # @include gis/cache/types.pyinc
 # @include gis/render/types.pyinc
@@ -149,7 +150,6 @@ u.to_data_object = to_data_object
 
 # @include base/metadata/types.pyinc
 # @include base/feature/types.pyinc
-# @include base/shape/types.pyinc
 
 # @include base/action/types.pyinc
 # @include base/auth/types.pyinc

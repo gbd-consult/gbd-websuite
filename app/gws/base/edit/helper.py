@@ -8,7 +8,7 @@ import gws.base.feature
 import gws.base.layer
 import gws.base.legend
 import gws.base.model
-import gws.base.shape
+import gws.lib.shape
 import gws.base.template
 import gws.base.web
 import gws.lib.crs
@@ -99,7 +99,7 @@ class Object(gws.Node):
                 return []
             search.bounds = gws.Bounds(crs=crs, extent=p.extent)
         if p.shapes:
-            shapes = [gws.base.shape.from_props(s) for s in p.shapes]
+            shapes = [gws.lib.shape.from_props(s) for s in p.shapes]
             search.shape = shapes[0] if len(shapes) == 1 else shapes[0].union(shapes[1:])
         if p.resolution:
             search.resolution = p.resolution

@@ -1,6 +1,6 @@
 import gws
 import gws.test.util as u
-import gws.base.shape as shape
+import gws.lib.shape as shape
 import gws.lib.crs as crs
 import shapely.wkt
 import shapely.wkb

@@ -3,19 +3,19 @@ import os
 import zipfile
 
 import gws
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.crs
 import gws.lib.zipx
 import gws.test.util as u
 
 
 def _point(x, y):
-    return gws.base.shape.from_xy(x, y, gws.lib.crs.WGS84)
+    return gws.lib.shape.from_xy(x, y, gws.lib.crs.WGS84)
 
 
 def _polygon(coords):
     wkt = 'POLYGON((' + ', '.join(f'{x} {y}' for x, y in coords) + '))'
-    return gws.base.shape.from_wkt(wkt, gws.lib.crs.WGS84)
+    return gws.lib.shape.from_wkt(wkt, gws.lib.crs.WGS84)
 
 
 @u.fixture(scope='module')

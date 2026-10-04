@@ -4,7 +4,7 @@ import fnmatch
 from typing import Optional
 
 import gws
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.osx
 import gws.lib.crs
 import gws.lib.gdalx
@@ -129,7 +129,7 @@ class Object(gws.Node):
             records.append(
                 gws.FeatureRecord(
                     attributes={'location': e.path},
-                    shape=gws.base.shape.from_bounds(e.bounds),
+                    shape=gws.lib.shape.from_bounds(e.bounds),
                 )
             )
 

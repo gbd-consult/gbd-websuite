@@ -41,7 +41,7 @@ from osgeo import ogr
 from osgeo import osr
 
 import gws
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.crs
 import gws.lib.bounds
 import gws.lib.image
@@ -842,7 +842,7 @@ class VectorLayer:
                 if self.dso.geometryAsText:
                     rec.ewkt = f'SRID={srid};{fdef.ExportToWkt()}'
                 else:
-                    rec.shape = gws.base.shape.from_wkb(bytes(fdef.ExportToIsoWkb()), gws.lib.crs.get(srid))
+                    rec.shape = gws.lib.shape.from_wkb(bytes(fdef.ExportToIsoWkb()), gws.lib.crs.get(srid))
 
         return rec
 

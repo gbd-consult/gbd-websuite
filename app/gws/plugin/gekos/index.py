@@ -4,7 +4,7 @@
 import math
 
 import gws
-import gws.base.shape
+import gws.lib.shape
 import gws.config.util
 import gws.lib.crs
 import gws.lib.xmlx
@@ -127,7 +127,7 @@ class Object(gws.Node):
             uids.add(uid)
             rec['uid'] = uid
 
-            shape = gws.base.shape.from_geojson(
+            shape = gws.lib.shape.from_geojson(
                 {'type': 'Point', 'coordinates': xy},
                 self.crs,
             )

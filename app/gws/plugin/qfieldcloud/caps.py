@@ -3,7 +3,7 @@
 from typing import Optional, cast
 
 import gws
-import gws.base.shape
+import gws.lib.shape
 import gws.gis.source
 import gws.lib.datetimex as dtx
 import gws.lib.jsonx
@@ -249,7 +249,7 @@ class Parser:
         if not aoi:
             return
         crs = self.caps.projectProps.areaOfInterestCrs
-        shape = gws.base.shape.from_wkt(aoi, gws.lib.crs.get(crs) or self.qgisCaps.projectCrs)
+        shape = gws.lib.shape.from_wkt(aoi, gws.lib.crs.get(crs) or self.qgisCaps.projectCrs)
         self.caps.areaOfInterest = shape.bounds()
         self.caps.copyOnlyAreaOfInterest = self.caps.projectProps.offlineCopyOnlyAoi is True
 

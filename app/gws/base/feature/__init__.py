@@ -16,7 +16,7 @@ create features.
 Example::
 
     f = gws.base.feature.new(model=model, attributes={'id': 1, 'name': 'A'})
-    f.set('geom', gws.base.shape.from_wkt('POINT(1 2)', crs))
+    f.set('geom', gws.lib.shape.from_wkt('POINT(1 2)', crs))
     f.uid()             # '1', if the model's uidName is 'id'
     f.to_geojson()
 """
@@ -24,7 +24,7 @@ Example::
 from typing import Optional
 
 import gws
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.style
 import gws.lib.svg
 

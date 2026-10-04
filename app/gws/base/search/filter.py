@@ -4,7 +4,7 @@ import re
 import operator
 
 import gws
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.bounds
 import gws.lib.gml
 import gws.lib.xmlx as xmlx
@@ -337,7 +337,7 @@ def from_fes_element(el: gws.XmlElement) -> gws.SearchFilter:
         if not v:
             raise Error(f'invalid envelope')
         bounds = gws.lib.gml.parse_envelope(v)
-        flt.shape = gws.base.shape.from_bounds(bounds)
+        flt.shape = gws.lib.shape.from_bounds(bounds)
         return flt
 
     v = el.findfirst('Literal')

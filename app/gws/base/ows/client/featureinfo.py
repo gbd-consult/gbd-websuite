@@ -1,7 +1,7 @@
 """Parser for WMS/WFS feature info responses."""
 
 import gws
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.gml
 import gws.lib.xmlx as xmlx
 
@@ -142,7 +142,7 @@ def _parse_getfeatureinforesponse(xml_el: gws.XmlElement, default_crs, always_xy
         key = el.get('name').lower()
         val = el.get('value', '').strip()        
         if key == 'geometry':
-            rec.shape = gws.base.shape.from_wkt(val, default_crs)
+            rec.shape = gws.lib.shape.from_wkt(val, default_crs)
         elif len(val) > 0:
             rec.attributes[key] = val
 
@@ -299,7 +299,7 @@ def _record_from_gml(feature_el, default_crs, always_xy) -> gws.FeatureRecord:
                 rec.attributes[el.name.lower()] = s
 
     if not rec.shape and bbox:
-        rec.shape = gws.base.shape.from_bounds(bbox)
+        rec.shape = gws.lib.shape.from_bounds(bbox)
 
     return rec
 

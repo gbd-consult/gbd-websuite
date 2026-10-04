@@ -94,7 +94,7 @@ export class Feature implements types.IFeature {
         return this.redraw();
     }
 
-    setShape(shape: gws.base.shape.Props) {
+    setShape(shape: gws.lib.shape.Props) {
         this.oFeature = this.ensureOlFeature();
         this.attributes[this.geometryName] = shape;
         this.updateOlFeatureFromShape(shape);

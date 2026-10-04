@@ -39,7 +39,7 @@ The server code is the package `gws` in `app/gws`. Each package links to its API
 | <% pyapi('gws.base.printer') %> | Printers and the print worker, which renders a map and a template into a PDF or image in a background job. |
 | <% pyapi('gws.base.project') %> | Projects: a map, a client configuration and project-specific actions, finders, models, templates and printers. Also the `projectInfo` command, which sends a project to the client. |
 | <% pyapi('gws.base.search') %> | The search manager, which runs a search query over all finders a user can access, and the base finder class. Finders search layers, models or external services. |
-| <% pyapi('gws.base.shape') %> | Geometries in a coordinate system, based on Shapely, with conversions from and to WKT, WKB, GeoJSON and extents. |
+| <% pyapi('gws.lib.shape') %> | Geometries in a coordinate system, based on Shapely, with conversions from and to WKT, WKB, GeoJSON and extents. |
 | <% pyapi('gws.base.storage') %> | A key-value store where the client saves user data, like selections or annotations, by category. Storage providers implement the backend. |
 | <% pyapi('gws.base.template') %> | The base template class and the template manager, which finds a template by subject (for example `feature.label`) along the tree. |
 | <% pyapi('gws.base.web') %> | Web sites with their rewrite rules, CORS and SSL settings, request parsing (<% pyapi('gws.WebRequester', 'gws.WebRequester') %>), the WSGI application and the `web` action for assets, pages and downloads. |

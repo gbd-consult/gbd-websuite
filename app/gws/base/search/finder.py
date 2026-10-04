@@ -5,7 +5,7 @@ from typing import Optional, cast
 import gws
 import gws.base.model
 import gws.base.template
-import gws.base.shape
+import gws.lib.shape
 import gws.config.util
 import gws.lib.uom
 
@@ -123,9 +123,9 @@ class Object(gws.Finder):
         if search.shape:
             return search.shape
         if self.spatialContext == SpatialContext.view and search.bounds:
-            return gws.base.shape.from_bounds(search.bounds)
+            return gws.lib.shape.from_bounds(search.bounds)
         if search.project:
-            return gws.base.shape.from_bounds(search.project.map.bounds)
+            return gws.lib.shape.from_bounds(search.project.map.bounds)
 
     def run(self, search, user, layer=None):
         model = self.root.app.modelMgr.find_model(self, layer, user=user, access=gws.Access.read)

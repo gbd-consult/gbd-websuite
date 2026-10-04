@@ -1,7 +1,7 @@
 """GML geometry parsers."""
 
 import gws
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.bounds
 import gws.lib.crs
 import gws.lib.extent
@@ -109,7 +109,7 @@ def parse_shape(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy: bool
         raise Error('no CRS declared')
 
     dct = parse_geometry(el)
-    return gws.base.shape.from_geojson(dct, crs, always_xy)
+    return gws.lib.shape.from_geojson(dct, crs, always_xy)
 
 
 def parse_geometry(el: gws.XmlElement) -> dict:

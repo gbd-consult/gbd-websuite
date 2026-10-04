@@ -5,7 +5,7 @@ from typing import Optional
 import re
 
 import gws
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.crs
 import gws.lib.datetimex
 import gws.lib.jsonx
@@ -157,7 +157,7 @@ def _filter_with_geom(p: FilterParamsWithGeom) -> core.Filter:
             raise gws.Error(f'invalid bbox {p.bbox!r}')
         flt.bbox = gws.Bounds(crs=crs, extent=tuple(float(v) for v in bbox))
     else:
-        flt.bbox = gws.base.shape.from_wkt(wkt, crs).bounds()
+        flt.bbox = gws.lib.shape.from_wkt(wkt, crs).bounds()
 
     return flt
 

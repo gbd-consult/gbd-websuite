@@ -3,7 +3,7 @@
 from typing import Optional, cast
 
 import gws
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.crs
 import gws.lib.dynimport
 import gws.lib.jsonx
@@ -68,7 +68,7 @@ def _caps_json(x):
     """Convert an object that is not JSON-serializable for the JSON output."""
     if isinstance(x, gws.lib.crs.Object):
         return x.epsg
-    if isinstance(x, gws.base.shape.Shape):
+    if isinstance(x, gws.lib.shape.Shape):
         return x.to_geojson()
     try:
         return vars(x)

@@ -8,7 +8,7 @@ import datetime
 from sqlalchemy.dialects.postgresql import JSONB
 
 import gws
-import gws.base.shape
+import gws.lib.shape
 import gws.base.database
 import gws.config.util
 import gws.lib.crs
@@ -487,7 +487,7 @@ class Object(gws.Node):
                     hausnummer=r['hausnummer'],
                     x=r['x'],
                     y=r['y'],
-                    shape=gws.base.shape.from_xy(r['x'], r['y'], crs=self.crs),
+                    shape=gws.lib.shape.from_xy(r['x'], r['y'], crs=self.crs),
                 )
 
         return gws.u.compact(adresse_map.get(uid) for uid in lage_uids)
@@ -859,7 +859,7 @@ class Object(gws.Node):
         fs_map = {fs.uid: fs for fs in fs_list}
 
         for fs in fs_map.values():
-            fs.shape = gws.base.shape.from_wkb_element(fs.geom, default_crs=self.crs)
+            fs.shape = gws.lib.shape.from_wkb_element(fs.geom, default_crs=self.crs)
 
             fs.lageList = self._remove_historic(fs.lageList, hd) if with_lage else []
             fs.gebaeudeList = self._remove_historic(fs.gebaeudeList, hd) if with_gebaeude else []

@@ -47,7 +47,7 @@ export class GeometryWidgetHelper {
         });
     }
 
-    async whenEditTextSaved(feature: gc.types.IFeature, field: gc.types.IModelField, shape: gc.gws.base.shape.Props) {
+    async whenEditTextSaved(feature: gc.types.IFeature, field: gc.types.IModelField, shape: gc.gws.lib.shape.Props) {
         let cc = this.master();
         await cc.closeDialog();
         feature.setShape(shape);

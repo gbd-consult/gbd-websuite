@@ -18,6 +18,7 @@ Geometry and coordinates
 - ``gdalx``: GDAL/OGR wrapper for raster and vector files.
 - ``gml``: reading and writing GML geometries.
 - ``grid``: map grids and tile pyramid math.
+- ``shape``: shapes, geometries with a CRS.
 - ``uom``: units of measure and conversions.
 
 Rendering and formats

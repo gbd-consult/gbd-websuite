@@ -3,7 +3,7 @@
 import re
 
 import gws
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.svg.draw as draw
 import gws.lib.crs as crs
 import gws.lib.style
@@ -11,7 +11,7 @@ import gws.test.util as u
 
 
 def test_shape_to_fragment_point():
-    shape = gws.base.shape.from_wkt('SRID=3857;POINT(100 200)')
+    shape = gws.lib.shape.from_wkt('SRID=3857;POINT(100 200)')
     bounds = gws.Bounds(crs=crs.WGS84, extent=[0, 0, 1000, 1000])
     view = gws.MapView(bounds=bounds, size=[1000, 1000], rotation=0, scale=1, dpi=96)
 
@@ -30,7 +30,7 @@ def test_shape_to_fragment_point():
 
 def test_shape_to_fragment_linestring():
     """Test converting a linestring shape to SVG frg."""
-    shape = gws.base.shape.from_wkt('SRID=3857;LINESTRING(100 100, 200 200, 300 100)')
+    shape = gws.lib.shape.from_wkt('SRID=3857;LINESTRING(100 100, 200 200, 300 100)')
     bounds = gws.Bounds(crs=crs.WGS84, extent=[0, 0, 1000, 1000])
     view = gws.MapView(bounds=bounds, size=[1000, 1000], rotation=0, scale=1, dpi=96)
 
@@ -45,7 +45,7 @@ def test_shape_to_fragment_linestring():
 
 def test_shape_to_fragment_polygon():
     """Test converting a polygon shape to SVG frg."""
-    shape = gws.base.shape.from_wkt('SRID=3857; POLYGON((100 100, 200 100, 200 200, 100 200, 100 100))')
+    shape = gws.lib.shape.from_wkt('SRID=3857; POLYGON((100 100, 200 100, 200 200, 100 200, 100 100))')
     bounds = gws.Bounds(crs=crs.WGS84, extent=[0, 0, 1000, 1000])
     view = gws.MapView(bounds=bounds, size=[1000, 1000], rotation=0, scale=1, dpi=96)
 
@@ -66,7 +66,7 @@ def test_shape_to_fragment_polygon():
 
 # def test_shape_to_fragment_with_label():
 #     """Test shape with label."""
-#     shape = gws.base.shape.from_wkt('SRID=3857; POINT(100 200)')
+#     shape = gws.lib.shape.from_wkt('SRID=3857; POINT(100 200)')
 #     bounds = gws.Bounds(crs=crs.WGS84, extent=[0, 0, 1000, 1000])
 #     view = gws.MapView(
 #         bounds=bounds,
@@ -114,7 +114,7 @@ def test_shape_to_fragment_polygon():
 
 def test_shape_to_fragment_with_marker():
     """Test shape with marker."""
-    shape = gws.base.shape.from_wkt('SRID=3857; LINESTRING(100 100, 200 200)')
+    shape = gws.lib.shape.from_wkt('SRID=3857; LINESTRING(100 100, 200 200)')
     bounds = gws.Bounds(crs=crs.WGS84, extent=[0, 0, 1000, 1000])
     view = gws.MapView(bounds=bounds, size=[1000, 1000], rotation=0, scale=1, dpi=96)
 
@@ -244,7 +244,7 @@ def test_soup_to_fragment_invalid():
 
 def test_empty_shape():
     """Test handling of empty shapes."""
-    shape = gws.base.shape.from_wkt('SRID=3857;POLYGON EMPTY')
+    shape = gws.lib.shape.from_wkt('SRID=3857;POLYGON EMPTY')
     bounds = gws.Bounds(crs=crs.WGS84, extent=[0, 0, 1000, 1000])
     view = gws.MapView(bounds=bounds, size=[1000, 1000], rotation=0, scale=1, dpi=96)
 
@@ -254,7 +254,7 @@ def test_empty_shape():
 
 def test_label_visibility():
     """Test label visibility based on scale."""
-    shape = gws.base.shape.from_wkt('SRID=3857;POINT(100 200)')
+    shape = gws.lib.shape.from_wkt('SRID=3857;POINT(100 200)')
 
     # Create view with scale 1:1000
     bounds = gws.Bounds(crs=crs.WGS84, extent=[0, 0, 1000, 1000])
@@ -290,7 +290,7 @@ def test_label_visibility():
 
 def test_multigeometry():
     """Test handling of multi-geometries."""
-    shape = gws.base.shape.from_wkt('SRID=3857;MULTIPOINT((100 100), (200 200))')
+    shape = gws.lib.shape.from_wkt('SRID=3857;MULTIPOINT((100 100), (200 200))')
     bounds = gws.Bounds(crs=crs.WGS84, extent=[0, 0, 1000, 1000])
     view = gws.MapView(bounds=bounds, size=[1000, 1000], rotation=0, scale=1, dpi=96)
 

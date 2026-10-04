@@ -2666,6 +2666,360 @@ class Crs:
 
 
 ################################################################################
+# /lib/shape/types.pyinc
+
+
+class ShapeProps(Props):
+    """Shape properties."""
+
+    crs: str
+    geometry: dict
+
+
+class Shape(Object):
+    """Geo-referenced geometry."""
+
+    type: GeometryType
+    """Geometry type."""
+
+    crs: 'Crs'
+    """CRS of this shape."""
+
+    x: Optional[float]
+    """X-coordinate for Point geometries, None otherwise."""
+
+    y: Optional[float]
+    """Y-coordinate for Point geometries, None otherwise."""
+
+    # common props
+
+    def area(self) -> float:
+        """Compute the area of the geometry.
+
+        Returns:
+            The area in CRS units, 0 for geometries without an area.
+        """
+
+    def bounds(self) -> Bounds:
+        """Compute the bounds of this shape.
+
+        Returns:
+            A Bounds object in the CRS of this shape.
+        """
+
+    def centroid(self) -> 'Shape':
+        """Compute the centroid of this shape.
+
+        Returns:
+            A Point shape.
+        """
+
+    def center(self) -> tuple[float, float]:
+        """Compute the coordinates of the centroid.
+
+        Returns:
+            A tuple ``(x, y)``.
+        """
+
+    # formats
+
+    def to_wkb(self) -> bytes:
+        """Convert this shape to WKB.
+
+        Returns:
+            WKB bytes.
+        """
+
+    def to_wkb_hex(self) -> str:
+        """Convert this shape to hex-encoded WKB.
+
+        Returns:
+            A hex string.
+        """
+
+    def to_ewkb(self) -> bytes:
+        """Convert this shape to EWKB, which includes the SRID.
+
+        Returns:
+            EWKB bytes.
+        """
+
+    def to_ewkb_hex(self) -> str:
+        """Convert this shape to hex-encoded EWKB, which includes the SRID.
+
+        Returns:
+            A hex string.
+        """
+
+    def to_wkt(self, trim=False, rounding_precision=-1, output_dimension=3) -> str:
+        """Convert this shape to WKT.
+
+        Whitespace around commas and parentheses is removed.
+
+        Args:
+            trim: Remove trailing zeros from the coordinates.
+            rounding_precision: Number of decimal places, -1 for full precision.
+            output_dimension: Max. number of dimensions to output.
+
+        Returns:
+            A WKT string.
+        """
+
+    def to_ewkt(self, trim=False, rounding_precision=-1, output_dimension=3) -> str:
+        """Convert this shape to EWKT, which is WKT prefixed with ``SRID=<srid>;``.
+
+        Args:
+            trim: Remove trailing zeros from the coordinates.
+            rounding_precision: Number of decimal places, -1 for full precision.
+            output_dimension: Max. number of dimensions to output.
+
+        Returns:
+            An EWKT string.
+        """
+
+    def to_geojson(self, keep_crs=False) -> dict:
+        """Convert this shape to a GeoJSON geometry dict.
+
+        Args:
+            keep_crs: Keep the CRS of this shape, otherwise transform the coordinates to WGS84.
+
+        Returns:
+            A GeoJSON geometry dict.
+        """
+
+    def to_precision(self, prec: int) -> 'Shape':
+        """Create a copy of this shape with coordinates snapped to the given precision.
+
+        Args:
+            prec: Number of decimal places.
+
+        Returns:
+            A new shape.
+        """
+
+    def to_props(self) -> ShapeProps:
+        """Convert this shape to props, with the EPSG code and a GeoJSON geometry in the CRS of this shape.
+
+        Returns:
+            Shape props.
+        """
+
+    # predicates (https://shapely.readthedocs.io/en/stable/manual.html#predicates-and-relationships)
+
+    def is_empty(self) -> bool:
+        """Check if this shape is empty.
+
+        Returns:
+            ``True`` if this shape is empty.
+        """
+
+    def is_ring(self) -> bool:
+        """Check if this shape is a closed and simple line.
+
+        Returns:
+            ``True`` if this shape is a ring.
+        """
+
+    def is_simple(self) -> bool:
+        """Check if this shape is simple, that is, has no self-intersections.
+
+        Returns:
+            ``True`` if this shape is simple.
+        """
+
+    def is_valid(self) -> bool:
+        """Check if this shape is valid.
+
+        Returns:
+            ``True`` if this shape is valid.
+        """
+
+    def equals(self, other: 'Shape') -> bool:
+        """Check if this shape is spatially equal to the other.
+
+        The other shape is transformed to the CRS of this shape. The same applies to
+        all binary predicates.
+
+        Args:
+            other: Another shape.
+
+        Returns:
+            ``True`` if the shapes are equal.
+        """
+
+    def contains(self, other: 'Shape') -> bool:
+        """Check if this shape contains the other.
+
+        Args:
+            other: Another shape.
+
+        Returns:
+            ``True`` if this shape contains the other.
+        """
+
+    def covers(self, other: 'Shape') -> bool:
+        """Check if this shape covers the other.
+
+        Args:
+            other: Another shape.
+
+        Returns:
+            ``True`` if this shape covers the other.
+        """
+
+    def covered_by(self, other: 'Shape') -> bool:
+        """Check if this shape is covered by the other.
+
+        Args:
+            other: Another shape.
+
+        Returns:
+            ``True`` if this shape is covered by the other.
+        """
+
+    def crosses(self, other: 'Shape') -> bool:
+        """Check if this shape crosses the other.
+
+        Args:
+            other: Another shape.
+
+        Returns:
+            ``True`` if this shape crosses the other.
+        """
+
+    def disjoint(self, other: 'Shape') -> bool:
+        """Check if this shape does not intersect the other.
+
+        Args:
+            other: Another shape.
+
+        Returns:
+            ``True`` if the shapes have no point in common.
+        """
+
+    def intersects(self, other: 'Shape') -> bool:
+        """Check if this shape intersects the other.
+
+        Args:
+            other: Another shape.
+
+        Returns:
+            ``True`` if the shapes have at least one point in common.
+        """
+
+    def overlaps(self, other: 'Shape') -> bool:
+        """Check if this shape overlaps the other.
+
+        Args:
+            other: Another shape.
+
+        Returns:
+            ``True`` if this shape overlaps the other.
+        """
+
+    def touches(self, other: 'Shape') -> bool:
+        """Check if this shape touches the other.
+
+        Args:
+            other: Another shape.
+
+        Returns:
+            ``True`` if this shape touches the other.
+        """
+
+    def within(self, other: 'Shape') -> bool:
+        """Check if this shape is within the other.
+
+        Args:
+            other: Another shape.
+
+        Returns:
+            ``True`` if this shape is within the other.
+        """
+
+    # set operations
+
+    def union(self, others: list['Shape']) -> 'Shape':
+        """Compute the union of this shape and other shapes.
+
+        Args:
+            others: Other shapes, transformed to the CRS of this shape.
+
+        Returns:
+            A new shape, or this shape if ``others`` is empty.
+        """
+
+    def intersection(self, *others: 'Shape') -> 'Shape':
+        """Compute the intersection of this shape and other shapes.
+
+        Args:
+            *others: Other shapes, transformed to the CRS of this shape.
+
+        Returns:
+            A new shape, or this shape if no others are given.
+        """
+
+    # convertors
+
+    def to_multi(self) -> 'Shape':
+        """Convert a single geometry shape to a multi-geometry one.
+
+        Returns:
+            A multi-geometry shape for a point, a line string or a polygon, otherwise this shape.
+        """
+
+    def to_type(self, new_type: 'GeometryType') -> 'Shape':
+        """Convert this shape to another geometry type.
+
+        Only the conversion from a single to the respective multi-geometry is supported.
+
+        Args:
+            new_type: Target geometry type. ``geometry`` and the current type return this shape.
+
+        Returns:
+            A converted shape.
+
+        Raises:
+            ``gws.Error``: If the conversion is not supported.
+        """
+
+    def to_2d(self) -> 'Shape':
+        """Convert this shape to 2 dimensions.
+
+        Returns:
+            A 2D shape, or this shape if it is already 2D.
+        """
+
+    # misc
+
+    def tolerance_polygon(self, tolerance=None, quad_segs=None) -> 'Shape':
+        """Build a buffer polygon around this shape.
+
+        Polygons without a tolerance are returned as is. Other shapes always get a
+        buffer, with a small minimal radius if no tolerance is given. Shapes in a
+        geographic CRS are buffered in Web Mercator.
+
+        Args:
+            tolerance: Buffer radius in CRS units, or in meters for geographic CRS.
+            quad_segs: Number of segments per quarter circle.
+
+        Returns:
+            A polygon shape.
+        """
+
+    def transformed_to(self, crs: 'Crs') -> 'Shape':
+        """Transform this shape to another CRS.
+
+        Args:
+            crs: Target CRS.
+
+        Returns:
+            A transformed shape, or this shape if the CRS is the same.
+        """
+################################################################################
+
+
+################################################################################
 # /lib/grid/types.pyinc
 
 
@@ -3605,360 +3959,6 @@ class Feature:
         Returns:
             The value of the uid attribute as a string, an empty string if the model
             has no uid attribute, or ``None`` if the feature has no value.
-        """
-################################################################################
-
-
-################################################################################
-# /base/shape/types.pyinc
-
-
-class ShapeProps(Props):
-    """Shape properties."""
-
-    crs: str
-    geometry: dict
-
-
-class Shape(Object):
-    """Geo-referenced geometry."""
-
-    type: GeometryType
-    """Geometry type."""
-
-    crs: 'Crs'
-    """CRS of this shape."""
-
-    x: Optional[float]
-    """X-coordinate for Point geometries, None otherwise."""
-
-    y: Optional[float]
-    """Y-coordinate for Point geometries, None otherwise."""
-
-    # common props
-
-    def area(self) -> float:
-        """Compute the area of the geometry.
-
-        Returns:
-            The area in CRS units, 0 for geometries without an area.
-        """
-
-    def bounds(self) -> Bounds:
-        """Compute the bounds of this shape.
-
-        Returns:
-            A Bounds object in the CRS of this shape.
-        """
-
-    def centroid(self) -> 'Shape':
-        """Compute the centroid of this shape.
-
-        Returns:
-            A Point shape.
-        """
-
-    def center(self) -> tuple[float, float]:
-        """Compute the coordinates of the centroid.
-
-        Returns:
-            A tuple ``(x, y)``.
-        """
-
-    # formats
-
-    def to_wkb(self) -> bytes:
-        """Convert this shape to WKB.
-
-        Returns:
-            WKB bytes.
-        """
-
-    def to_wkb_hex(self) -> str:
-        """Convert this shape to hex-encoded WKB.
-
-        Returns:
-            A hex string.
-        """
-
-    def to_ewkb(self) -> bytes:
-        """Convert this shape to EWKB, which includes the SRID.
-
-        Returns:
-            EWKB bytes.
-        """
-
-    def to_ewkb_hex(self) -> str:
-        """Convert this shape to hex-encoded EWKB, which includes the SRID.
-
-        Returns:
-            A hex string.
-        """
-
-    def to_wkt(self, trim=False, rounding_precision=-1, output_dimension=3) -> str:
-        """Convert this shape to WKT.
-
-        Whitespace around commas and parentheses is removed.
-
-        Args:
-            trim: Remove trailing zeros from the coordinates.
-            rounding_precision: Number of decimal places, -1 for full precision.
-            output_dimension: Max. number of dimensions to output.
-
-        Returns:
-            A WKT string.
-        """
-
-    def to_ewkt(self, trim=False, rounding_precision=-1, output_dimension=3) -> str:
-        """Convert this shape to EWKT, which is WKT prefixed with ``SRID=<srid>;``.
-
-        Args:
-            trim: Remove trailing zeros from the coordinates.
-            rounding_precision: Number of decimal places, -1 for full precision.
-            output_dimension: Max. number of dimensions to output.
-
-        Returns:
-            An EWKT string.
-        """
-
-    def to_geojson(self, keep_crs=False) -> dict:
-        """Convert this shape to a GeoJSON geometry dict.
-
-        Args:
-            keep_crs: Keep the CRS of this shape, otherwise transform the coordinates to WGS84.
-
-        Returns:
-            A GeoJSON geometry dict.
-        """
-
-    def to_precision(self, prec: int) -> 'Shape':
-        """Create a copy of this shape with coordinates snapped to the given precision.
-
-        Args:
-            prec: Number of decimal places.
-
-        Returns:
-            A new shape.
-        """
-
-    def to_props(self) -> ShapeProps:
-        """Convert this shape to props, with the EPSG code and a GeoJSON geometry in the CRS of this shape.
-
-        Returns:
-            Shape props.
-        """
-
-    # predicates (https://shapely.readthedocs.io/en/stable/manual.html#predicates-and-relationships)
-
-    def is_empty(self) -> bool:
-        """Check if this shape is empty.
-
-        Returns:
-            ``True`` if this shape is empty.
-        """
-
-    def is_ring(self) -> bool:
-        """Check if this shape is a closed and simple line.
-
-        Returns:
-            ``True`` if this shape is a ring.
-        """
-
-    def is_simple(self) -> bool:
-        """Check if this shape is simple, that is, has no self-intersections.
-
-        Returns:
-            ``True`` if this shape is simple.
-        """
-
-    def is_valid(self) -> bool:
-        """Check if this shape is valid.
-
-        Returns:
-            ``True`` if this shape is valid.
-        """
-
-    def equals(self, other: 'Shape') -> bool:
-        """Check if this shape is spatially equal to the other.
-
-        The other shape is transformed to the CRS of this shape. The same applies to
-        all binary predicates.
-
-        Args:
-            other: Another shape.
-
-        Returns:
-            ``True`` if the shapes are equal.
-        """
-
-    def contains(self, other: 'Shape') -> bool:
-        """Check if this shape contains the other.
-
-        Args:
-            other: Another shape.
-
-        Returns:
-            ``True`` if this shape contains the other.
-        """
-
-    def covers(self, other: 'Shape') -> bool:
-        """Check if this shape covers the other.
-
-        Args:
-            other: Another shape.
-
-        Returns:
-            ``True`` if this shape covers the other.
-        """
-
-    def covered_by(self, other: 'Shape') -> bool:
-        """Check if this shape is covered by the other.
-
-        Args:
-            other: Another shape.
-
-        Returns:
-            ``True`` if this shape is covered by the other.
-        """
-
-    def crosses(self, other: 'Shape') -> bool:
-        """Check if this shape crosses the other.
-
-        Args:
-            other: Another shape.
-
-        Returns:
-            ``True`` if this shape crosses the other.
-        """
-
-    def disjoint(self, other: 'Shape') -> bool:
-        """Check if this shape does not intersect the other.
-
-        Args:
-            other: Another shape.
-
-        Returns:
-            ``True`` if the shapes have no point in common.
-        """
-
-    def intersects(self, other: 'Shape') -> bool:
-        """Check if this shape intersects the other.
-
-        Args:
-            other: Another shape.
-
-        Returns:
-            ``True`` if the shapes have at least one point in common.
-        """
-
-    def overlaps(self, other: 'Shape') -> bool:
-        """Check if this shape overlaps the other.
-
-        Args:
-            other: Another shape.
-
-        Returns:
-            ``True`` if this shape overlaps the other.
-        """
-
-    def touches(self, other: 'Shape') -> bool:
-        """Check if this shape touches the other.
-
-        Args:
-            other: Another shape.
-
-        Returns:
-            ``True`` if this shape touches the other.
-        """
-
-    def within(self, other: 'Shape') -> bool:
-        """Check if this shape is within the other.
-
-        Args:
-            other: Another shape.
-
-        Returns:
-            ``True`` if this shape is within the other.
-        """
-
-    # set operations
-
-    def union(self, others: list['Shape']) -> 'Shape':
-        """Compute the union of this shape and other shapes.
-
-        Args:
-            others: Other shapes, transformed to the CRS of this shape.
-
-        Returns:
-            A new shape, or this shape if ``others`` is empty.
-        """
-
-    def intersection(self, *others: 'Shape') -> 'Shape':
-        """Compute the intersection of this shape and other shapes.
-
-        Args:
-            *others: Other shapes, transformed to the CRS of this shape.
-
-        Returns:
-            A new shape, or this shape if no others are given.
-        """
-
-    # convertors
-
-    def to_multi(self) -> 'Shape':
-        """Convert a single geometry shape to a multi-geometry one.
-
-        Returns:
-            A multi-geometry shape for a point, a line string or a polygon, otherwise this shape.
-        """
-
-    def to_type(self, new_type: 'GeometryType') -> 'Shape':
-        """Convert this shape to another geometry type.
-
-        Only the conversion from a single to the respective multi-geometry is supported.
-
-        Args:
-            new_type: Target geometry type. ``geometry`` and the current type return this shape.
-
-        Returns:
-            A converted shape.
-
-        Raises:
-            ``gws.Error``: If the conversion is not supported.
-        """
-
-    def to_2d(self) -> 'Shape':
-        """Convert this shape to 2 dimensions.
-
-        Returns:
-            A 2D shape, or this shape if it is already 2D.
-        """
-
-    # misc
-
-    def tolerance_polygon(self, tolerance=None, quad_segs=None) -> 'Shape':
-        """Build a buffer polygon around this shape.
-
-        Polygons without a tolerance are returned as is. Other shapes always get a
-        buffer, with a small minimal radius if no tolerance is given. Shapes in a
-        geographic CRS are buffered in Web Mercator.
-
-        Args:
-            tolerance: Buffer radius in CRS units, or in meters for geographic CRS.
-            quad_segs: Number of segments per quarter circle.
-
-        Returns:
-            A polygon shape.
-        """
-
-    def transformed_to(self, crs: 'Crs') -> 'Shape':
-        """Transform this shape to another CRS.
-
-        Args:
-            crs: Target CRS.
-
-        Returns:
-            A transformed shape, or this shape if the CRS is the same.
         """
 ################################################################################
 

@@ -7,7 +7,7 @@ import gws.base.model
 import gws.base.action
 import gws.base.template
 import gws.base.feature
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.uom
 
 
@@ -47,7 +47,7 @@ class Request(gws.Request):
     """Max. number of results, cannot exceed the configured limit."""
     resolution: float
     """Pixel resolution for geometry searches."""
-    shapes: Optional[list[gws.base.shape.Props]]
+    shapes: Optional[list[gws.lib.shape.Props]]
     """Shapes to search in; several shapes are combined into one."""
     tolerance: Optional[str]
     """Tolerance for geometry searches, a value with a unit, in pixels if no unit is given."""
@@ -107,7 +107,7 @@ class Object(gws.base.action.Object):
             search.limit = min(int(p.limit), self.limit) if self.limit else int(p.limit)
 
         if p.shapes:
-            shapes = [gws.base.shape.from_props(s) for s in p.shapes]
+            shapes = [gws.lib.shape.from_props(s) for s in p.shapes]
             search.shape = shapes[0] if len(shapes) == 1 else shapes[0].union(shapes[1:])
 
         search.tolerance = self.tolerance

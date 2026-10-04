@@ -28,7 +28,6 @@ Subpackages:
 - ``printer``: printing to PDF or PNG.
 - ``project``: projects and the ``project`` action.
 - ``search``: search queries, finders and the search manager.
-- ``shape``: shapes, geometries with a CRS.
 - ``storage``: storage for data saved by users.
 - ``template``: templates and the template manager.
 - ``web``: the WSGI application, web site settings and the ``web`` action.
@@ -42,7 +41,7 @@ reach them through ``root.app``. A project (``project``) has a map (``map``)
 with a tree of layers (``layer``). Layers have legends (``legend``),
 metadata (``metadata``), templates (``template``), finders (``search``) and
 models (``model``). Models read and write features (``feature``) with
-geometries (``shape``) from their sources, for example databases
+geometries (``gws.lib.shape``) from their sources, for example databases
 (``database``). Image layers render through grabbers (``grabber``). Actions
 (``action``) expose commands to the client; long running tasks such as
 printing (``printer``) and exporting (``exporter``) run as background jobs
@@ -57,10 +56,10 @@ Example::
 
     import gws
     import gws.base.layer
-    import gws.base.shape
+    import gws.lib.shape
     import gws.lib.crs
 
-    shape = gws.base.shape.from_xy(100, 200, gws.lib.crs.WEBMERCATOR)
+    shape = gws.lib.shape.from_xy(100, 200, gws.lib.crs.WEBMERCATOR)
 
     @gws.ext.object.layer('my')
     class Object(gws.base.layer.image.Object):

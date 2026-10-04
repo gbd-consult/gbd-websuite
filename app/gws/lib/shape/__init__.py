@@ -25,14 +25,14 @@ this shape first. ``to_geojson`` transforms to WGS84 unless asked to keep the CR
 
 Example::
 
-    import gws.base.shape
+    import gws.lib.shape
     import gws.lib.crs
 
-    shape = gws.base.shape.from_wkt('POINT(10 20)', gws.lib.crs.WGS84)
+    shape = gws.lib.shape.from_wkt('POINT(10 20)', gws.lib.crs.WGS84)
     area = shape.tolerance_polygon(5).transformed_to(gws.lib.crs.WEBMERCATOR)
     ewkt = area.to_ewkt()
 
-    other = gws.base.shape.from_wkt('SRID=4326;POLYGON((0 0,30 0,30 30,0 30,0 0))')
+    other = gws.lib.shape.from_wkt('SRID=4326;POLYGON((0 0,30 0,30 30,0 30,0 0))')
     print(other.contains(shape))
 """
 

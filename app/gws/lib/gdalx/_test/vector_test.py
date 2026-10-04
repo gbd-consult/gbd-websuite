@@ -4,7 +4,7 @@ import datetime
 import gws
 import gws.test.util as u
 import gws.lib.gdalx as gdalx
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.datetimex as datetimex
 import gws.lib.crs
 import gws.lib.osx as osx
@@ -29,7 +29,7 @@ def test_shp(tmp_path):
             c_int=i,
             c_str=f'~D|∂|ü|Ю~{i}',
         )
-        rec.shape = gws.base.shape.from_xy(i * 1000, i * 2000, crs)
+        rec.shape = gws.lib.shape.from_xy(i * 1000, i * 2000, crs)
         recs_a.append(rec)
 
     with gdalx.open_vector(f'{tmp_path}/shape.shp', 'w') as ds:
@@ -109,7 +109,7 @@ def test_gpkg(tmp_path):
             c_int=i,
             c_str=f'~D|∂|ü|Ю~{i}',
         )
-        rec.shape = gws.base.shape.from_xy(i * 1000, i * 2000, crs)
+        rec.shape = gws.lib.shape.from_xy(i * 1000, i * 2000, crs)
         recs_a.append(rec)
 
     path = f'{tmp_path}/data.gpkg'
@@ -208,7 +208,7 @@ def test_geojson_time(tmp_path):
 
     time_val = datetime.time(14, 30, 45)
     rec_a = gws.FeatureRecord(attributes=dict(c_time=time_val))
-    rec_a.shape = gws.base.shape.from_xy(1000, 2000, crs)
+    rec_a.shape = gws.lib.shape.from_xy(1000, 2000, crs)
 
     with gdalx.open_vector(f'{tmp_path}/time.gpkg', 'w') as ds:
         la = ds.create_layer('test', cols, gws.GeometryType.point, crs)
@@ -238,7 +238,7 @@ def test_geojson_floatlist(tmp_path):
 
     vals = [1.1, 2.2, 3.3]
     rec = gws.FeatureRecord(attributes=dict(c_floatlist=vals))
-    rec.shape = gws.base.shape.from_xy(1000, 2000, crs)
+    rec.shape = gws.lib.shape.from_xy(1000, 2000, crs)
 
     path = f'{tmp_path}/floatlist.geojson'
     with gdalx.open_vector(path, 'w') as ds:
@@ -261,7 +261,7 @@ def test_geojson_intlist(tmp_path):
 
     vals = [10, 20, 30]
     rec = gws.FeatureRecord(attributes=dict(c_intlist=vals))
-    rec.shape = gws.base.shape.from_xy(1000, 2000, crs)
+    rec.shape = gws.lib.shape.from_xy(1000, 2000, crs)
 
     path = f'{tmp_path}/intlist.geojson'
     with gdalx.open_vector(path, 'w') as ds:
@@ -281,7 +281,7 @@ def test_geojson_strlist(tmp_path):
 
     vals = ['hello', 'world', 'unicode']
     rec = gws.FeatureRecord(attributes=dict(c_strlist=vals))
-    rec.shape = gws.base.shape.from_xy(1000, 2000, crs)
+    rec.shape = gws.lib.shape.from_xy(1000, 2000, crs)
 
     path = f'{tmp_path}/strlist.geojson'
     with gdalx.open_vector(path, 'w') as ds:
@@ -333,7 +333,7 @@ def test_gpkg_geometry_types(tmp_path):
             ('pg', poly_wkt, gws.GeometryType.polygon),
         ]:
             la = ds.create_layer(name, cols, geom_type, crs)
-            shape = gws.base.shape.from_wkt(wkt, crs)
+            shape = gws.lib.shape.from_wkt(wkt, crs)
             la.insert([gws.FeatureRecord(attributes=dict(name=name), shape=shape)])
 
     with gdalx.open_vector(path, 'r') as ds:
@@ -383,7 +383,7 @@ def test_shp_bool(tmp_path):
         gws.FeatureRecord(attributes=dict(c_bool=0)),   # integer falsy input
     ]
     for rec in recs_a:
-        rec.shape = gws.base.shape.from_xy(0, 0, crs)
+        rec.shape = gws.lib.shape.from_xy(0, 0, crs)
 
     with gdalx.open_vector(f'{tmp_path}/bool.shp', 'w') as ds:
         la = ds.create_layer('', cols, gws.GeometryType.point, crs)

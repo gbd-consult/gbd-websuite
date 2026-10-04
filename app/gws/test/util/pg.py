@@ -3,7 +3,7 @@
 from typing import Optional
 
 import gws
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.crs
 import gws.lib.net
 import gws.lib.sa as sa
@@ -113,7 +113,7 @@ def connections():
 
 
 def ewkb(wkt: str, srid=3857):
-    shape = gws.base.shape.from_wkt(wkt, default_crs=gws.lib.crs.get(srid))
+    shape = gws.lib.shape.from_wkt(wkt, default_crs=gws.lib.crs.get(srid))
     return shape.to_ewkb()
 
 

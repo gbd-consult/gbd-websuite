@@ -41,7 +41,7 @@ Example::
 import gws
 import gws.base.legend
 import gws.base.ows.server as server
-import gws.base.shape
+import gws.lib.shape
 import gws.base.web
 import gws.config.util
 import gws.lib.bounds
@@ -356,7 +356,7 @@ class Object(server.service.Object):
 
         gws.log.debug(f'get_features: {ox=} {oy=} {dx=} {dy=} {xy=}')
 
-        point = gws.base.shape.from_xy(xy[0], xy[1], sr.crs)
+        point = gws.lib.shape.from_xy(xy[0], xy[1], sr.crs)
 
         search = gws.SearchQuery(
             project=sr.project,

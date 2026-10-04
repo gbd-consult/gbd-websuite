@@ -68,7 +68,7 @@ Example::
 
 import gws
 import gws.base.ows.server as server
-import gws.base.shape
+import gws.lib.shape
 import gws.base.web
 import gws.config.util
 import gws.lib.bounds
@@ -432,5 +432,5 @@ class Object(server.service.Object):
         #         gws.log.error(f'FILTER ERROR: {err!r} filter={src!r}')
         #         raise gws.base.web.error.BadRequest('Invalid FILTER value')
 
-        search.shape = gws.base.shape.from_bounds(sr.bounds)
+        search.shape = gws.lib.shape.from_bounds(sr.bounds)
         return search

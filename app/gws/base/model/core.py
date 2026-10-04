@@ -4,7 +4,7 @@ from typing import Optional, cast
 
 import gws
 import gws.base.feature
-import gws.base.shape
+import gws.lib.shape
 import gws.config.util
 
 DEFAULT_UID_NAME = 'uid'

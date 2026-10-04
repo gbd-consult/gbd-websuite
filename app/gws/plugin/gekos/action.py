@@ -5,7 +5,7 @@ from typing import Optional, cast
 import gws
 import gws.lib.crs
 import gws.base.feature
-import gws.base.shape
+import gws.lib.shape
 import gws.base.action
 import gws.base.database
 

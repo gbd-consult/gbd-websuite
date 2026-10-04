@@ -43,8 +43,8 @@ export interface ErrorDialogData {
 
 export interface GeometryTextDialogData {
     type: 'GeometryText';
-    shape: gc.gws.base.shape.Props;
-    whenSaved: (shape: gc.gws.base.shape.Props) => void;
+    shape: gc.gws.lib.shape.Props;
+    whenSaved: (shape: gc.gws.lib.shape.Props) => void;
 }
 
 export type DialogData =

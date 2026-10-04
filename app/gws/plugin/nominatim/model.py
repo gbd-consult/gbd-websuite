@@ -5,7 +5,7 @@ from typing import Optional
 import gws
 import gws.base.model
 import gws.base.feature
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.net
 import gws.lib.jsonx
 import gws.gis.source
@@ -81,7 +81,7 @@ class Object(gws.base.model.default_model.Object):
                 gws.log.debug(f'SKIP {uid}: no geometry')
                 continue
 
-            shape = gws.base.shape.from_geojson(geom, gws.lib.crs.WGS84, always_xy=True).transformed_to(search.shape.crs)
+            shape = gws.lib.shape.from_geojson(geom, gws.lib.crs.WGS84, always_xy=True).transformed_to(search.shape.crs)
             if not shape.intersects(search.shape):
                 gws.log.debug(f'SKIP {uid}: no intersection')
                 continue

@@ -9,7 +9,7 @@ import hashlib
 import gws
 import gws.base.auth
 import gws.base.job
-import gws.base.shape
+import gws.lib.shape
 import gws.base.action
 import gws.lib.mime
 import gws.lib.jsonx

@@ -3,7 +3,7 @@
 from typing import cast, Optional
 
 import gws
-import gws.base.shape
+import gws.lib.shape
 import gws.plugin.model_field.file as file_field
 import gws.base.feature
 import gws.lib.osx
@@ -274,7 +274,7 @@ class Object:
             if not geom:
                 gws.log.warning(f'geometry field not found: {me.gpName!r}')
             else:
-                atts[geom] = gws.base.shape.from_wkt(cc.wkt, me.model.geometryCrs)
+                atts[geom] = gws.lib.shape.from_wkt(cc.wkt, me.model.geometryCrs)
 
         ops = self.ops_by_model.setdefault(me.gpName, [])
 

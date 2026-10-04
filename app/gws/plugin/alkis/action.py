@@ -10,7 +10,7 @@ import gws.base.action
 import gws.base.feature
 import gws.base.model
 import gws.base.printer
-import gws.base.shape
+import gws.lib.shape
 import gws.base.storage
 import gws.config.util
 import gws.lib.datetimex
@@ -259,7 +259,7 @@ class FindFlurstueckRequest(gws.Request):
     combinedFlurstueckCode: Optional[str]
     """Combined code ``land_gemarkung_flur_zaehler_nenner_folge``; empty and ``0`` parts are ignored."""
 
-    shapes: Optional[list[gws.base.shape.Props]]
+    shapes: Optional[list[gws.lib.shape.Props]]
     """Search area; several shapes are merged."""
 
     uids: Optional[list[str]]
@@ -930,7 +930,7 @@ class Object(gws.base.action.Object):
             self._query_fsnummer(query, p.fsnummer)
 
         if p.shapes:
-            shapes = [gws.base.shape.from_props(s) for s in p.shapes]
+            shapes = [gws.lib.shape.from_props(s) for s in p.shapes]
             query.shape = shapes[0] if len(shapes) == 1 else shapes[0].union(shapes[1:])
 
         if p.bblatt:

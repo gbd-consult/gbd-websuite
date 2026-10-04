@@ -1,4 +1,4 @@
-import gws.base.shape
+import gws.lib.shape
 import gws.test.util as u
 import gws.lib.crs
 
@@ -27,8 +27,8 @@ def model():
 def test_create(model: gws.Model):
     mc = u.model.context()
 
-    point1 = gws.base.shape.from_xy(11, 22, gws.lib.crs.WGS84)
-    point2 = gws.base.shape.from_xy(33, 44, gws.lib.crs.WGS84)
+    point1 = gws.lib.shape.from_xy(11, 22, gws.lib.crs.WGS84)
+    point2 = gws.lib.shape.from_xy(33, 44, gws.lib.crs.WGS84)
 
     f = u.model.feature(model, id=1, geom=point1)
     model.create_feature(f, mc)
@@ -48,7 +48,7 @@ def test_create(model: gws.Model):
 def test_read(model: gws.Model):
     mc = u.model.context()
 
-    point1 = gws.base.shape.from_xy(123, 456, gws.lib.crs.WGS84)
+    point1 = gws.lib.shape.from_xy(123, 456, gws.lib.crs.WGS84)
     u.pg.insert('geometry_table', [{'id': 1, 'geom': point1.to_ewkb_hex()}])
 
     features = model.get_features([1], mc)
@@ -61,8 +61,8 @@ def test_read(model: gws.Model):
 def test_update(model: gws.Model):
     mc = u.model.context()
 
-    point1 = gws.base.shape.from_xy(11, 22, gws.lib.crs.WGS84)
-    point2 = gws.base.shape.from_xy(77, 99, gws.lib.crs.WGS84)
+    point1 = gws.lib.shape.from_xy(11, 22, gws.lib.crs.WGS84)
+    point2 = gws.lib.shape.from_xy(77, 99, gws.lib.crs.WGS84)
 
     f = u.model.feature(model, id=99, geom=point1)
     model.create_feature(f, mc)

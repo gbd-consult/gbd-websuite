@@ -8,7 +8,7 @@ import gws.base.layer
 import gws.lib.bounds
 import gws.base.feature
 import gws.lib.crs
-import gws.base.shape
+import gws.lib.shape
 import gws.config.util
 
 

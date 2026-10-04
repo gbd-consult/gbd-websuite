@@ -2,7 +2,7 @@
 
 from typing import Optional
 import gws
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.crs
 import gws.lib.bounds
 import gws.lib.jsonx
@@ -77,7 +77,7 @@ class Object(gws.Node):
                     tol_value *= search.resolution
                 shape = shape.tolerance_polygon(tol_value)
         elif search.bounds:
-            shape = gws.base.shape.from_bounds(search.bounds)
+            shape = gws.lib.shape.from_bounds(search.bounds)
 
         return [rec for rec in self.load_records() if self._record_matches(rec, search, shape)]
 
@@ -111,7 +111,7 @@ class Object(gws.Node):
             p = f.get('properties', {})
             rec = gws.FeatureRecord(attributes=p)
             if f.get('geometry'):
-                rec.shape = gws.base.shape.from_geojson(f['geometry'], crs)
+                rec.shape = gws.lib.shape.from_geojson(f['geometry'], crs)
             rec.uid = p.get('id') or p.get('uid') or p.get('fid') or p.get('sid') or str(n) or ''
             records.append(rec)
 

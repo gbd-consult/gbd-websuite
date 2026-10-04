@@ -25,7 +25,7 @@ from typing import Optional, cast
 import gws
 import gws.base.database.model
 import gws.base.model.scalar_field
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.crs
 import gws.lib.sa as sa
 
@@ -125,7 +125,7 @@ class Object(gws.base.model.scalar_field.Object):
                     tol_value *= mc.search.resolution
                 shape = shape.tolerance_polygon(tol_value)
         elif mc.search.bounds:
-            shape = gws.base.shape.from_bounds(mc.search.bounds)
+            shape = gws.lib.shape.from_bounds(mc.search.bounds)
 
         if shape:
             shape = shape.transformed_to(self.geometryCrs)
@@ -137,7 +137,7 @@ class Object(gws.base.model.scalar_field.Object):
 
     def raw_to_python(self, feature, value, mc):
         # here, value is a geosa WKBElement
-        return gws.base.shape.from_wkb_hex(str(value))
+        return gws.lib.shape.from_wkb_hex(str(value))
 
     def prop_to_python(self, feature, value, mc):
         shape = self._prop_to_shape(value)
@@ -153,15 +153,15 @@ class Object(gws.base.model.scalar_field.Object):
 
     def _prop_to_shape(self, value):
         """Convert a shape, shape props or a dict to a shape, or return None."""
-        if isinstance(value, gws.base.shape.Shape):
+        if isinstance(value, gws.lib.shape.Shape):
             return value
         if gws.u.is_data_object(value):
             try:
-                return gws.base.shape.from_props(value)
+                return gws.lib.shape.from_props(value)
             except gws.Error:
                 pass
         if gws.u.is_dict(value):
             try:
-                return gws.base.shape.from_dict(value)
+                return gws.lib.shape.from_dict(value)
             except gws.Error:
                 pass

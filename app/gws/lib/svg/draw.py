@@ -11,7 +11,7 @@ import shapely.ops
 import gws
 import gws.lib.extent
 import gws.lib.font
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.uom
 import gws.lib.xmlx as xmlx
 
@@ -48,7 +48,7 @@ def shape_to_fragment(shape: gws.Shape, view: gws.MapView, label: str = None, st
     if not shape:
         return []
 
-    geom = cast(gws.base.shape.Shape, shape).geom
+    geom = cast(gws.lib.shape.Shape, shape).geom
     if geom.is_empty:
         return []
 

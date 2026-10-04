@@ -20,14 +20,14 @@ export class GeometryTextDialog extends gc.View<types.ViewProps> {
         dd.whenSaved(dd.shape);
     }
 
-    toWKT(shape: gc.gws.base.shape.Props): string {
+    toWKT(shape: gc.gws.lib.shape.Props): string {
         let cc = this.master();
         const wktFormat = new ol.format.WKT();
         let geom = cc.map.shape2geom(shape);
         return wktFormat.writeGeometry(geom);
     }
 
-    updateShape(shape: gc.gws.base.shape.Props) {
+    updateShape(shape: gc.gws.lib.shape.Props) {
         let cc = this.master();
         let dd = cc.editState.dialogData as types.GeometryTextDialogData;
 

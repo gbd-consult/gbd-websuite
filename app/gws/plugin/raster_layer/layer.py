@@ -4,7 +4,7 @@ from typing import Optional
 
 import gws
 import gws.base.layer
-import gws.base.shape
+import gws.lib.shape
 import gws.config.util
 import gws.lib.bounds
 import gws.lib.extent

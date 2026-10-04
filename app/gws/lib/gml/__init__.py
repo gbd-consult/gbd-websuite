@@ -11,7 +11,7 @@ Submodules:
 - ``writer``: converts a shape to a GML 2 or GML 3 geometry element.
 
 Both work on ``gws.XmlElement`` objects from ``gws.lib.xmlx``. The parser converts
-GML to a GeoJSON-like dict first and creates the shape with ``gws.base.shape.from_geojson``.
+GML to a GeoJSON-like dict first and creates the shape with ``gws.lib.shape.from_geojson``.
 The CRS is taken from the ``srsName`` attribute of the element, or from a default CRS
 passed by the caller. The axis order follows the CRS, unless ``always_xy`` is set.
 

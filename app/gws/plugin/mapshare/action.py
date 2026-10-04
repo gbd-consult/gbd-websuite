@@ -6,7 +6,7 @@ import re
 
 import gws
 import gws.base.action
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.image
 
 MAX_TITLE_LENGTH = 200
@@ -102,8 +102,8 @@ class Object(gws.base.action.Object):
         crs = project.map.bounds.crs
 
         try:
-            shape = gws.base.shape.from_props(p.shape).transformed_to(crs)
-        except gws.base.shape.Error:
+            shape = gws.lib.shape.from_props(p.shape).transformed_to(crs)
+        except gws.lib.shape.Error:
             raise gws.BadRequestError('mapshare: invalid shape')
 
         title = (p.title or '').strip()[:MAX_TITLE_LENGTH]
@@ -166,10 +166,10 @@ class Object(gws.base.action.Object):
 
         try:
             if m.group('wkb'):
-                shape = gws.base.shape.from_wkb_hex(m.group('wkb'), crs,)
+                shape = gws.lib.shape.from_wkb_hex(m.group('wkb'), crs,)
             else:
-                shape = gws.base.shape.from_xy(float(m.group('x')), float(m.group('y')), crs,)
-        except gws.base.shape.Error:
+                shape = gws.lib.shape.from_xy(float(m.group('x')), float(m.group('y')), crs,)
+        except gws.lib.shape.Error:
             raise gws.BadRequestError('mapshare: invalid link geometry')
 
         title = (m.group('title') or '').strip()

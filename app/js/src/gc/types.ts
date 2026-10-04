@@ -348,8 +348,8 @@ export interface IMapManager {
     readFeature(props: gws.FeatureProps): IFeature;
     readFeatures(propsList: Array<gws.FeatureProps>): Array<IFeature>;
 
-    geom2shape(geom: ol.geom.Geometry): gws.base.shape.Props;
-    shape2geom(shape: gws.base.shape.Props): ol.geom.Geometry;
+    geom2shape(geom: ol.geom.Geometry): gws.lib.shape.Props;
+    shape2geom(shape: gws.lib.shape.Props): ol.geom.Geometry;
 
     printParams(boxRect: ClientRect | null, dpi: number): Promise<gws.PrintMap>;
 
@@ -386,7 +386,7 @@ export interface IFeature {
     geometryName: string;
 
     geometry?: ol.geom.Geometry;
-    shape?: gws.base.shape.Props;
+    shape?: gws.lib.shape.Props;
 
     createWithFeatures: Array<IFeature>;
 
@@ -404,7 +404,7 @@ export interface IFeature {
     setAttributes(attributes: Dict): IFeature;
     setOlFeature(oFeature: ol.Feature): IFeature;
     setGeometry(geom: ol.geom.Geometry): IFeature;
-    setShape(shape: gws.base.shape.Props);
+    setShape(shape: gws.lib.shape.Props);
     setStyle(style: IStyle);
     setNew(f: boolean): IFeature;
     setSelected(f: boolean): IFeature;

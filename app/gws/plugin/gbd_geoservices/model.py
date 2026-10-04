@@ -3,7 +3,7 @@
 import gws
 import gws.base.feature
 import gws.base.model
-import gws.base.shape
+import gws.lib.shape
 import gws.lib.bounds
 import gws.lib.crs
 import gws.gis.source
@@ -92,7 +92,7 @@ class Object(gws.base.model.default_model.Object):
             if not a:
                 gws.log.warning(f'geoservices: skipping feature without name, address or category: {f.get("id")}')
                 continue
-            shape = gws.base.shape.from_geojson(f['geometry'], gws.lib.crs.WGS84, always_xy=True)
+            shape = gws.lib.shape.from_geojson(f['geometry'], gws.lib.crs.WGS84, always_xy=True)
             rec = gws.FeatureRecord(uid=f['id'], attributes=a, shape=shape)
             gws.log.debug(f'geoservices: feature record: {rec=}')
             out.append(self.feature_from_record(rec, mc))

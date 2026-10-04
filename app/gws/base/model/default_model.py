@@ -4,7 +4,7 @@ from typing import Optional, cast
 
 import gws
 import gws.base.feature
-import gws.base.shape
+import gws.lib.shape
 from . import core
 
 
@@ -37,7 +37,7 @@ class Object(core.Object):
         if self.geometryName:
             p = props.attributes.get(self.geometryName)
             if p:
-                feature.attributes[self.geometryName] = gws.base.shape.from_props(p)
+                feature.attributes[self.geometryName] = gws.lib.shape.from_props(p)
 
         return feature
 

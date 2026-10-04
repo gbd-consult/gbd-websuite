@@ -49,7 +49,7 @@ import gws.base.metadata
 import gws.base.map
 import gws.base.ows.server as server
 import gws.base.search.filter
-import gws.base.shape
+import gws.lib.shape
 import gws.config.util
 import gws.lib.crs
 import gws.lib.datetimex
