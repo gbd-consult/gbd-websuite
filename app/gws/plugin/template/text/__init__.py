@@ -1,7 +1,19 @@
-"""CX text-only templates.
+"""Text templates.
 
-This template is based on Jump, like html templates,
-but doesn't support custom commands and non-text outputs.
+The ``text`` template is written in the Jump template language, like the
+``html`` template, but has none of its custom commands (``@map``,
+``@legend``, ``@page`` and so on) and produces text output only. The
+output MIME type is the ``mimeOut`` of the render input, or the first
+configured ``mimeTypes`` entry, or plain text. If a template explicitly
+returns a :obj:`gws.Response` object, it is returned as the render result.
+
+Example::
+
+    templates+ {
+        subject "feature.label"
+        type "text"
+        text "{{name}}"
+    }
 """
 
 from typing import Optional
@@ -34,10 +46,16 @@ class Props(gws.base.template.Props):
 
 @gws.ext.object.template('text')
 class Object(gws.base.template.Object):
+    """Jump template for text output."""
+
     path: str
+    """Template file path."""
     text: str
+    """Template source."""
     compiledTime: float = 0
+    """Time of the last compilation."""
     compiledFn = None
+    """Compiled template function."""
 
     def configure(self):
         self.path = self.cfg('path')
@@ -61,6 +79,17 @@ class Object(gws.base.template.Object):
         return res
 
     def compile(self, engine: 'Engine'):
+        """Compile the template if needed.
+
+        The template file is read again if it has changed since the last
+        compilation. With the developer option ``template.always_reload``,
+        the template is compiled on each call; with
+        ``template.save_compiled``, the translated source is written to a
+        debug file.
+
+        Args:
+            engine: Jump engine.
+        """
 
         if self.path and (not self.text or gws.lib.osx.file_mtime(self.path) > self.compiledTime):
             self.text = gws.u.read_file(self.path)
@@ -78,6 +107,21 @@ class Object(gws.base.template.Object):
             self.compiledTime = gws.u.utime()
 
     def error_handler(self, exc, path, line, env):
+        """Handle a template runtime error.
+
+        The error is logged. With the developer option
+        ``template.raise_errors``, the error is raised, otherwise rendering
+        continues.
+
+        Args:
+            exc: The exception.
+            path: Template path.
+            line: Template line.
+            env: Template environment.
+
+        Returns:
+            ``True`` to continue rendering, ``False`` to raise the error.
+        """
         if self.root.app.developer_option('template.raise_errors'):
             gws.log.error(f'TEMPLATE_ERROR: {self}: {exc} IN {path}:{line}')
             return False
@@ -88,6 +132,17 @@ class Object(gws.base.template.Object):
     ##
 
     def finalize(self, tri: gws.TemplateRenderInput, res: str, args: dict, main_engine: 'Engine'):
+        """Wrap the generated text in a content response.
+
+        Args:
+            tri: Template render input.
+            res: Generated text.
+            args: Template arguments.
+            main_engine: Engine that rendered the text.
+
+        Returns:
+            Content response.
+        """
         self.notify(tri, 'finalize_print')
 
         mime_type = tri.mimeOut
@@ -103,4 +158,6 @@ class Object(gws.base.template.Object):
 
 
 class Engine(gws.lib.vendor.jump.Engine):
+    """Jump engine for text templates, without custom commands."""
+
     pass

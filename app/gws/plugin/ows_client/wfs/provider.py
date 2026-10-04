@@ -1,16 +1,4 @@
-"""WFS provider.
-
-References:
-
-- wfs 1.0.0: http://portal.opengeospatial.org/files/?artifact_id=7176 Sec 13.7.3
-- wfs 1.1.0: http://portal.opengeospatial.org/files/?artifact_id=8339 Sec 14.7.3
-- wfs 2.0.0: http://docs.opengeospatial.org/is/09-025r2/09-025r2.html Sec 11.1.3
-
-See also:
-
-- https://docs.geoserver.org/latest/en/user/services/wfs/reference.html
-
-"""
+"""WFS service provider."""
 
 from typing import Optional, cast
 
@@ -34,9 +22,17 @@ class Config(gws.base.ows.client.provider.Config):
 
 
 class Object(gws.base.ows.client.provider.Object):
+    """WFS service provider.
+
+    Reads the capabilities of a WFS service and runs GetFeature requests for
+    the layers, finders and models that use the service.
+    """
+
     protocol = gws.OwsProtocol.WFS
     withBboxCrs: bool
+    """Append the CRS to the ``BBOX`` parameter. Defaults to ``True`` for WFS 2."""
     isWfs2: bool
+    """The service version is 2 or higher."""
 
     def configure(self):
         cc = caps.parse(self.get_capabilities())
@@ -54,8 +50,19 @@ class Object(gws.base.ows.client.provider.Object):
         self.withBboxCrs = self.isWfs2 if p is None else p
 
     DEFAULT_GET_FEATURE_LIMIT = 100
+    """Max. number of features in GetFeature requests, if the search has no limit."""
 
     def create_leaf_layer_config(self, source_layers):
+        """Create the configuration of a ``wfsflat`` layer for the given feature types.
+
+        Used by the ``wfs`` tree layer to create its child layers.
+
+        Args:
+            source_layers: Feature types to show in the layer.
+
+        Returns:
+            A layer configuration that uses this provider.
+        """
         return dict(
             type='wfsflat',
             _defaultProvider=self,
@@ -63,16 +70,6 @@ class Object(gws.base.ows.client.provider.Object):
         )
 
     def get_features(self, search, source_layers):
-        """Perform the WFS GetFeature operation.
-
-        We only do spatial searches here.
-        If no bounds and no shapes are given, return all features.
-        If a shape is given, find features within its bounds first,
-        and filter features on our side.
-        This is more performant than WFS spatial ops (at least for qgis),
-        and also works without spatial ops support on the provider side.
-        """
-
         bounds = search.bounds
         search_shape = None
 

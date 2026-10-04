@@ -1,4 +1,17 @@
-"""Exporter for the ESRI Shapefile format."""
+"""ESRI Shapefile exporter.
+
+Exports vector features with the GDAL ``ESRI Shapefile`` driver. Each model is
+written to its own file. GDAL creation options can be passed with
+``options``, see https://gdal.org/en/stable/drivers/vector/shapefile.html.
+
+Example::
+
+    exporters+ {
+        type "shapefile"
+        title "Shapefile"
+        target "download"
+    }
+"""
 
 import gws
 import gws.base.exporter
@@ -21,6 +34,8 @@ class Props(gws.base.exporter.Props):
 
 @gws.ext.object.exporter('shapefile')
 class Object(gws.base.exporter.Object):
+    """ESRI Shapefile exporter."""
+
     supportsVector = True
     supportsRaster = False
     supportsMultiLayer = False

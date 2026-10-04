@@ -1,6 +1,6 @@
 
 Acl: TypeAlias = list[tuple[int, str]]
-"""Access Control list.
+"""Access control list.
 
 A list of tuples ``(ACL bit, role-name)`` where ``ACL bit`` is ``1`` if the access is allowed and ``0`` otherwise.
 """

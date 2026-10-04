@@ -1,4 +1,4 @@
-"""MBTiles based layer."""
+"""The ``mbtiles`` layer."""
 
 from typing import Optional
 
@@ -26,8 +26,12 @@ class Config(gws.base.layer.Config):
 
 @gws.ext.object.layer('mbtiles')
 class Object(gws.base.layer.image.Object):
+    """MBTiles layer."""
+
     provider: provider.Object
+    """The MBTiles provider."""
     msOptions: gws.MapServerLayerOptions
+    """MapServer layer options for the file."""
 
     def configure(self):
         self.msOptions = gws.MapServerLayerOptions(

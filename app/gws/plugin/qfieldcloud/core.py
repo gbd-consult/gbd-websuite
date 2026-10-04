@@ -1,3 +1,5 @@
+"""QField project configuration and object."""
+
 from typing import Optional
 import gws
 import gws.plugin.qgis.provider
@@ -19,11 +21,22 @@ class ProjectConfig(gws.ConfigWithAccess):
 
 
 class QfcProject(gws.Node):
+    """Project offered to QField.
+
+    Holds the QGIS provider of the source project, the models for editable
+    layers and the base map settings used when the project is packaged.
+    """
+
     title: str
+    """Project title, the uid if no title is configured."""
     qgisProvider: gws.plugin.qgis.provider.Object
+    """QGIS provider for the source project."""
     models: list[gws.DatabaseModel]
+    """Configured models for editable layers."""
     mapCacheLifeTime: int
+    """How long rendered base maps are reused, in seconds. ``0`` disables the cache."""
     thumbnail: str
+    """Path to the thumbnail image, or an empty string."""
 
     def configure(self):
         self.title = self.cfg('title', '') or self.uid

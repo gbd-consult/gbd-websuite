@@ -1,4 +1,17 @@
-"""HTML legend."""
+"""HTML legend.
+
+Renders an HTML template to a PNG image, which is used as the legend.
+
+Example::
+
+    legend {
+        type "html"
+        template {
+            type "html"
+            text "<p>Legend</p>"
+        }
+    }
+"""
 
 import gws
 import gws.base.legend
@@ -16,7 +29,10 @@ class Config(gws.base.legend.Config):
 
 @gws.ext.object.legend('html')
 class Object(gws.base.legend.Object):
+    """HTML legend."""
+
     template: gws.Template
+    """Template for the legend."""
 
     def configure(self):
         self.template = self.create_child(gws.ext.object.template, self.cfg('template'))

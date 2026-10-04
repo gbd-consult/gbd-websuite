@@ -1,108 +1,167 @@
 
 class MapView(Data):
-    """Map view."""
+    """Geometry of a rendered map."""
 
     bounds: Bounds
+    """Bounds of the map, not rotated."""
     center: Point
+    """Center point."""
     rotation: int
+    """Rotation angle in degrees."""
     scale: int
+    """Scale denominator."""
     mmSize: Size
+    """Map size in mm."""
     pxSize: Size
+    """Map size in pixels."""
     dpi: int
+    """Resolution in dots per inch."""
 
 
 class MapRenderInputPlaneType(Enum):
-    """Map render input plane type."""
+    """Type of a map render input plane."""
 
     features = 'features'
+    """A list of features, rendered as SVG."""
     image = 'image'
+    """A raster image."""
     imageLayer = 'imageLayer'
+    """A layer, rendered as an image."""
     svgLayer = 'svgLayer'
+    """A layer, rendered as SVG."""
     svgSoup = 'svgSoup'
+    """An SVG soup, a resolution-independent drawing, see ``gws.lib.svg.soup_to_fragment``."""
 
 
 class MapRenderInputPlane(Data):
-    """Map render input plane."""
+    """A plane of a map to render."""
 
     type: MapRenderInputPlaneType
+    """Plane type."""
     features: list['Feature']
+    """Features, for the ``features`` type."""
     image: 'Image'
+    """Image, for the ``image`` type."""
     layer: 'Layer'
+    """Layer, for the ``imageLayer`` and ``svgLayer`` types."""
     opacity: float
+    """Opacity from 0 to 1, defaults to the layer opacity or 1."""
     soupPoints: list[Point]
+    """Points in map coordinates, for the ``svgSoup`` type."""
     soupTags: list[Any]
+    """Tags that refer to the points, for the ``svgSoup`` type."""
     styles: list['Style']
+    """Styles. For ``features``, matched by CSS selector; for ``svgLayer``, the first style is used."""
     compositeLayerUids: list[str]
+    """Child layers to render in one composite image, for the ``imageLayer`` type."""
 
 
 class MapRenderInput(Data):
-    """Map render input."""
+    """Input of the map renderer."""
 
     backgroundColor: int
+    """Background color of the first raster plane."""
     bbox: Extent
+    """Bounding box of the map. If not set, ``center`` and ``scale`` are used."""
     center: Point
+    """Center point of the map."""
     targetCrs: 'Crs'
+    """CRS of the map."""
     dpi: int
+    """Resolution of raster planes, for maps sized in mm."""
     mapSize: UomSize
+    """Map size in mm or pixels."""
     notify: Callable
+    """Callback, called with an event name and the plane before and after each plane is rendered."""
     planes: list['MapRenderInputPlane']
+    """Planes to render, top to bottom."""
     project: 'Project'
+    """Project of the map."""
     rotation: int
+    """Rotation angle in degrees."""
     scale: int
+    """Scale denominator, used with ``center``."""
     user: 'User'
+    """User who requests the map."""
     visibleLayers: Optional[list['Layer']]
+    """Visible layers of the map."""
 
 
 class MapRenderOutputPlaneType(Enum):
-    """Map render output plane type."""
+    """Type of a map render output plane."""
 
     image = 'image'
+    """A raster image."""
     path = 'path'
+    """A path to an image file."""
     svg = 'svg'
+    """A list of SVG elements."""
 
 
 class MapRenderOutputPlane(Data):
-    """Map render output plane."""
+    """A plane of a rendered map."""
 
     type: MapRenderOutputPlaneType
+    """Plane type."""
     path: str
+    """Image file path, for the ``path`` type."""
     elements: list[XmlElement]
+    """SVG elements, for the ``svg`` type."""
     image: 'Image'
+    """Image, for the ``image`` type."""
 
 
 class MapRenderOutput(Data):
-    """Map render output."""
+    """Output of the map renderer."""
 
     planes: list['MapRenderOutputPlane']
+    """Rendered planes, bottom to top."""
     view: MapView
+    """Map view of the vector planes."""
 
 
 class LayerRenderInputType(Enum):
-    """Layer render input type."""
+    """Type of a layer render request."""
 
     box = 'box'
+    """Render an image of the view extent."""
     tile = 'tile'
+    """Render a tile of the layer grid."""
     svg = 'svg'
+    """Render SVG elements for the view."""
 
 
 class LayerRenderInput(Data):
-    """Layer render input."""
+    """Input of a layer render request."""
 
     extraParams: dict
+    """Additional request parameters, e.g. ``compositeLayerUids``."""
     renderParams: dict
+    """Parameters set by the layer for its grabber. Non-empty params mark a dynamic, uncached request."""
     project: 'Project'
+    """Project of the request."""
     style: 'Style'
+    """Style for the ``svg`` type."""
     targetCrs: 'Crs'
+    """CRS of the output."""
     type: LayerRenderInputType
+    """Request type."""
     user: 'User'
+    """User who requests the rendering."""
     view: MapView
+    """Map view, for the ``box`` and ``svg`` types."""
     x: int
+    """Tile column, for the ``tile`` type."""
     y: int
+    """Tile row, for the ``tile`` type."""
     z: int
+    """Zoom level, for the ``tile`` type."""
 
 
 class LayerRenderOutput(Data):
-    """Layer render output."""
+    """Output of a layer render request."""
 
     content: bytes
+    """Encoded image, for the ``box`` and ``tile`` types."""
     tags: list[XmlElement]
+    """SVG elements, for the ``svg`` type."""

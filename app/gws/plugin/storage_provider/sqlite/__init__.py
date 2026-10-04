@@ -1,3 +1,21 @@
+"""SQLite storage provider.
+
+The ``sqlite`` storage provider keeps saved user entries in an SQLite
+database file, by default ``storage8.sqlite`` in the GWS misc directory.
+The ``storage`` table is created on first use. Each entry is a row keyed
+by category and name, with the serialized data, the UID of the user who
+wrote it, and the creation and update timestamps.
+
+Example::
+
+    storage {
+        providers+ {
+            type "sqlite"
+            path "/data/storage.sqlite"
+        }
+    }
+"""
+
 from typing import Optional
 
 import gws
@@ -15,8 +33,12 @@ class Config(gws.Config):
 
 @gws.ext.object.storageProvider('sqlite')
 class Object(gws.StorageProvider):
+    """Storage provider backed by an SQLite database file."""
+
     dbPath: str
+    """Path to the database file."""
     table = 'storage'
+    """Name of the table that holds the entries."""
 
     def configure(self):
         self.dbPath = self.cfg('path', default=f'{gws.c.MISC_DIR}/storage8.sqlite')
@@ -58,6 +80,7 @@ class Object(gws.StorageProvider):
     _sqlitex: gws.lib.sqlitex.Object
 
     def _db(self):
+        """Return the database object, creating the table if needed."""
         if getattr(self, '_sqlitex', None) is None:
             ddl = f'''
                 CREATE TABLE IF NOT EXISTS {self.table} (

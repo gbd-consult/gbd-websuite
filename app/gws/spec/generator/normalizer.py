@@ -1,9 +1,31 @@
+"""Normalize parsed types: resolve aliases, evaluate defaults and complete classes."""
+
 import re
 
 from . import base
 
 
 def normalize(gen: base.Generator):
+    """Normalize the parsed types in place.
+
+    The steps are:
+
+    - add aliases ``gws.Name`` for names defined in the modules listed in ``GLOBAL_MODULES``,
+    - expand alias chains and replace alias references with the target uids,
+    - evaluate default expressions (constants and enum members) to values,
+    - create a ``VARIANT`` type for each ``gws.ext`` category,
+      e.g. ``gws.ext.object.layer`` with members ``qgis``, ``wms`` and so on,
+    - add a ``type`` property to each ``gws.ext.config`` and ``gws.ext.props`` class,
+    - warn about undefined ``gws`` types,
+    - collect the own and inherited properties of each class into ``tProperties``.
+
+    Args:
+        gen: Generator state.
+
+    Raises:
+        ``GeneratorError``: On circular aliases or circular inheritance.
+    """
+
     _add_global_aliases(gen)
     _expand_aliases(gen)
     _resolve_aliases(gen)
@@ -19,11 +41,7 @@ def normalize(gen: base.Generator):
 
 
 def _add_global_aliases(gen: base.Generator):
-    """Add globals aliases.
-
-    If we have `mod.GlobalName` and `mod.some.module.GlobalName`, and `mod.some.module`
-    is in `GLOBAL_MODULES`, the former should an alias for the latter.
-    """
+    """Make ``gws.Name`` an alias of ``<global module>.Name`` for the modules in ``GLOBAL_MODULES``."""
 
     for typ in gen.typeDict.values():
         if typ.name in gen.aliases:
@@ -40,10 +58,7 @@ def _add_global_aliases(gen: base.Generator):
 
 
 def _expand_aliases(gen: base.Generator):
-    """Expand aliases.
-
-    Given t1 -> alias of t2, t2 -> alias of t3, establish t1 -> t3.
-    """
+    """Expand alias chains, so that each alias points to its final target."""
 
     def _exp(target, stack):
         if target in gen.typeDict:
@@ -121,7 +136,7 @@ def _resolve_aliases(gen: base.Generator):
 
 
 def _eval_expressions(gen: base.Generator):
-    """Replace enum and constant values with literal values"""
+    """Replace constant and enum references in default expressions with their values."""
 
     def _get_type(name):
         if name in gen.aliases:
@@ -160,7 +175,7 @@ def _eval_expressions(gen: base.Generator):
 
 
 def _synthesize_ext_configs_and_props(gen: base.Generator):
-    """Synthesize gws.ext.config... and gws.ext.props for ext objects that don't define them explicitly"""
+    """Create ``gws.ext.config`` and ``gws.ext.props`` classes for ext objects that lack them (not used)."""
 
     # don't need this for now
 
@@ -190,18 +205,7 @@ def _synthesize_ext_configs_and_props(gen: base.Generator):
 
 
 def _synthesize_ext_variant_types(gen: base.Generator):
-    """Synthesize by-category variant types for ext objects
-
-    Example:
-
-        When we have
-
-            gws.ext.object.layer.qgis
-            gws.ext.object.layer.wms
-            gws.ext.object.layer.wfs
-
-        This will create a Variant `gws.ext.object.layer` with the members `qgis`, `wms`, `wfs`
-    """
+    """Create a ``VARIANT`` type for each ``gws.ext`` category and set ``extName`` on the target classes."""
 
     variants = {}
 
@@ -226,7 +230,7 @@ def _synthesize_ext_variant_types(gen: base.Generator):
 
 
 def _synthesize_ext_type_properties(gen: base.Generator):
-    """Synthesize ``type`` properties for ext.config and ext.props objects"""
+    """Add a ``type`` property to ``gws.ext.config`` and ``gws.ext.props`` classes."""
 
     for typ in list(gen.typeDict.values()):
         if not typ.extName or not typ.extName.startswith((base.v.EXT_CONFIG_PREFIX, base.v.EXT_PROPS_PREFIX)):
@@ -251,6 +255,8 @@ def _synthesize_ext_type_properties(gen: base.Generator):
 
 
 def _make_props(gen: base.Generator):
+    """Set ``tProperties`` of each class to its own and inherited properties."""
+
     done = {}
     own_props_by_name = {}
 
@@ -298,6 +304,8 @@ def _make_props(gen: base.Generator):
 
 
 def _check_undefined(gen: base.Generator):
+    """Warn about undefined ``gws`` types, except vendor and private ones."""
+
     for typ in gen.typeDict.values():
         if typ.c != base.c.UNDEFINED:
             continue

@@ -1,3 +1,5 @@
+"""HTTP requests to OWS services."""
+
 import gws
 import gws.lib.net
 
@@ -6,16 +8,41 @@ _ows_error_strings = '<ServiceException', '<ServerException', '<ows:ExceptionRep
 
 
 class Args(gws.Data):
+    """Arguments for an OWS request."""
+
     method: gws.RequestMethod
+    """Request method, ``GET`` by default."""
     headers: dict
+    """HTTP headers."""
     params: dict
+    """Additional request parameters."""
     protocol: gws.OwsProtocol
+    """Service protocol, sent as ``SERVICE``."""
     url: str
+    """Service URL."""
     verb: gws.OwsVerb
+    """Request type, sent as ``REQUEST``."""
     version: str
+    """Service version, sent as ``VERSION`` if not empty."""
 
 
 def get_url(url: str, **kwargs) -> gws.lib.net.HTTPResponse:
+    """Send an HTTP request to an OWS service.
+
+    The response is checked for an OWS exception document, regardless of the
+    HTTP status, since some servers return errors with status 200.
+
+    Args:
+        url: Request URL.
+        **kwargs: Options for ``gws.lib.net.http_request``.
+
+    Returns:
+        The HTTP response.
+
+    Raises:
+        ``gws.ExternalServiceError``: If the service returns an exception document or the request fails.
+    """
+
     res = gws.lib.net.http_request(url, **kwargs)
 
     # some folks serve OWS error documents with the status 200
@@ -36,7 +63,18 @@ def get_url(url: str, **kwargs) -> gws.lib.net.HTTPResponse:
 
 
 def get(args: Args, **kwargs) -> gws.lib.net.HTTPResponse:
-    """Get a raw service response"""
+    """Send an OWS request and return the raw response.
+
+    Args:
+        args: Request arguments.
+        **kwargs: Options for ``gws.lib.net.http_request``.
+
+    Returns:
+        The HTTP response.
+
+    Raises:
+        ``gws.ExternalServiceError``: If the service returns an exception document or the request fails.
+    """
 
     params = {
         'SERVICE': str(args.protocol).upper(),
@@ -51,5 +89,18 @@ def get(args: Args, **kwargs) -> gws.lib.net.HTTPResponse:
 
 
 def get_text(args: Args, **kwargs) -> str:
+    """Send an OWS request and return the response text.
+
+    Args:
+        args: Request arguments.
+        **kwargs: Options for ``gws.lib.net.http_request``.
+
+    Returns:
+        The response text.
+
+    Raises:
+        ``gws.ExternalServiceError``: If the service returns an exception document or the request fails.
+    """
+
     res = get(args, **kwargs)
     return res.text

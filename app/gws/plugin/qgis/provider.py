@@ -1,4 +1,4 @@
-"""QGIS provider."""
+"""QGIS project provider."""
 
 from typing import Optional, cast
 
@@ -50,16 +50,29 @@ class Config(gws.Config):
 
 
 class Object(gws.OwsServiceProvider):
+    """Provider for a QGIS project, served by QGIS Server.
+
+    The provider loads and parses the project, computes the project bounds
+    and sends requests to QGIS Server.
+    """
+
     store: project.Store
+    """Location of the project."""
     printTemplates: list[caps_module.PrintTemplate]
+    """Print layouts of the project."""
 
     directRender: set[str]
+    """Data source providers rendered directly, not through QGIS Server (``wms``, ``wmts``, ``xyz``)."""
     directSearch: set[str]
+    """Data source providers searched directly, not through QGIS Server (``wms``, ``wfs``, ``postgres``)."""
 
     defaultLegendOptions: dict
+    """Legend options applied to all layers of the project."""
 
     caps: caps_module.Caps
+    """Parsed project capabilities."""
     sourceHash: str
+    """Hash of the project XML when watching is enabled, otherwise empty."""
 
     def configure(self):
         self.configure_store()
@@ -93,6 +106,11 @@ class Object(gws.OwsServiceProvider):
             gws.log.info(f'QGIS: monitoring: enabled: {self.server_project_path()!r}')
 
     def cache_hash(self):
+        """Compute a hash of the provider settings that affect rendering.
+
+        Returns:
+            Hash string, built from the store and the request CRS.
+        """
         return gws.u.sha256([
             vars(self.store),
             self.forceCrs.srid,
@@ -137,6 +155,11 @@ class Object(gws.OwsServiceProvider):
         return res
 
     def configure_store(self):
+        """Set the project store from ``path`` or ``projectName``.
+
+        Raises:
+            ``gws.ConfigurationError``: If neither ``path`` nor ``projectName`` is configured.
+        """
         p = self.cfg('path')
         if p:
             pp = gws.lib.osx.parse_path(p)
@@ -161,9 +184,27 @@ class Object(gws.OwsServiceProvider):
     ##
 
     def qgis_project(self) -> project.Object:
+        """Load the project from its store.
+
+        Returns:
+            A freshly loaded project.
+
+        Raises:
+            ``project.Error``: If the project cannot be loaded.
+        """
         return project.from_store(self.root, self.store)
 
     def server_project_path(self):
+        """Return the project address for the QGIS Server ``MAP`` parameter.
+
+        For a file store this is the file path. For a Postgres store this is
+        the database connection URL with ``schema`` and ``project`` parameters;
+        when watching is enabled, the project hash is appended to invalidate
+        the QGIS Server cache.
+
+        Returns:
+            Project path or URL.
+        """
         if self.store.type == project.StoreType.file:
             return self.store.path
         if self.store.type == project.StoreType.postgres:
@@ -175,6 +216,14 @@ class Object(gws.OwsServiceProvider):
             return gws.lib.net.add_params(prov.url(), p)
 
     def server_params(self, params: dict) -> dict:
+        """Add default parameters to a QGIS Server request.
+
+        Args:
+            params: Request parameters; keys are converted to upper case.
+
+        Returns:
+            Parameters with ``MAP``, ``SERVICE`` and ``VERSION`` defaults.
+        """
         defaults = dict(
             MAP=self.server_project_path(),
             SERVICE=gws.OwsProtocol.WMS,
@@ -183,6 +232,17 @@ class Object(gws.OwsServiceProvider):
         return gws.u.merge(defaults, gws.u.to_upper_dict(params))
 
     def call_server(self, params: dict) -> gws.lib.net.HTTPResponse:
+        """Send a request to QGIS Server.
+
+        Args:
+            params: Request parameters, completed by ``server_params``.
+
+        Returns:
+            HTTP response.
+
+        Raises:
+            ``gws.lib.net.Error``: If the request fails.
+        """
         params = self.server_params(params)
         res = gws.lib.net.http_request(self.url, params=params, timeout=1000)
         res.raise_if_failed()
@@ -191,6 +251,20 @@ class Object(gws.OwsServiceProvider):
     ##
 
     def get_map(self, bounds: gws.Bounds, width: float, height: float, params: dict) -> bytes:
+        """Render a map image with a GetMap request.
+
+        Args:
+            bounds: Box to render.
+            width: Image width in pixels.
+            height: Image height in pixels.
+            params: Extra request parameters, e.g. ``LAYERS``; they override the defaults (transparent PNG).
+
+        Returns:
+            Image bytes.
+
+        Raises:
+            ``gws.Error``: If QGIS Server returns a non-image response.
+        """
         bbox = bounds.extent
         if bounds.crs.isYX and not self.alwaysXY:
             bbox = gws.lib.extent.swap_xy(bbox)
@@ -288,6 +362,19 @@ class Object(gws.OwsServiceProvider):
     ##
 
     def create_leaf_layer_config(self, source_layers):
+        """Create the configuration of a leaf layer for the ``qgis`` tree layer.
+
+        By default, this is a ``qgisflat`` layer. For a single source layer
+        whose data source provider is listed in ``directRender`` or
+        ``directSearch``, the layer is rendered directly (``wmsflat``,
+        ``wmts`` or ``tile``) and gets its own finders and models.
+
+        Args:
+            source_layers: Source layers of the leaf.
+
+        Returns:
+            Layer configuration dict.
+        """
         simple_cfg = {
             'type': 'qgisflat',
             '_defaultProvider': self,
@@ -314,6 +401,7 @@ class Object(gws.OwsServiceProvider):
         return cfg
 
     def _leaf_render_config(self, ds):
+        """Create a direct render layer configuration for a data source."""
         prov = ds.get('provider')
         if prov not in self.directRender:
             return
@@ -355,6 +443,7 @@ class Object(gws.OwsServiceProvider):
             }
 
     def _leaf_search_config(self, ds):
+        """Create direct finder and model configurations for a data source."""
         prov = ds.get('provider')
         if prov not in self.directSearch:
             return
@@ -419,6 +508,17 @@ class Object(gws.OwsServiceProvider):
             return {'models': [model], 'finders': [finder]}
 
     def postgres_provider_from_datasource(self, ds: dict) -> gws.plugin.postgres.provider.Object:
+        """Find or create a Postgres provider for a QGIS data source.
+
+        An existing provider with the same connection URL is reused,
+        otherwise a new provider is created.
+
+        Args:
+            ds: Parsed Postgres data source.
+
+        Returns:
+            Postgres provider.
+        """
         cfg = gws.Config(
             host=ds.get('host'),
             port=ds.get('port'),
@@ -460,6 +560,7 @@ class Object(gws.OwsServiceProvider):
     }
 
     def _leaf_service_url(self, url, params):
+        """Add the non-standard OWS parameters of a data source to its URL."""
         if not url:
             return
         if not params:

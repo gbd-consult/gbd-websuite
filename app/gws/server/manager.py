@@ -1,17 +1,4 @@
-"""Configuration manager for embedded servers.
-
-This object creates configuration files for embedded servers and the server startup script.
-
-The configuration is template-based, there are following template subjects defined:
-
-- ``server.rsyslog_config`` - for the embedded ``rsyslogd`` daemon
-- ``server.uwsgi_config`` - for backend uWSGI servers (the ``uwsgi`` argument contains the specific backend name)
-- ``server.nginx_config`` - for the frontend NGINX proxy
-
-Each template receives a :obj:`TemplateArgs` object as arguments.
-
-By default, the Manager uses text-only templates from the ``templates`` directory.
-"""
+"""Server manager, which creates the server configuration files and the start script."""
 
 from typing import cast
 
@@ -33,19 +20,19 @@ class TemplateArgs(gws.TemplateArgs):
     root: gws.Root
     """Root object."""
     serverDir: str
-    """Absolute path to app/server directory."""
+    """Absolute path to the ``gws/server`` directory."""
     gwsEnv: dict
-    """A dict of GWS environment variables."""
+    """Environment variables whose names start with ``GWS_``."""
     inContainer: bool
-    """True if we're running in a container."""
+    """True if running in a container."""
     uwsgi: str
-    """uWSGI backend name."""
+    """uWSGI backend name, ``web`` or ``spool``, for the uWSGI config template."""
     userName: str
-    """User name."""
+    """Name of the user the servers run as."""
     groupName: str
-    """User group name."""
+    """Group name of that user."""
     homeDir: str
-    """User home directory."""
+    """Home directory of that user."""
     nginxConfig: str
     """nginx config path."""
     nginxPid: str
@@ -82,6 +69,8 @@ _DEFAULT_TEMPLATES = [
 
 
 class Object(gws.ServerManager):
+    """Server manager."""
+
     def configure(self):
         self.config = self._add_defaults(self.config, 'gws.server.core.Config')
         self.config.log = self._add_defaults(self.config.log, 'gws.server.core.LogConfig')
@@ -112,10 +101,11 @@ class Object(gws.ServerManager):
         self.configure_templates()
 
     def _add_defaults(self, value, type_name):
+        """Merge a config value into the defaults of the given config type."""
         return gws.u.merge(self.root.specs.read({}, type_name), value)
 
     def configure_environment(self):
-        """Overwrite config values from the environment."""
+        """Overwrite the log level and the numbers of workers from the environment."""
 
         cfg = cast(core.Config, self.config)
         p = gws.env.GWS_LOG_LEVEL
@@ -129,6 +119,7 @@ class Object(gws.ServerManager):
             cfg.spool.workers = int(p)
 
     def configure_templates(self):
+        """Create the templates from the ``templates`` config and add the default templates."""
         gws.config.util.configure_templates_for(self, extra=_DEFAULT_TEMPLATES)
 
     def create_server_configs(self, target_dir, script_path, pid_paths):
@@ -172,6 +163,10 @@ class Object(gws.ServerManager):
         self._create_config('server.start_script', script_path, args)
 
     def _create_config(self, subject: str, path: str, args: TemplateArgs, is_nginx=False) -> str:
+        """Render a template, normalize the whitespace and write the result to a file, return the path.
+
+        The NGINX config is reformatted with one statement per line and indented blocks.
+        """
         tpl = gws.u.require(self.root.app.templateMgr.find_template(subject, where=[self]))
         res = tpl.render(gws.TemplateRenderInput(args=args))
 

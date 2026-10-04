@@ -1,3 +1,5 @@
+"""CLI commands for authorization sessions."""
+
 from typing import Optional, cast
 
 import gws
@@ -9,6 +11,8 @@ from . import manager
 
 
 class RemoveParams(gws.CliParams):
+    """Parameters of the ``authSessrem`` command."""
+
     older: Optional[int]
     """Remove sessions older than N seconds."""
     uid: Optional[list[str]]
@@ -19,10 +23,14 @@ class RemoveParams(gws.CliParams):
 
 @gws.ext.object.cli('auth')
 class Object(gws.Node):
+    """CLI commands for authorization sessions.
+
+    Lists the active sessions and removes sessions from the session store.
+    """
 
     @gws.ext.command.cli('authSessions')
     def sessions(self, p: gws.EmptyRequest):
-        """Show active authorization sessions"""
+        """Show active authorization sessions."""
 
         root = gws.config.load()
         sm = root.app.authMgr.sessionMgr

@@ -1,29 +1,38 @@
 class ActionManager(Node):
-    """Action manager."""
+    """Action manager.
+
+    Locates actions in projects and the application and prepares command calls.
+    """
 
     def actions_for_project(self, project: 'Project', user: 'User') -> list['Action']:
-        """
-        Get a list of actions for a project, to which a user has access to.
+        """Get the actions a user can use in a project.
+
+        Includes the project actions and the application actions, one action per type.
+        A project action takes precedence over an application action of the same type.
 
         Args:
-            project: The project requiring actions.
-            user: The user for whom the actions are retrieved.
+            project: The project.
+            user: The user.
 
         Returns:
-            A list of accessible actions.
+            A list of actions.
         """
 
     def find_action(self, project: Optional['Project'], ext_type: str, user: 'User') -> Optional['Action']:
-        """
-        Locate an Action object.
+        """Find an action by its type.
+
+        Searches the project actions first, if a project is given, then the application actions.
 
         Args:
-            project: If provided, find the action for that project; otherwise, search globally.
-            ext_type: The extension type to search for.
-            user: Locate actions only for this user.
+            project: The project, or ``None`` to search the application actions only.
+            ext_type: Action type, for example ``map``.
+            user: The user who wants to use the action.
 
         Returns:
-            The located action object, or None if no match is found.
+            The action object, or ``None`` if not found.
+
+        Raises:
+            ForbiddenError: If the action is found but the user may not use it.
         """
 
     def prepare_action(
@@ -35,21 +44,32 @@ class ActionManager(Node):
             user: 'User',
             read_options: Optional[set[SpecReadOption]]=None,
     ) -> tuple[Callable, Request]:
-        """
-        Prepare an action to be executed based on the provided parameters.
+        """Prepare a command call.
+
+        Parses the parameters into the command's request type, finds the action
+        that owns the command (in the requested project, then in the application)
+        and checks the user's access.
 
         Args:
-            command_category: The category of the command to execute.
-            command_name: The name of the command to execute.
-            params: Request parameters for the command.
-            path: Request path for which the action is being prepared.
-            user: The user initiating the action.
-            read_options: Read options for parsing parameters.
+            command_category: Command category.
+            command_name: Command name, for example ``mapDescribeLayer``.
+            params: Raw request parameters.
+            path: Request path; for ``raw`` commands, the project uid can be given as a ``/projectUid/<uid>`` segment.
+            user: The user who runs the command.
+            read_options: Options for the spec reader.
 
         Returns:
-            A tuple containing the callable to execute and the associated request object.
+            A tuple of the bound command method and the parsed request object.
+
+        Raises:
+            NotFoundError: If the command, the project or the action is not found.
+            BadRequestError: If the parameters cannot be parsed.
+            ForbiddenError: If the user may not use the project or the action.
         """
 
 
 class Action(Node):
-    """Base Action class."""
+    """Server action.
+
+    An action is a configurable object that provides server commands.
+    """

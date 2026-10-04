@@ -1,62 +1,4 @@
-"""Base provider for the sql-based authorization.
-
-SQL-based authentication works by executing SELECT queries against a SQL provider.
-
-The "authorization" query receives the parameters "username", "password", and/or "token" from
-an authentication method. If the query doesn't return any rows, the next authentication
-provider is attempted. Otherwise, exactly one row should be returned with
-at least the following columns:
-
-- ``validuser`` (bool) - mandatory, should be "true" if the user is allowed to log in
-- ``validpassword`` (bool) - mandatory, should be "true" if the password is valid
-- ``uid`` (str) - user id
-- ``roles`` (str) - comma-separated list of roles
-
-Column names are case-insensitive.
-
-Other columns, if given, are converted to respective `gws.User` properties.
-
-The "getUser" query receives user ID as a parameter and should return a record for this user.
-
-Example configuration (assuming Postgres with ``pgcrypto``)::
-
-    auth.providers+ {
-        type "sql"
-
-        authorizationSql '''
-            SELECT
-                user.id
-                    AS uid,
-                user.first_name || ' ' || user.last_name
-                    AS displayname,
-                user.login
-                    AS login,
-                user.is_enabled
-                    AS validuser,
-                ( passwd = crypt({{password}}, passwd) )
-                    AS validpassword
-            FROM
-                public.user
-            WHERE
-                user.login = {{username}}
-        '''
-
-        getUserSql '''
-            SELECT
-                user.id
-                    AS uid,
-                user.first_name || ' ' || user.last_name
-                    AS displayname,
-                user.login
-                    AS login
-            FROM
-                public.user
-            WHERE
-                user.id = {{uid}}
-        '''
-    }
-
-"""
+"""Base authorization provider that checks users with SQL queries."""
 
 from typing import Optional, cast
 
@@ -83,16 +25,27 @@ class Config(gws.base.auth.provider.Config):
 
 
 class Placeholders(gws.Enum):
+    """Placeholder names available in the SQL queries."""
+
     username = 'username'
+    """User name from the credentials."""
     password = 'password'
+    """Password from the credentials."""
     token = 'token'
+    """Token from the credentials."""
     uid = 'uid'
+    """Local user id, used in ``getUserSql``."""
 
 
 class Object(gws.base.auth.provider.Object):
+    """Authorization provider that checks credentials and loads users with SQL queries."""
+
     db: gws.DatabaseProvider
+    """Database provider the queries run on."""
     authorizationSql: str
+    """SQL query that checks user credentials."""
     getUserSql: str
+    """SQL query that returns the record of a user by uid."""
 
     def configure(self):
         self.configure_provider()
@@ -100,6 +53,14 @@ class Object(gws.base.auth.provider.Object):
         self.getUserSql = self.cfg('getUserSql')
 
     def configure_provider(self):
+        """Set the database provider from the configuration.
+
+        Returns:
+            ``True`` if a provider was found.
+
+        Raises:
+            ``gws.Error``: If no matching database provider is configured.
+        """
         return gws.config.util.configure_database_provider_for(self)
 
     def authenticate(self, method, credentials):
@@ -133,11 +94,13 @@ class Object(gws.base.auth.provider.Object):
         return self._make_user(rs[0], validate=False)
 
     def _get_records(self, sql: str, params: dict) -> list[dict]:
+        """Run a query with ``{name}`` placeholders converted to bind parameters."""
         sql = re.sub(r'{(\w+)}', r':\1', sql)
         with self.db.connect() as conn:
             return [gws.u.to_dict(r) for r in conn.execute(sa.text(sql), params)]
 
     def _make_user(self, rec: dict, validate: bool) -> gws.User:
+        """Create a user from a record, checking ``validuser`` and ``validpassword`` if ``validate`` is set."""
         user_rec = {}
 
         valid_user = False

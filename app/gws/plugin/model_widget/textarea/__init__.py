@@ -1,4 +1,15 @@
-"""Textarea widget."""
+"""Textarea widget.
+
+Multi-line text input with an optional height and placeholder text.
+
+Example::
+
+    fields+ {
+        name "description"
+        type "text"
+        widget { type "textarea" height 120 }
+    }
+"""
 
 import gws
 import gws.base.model.widget
@@ -22,6 +33,8 @@ class Props(gws.base.model.widget.Props):
 
 @gws.ext.object.modelWidget('textarea')
 class Object(gws.base.model.widget.Object):
+    """Textarea widget object."""
+
     def props(self, user):
         return gws.u.merge(
             super().props(user),

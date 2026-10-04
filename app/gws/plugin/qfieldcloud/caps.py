@@ -1,3 +1,5 @@
+"""Parser for QField-related capabilities of a QGIS project."""
+
 from typing import Optional, cast
 
 import gws
@@ -16,108 +18,203 @@ class ProjectProps(gws.Data):
     """Custom project properties as defined by QField."""
 
     areaOfInterest: str
+    """Area of interest as WKT."""
     areaOfInterestCrs: str
+    """CRS of the area of interest."""
     baseMapLayer: str
+    """Id of the layer used as the base map, if ``baseMapType`` is ``singleLayer``."""
     baseMapTheme: str
+    """Map theme used as the base map, if ``baseMapType`` is ``mapTheme``."""
     baseMapTileSize: int
+    """Base map tile size."""
     baseMapTilesMaxZoomLevel: int
+    """Maximum zoom level of the base map."""
     baseMapTilesMinZoomLevel: int
+    """Minimum zoom level of the base map."""
     baseMapType: str
+    """Base map type, ``mapTheme`` or ``singleLayer``."""
     createBaseMap: bool
+    """Whether a base map is created."""
     digitizingLogsLayer: str
+    """Id of the digitizing logs layer."""
     forceAutoPush: bool
+    """Whether changes are pushed automatically."""
     forceAutoPushIntervalMins: int
+    """Automatic push interval in minutes."""
     forceStamping: bool
+    """Whether photos are stamped."""
     geofencingBehavior: int
+    """Geofencing behavior."""
     geofencingIsActive: bool
+    """Whether geofencing is active."""
     geofencingLayer: str
+    """Id of the geofencing layer."""
     geofencingShouldPreventDigitizing: bool
+    """Whether geofencing prevents digitizing."""
     mapThemesActiveLayers: dict
+    """Active layers of map themes."""
     maximumImageWidthHeight: int
+    """Maximum width and height of images."""
     offlineCopyOnlyAoi: bool
+    """Whether only features in the area of interest are packaged."""
     stampingDetailsTemplate: str
+    """Template for photo stamping."""
     stampingFontStyle: str
+    """Font style for photo stamping."""
     stampingHorizontalAlignment: int
+    """Horizontal alignment for photo stamping."""
     stampingImageDecoration: str
+    """Image decoration for photo stamping."""
 
     attachmentDirs: list[str]
+    """Attachment directories."""
     dataDirs: list[str]
+    """Data directories."""
     dirsToCopy: dict
+    """Directories to copy, as a dict ``{dirname: bool}``."""
 
 
 class LayerProps(gws.Data):
     """Custom layer properties as defined by QField."""
 
     action: str
+    """QFieldSync layer action."""
     attachment_naming: dict
+    """Naming rules for attachments."""
     attribute_editing_locked_expression: str
+    """Expression that locks attribute editing."""
     cloud_action: str
+    """Cloud action: ``offline``, ``no_action`` or ``remove``."""
     feature_addition_locked_expression: str
+    """Expression that locks feature addition."""
     feature_deletion_locked_expression: str
+    """Expression that locks feature deletion."""
     geometry_editing_locked_expression: str
+    """Expression that locks geometry editing."""
     is_attribute_editing_locked: bool
+    """Whether attribute editing is locked."""
     is_feature_addition_locked: bool
+    """Whether feature addition is locked."""
     is_feature_deletion_locked: bool
+    """Whether feature deletion is locked."""
     is_geometry_editing_locked: bool
+    """Whether geometry editing is locked."""
     photo_naming: dict
+    """Naming rules for photos."""
     relationship_maximum_visible: dict
+    """Maximum number of visible related features."""
     tracking_distance_requirement_minimum_meters: int
+    """Minimum distance between tracked positions, in meters."""
     tracking_erroneous_distance_safeguard_maximum_meters: int
+    """Maximum distance of a tracked position before it is considered erroneous, in meters."""
     tracking_measurement_type: int
+    """Tracking measurement type."""
     tracking_time_requirement_interval_seconds: int
+    """Minimum time between tracked positions, in seconds."""
     value_map_button_interface_threshold: int
+    """Threshold for showing value maps as buttons."""
 
 
 class LayerAction(gws.Enum):
+    """What the packager does with a layer."""
+
     remove = 'remove'
+    """Remove the layer from the project."""
     edit = 'edit'
+    """Package the layer data for offline editing."""
     baseMap = 'baseMap'
+    """Render the layer into the base map."""
 
 
 class ModelEntry(gws.Data):
+    """A model for an offline table, with its GeoPackage layer name."""
+
     gpName: str
+    """Name of the GeoPackage file and layer."""
     tableName: str
+    """Database table name."""
     model: gws.DatabaseModel
+    """Model for the table."""
 
 
 class LayerEntry(gws.Data):
+    """QField-related information about a QGIS layer."""
+
     action: LayerAction
+    """What to do with the layer."""
     qgisId: str
+    """Layer id in the QGIS project."""
     modelEntry: ModelEntry
+    """Model entry, for ``edit`` layers."""
     readOnly: bool
+    """Whether all editing is locked in QFieldSync."""
     sqlFilter: str
+    """SQL filter (subset string) of the layer."""
     dataSourceFileName: str
+    """Name of the packaged data file."""
     dataSource: str
+    """Data source string in the packaged QGIS project."""
     dataProvider: str
+    """Data provider in the packaged QGIS project."""
     sourceLayer: gws.SourceLayer
+    """Source layer from the QGIS project."""
     props: LayerProps
+    """QFieldSync layer properties."""
 
 
 class Caps(gws.Data):
     """QField related capabilities extracted from the QGIS project and GWS config."""
 
     sourceHash: str
+    """Hash of the QGIS project source, used to invalidate cached caps."""
     qgisPath: str
+    """Path to the QGIS project file, empty if the project is not stored in a file."""
     layerMap: dict[str, LayerEntry]
+    """Layer entries by QGIS layer id."""
     modelMap: dict[str, ModelEntry]
+    """Model entries by GeoPackage name."""
     copyDirs: list[str]
+    """Absolute paths of directories to copy into the package."""
     baseMapLayerIds: list[str]
+    """Ids of the layers rendered into the base map."""
     areaOfInterest: Optional[gws.Bounds]
+    """Area of interest."""
     copyOnlyAreaOfInterest: bool
+    """Whether only features in the area of interest are packaged."""
     projectProps: ProjectProps
+    """QFieldSync project properties."""
 
 
 class Parser:
-    """Read qf-related capabilities from the qgis project."""
+    """Reads QField-related capabilities from a QGIS project.
+
+    ``parse`` reads the project and layer properties. ``create_models`` and
+    ``assign_path_props`` complete the layer entries and are called separately.
+    """
 
     project: core.QfcProject
+    """QField project (unused, the project is stored in ``qfcProject``)."""
     caps: Caps
+    """Capabilities being built."""
     qgisCaps: gws.plugin.qgis.caps.Caps
+    """Capabilities of the QGIS project."""
 
     def __init__(self, qfc_project: core.QfcProject):
+        """Create a parser.
+
+        Args:
+            qfc_project: QField project to parse.
+        """
         self.qfcProject = qfc_project
 
     def parse(self) -> Caps:
+        """Parse the QGIS project.
+
+        Reads the project properties, the area of interest, the directories to copy, the base map layers and the layer entries.
+
+        Returns:
+            Capabilities, also stored in ``self.caps``.
+        """
         qp = self.qfcProject.qgisProvider.qgis_project()
         self.qgisCaps = qp.caps()
 
@@ -147,6 +244,7 @@ class Parser:
     ##
 
     def parse_area_of_interest(self):
+        """Set the area of interest from the project properties."""
         aoi = self.caps.projectProps.areaOfInterest
         if not aoi:
             return
@@ -156,6 +254,10 @@ class Parser:
         self.caps.copyOnlyAreaOfInterest = self.caps.projectProps.offlineCopyOnlyAoi is True
 
     def parse_copy_dirs(self):
+        """Set the directories to copy into the package.
+
+        Relative paths are resolved against the QGIS project file. Nested directories are dropped.
+        """
         raw_dirs = []
 
         # dirsToCopy is a dict (dirname: bool)
@@ -188,6 +290,7 @@ class Parser:
         self.caps.copyDirs = unnest_dirs
 
     def parse_base_map(self):
+        """Set the base map layer ids from the map theme or the single base map layer."""
         if not self.caps.projectProps.createBaseMap:
             return
 
@@ -214,12 +317,21 @@ class Parser:
     ##
 
     def iter_layers(self):
+        """Create layer entries for all non-group source layers."""
         for sl in gws.gis.source.filter_layers(self.qgisCaps.sourceLayers, is_group=False):
             le = self.layer_entry(sl)
             if le:
                 self.caps.layerMap[le.qgisId] = le
 
     def layer_entry(self, sl: gws.SourceLayer) -> Optional[LayerEntry]:
+        """Create a layer entry for a source layer.
+
+        Args:
+            sl: Source layer.
+
+        Returns:
+            Layer entry, or ``None`` if the layer is left unchanged in the package.
+        """
         le = self.layer_entry_2(sl)
         if not le:
             return
@@ -229,6 +341,17 @@ class Parser:
         return le
 
     def layer_entry_2(self, sl: gws.SourceLayer) -> Optional[LayerEntry]:
+        """Determine the action for a source layer.
+
+        Base map layers get ``baseMap``. Layers with the cloud action ``remove`` get ``remove``.
+        Postgres layers with the cloud action ``offline`` get ``edit``, offline layers of other providers get ``remove``.
+
+        Args:
+            sl: Source layer.
+
+        Returns:
+            Layer entry without the id and source layer, or ``None`` for other layers.
+        """
         props = self.extract_layer_props(sl)
 
         if sl.sourceId in self.caps.baseMapLayerIds:
@@ -250,6 +373,17 @@ class Parser:
             return LayerEntry(action=LayerAction.remove, props=props)
 
     def postgres_layer_entry(self, sl, props: LayerProps) -> LayerEntry:
+        """Create a layer entry for an offline Postgres layer.
+
+        Layers without a plain table name (e.g. SQL queries) get the ``remove`` action.
+
+        Args:
+            sl: Source layer.
+            props: QFieldSync layer properties.
+
+        Returns:
+            Layer entry.
+        """
         read_only = (
             props.is_attribute_editing_locked
             and props.is_geometry_editing_locked
@@ -272,6 +406,11 @@ class Parser:
     ##
 
     def extract_project_props(self) -> ProjectProps:
+        """Read the QFieldSync project properties.
+
+        Returns:
+            Project properties.
+        """
         d = {}
         # there are two of them, QFieldSync and libqfieldsync
         d.update(self.qgisCaps.properties.get('qfieldsync', {}))
@@ -282,6 +421,14 @@ class Parser:
         return t
 
     def extract_layer_props(self, sl: gws.SourceLayer) -> LayerProps:
+        """Read the QFieldSync properties of a layer.
+
+        Args:
+            sl: Source layer.
+
+        Returns:
+            Layer properties.
+        """
         d = {}
 
         for k, v in sl.properties.items():
@@ -295,6 +442,7 @@ class Parser:
     ##
 
     def assign_path_props(self):
+        """Set the data file name, data source and provider of ``edit`` and ``baseMap`` layers in the package."""
         for le in self.caps.layerMap.values():
             if le.action == LayerAction.edit:
                 name = le.modelEntry.gpName
@@ -311,12 +459,20 @@ class Parser:
                 le.dataProvider = 'gdal'
 
     def create_models(self):
+        """Create model entries for all ``edit`` layers."""
         self.caps.modelMap = {}
 
         for le in self.caps.layerMap.values():
             self.create_model_entry_for_layer(le)
 
     def create_model_entry_for_layer(self, le: LayerEntry):
+        """Assign a model entry to an ``edit`` layer.
+
+        If no model is found, or the layer is editable but the model is not, the layer gets the ``remove`` action.
+
+        Args:
+            le: Layer entry.
+        """
         if le.action != LayerAction.edit:
             return
         me = self.model_entry_for_source_layer(le.sourceLayer)
@@ -331,6 +487,17 @@ class Parser:
         le.modelEntry = me
 
     def model_entry_for_source_layer(self, sl: gws.SourceLayer) -> Optional[ModelEntry]:
+        """Find or create a model entry for the table of a source layer.
+
+        A configured model with the same table name is used if present.
+        Otherwise a generic Postgres model is created for the table.
+
+        Args:
+            sl: Source layer.
+
+        Returns:
+            Model entry, or ``None`` if the layer has no table or the table does not exist.
+        """
         table_name = sl.dataSource.get('table')
         if not table_name:
             return
@@ -368,6 +535,14 @@ class Parser:
         return self.caps.modelMap[gp_name]
 
     def gp_name_for_model(self, table_name):
+        """Return the GeoPackage name for a table.
+
+        Args:
+            table_name: Table name, optionally with a schema (``public`` by default).
+
+        Returns:
+            Name in the form ``qm_<schema>_<table>``, lowercase.
+        """
         if '.' not in table_name:
             table_name = 'public.' + table_name
         return 'qm_' + table_name.replace('.', '_').lower()
@@ -377,6 +552,7 @@ class Parser:
 
 
 def _dict_to_data(d: dict, t: gws.Data):
+    """Copy dict values into a Data object, converting them to the annotated types."""
     for k, typ in t.__class__.__annotations__.items():
         v = d.get(k)
         if v is None:

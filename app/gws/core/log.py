@@ -1,4 +1,4 @@
-"""Logging facility."""
+"""Minimal logging facility that writes to stdout."""
 
 import os
 import sys
@@ -6,7 +6,7 @@ import traceback
 
 
 class Level:
-    """Log level."""
+    """Log level constants, as in the standard ``logging`` module."""
 
     CRITICAL = 50
     ERROR = 40
@@ -19,6 +19,11 @@ class Level:
 
 
 def set_level(level: int | str | None):
+    """Set the current log level.
+
+    Args:
+        level: A numeric level, a level name like ``DEBUG``, or ``None`` for ``INFO``.
+    """
     global _current_level
     if level is None:
         _current_level = Level.INFO
@@ -29,6 +34,11 @@ def set_level(level: int | str | None):
 
 
 def get_level() -> str:
+    """Return the name of the current log level.
+
+    Returns:
+        A level name like ``INFO``.
+    """
     global _current_level
     for k, n in vars(Level).items():
         if n == _current_level:
@@ -37,30 +47,80 @@ def get_level() -> str:
 
 
 def log(level: int, msg: str, *args, **kwargs):
+    """Log a message at the given level.
+
+    Args:
+        level: Numeric log level.
+        msg: Message, optionally with ``%`` placeholders.
+        *args: Values for the placeholders. A single dict is used as a mapping.
+        **kwargs: ``stacklevel`` to adjust the reported source location in debug mode.
+    """
     _raw(level, msg, args, kwargs)
 
 
 def critical(msg: str, *args, **kwargs):
+    """Log a message at the critical level.
+
+    Args:
+        msg: Message, optionally with ``%`` placeholders.
+        *args: Values for the placeholders. A single dict is used as a mapping.
+        **kwargs: ``stacklevel`` to adjust the reported source location in debug mode.
+    """
     _raw(Level.CRITICAL, msg, args, kwargs)
 
 
 def error(msg: str, *args, **kwargs):
+    """Log a message at the error level.
+
+    Args:
+        msg: Message, optionally with ``%`` placeholders.
+        *args: Values for the placeholders. A single dict is used as a mapping.
+        **kwargs: ``stacklevel`` to adjust the reported source location in debug mode.
+    """
     _raw(Level.ERROR, msg, args, kwargs)
 
 
 def warning(msg: str, *args, **kwargs):
+    """Log a message at the warning level.
+
+    Args:
+        msg: Message, optionally with ``%`` placeholders.
+        *args: Values for the placeholders. A single dict is used as a mapping.
+        **kwargs: ``stacklevel`` to adjust the reported source location in debug mode.
+    """
     _raw(Level.WARNING, msg, args, kwargs)
 
 
 def info(msg: str, *args, **kwargs):
+    """Log a message at the info level.
+
+    Args:
+        msg: Message, optionally with ``%`` placeholders.
+        *args: Values for the placeholders. A single dict is used as a mapping.
+        **kwargs: ``stacklevel`` to adjust the reported source location in debug mode.
+    """
     _raw(Level.INFO, msg, args, kwargs)
 
 
 def debug(msg: str, *args, **kwargs):
+    """Log a message at the debug level.
+
+    Args:
+        msg: Message, optionally with ``%`` placeholders.
+        *args: Values for the placeholders. A single dict is used as a mapping.
+        **kwargs: ``stacklevel`` to adjust the reported source location in debug mode.
+    """
     _raw(Level.DEBUG, msg, args, kwargs)
 
 
 def exception(msg: str = '', *args, **kwargs):
+    """Log the exception being handled, with its backtrace, at the error level.
+
+    Args:
+        msg: Message, optionally with ``%`` placeholders. Defaults to the first line of the backtrace.
+        *args: Values for the placeholders. A single dict is used as a mapping.
+        **kwargs: ``stacklevel`` to adjust the reported source location in debug mode.
+    """
     _, exc, _ = sys.exc_info()
     ls = exception_backtrace(exc)
     _raw(Level.ERROR, msg or ls[0], args, kwargs)
@@ -69,7 +129,14 @@ def exception(msg: str = '', *args, **kwargs):
 
 
 def if_debug(fn, *args):
-    """If debugging, apply the function to args and log the result."""
+    """If the log level is debug, apply the function to args and log the result.
+
+    Exceptions raised by the function are logged instead of the result.
+
+    Args:
+        fn: A function that returns a message.
+        *args: Arguments for the function.
+    """
 
     if Level.DEBUG < _current_level:
         return
@@ -81,7 +148,16 @@ def if_debug(fn, *args):
 
 
 def exception_backtrace(exc: BaseException | None) -> list:
-    """Exception backtrace as a list of strings."""
+    """Return the exception backtrace as a list of strings.
+
+    The backtrace includes the chain of causes and contexts.
+
+    Args:
+        exc: An exception.
+
+    Returns:
+        A list of lines. The first line is a summary with the exception name, the first message and the location.
+    """
 
     head = _name(exc)
     messages = []

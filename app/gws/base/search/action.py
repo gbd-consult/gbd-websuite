@@ -1,4 +1,4 @@
-"""Search API."""
+"""Search action."""
 
 from typing import Optional
 
@@ -33,28 +33,49 @@ class Props(gws.base.action.Props):
 
 
 class Request(gws.Request):
+    """Request of the ``searchFind`` command."""
+
     crs: Optional[gws.CrsName]
+    """CRS of the extent, defaults to the map CRS."""
     extent: Optional[gws.Extent]
+    """Search extent, defaults to the map extent."""
     keyword: str = ''
+    """Keyword to search for."""
     layerUids: list[str]
+    """Layers whose finders are used in addition to the project and application finders."""
     limit: Optional[int]
+    """Max. number of results, cannot exceed the configured limit."""
     resolution: float
+    """Pixel resolution for geometry searches."""
     shapes: Optional[list[gws.base.shape.Props]]
+    """Shapes to search in; several shapes are combined into one."""
     tolerance: Optional[str]
+    """Tolerance for geometry searches, a value with a unit, in pixels if no unit is given."""
     views: Optional[list[str]]
+    """Feature views to render, defaults to ``title``, ``teaser`` and ``description``."""
     categories: Optional[list[str]]
+    """Result categories."""
     withCategories: bool
+    """Return result categories."""
 
 
 class Response(gws.Response):
+    """Response of the ``searchFind`` command."""
+
     features: list[gws.FeatureProps]
+    """Found features with rendered views."""
 
 
 @gws.ext.object.action('search')
 class Object(gws.base.action.Object):
+    """Search action, runs searches for the client."""
+
     limit = 0
+    """Max. number of results, 0 for no limit."""
     tolerance: gws.UomValue
+    """Default tolerance for geometry searches."""
     categories: list[str] = []
+    """Result categories users can filter by."""
 
     def configure(self):
         self.limit = self.cfg('limit') or 0
@@ -66,7 +87,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.api('searchFind')
     def find(self, req: gws.WebRequester, p: Request) -> Response:
-        """Perform a search"""
+        """Run a search and return the found features."""
 
         return Response(features=self._get_features(req, p))
 

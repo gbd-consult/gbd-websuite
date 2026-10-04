@@ -1,4 +1,4 @@
-"""GeoJSON layer"""
+"""The ``geojson`` layer."""
 
 import gws
 import gws.base.layer
@@ -21,8 +21,12 @@ class Config(gws.base.layer.Config):
 
 @gws.ext.object.layer('geojson')
 class Object(gws.base.layer.vector.Object):
+    """GeoJSON layer."""
+
     path: str
+    """Path to the GeoJSON file. Not set; the path is kept by the provider."""
     provider: provider.Object
+    """The GeoJSON provider."""
 
     def configure(self):
         self.configure_layer()
@@ -51,6 +55,14 @@ class Object(gws.base.layer.vector.Object):
         return gws.config.util.configure_models_for(self, with_default=True)
 
     def create_model(self, cfg):
+        """Create a GeoJSON model that uses the provider of the layer.
+
+        Args:
+            cfg: Model configuration, or ``None`` for the default model.
+
+        Returns:
+            The model.
+        """
         return self.create_child(
             gws.ext.object.model,
             cfg,
@@ -65,6 +77,14 @@ class Object(gws.base.layer.vector.Object):
         return True
 
     def create_finder(self, cfg):
+        """Create a GeoJSON finder that uses the provider of the layer.
+
+        Args:
+            cfg: Finder configuration, or ``None`` for the default finder.
+
+        Returns:
+            The finder.
+        """
         return self.create_child(
             gws.ext.object.finder,
             cfg,

@@ -1,15 +1,18 @@
 class ApplicationManifestPlugin(Data):
-    """Plugin description."""
+    """Custom plugin entry in the application manifest."""
 
     path: DirPath
-    """Path to the plugin python module."""
+    """Path to the plugin directory; relative paths are resolved against the manifest location."""
 
     name: str = ''
-    """Optional name, when omitted, the directory name will be used."""
+    """Plugin name. When omitted, the directory name is used."""
 
 
 class ApplicationManifest(Data):
-    """Application manifest."""
+    """Application manifest, read from a ``MANIFEST.json`` file.
+
+    The manifest is JSON; lines starting with ``//`` or ``#`` are ignored.
+    """
 
     excludePlugins: Optional[list[str]]
     """Names of the core plugins that should be deactivated."""
@@ -18,7 +21,7 @@ class ApplicationManifest(Data):
     locales: list[str]
     """Locale names supported by this application."""
     tsConfig: list[str]
-    """Path to tsconfig.json."""
+    """Path to ``tsconfig.json``."""
     withFallbackConfig: bool = False
     """Use a minimal fallback configuration."""
     withStrictConfig: bool = False
@@ -43,47 +46,43 @@ class ExtObjectDescriptor(Data):
 
 
 class ExtCommandDescriptor(Data):
-    """
-    Represents a command descriptor for an extension.
-
-    Contains attributes to describe and handle a specific extension command.
-    """
+    """Command descriptor, describes the action method that handles a command."""
 
     extName: str
-    """Full extension name like ``gws.ext.object.layer.wms``."""
+    """Full command name like ``gws.ext.command.api.mapGetBox``."""
     extType: str
-    """Extension type like ``wms``."""
+    """Command name like ``mapGetBox``."""
     extCommandCategory: 'CommandCategory'
     """Command category."""
     methodName: str
-    """Command method name."""
+    """Name of the action method that handles the command."""
     methodPtr: Callable
-    """Command method."""
+    """Command method. Not set by ``SpecRuntime.command_descriptor``."""
     request: 'Request'
-    """Request sent to the command."""
+    """Request sent to the command. Not set by ``SpecRuntime.command_descriptor``."""
     tArg: str
-    """Type of the command argument."""
+    """Type uid of the command argument (the request)."""
     tOwner: str
-    """Type of the command owner."""
+    """Type uid of the action class that owns the command."""
     owner: ExtObjectDescriptor
-    """Descriptor of the command owner."""
+    """Object descriptor of the action class that owns the command."""
 
 
 class SpecReadOption(Enum):
-    """Options for structured reading based on Specs."""
+    """Options for reading values with ``SpecRuntime.read``."""
 
     acceptExtraProps = 'acceptExtraProps'
     """Accept extra object properties."""
     allowMissing = 'allowMissing'
     """Allow otherwise required properties to be missing."""
     caseInsensitive = 'caseInsensitive'
-    """Case insensitive search for properties. """
+    """Case insensitive search for properties."""
     convertValues = 'convertValues'
     """Try to convert values to specified types."""
     ignoreExtraProps = 'ignoreExtraProps'
     """Silently ignore extra object properties."""
     verboseErrors = 'verboseErrors'
-    """Provide verbose error messages."""
+    """Add the value and the location of an error to ``ReadError`` exceptions."""
 
 
 class CommandCategory(Enum):
@@ -102,33 +101,40 @@ class CommandCategory(Enum):
 
 
 class SpecRuntime:
-    """Specification runtime."""
+    """Spec runtime.
+
+    Provides access to the generated specs: reading and validating values,
+    looking up extension objects and commands, and loading classes.
+    """
 
     version: str
     """Application version."""
     manifest: ApplicationManifest
     """Application manifest."""
     appBundlePaths: list[str]
-    """List of client bundle paths."""
+    """Paths of the client bundles of all chunks."""
 
     def read(self, value, type_name: str, path: str = '', options: set[SpecReadOption] = None):
-        """Read a raw value according to a spec.
+        """Read and validate a raw value according to a spec type.
 
         Args:
-            value: Raw value from config or request.
-            type_name: Object type name.
-            path: Config file path.
+            value: Raw value from a config or a request.
+            type_name: Type uid or extension name.
+            path: Path of the config file, used to resolve relative paths and in error messages.
             options: Read options.
 
         Returns:
-            A parsed object.
+            The parsed value. Objects are returned as ``gws.Data``.
+
+        Raises:
+            ``gws.spec.core.ReadError``: If the value does not match the type.
         """
 
     def object_descriptor(self, type_name: str) -> Optional[ExtObjectDescriptor]:
         """Get an object descriptor.
 
         Args:
-            type_name: Object type name.
+            type_name: Type uid or extension name.
 
         Returns:
             A descriptor or ``None`` if the type is not found.
@@ -146,17 +152,34 @@ class SpecRuntime:
         """
 
     def register_object(self, ext_name: ClassRef, obj_type: str, cls: type):
-        """Dynamically register an extension object."""
+        """Register an extension class at run time.
+
+        The class gets the ``extName`` and ``extType`` attributes.
+
+        Args:
+            ext_name: Extension category, like ``gws.ext.object.layer``.
+            obj_type: Extension type, like ``wms``.
+            cls: Class to register.
+
+        Raises:
+            ``gws.spec.core.Error``: If the class reference is invalid.
+        """
 
     def get_class(self, classref: ClassRef, ext_type: Optional[str] = None) -> Optional[type]:
         """Get a class object for a class reference.
 
+        The module defining the class is imported on demand.
+
         Args:
-            classref: Class reference.
-            ext_type: Extension type.
+            classref: Class reference: a class, a class name or an extension name.
+            ext_type: Extension type, used when ``classref`` is an extension category name.
+                Defaults to ``default``.
 
         Returns:
             A class or ``None`` if the reference is not found.
+
+        Raises:
+            ``gws.spec.core.LoadError``: If the module cannot be imported.
         """
 
     def parse_classref(self, classref: ClassRef) -> tuple[Optional[type], str, str]:
@@ -166,8 +189,20 @@ class SpecRuntime:
             classref: Class reference.
 
         Returns:
-            A tuple ``(class object, class name, extension name)``.
+            A tuple ``(class object, class name, extension name)``, where only one element is set.
+
+        Raises:
+            ``gws.spec.core.Error``: If the class reference is invalid.
         """
 
     def get_config_types(self, lang: str) -> list[dict]:
-        """Get a list of config-related spec types as dictionaries."""
+        """Get the configuration types as dictionaries.
+
+        Docstrings, titles and enum docs are taken from the strings in the given language.
+
+        Args:
+            lang: Language code.
+
+        Returns:
+            A list of type dictionaries.
+        """

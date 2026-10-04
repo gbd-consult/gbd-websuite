@@ -1,4 +1,4 @@
-"""GekoS action."""
+"""The ``gekos`` action."""
 
 from typing import Optional, cast
 
@@ -15,16 +15,19 @@ from . import core, index
 
 
 class GetXyRequest(gws.Request):
-    """Request to get XY coordinates from a GekoS feature."""
+    """Request for the coordinates of a parcel or an address."""
 
     fs: Optional[str]
-    """Combined flurstueck code."""
+    """Combined parcel (Flurstueck) code."""
     ad: Optional[str]
-    """Combined adresse code."""
+    """Combined address code."""
 
 
 class GetFsResponse(gws.Response):
+    """Response with a parcel feature."""
+
     feature: gws.FeatureProps
+    """The parcel feature."""
 
 
 @gws.ext.config.action('gekos')
@@ -49,8 +52,12 @@ _DEFAULT_TEMPLATES = [
 
 @gws.ext.object.action('gekos')
 class Object(gws.base.action.Object):
+    """GekoS action."""
+
     idx: index.Object
+    """The GekoS index, or ``None`` if not configured."""
     templates: list[gws.Template]
+    """Feature templates."""
 
     def configure(self):
         self.idx = self.create_child_if_configured(index.Object, self.cfg('index'))
@@ -59,6 +66,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.get('gekosGetXY')
     def get_xy(self, req: gws.WebRequester, p: GetXyRequest) -> gws.ContentResponse:
+        """Return the coordinates of a parcel or an address."""
         project = None
         if p.projectUid:
             project = req.user.require_project(p.projectUid)

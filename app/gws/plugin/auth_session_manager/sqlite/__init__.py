@@ -1,3 +1,27 @@
+"""SQLite session manager.
+
+Stores sessions in the table ``sessions`` of an SQLite database. By default,
+the database file is ``sessions.<version>.sqlite`` in the GWS misc directory,
+where ``<version>`` is the GWS version without the patch number. The table is
+created on first use.
+
+A row holds the session uid (a random 64-character string), the uids of the
+method and the user, the serialized user, the session data as JSON, and the
+creation and update times. ``cleanup`` deletes expired sessions; ``create``
+runs it at most every 10 minutes. ``touch`` updates the update time at most
+once a minute, unless the session data has changed. A session whose user
+cannot be restored is deleted and returned with the guest user.
+
+Example::
+
+    auth.session {
+        type "sqlite"
+        path "/data/sessions.sqlite"
+        lifeTime "30m"
+        maxLifeTime "8h"
+    }
+"""
+
 from typing import Optional
 
 import gws
@@ -21,7 +45,10 @@ class Config(gws.base.auth.session_manager.Config):
 
 @gws.ext.object.authSessionManager('sqlite')
 class Object(gws.base.auth.session_manager.Object):
+    """SQLite session manager."""
+
     dbPath: str
+    """Path to the SQLite database file."""
     table = 'sessions'
 
     def configure(self):
@@ -111,6 +138,7 @@ class Object(gws.base.auth.session_manager.Object):
     ##
 
     def _session(self, rec):
+        """Create a session object from a database row."""
         am = self.root.app.authMgr
         r = gws.u.to_dict(rec)
         usr = am.unserialize_user(r['str_user'])
@@ -132,6 +160,7 @@ class Object(gws.base.auth.session_manager.Object):
     _sqlitex: gws.lib.sqlitex.Object
 
     def _db(self):
+        """Return the database object, creating the table if needed."""
         if getattr(self, '_sqlitex', None) is None:
             ddl = f'''
                 CREATE TABLE IF NOT EXISTS {self.table} (

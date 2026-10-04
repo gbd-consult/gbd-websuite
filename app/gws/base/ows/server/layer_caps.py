@@ -1,4 +1,4 @@
-"""Utilities to deal with LayerCaps objects."""
+"""Utilities for LayerCaps objects."""
 
 from typing import Optional
 
@@ -12,7 +12,19 @@ from . import core
 
 
 def for_layer(layer: gws.Layer, user: gws.User, service: Optional[gws.OwsService] = None) -> core.LayerCaps:
-    """Create ``LayerCaps`` for a layer."""
+    """Create ``LayerCaps`` for a layer.
+
+    ``isGroup`` is not set and ``children`` and ``leaves`` are empty;
+    the caller fills them in when building the layer tree.
+
+    Args:
+        layer: Layer object.
+        user: User, used to find a readable model for the layer.
+        service: Service; if given, ``bounds`` are computed for its supported bounds.
+
+    Returns:
+        The layer caps.
+    """
 
     lc = core.LayerCaps(leaves=[], children=[])
 
@@ -53,12 +65,29 @@ def for_layer(layer: gws.Layer, user: gws.User, service: Optional[gws.OwsService
 
 
 def layer_name_matches(lc: core.LayerCaps, name: str) -> bool:
-    """Check if the layer name in the caps matches the given name, ignoring a prefix."""
+    """Check if the layer name in the caps matches the given name, ignoring a prefix.
+
+    Args:
+        lc: Layer caps.
+        name: Layer name, possibly with a namespace prefix.
+
+    Returns:
+        ``True`` if the names match.
+    """
 
     return xmlx.namespace.plain_name(name) == lc.layerName
 
 def feature_prefix(lc: core.LayerCaps, custom_namespace_prefixes: dict) -> str:
-    """The prefix of the feature type, custom prefixes (WFS ``NAMESPACES``) applied, empty if the layer has no namespace."""
+    """Return the namespace prefix of the feature type.
+
+    Args:
+        lc: Layer caps.
+        custom_namespace_prefixes: Custom prefixes by namespace uri, as requested with the WFS ``NAMESPACES`` parameter.
+
+    Returns:
+        The custom prefix for the layer namespace if there is one, otherwise the namespace prefix,
+        or an empty string if the layer has no namespace.
+    """
 
     ns = lc.xmlNamespace
     if not ns:
@@ -67,14 +96,33 @@ def feature_prefix(lc: core.LayerCaps, custom_namespace_prefixes: dict) -> str:
 
 
 def qualified_feature_name(lc: core.LayerCaps, custom_namespace_prefixes: dict) -> str:
-    """The feature type name as a QName (``prefix:name``), for use in text content."""
+    """Return the feature type name as a QName (``prefix:name``), for use in text content.
+
+    Args:
+        lc: Layer caps.
+        custom_namespace_prefixes: Custom prefixes by namespace uri.
+
+    Returns:
+        The qualified name, or the plain feature name if the layer has no namespace.
+    """
 
     prefix = feature_prefix(lc, custom_namespace_prefixes)
     return prefix + ':' + lc.featureName if prefix else lc.featureName
 
 
 def feature_name_matches(lc: core.LayerCaps, name: str, custom_namespace_prefixes: dict) -> bool:
-    """Check if the feature name in the caps matches the given name, which may be a QName."""
+    """Check if the feature name in the caps matches the given name, which may be a QName.
+
+    A name without a prefix matches any namespace.
+
+    Args:
+        lc: Layer caps.
+        name: Feature name, optionally with a prefix.
+        custom_namespace_prefixes: Custom prefixes by namespace uri.
+
+    Returns:
+        ``True`` if the names match.
+    """
 
     _, prefix, pname = xmlx.namespace.parse_name(name)
     if pname != lc.featureName:
@@ -83,7 +131,22 @@ def feature_name_matches(lc: core.LayerCaps, name: str, custom_namespace_prefixe
 
 
 def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> tuple[gws.XmlElement, gws.XmlOptions]:
-    """Create an ad-hoc XML Schema for a list of `LayerCaps`."""
+    """Create an ad-hoc XML Schema for a list of ``LayerCaps``.
+
+    All layers must have a model and share the same XML namespace. The schema
+    contains a complex type and an element for each feature type, with elements
+    for the model fields the user can read.
+
+    Args:
+        lcs: Layer caps.
+        user: User.
+
+    Returns:
+        The schema element and XML options to serialize it.
+
+    Raises:
+        ``gws.NotFoundError``: If a layer has no namespace or model, or the namespaces differ.
+    """
 
     ns = None
 
@@ -165,7 +228,7 @@ def xml_schema(lcs: list[core.LayerCaps], user: gws.User) -> tuple[gws.XmlElemen
 
 
 def _xsd_type(f: gws.ModelField) -> str:
-    """Get the XSD type for a model field."""
+    """Return the XSD type for a model field."""
 
     if f.attributeType != gws.AttributeType.geometry:
         return _ATTR_TO_XSD.get(f.attributeType, 'xsd:string')

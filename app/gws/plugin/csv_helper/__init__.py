@@ -1,4 +1,42 @@
-"""Common csv writer helper."""
+"""CSV helper.
+
+The ``csv`` helper writes CSV data with configurable formatting, for example
+for the ALKIS export. ``writer`` creates a writer, which writes headers and
+rows either into memory or directly into a binary stream.
+
+Values are formatted according to their type:
+
+- ``None`` becomes an empty quoted string,
+- integers are written as they are; floats and decimals are formatted with
+  the number formatter of the locale. Numbers are only quoted if
+  ``quoteAll`` is set,
+- dates, datetimes and times are formatted in the short format of the locale
+  and quoted,
+- other values are converted to strings and quoted. If ``formulaHack`` is
+  set, digit-only strings are written as formulas (``="0123"``), so that
+  spreadsheet programs keep leading zeros.
+
+The helper is created with default settings if it is not configured.
+
+Example::
+
+    helpers+ {
+        type "csv"
+        format {
+            delimiter ";"
+            encoding "cp1252"
+            rowDelimiter "CRLF"
+        }
+    }
+
+Usage in Python::
+
+    helper = cast(gws.plugin.csv_helper.Object, root.app.helper('csv'))
+    w = helper.writer(gws.lib.intl.locale('de_DE'))
+    w.write_headers(['name', 'area'])
+    w.write_row(['Parcel 1', 123.4])
+    data = w.to_bytes()
+"""
 
 from typing import BinaryIO
 
@@ -35,23 +73,30 @@ class Config(gws.Config):
 
 
 class Format(gws.Data):
+    """CSV format settings used by the writer."""
+
     delimiter: str
+    """Field delimiter."""
     encoding: str
+    """Text encoding."""
     formulaHack: bool
+    """Write digit-only strings as formulas."""
     quote: str
+    """Quote character."""
     quoteAll: bool
+    """Quote all fields, including numbers."""
     rowDelimiter: str
+    """Row delimiter, with ``CR`` and ``LF`` replaced by the actual characters."""
 
 
 @gws.ext.object.helper('csv')
 class Object(gws.Node):
+    """CSV helper."""
+
     format: Format
+    """Format settings."""
 
     def configure(self) -> None:
-        """Configure the CSV helper with format settings from config.
-
-        Sets up the format attribute with values from configuration or defaults.
-        """
         self.format = Format(
             delimiter=self.cfg('format.delimiter', default=','),
             encoding=self.cfg('format.encoding', default='utf8'),
@@ -62,27 +107,33 @@ class Object(gws.Node):
         )
 
     def writer(self, locale: gws.Locale, stream_to: BinaryIO = None) -> '_Writer':
-        """Creates a new CSV Writer.
+        """Create a CSV writer.
 
         Args:
-            locale: Locale to use for formatting values.
-            stream_to: Optional binary stream to write to. If None, data is stored in memory.
+            locale: Locale for formatting numbers, dates and times.
+            stream_to: Binary stream to write to. If ``None``, the data is kept in memory.
 
         Returns:
-            A new _Writer instance configured with this helper's format settings.
+            A new writer with the format settings of this helper.
         """
 
         return _Writer(self, locale, stream_to)
 
 
 class _Writer:
+    """CSV writer.
+
+    Writes headers and rows either directly into a binary stream or into
+    memory. Data kept in memory is returned by ``to_str`` and ``to_bytes``.
+    """
+
     def __init__(self, helper: 'Object', locale: gws.Locale, stream_to: BinaryIO = None) -> None:
-        """Initialize a CSV writer.
+        """Create a CSV writer.
 
         Args:
-            helper: The CSV helper object containing format settings.
-            locale: Locale to use for formatting values.
-            stream_to: Optional binary stream to write to. If None, data is stored in memory.
+            helper: The CSV helper with the format settings.
+            locale: Locale for formatting numbers, dates and times.
+            stream_to: Binary stream to write to. If ``None``, the data is kept in memory.
         """
         self.helper: Object = helper
         self.format = self.helper.format
@@ -99,13 +150,15 @@ class _Writer:
         self.numberFormatter = f[2]
 
     def write_headers(self, headers: list[str]) -> '_Writer':
-        """Writes headers to the CSV output.
+        """Write the header row.
+
+        The headers also define the column order for ``write_dict``.
 
         Args:
-            headers: List of header column names.
+            headers: Column names.
 
         Returns:
-            Self for method chaining.
+            The writer itself, for chaining.
         """
 
         self.headers = headers
@@ -115,13 +168,13 @@ class _Writer:
         return self
 
     def write_row(self, row: list) -> '_Writer':
-        """Writes a row of data to the CSV output.
+        """Write a data row.
 
         Args:
-            row: List of values to write as a single row.
+            row: Values of the row.
 
         Returns:
-            Self for method chaining.
+            The writer itself, for chaining.
         """
 
         s = self.format.delimiter.join(self._format(v) for v in row)
@@ -132,13 +185,17 @@ class _Writer:
         return self
 
     def write_dict(self, d: dict) -> '_Writer':
-        """Writes a dict of data to the CSV output.
+        """Write a data row from a dict.
+
+        If no headers are written yet, the keys of the dict are written as
+        headers first. Values are taken in the order of the headers, missing
+        values are empty.
 
         Args:
-            d: Dictionary where keys are column names and values are the data.
+            d: Values by column name.
 
         Returns:
-            Self for method chaining.
+            The writer itself, for chaining.
         """
 
         if not self.headers:
@@ -146,10 +203,11 @@ class _Writer:
         return self.write_row([d.get(h, '') for h in self.headers])
 
     def to_str(self) -> str:
-        """Converts the headers and rows to a CSV string.
+        """Return the data kept in memory as a string.
 
         Returns:
-            A string containing the complete CSV data.
+            The header row and the data rows, joined with the row delimiter.
+            When writing into a stream, only the header row is kept in memory.
         """
 
         rows = []
@@ -159,26 +217,21 @@ class _Writer:
         return self.format.rowDelimiter.join(rows)
 
     def to_bytes(self, encoding: str = None) -> bytes:
-        """Converts the CSV data to a byte string.
+        """Return the data kept in memory as bytes.
+
+        Characters that cannot be encoded are replaced.
 
         Args:
-            encoding: Optional encoding to use. If None, uses the format's encoding.
+            encoding: Text encoding. If ``None``, the format encoding is used.
 
         Returns:
-            Byte string representation of the CSV data.
+            The encoded CSV data.
         """
 
         return self.to_str().encode(encoding or self.format.encoding, errors='replace')
 
     def _format(self, val) -> str:
-        """Format a value for CSV output according to its type.
-
-        Args:
-            val: The value to format.
-
-        Returns:
-            Formatted string representation of the value.
-        """
+        """Format a value according to its type."""
         if val is None:
             return self._quote('')
 
@@ -206,16 +259,7 @@ class _Writer:
         return self._quote(val)
 
     def _quote(self, val) -> str:
-        """Quote a value according to CSV quoting rules.
-
-        Doubles any quote characters in the value and wraps the result in quotes.
-
-        Args:
-            val: The value to quote.
-
-        Returns:
-            Quoted string.
-        """
+        """Quote a value, doubling the quote characters in it."""
         q = self.format.quote
         s = gws.u.to_str(val).replace(q, q + q)
         return q + s + q

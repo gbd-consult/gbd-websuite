@@ -1,4 +1,4 @@
-"""Parse utilities for OWS XML files."""
+"""Parse utilities for OWS capabilities documents."""
 
 from typing import Optional
 
@@ -12,6 +12,18 @@ import gws.lib.net
 
 
 def service_operations(caps_el: gws.XmlElement) -> list[gws.OwsOperation]:
+    """Read the operations from a capabilities document.
+
+    Supports both the OWS Common format (``OperationsMetadata/Operation``)
+    and the WMS format (``Capability/Request``).
+
+    Args:
+        caps_el: Root element of the capabilities document.
+
+    Returns:
+        A list of operations, empty if none are found.
+    """
+
     # <ows:OperationsMetadata>
     #     <ows:Operation name="GetCapabilities">...
 
@@ -31,6 +43,7 @@ def service_operations(caps_el: gws.XmlElement) -> list[gws.OwsOperation]:
 
 
 def _parse_operation(el: gws.XmlElement) -> gws.OwsOperation:
+    """Read an operation with its allowed parameters, URLs and formats."""
     op = gws.OwsOperation(verb=el.get('name') or el.tag)
 
     # @TODO Range
@@ -80,6 +93,18 @@ def _parse_operation(el: gws.XmlElement) -> gws.OwsOperation:
 
 
 def service_metadata(caps_el: gws.XmlElement) -> gws.Metadata:
+    """Read the service metadata from a capabilities document.
+
+    Reads the WMS ``Service`` element or the OWS ``ServiceIdentification``
+    and ``ServiceProvider`` elements, including contact information.
+
+    Args:
+        caps_el: Root element of the capabilities document.
+
+    Returns:
+        Normalized metadata.
+    """
+
     # wms
     #
     #   <Capabilities
@@ -116,6 +141,15 @@ def service_metadata(caps_el: gws.XmlElement) -> gws.Metadata:
 
 
 def element_metadata(el: gws.XmlElement) -> gws.Metadata:
+    """Read the metadata of an element, such as a ``Layer`` or ``FeatureType``.
+
+    Args:
+        el: XML element.
+
+    Returns:
+        Normalized metadata.
+    """
+
     #   <whatever, e.g. Layer or FeatureType
     #       <Name...
     #       <Title...
@@ -126,6 +160,7 @@ def element_metadata(el: gws.XmlElement) -> gws.Metadata:
 
 
 def _element_metadata(el: Optional[gws.XmlElement], md: gws.Metadata):
+    """Copy common metadata fields (title, abstract, keywords etc.) from an element into ``md``."""
     if not el:
         return
 
@@ -178,6 +213,7 @@ _contact_mapping = [
 
 
 def _contact_metadata(el: Optional[gws.XmlElement], md: gws.Metadata):
+    """Copy contact information from an element into ``md``."""
     if not el:
         return
 
@@ -191,14 +227,17 @@ def _contact_metadata(el: Optional[gws.XmlElement], md: gws.Metadata):
 ##
 
 def wgs_extent(layer_el: gws.XmlElement) -> Optional[gws.Extent]:
-    """Read WGS bounding box from a Layer/FeatureType element.
+    """Read the WGS84 bounding box from a ``Layer`` or ``FeatureType`` element.
 
     Extracts coordinates from ``EX_GeographicBoundingBox`` (WMS), ``WGS84BoundingBox`` (OWS)
     or ``LatLonBoundingBox``. For the latter, assume x=longitude, y=latitude,
     as per OGC 01-068r3, 6.5.6.
 
     Args:
-        layer_el: 'Layer' or 'FeatureType' element.
+        layer_el: ``Layer`` or ``FeatureType`` element.
+
+    Returns:
+        The extent, or ``None`` if the element has no WGS84 bounding box.
     """
 
     el = layer_el.findfirst('EX_GeographicBoundingBox', 'WGS84BoundingBox', 'LatLonBoundingBox')
@@ -209,14 +248,14 @@ def wgs_extent(layer_el: gws.XmlElement) -> Optional[gws.Extent]:
 
 
 def supported_crs(layer_el: gws.XmlElement, extra_crs_ids: list[str] = None) -> list[gws.Crs]:
-    """Enumerate supported CRS for a Layer/FeatureType element.
+    """Enumerate the supported CRSs of a ``Layer`` or ``FeatureType`` element.
 
-    For WMS, enumerates CRS/SRS and BoundingBox tags,
-    for OWS, DefaultCRS and OtherCRS.
+    For WMS, enumerates ``CRS``/``SRS`` and ``BoundingBox`` tags,
+    for OWS, ``DefaultCRS`` and ``OtherCRS``. Unknown CRS ids are skipped.
 
     Args:
-        layer_el: 'Layer' or 'FeatureType' element.
-        extra_crs_ids: additional CRS ids.
+        layer_el: ``Layer`` or ``FeatureType`` element.
+        extra_crs_ids: Additional CRS ids.
 
     Returns:
         A list of ``Crs`` objects.
@@ -249,6 +288,18 @@ def supported_crs(layer_el: gws.XmlElement, extra_crs_ids: list[str] = None) -> 
 
 
 def parse_style(el: gws.XmlElement) -> gws.SourceStyle:
+    """Read a ``Style`` element.
+
+    The style is marked as default if it has ``IsDefault="true"``
+    or its name is ``default`` or ends with ``:default``.
+
+    Args:
+        el: ``Style`` element.
+
+    Returns:
+        The source style, with a lower-cased name.
+    """
+
     # <Style>
     #     <Name>default...
     #     <Title>...
@@ -269,6 +320,15 @@ def parse_style(el: gws.XmlElement) -> gws.SourceStyle:
 
 
 def default_style(styles: list[gws.SourceStyle]) -> Optional[gws.SourceStyle]:
+    """Find the default style in a list of styles.
+
+    Args:
+        styles: Source styles.
+
+    Returns:
+        The first style marked as default, otherwise the first style, or ``None`` if the list is empty.
+    """
+
     for s in styles:
         if s.isDefault:
             return s
@@ -279,15 +339,54 @@ def default_style(styles: list[gws.SourceStyle]) -> Optional[gws.SourceStyle]:
 
 
 def to_float(s, default=0.0):
+    """Convert a string to a float.
+
+    Args:
+        s: String value.
+        default: Value used when ``s`` is empty.
+
+    Returns:
+        The float value.
+
+    Raises:
+        ``ValueError``: If the string is not a number.
+    """
+
     return float(s or default)
 
 
 def to_int(s, default=0):
+    """Convert a string to an int, accepting float strings.
+
+    Args:
+        s: String value.
+        default: Value used when ``s`` is empty.
+
+    Returns:
+        The value, truncated to an int.
+
+    Raises:
+        ``ValueError``: If the string is not a number.
+    """
+
     # accept floats as well, but convert to int
     return int(float(s or default))
 
 
 def to_float_pair(s):
+    """Convert a whitespace-separated string to a pair of floats.
+
+    Args:
+        s: String like ``"1.5 2.5"``.
+
+    Returns:
+        The first two numbers as a tuple.
+
+    Raises:
+        ``ValueError``: If a value is not a number.
+        ``IndexError``: If there are fewer than two values.
+    """
+
     s = s.split()
     return float(s[0]), float(s[1])
 
@@ -296,6 +395,8 @@ def to_float_pair(s):
 
 
 def _parse_bbox(el: gws.XmlElement):
+    """Read a bounding box element in any of the supported formats as ``[x1, y1, x2, y2]``, or ``None``."""
+
     # note: bboxes are always converted to (x1, y1, x2, y2) with x1 < x2, y1 < y2
 
     # <BoundingBox/LatLonBoundingBox CRS="..." minx="0" miny="1" maxx="2" maxy="3"/>
@@ -342,6 +443,8 @@ def _parse_bbox(el: gws.XmlElement):
 
 
 def _parse_url(el: gws.XmlElement) -> str:
+    """Read a URL from an ``href`` attribute or a nested ``OnlineResource``."""
+
     def cleanup(s):
         return (s or '').strip(' ?&')
 
@@ -367,6 +470,8 @@ def _parse_url(el: gws.XmlElement) -> str:
 
 
 def _parse_link(el: gws.XmlElement) -> Optional[gws.MetadataLink]:
+    """Read a metadata link in the simple or nested format."""
+
     if not el:
         return None
 

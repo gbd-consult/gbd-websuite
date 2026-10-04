@@ -1,363 +1,607 @@
 class User(Object):
-    """User object."""
+    """User.
+
+    A user has a set of roles, which are checked against the permissions of
+    objects to decide access.
+    """
 
     isGuest: bool
-    """User is a Guest."""
+    """The user is the guest user."""
 
     authProvider: 'AuthProvider'
-    """User authorization provider."""
+    """The provider that created the user."""
 
     attributes: dict
-    """Public user attributes."""
+    """Public user attributes, sent to the client."""
     data: dict
-    """Private user data."""
+    """Private user data from the provider."""
     roles: set[str]
     """User roles."""
     uid: str
-    """Global user uid."""
+    """Global user uid, made of the provider uid and the local uid."""
 
     authToken: str
-    """Token used for authorization."""
+    """Token for the ``token`` authentication method."""
     displayName: str
     """User display name."""
     email: str
     """User email."""
     localUid: str
-    """User uid within its authorization provider."""
+    """User uid within its provider."""
     loginName: str
     """User login name."""
     mfaUid: str
-    """MFA adapter uid."""
+    """Uid of the multi-factor adapter for this user, empty if none."""
     mfaSecret: str
-    """MFA secret."""
+    """Secret for the multi-factor adapter."""
 
     def acl_bit(self, access: Access, obj: Object) -> Optional[int]:
-        """Get the ACL bit for a specific object.
+        """Get the access decision for an object itself, without parents.
 
         Args:
             access: Access mode.
-            obj: Requested object.
+            obj: The object.
 
         Returns:
-            ``1`` or ``0`` if the user's permissions have the bit and ``None`` otherwise.
+            ``gws.c.ALLOW`` or ``gws.c.DENY`` if the object's permissions decide
+            for one of the user's roles, ``None`` otherwise.
         """
 
     def can(self, access: Access, obj: Object, *context) -> bool:
         """Check if the user can access an object.
 
+        If the object's permissions do not decide, the context objects are
+        checked in turn, then the parents of the last checked object.
+
         Args:
             access: Access mode.
-            obj: Requested object.
-            *context: Further objects to check.
+            obj: The object.
+            *context: Further objects to check, before the parents.
 
         Returns:
-            ``True`` is access is granted.
+            ``True`` if access is granted.
         """
 
     def can_create(self, obj: Object, *context) -> bool:
-        """Check if the user has "create" permission on an object."""
+        """Check if the user has the ``create`` permission on an object.
+
+        Args:
+            obj: The object.
+            *context: Further objects to check, before the parents.
+
+        Returns:
+            ``True`` if access is granted.
+        """
 
     def can_delete(self, obj: Object, *context) -> bool:
-        """Check if the user has "delete" permission on an object."""
+        """Check if the user has the ``delete`` permission on an object.
+
+        Args:
+            obj: The object.
+            *context: Further objects to check, before the parents.
+
+        Returns:
+            ``True`` if access is granted.
+        """
 
     def can_read(self, obj: Object, *context) -> bool:
-        """Check if the user has "read" permission on an object."""
+        """Check if the user has the ``read`` permission on an object.
+
+        Args:
+            obj: The object.
+            *context: Further objects to check, before the parents.
+
+        Returns:
+            ``True`` if access is granted.
+        """
 
     def can_use(self, obj: Object, *context) -> bool:
-        """Check if the user has "read" permission on an object."""
+        """Check if the user can use an object, which requires the ``read`` permission.
+
+        Args:
+            obj: The object.
+            *context: Further objects to check, before the parents.
+
+        Returns:
+            ``True`` if access is granted.
+        """
 
     def can_write(self, obj: Object, *context) -> bool:
-        """Check if the user has "write" permission on an object."""
+        """Check if the user has the ``write`` permission on an object.
+
+        Args:
+            obj: The object.
+            *context: Further objects to check, before the parents.
+
+        Returns:
+            ``True`` if access is granted.
+        """
 
     def can_edit(self, obj: Object, *context) -> bool:
-        """Check if the user has "edit" permissions on an object."""
+        """Check if the user has any of the ``write``, ``create`` or ``delete`` permissions on an object.
+
+        Args:
+            obj: The object.
+            *context: Further objects to check, before the parents.
+
+        Returns:
+            ``True`` if access is granted.
+        """
 
     def has_role(self, role: str) -> bool:
-        """Check if the user has a specific role."""
+        """Check if the user has a role.
+
+        Args:
+            role: Role name.
+
+        Returns:
+            ``True`` if the user has the role.
+        """
 
     def acquire(self, uid: str = None, classref: Optional[ClassRef] = None, access: Optional[Access] = None) -> Optional[Object]:
-        """Get a readable object by uid.
+        """Get an object by uid, if the user can access it.
 
         Args:
             uid: Object uid.
-            classref: Class reference. If provided, ensures that the object matches the reference.
-            access: Access mode, assumed ``Access.read`` if omitted.
+            classref: Class reference. If provided, the object must match it.
+            access: Access mode, ``Access.read`` if omitted.
 
         Returns:
-            A readable object or ``None`` if the object does not exists or user doesn't have a permission.
+            The object, or ``None`` if it does not exist or the user may not access it.
         """
 
     def require(self, uid: str = None, classref: Optional[ClassRef] = None, access: Optional[Access] = None) -> Object:
-        """Get a readable object by uid and fail if not found.
+        """Get an object by uid and fail if it is not found or not accessible.
 
         Args:
             uid: Object uid.
-            classref: Class reference. If provided, ensures that the object matches the reference.
-            access: Access mode, assumed ``Access.read`` if omitted.
+            classref: Class reference. If provided, the object must match it.
+            access: Access mode, ``Access.read`` if omitted.
 
         Returns:
-            A readable object.
+            The object.
 
         Raises:
-            ``NotFoundError`` if the object doesn't exist.
-            ``ForbiddenError`` if the user cannot read the object.
+            NotFoundError: If the object does not exist.
+            ForbiddenError: If the user may not access the object.
         """
 
     def require_project(self, uid: str = None) -> 'Project':
-        """Get a readable Project object.
+        """Get a project the user can read.
 
         Args:
             uid: Project uid.
 
         Returns:
-            A Project object.
+            The project.
+
+        Raises:
+            NotFoundError: If the project does not exist.
+            ForbiddenError: If the user may not read the project.
         """
 
     def require_layer(self, uid=None) -> 'Layer':
-        """Get a readable Layer object.
+        """Get a layer the user can read.
 
         Args:
             uid: Layer uid.
 
         Returns:
-            A Layer object.
+            The layer.
+
+        Raises:
+            NotFoundError: If the layer does not exist.
+            ForbiddenError: If the user may not read the layer.
         """
 
 
 class AuthManager(Node):
-    """Authentication manager."""
+    """Authorization manager.
+
+    Holds the authentication methods, providers, multi-factor adapters and the
+    session manager, authenticates users and opens a session for every web request.
+    """
 
     guestSession: 'AuthSession'
-    """Preconfigured Guest session."""
+    """Session of the guest user, used for requests without a session."""
 
     guestUser: 'User'
-    """Preconfigured Guest user."""
+    """The guest user."""
     systemUser: 'User'
-    """Preconfigured System user."""
+    """The system user, allowed everything."""
 
     providers: list['AuthProvider']
     """Authentication providers."""
     methods: list['AuthMethod']
     """Authentication methods."""
     mfAdapters: list['AuthMultiFactorAdapter']
-    """Authentication MFA handlers."""
+    """Multi-factor adapters."""
 
     sessionMgr: 'AuthSessionManager'
     """Session manager."""
 
     def authenticate(self, method: 'AuthMethod', credentials: Data, req: 'WebRequester') -> Optional['User']:
-        """Authenticate a user."""
-
-    def create_transient_session(self, method: 'AuthMethod', user: 'User', data: Optional[dict] = None) -> 'AuthSession':
-        """Create a Session which only lives for the duration of the request.
+        """Authenticate a user with the providers that allow the method.
 
         Args:
-            method: Auth Method that creates the Session.
-            user: 'User' for which the Session is created.
+            method: The authentication method.
+            credentials: The credentials, for example ``username`` and ``password``.
+            req: The web request.
+
+        Returns:
+            The user, or ``None`` if no provider accepts the credentials.
+
+        Raises:
+            ForbiddenError: If a provider rejects the credentials.
+            TooManyRequestsError: If the attempt is blocked by the throttle.
+        """
+
+    def create_transient_session(self, method: 'AuthMethod', user: 'User', data: Optional[dict] = None) -> 'AuthSession':
+        """Create a session that lives only for the duration of the request.
+
+        The session is not stored in the session manager.
+
+        Args:
+            method: The method that creates the session.
+            user: The session user.
             data: Session data.
 
         Returns:
-            A new Session.
+            A new session.
         """
 
     def get_user(self, user_uid: str) -> Optional['User']:
-        """Get a User by its global uid."""
+        """Get a user by its global uid.
+
+        Args:
+            user_uid: Global user uid.
+
+        Returns:
+            The user, or ``None`` if the provider is not found or does not return the user.
+        """
 
     def add_provider(self, provider: 'AuthProvider'):
-        """Register an authentication Provider."""
+        """Add an authentication provider.
+
+        Args:
+            provider: The provider.
+        """
 
     def add_method(self, method: 'AuthMethod'):
-        """Register an authentication Method."""
+        """Add an authentication method.
+
+        Args:
+            method: The method.
+        """
 
     def add_multi_factor_adapter(self, adapter: 'AuthMultiFactorAdapter'):
-        """Register a Multi-Factor Adapter."""
+        """Add a multi-factor adapter.
+
+        Args:
+            adapter: The adapter.
+        """
 
     def can_use_method(self, req: 'WebRequester', method: 'AuthMethod') -> bool:
-        """Check if a Method may be used in the context of a Requester."""
+        """Check if a method may be used for a request.
+
+        A secure method can only be used on secure requests, or from the addresses
+        listed in its ``allowInsecureFrom``.
+
+        Args:
+            req: The web request.
+            method: The method.
+
+        Returns:
+            ``True`` if the method may be used.
+        """
 
     def get_provider(self, uid: str) -> Optional['AuthProvider']:
-        """Get an authentication Provider by its uid."""
+        """Get an authentication provider by its uid.
+
+        Args:
+            uid: Provider uid.
+
+        Returns:
+            The provider, or ``None`` if not found.
+        """
 
     def get_method(self, uid: str) -> Optional['AuthMethod']:
-        """Get an authentication Method by its uid."""
+        """Get an authentication method by its uid.
+
+        Args:
+            uid: Method uid.
+
+        Returns:
+            The method, or ``None`` if not found.
+        """
 
     def get_multi_factor_adapter(self, uid: str) -> Optional['AuthMultiFactorAdapter']:
-        """Get a Multi-Factor Adapter by its uid."""
+        """Get a multi-factor adapter by its uid.
+
+        Args:
+            uid: Adapter uid.
+
+        Returns:
+            The adapter, or ``None`` if not found.
+        """
 
     def serialize_user(self, user: 'User') -> str:
-        """Return a string representation of a User."""
+        """Serialize a user to a string, together with its provider uid.
+
+        Args:
+            user: The user.
+
+        Returns:
+            A JSON string.
+        """
 
     def unserialize_user(self, ser: str) -> Optional['User']:
-        """Restore a User object from a serialized representation."""
+        """Restore a user serialized by ``serialize_user``.
+
+        Args:
+            ser: The serialized user.
+
+        Returns:
+            The user, or ``None`` if the provider is not found.
+        """
 
     def is_public_object(self, obj: Object, *context) -> bool:
-        """Check if an object is public."""
+        """Check if the guest user can read an object.
+
+        Args:
+            obj: The object.
+            *context: Further objects to check, before the parents.
+
+        Returns:
+            ``True`` if the object is public.
+        """
 
 
 class AuthMethod(Node):
-    """Authentication Method."""
+    """Authentication method.
+
+    Defines how credentials and sessions are passed between the client and the
+    server, for example as a login form and a session cookie.
+    """
 
     secure: bool
-    """Method is only allowed in a secure context."""
+    """The method may only be used on secure (HTTPS) requests."""
 
     allowInsecureFrom: list[str]
-    """List of IPs from which insecure access is allowed."""
+    """IP addresses from which the method may be used without HTTPS."""
 
     def open_session(self, req: 'WebRequester') -> Optional['AuthSession']:
-        """Attempt to open a Session for a Requester.
+        """Try to open a session for a request.
+
+        Called at the start of every web request.
 
         Args:
-            req: Requester object.
+            req: The web request.
 
         Returns:
-            A Session or ``None``.
+            A session, or ``None`` if the request has no session for this method.
         """
 
     def close_session(self, req: 'WebRequester', res: 'WebResponder') -> bool:
-        """Close a previously opened Session.
+        """Close the session of a request.
+
+        Called at the end of every web request whose session was opened by this
+        method, for example to set or delete the session cookie.
 
         Args:
-            req: Requester object.
-            res: Responder object.
+            req: The web request.
+            res: The web response.
 
         Returns:
-            True if the Session was successfully closed.
+            ``True`` if the session was closed.
         """
 
 
 class AuthMultiFactorState(Enum):
-    """State of a multifactor authorization transaction."""
+    """State of a multi-factor authentication transaction."""
 
     open = 'open'
-    """Transaction opened."""
+    """The transaction is started and waits for verification."""
     ok = 'ok'
-    """Transaction completed successfully."""
+    """The verification was successful."""
     retry = 'retry'
-    """Authorization has to be retried."""
+    """The verification failed and can be retried."""
     failed = 'failed'
-    """Authorization failed."""
+    """The transaction failed."""
 
 
 class AuthMultiFactorTransaction(Data):
-    """Multifactor authorization transaction."""
+    """Multi-factor authentication transaction.
+
+    Kept in the user's session from the login until the verification succeeds,
+    fails or expires.
+    """
 
     state: AuthMultiFactorState
-    """The current state of the authorization transaction."""
+    """Current state."""
     restartCount: int
-    """The number of times the transaction has been restarted."""
+    """Number of restarts."""
     verifyCount: int
-    """The number of verification attempts made."""
+    """Number of verification attempts."""
     secret: str
-    """The secret associated with this transaction."""
+    """Secret for code generation."""
     startTime: int
-    """The timestamp when the transaction started."""
+    """Start time, as a Unix timestamp."""
     generateTime: int
-    """The timestamp when the code was last generated."""
+    """Time when the code was last generated, as a Unix timestamp."""
     message: str
-    """A message associated with the transaction."""
+    """Message shown to the user."""
     adapter: 'AuthMultiFactorAdapter'
-    """The MFA adapter handling this transaction."""
+    """The adapter handling the transaction."""
     user: 'User'
-    """The user associated with this transaction."""
+    """The user who logs in."""
 
 
 class AuthMultiFactorAdapter(Node):
-    """Multi-factor authentication adapter."""
+    """Multi-factor authentication adapter.
+
+    Provides the second verification step of a login, for example a code sent by
+    email or generated by an authenticator app.
+    """
 
     message: str
+    """Message shown to the user during the verification step."""
     lifeTime: int
+    """Time in seconds allowed to complete the verification."""
     maxRestarts: int
+    """How often a transaction can be restarted."""
     maxVerifyAttempts: int
+    """Number of verification attempts allowed."""
 
     def start(self, user: 'User') -> Optional[AuthMultiFactorTransaction]:
-        """Initialize an MFA transaction for the user."""
+        """Start a transaction for a user.
+
+        Args:
+            user: The user who logs in.
+
+        Returns:
+            A new transaction, or ``None`` if the adapter cannot be used for this
+            user, for example because a required user attribute is missing.
+        """
 
     def verify(self, mfa: AuthMultiFactorTransaction, payload: dict) -> AuthMultiFactorTransaction:
-        """Verify a payload."""
+        """Verify a payload submitted by the user.
+
+        Args:
+            mfa: The transaction.
+            payload: The payload, for example ``{'code': '123456'}``.
+
+        Returns:
+            The transaction with an updated state.
+        """
 
     def cancel(self, mfa: AuthMultiFactorTransaction):
-        """Cancel the transaction."""
+        """Cancel a transaction.
+
+        Args:
+            mfa: The transaction.
+        """
 
     def check_state(self, mfa: AuthMultiFactorTransaction) -> bool:
-        """Check if the MFA transaction is valid."""
+        """Check if a transaction is still valid, and mark it failed if not.
+
+        Args:
+            mfa: The transaction.
+
+        Returns:
+            ``True`` if the transaction is valid.
+        """
 
     def check_restart(self, mfa: AuthMultiFactorTransaction) -> bool:
-        """Check if the transaction can be restarted."""
+        """Check if a transaction can be restarted.
+
+        Args:
+            mfa: The transaction.
+
+        Returns:
+            ``True`` if a restart is allowed.
+        """
 
     def restart(self, mfa: AuthMultiFactorTransaction) -> Optional[AuthMultiFactorTransaction]:
-        """Restart the transaction."""
+        """Restart a transaction, for example by sending a new code.
+
+        Args:
+            mfa: The transaction.
+
+        Returns:
+            A new transaction, or ``None`` if a restart is not possible.
+        """
 
     def key_uri(self, secret: str | bytes, issuer_name: str, account_name: str) -> Optional[str]:
-        """Generate a key uri for this adapter."""
+        """Generate a key URI for authenticator apps.
+
+        Args:
+            secret: The user's secret.
+            issuer_name: Issuer name shown in the app.
+            account_name: Account name shown in the app.
+
+        Returns:
+            An ``otpauth://`` URI, or ``None`` if the adapter does not support it.
+        """
 
 
 class AuthProvider(Node):
-    """Authentication Provider."""
+    """Authentication provider.
+
+    A source of users, for example a file, an LDAP directory or a database table,
+    which verifies credentials.
+    """
 
     allowedMethods: list[str]
-    """List of Method types allowed to be used with this Provider."""
+    """Method types this provider accepts, all methods if empty."""
 
     def get_user(self, local_uid: str) -> Optional['User']:
-        """Get a User from its local uid.
+        """Get a user by its local uid.
 
         Args:
-            local_uid: User local uid.
+            local_uid: User uid within the provider.
 
         Returns:
-            A User or ``None``.
+            The user, or ``None`` if not found.
         """
 
     def authenticate(self, method: 'AuthMethod', credentials: Data) -> Optional['User']:
         """Authenticate a user.
 
         Args:
-            method: Authentication method.
-            credentials: Credentials object.
+            method: The authentication method.
+            credentials: The credentials, for example ``username`` and ``password``.
 
         Returns:
-            An authenticated User or ``None`` if authentication failed.
+            The user, or ``None`` if the provider does not know the user.
+
+        Raises:
+            AuthenticationError: If the credentials are wrong or match more than one user.
         """
 
     def serialize_user(self, user: 'User') -> str:
-        """Return a string representation of a User.
+        """Serialize a user to a string.
 
         Args:
-            user: A User object.
+            user: The user.
 
         Returns:
-            A json string.
+            The serialized user.
         """
 
     def unserialize_user(self, ser: str) -> Optional['User']:
-        """Restore a User object from a serialized representation.
+        """Restore a user serialized by ``serialize_user``.
 
         Args:
-            ser: A json string.
+            ser: The serialized user.
 
         Returns:
-            A User object.
+            The user, or ``None`` if it cannot be restored.
         """
 
 
 class AuthSession:
-    """Authentication session."""
+    """Authentication session.
+
+    Holds the user and arbitrary data between requests.
+    """
 
     uid: str
     """Session uid."""
     method: Optional['AuthMethod']
-    """Authentication method that created the session."""
+    """The method that created the session, ``None`` for the guest session."""
     user: 'User'
-    """Authorized User."""
+    """The session user."""
     data: dict
     """Session data."""
     created: 'datetime.datetime'
-    """Session create time."""
+    """Creation time."""
     updated: 'datetime.datetime'
-    """Session update time."""
+    """Last update time."""
     isChanged: bool
-    """Session has changed since the last update.."""
+    """The session data has changed since the session was loaded."""
     isTransient: bool
-    """Session is not stored in the session manager."""
+    """The session lives only for the duration of the request and is not stored."""
 
     def get(self, key: str, default=None):
         """Get a session data value.
@@ -367,75 +611,83 @@ class AuthSession:
             default: Default value.
 
         Returns:
-            A value or the default.
+            The value, or the default if it is not set.
         """
 
     def set(self, key: str, value):
-        """Set a session data value.
+        """Set a session data value and mark the session as changed.
 
         Args:
             key: Value name.
-            value: A value.
+            value: The value.
         """
 
 
 class AuthSessionManager(Node):
-    """Authentication session Manager."""
+    """Authentication session manager.
+
+    Stores sessions persistently. A session is valid until ``lifeTime`` has passed
+    since its last update, or ``maxLifeTime`` since its creation.
+    """
 
     lifeTime: int
-    """Session lifetime in seconds."""
+    """Session life time in seconds, counted from the last update."""
 
     maxLifeTime: int
-    """Absolute session lifetime in seconds, or 0 if not limited."""
+    """Absolute session life time in seconds, counted from the creation, or 0 if not limited."""
 
     def create(self, method: 'AuthMethod', user: 'User', data: Optional[dict] = None) -> 'AuthSession':
-        """Create a new Session,
+        """Create and store a new session.
 
         Args:
-            method: Auth Method that creates the Session.
-            user: 'User' for which the Session is created.
+            method: The method that creates the session.
+            user: The session user.
             data: Session data.
 
         Returns:
-            A new Session.
+            The new session.
         """
 
     def delete(self, sess: 'AuthSession'):
-        """Delete a Session.
+        """Delete a session.
 
         Args:
-            sess: Session object.
+            sess: The session.
         """
 
     def delete_all(self):
-        """Delete all Sessions."""
+        """Delete all sessions."""
 
     def get(self, uid: str) -> Optional['AuthSession']:
-        """Get a valid Session by its uid.
+        """Get a valid session by its uid.
 
         Args:
             uid: Session uid.
 
         Returns:
-            A Session or ``None`` if uid does not exist or the Session is not valid.
+            The session, or ``None`` if it does not exist or has expired.
         """
 
     def list_all(self) -> list['AuthSession']:
-        """Get all sessions."""
+        """Get all stored sessions.
+
+        Returns:
+            A list of sessions.
+        """
 
     def save(self, sess: 'AuthSession'):
-        """Save the Session state into a persistent storage.
+        """Save the session data.
 
         Args:
-            sess: Session object.
+            sess: The session.
         """
 
     def touch(self, sess: 'AuthSession'):
-        """Update the Session last activity timestamp.
+        """Update the last activity time of a session.
 
         Args:
-            sess: Session object.
+            sess: The session.
         """
 
     def cleanup(self):
-        """Remove invalid Sessions from the storage."""
+        """Remove expired sessions from the storage."""

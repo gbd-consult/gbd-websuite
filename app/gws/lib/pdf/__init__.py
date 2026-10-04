@@ -1,4 +1,21 @@
-"""PDF utilities."""
+"""PDF utilities.
+
+Functions to combine PDF files and convert them to images, used mainly by the printer.
+Combining is done with ``pypdf``, conversion to images with Ghostscript (``gs``).
+
+- ``overlay`` merges the pages of one PDF on top of the pages of another,
+- ``concat`` joins several PDFs into one,
+- ``page_count`` returns the number of pages,
+- ``to_image_path`` renders a page as PNG or JPEG.
+
+Example::
+
+    import gws.lib.pdf
+
+    gws.lib.pdf.overlay('/tmp/map.pdf', '/tmp/frame.pdf', '/tmp/page.pdf')
+    gws.lib.pdf.concat(['/tmp/page1.pdf', '/tmp/page2.pdf'], '/tmp/all.pdf')
+    gws.lib.pdf.to_image_path('/tmp/all.pdf', '/tmp/preview.png', (400, 300))
+"""
 
 import pypdf
 import gws.lib.mime
@@ -7,15 +24,18 @@ import gws.lib.image
 
 
 def overlay(a_path: str, b_path: str, out_path: str) -> str:
-    """Overlay two pdfs page-wise.
+    """Overlay two PDFs page by page.
+
+    Each page of ``b`` is placed on top of the page with the same number in ``a``.
+    The output has as many pages as ``a``; pages of ``a`` without a counterpart in ``b`` are copied unchanged.
 
     Args:
-        a_path: Path to pdf a.
-        b_path: Path to pdf b, which will be placed on top.
-        out_path: Path to the output pdf.
+        a_path: Path to the bottom PDF.
+        b_path: Path to the top PDF.
+        out_path: Path to the output PDF.
 
     Returns:
-        Path to the output pdf.
+        Path to the output PDF.
     """
 
     fa = open(a_path, 'rb')
@@ -48,14 +68,16 @@ def overlay(a_path: str, b_path: str, out_path: str) -> str:
 
 
 def concat(paths: list[str], out_path: str) -> str:
-    """Concatenate multiple pdfs into one.
+    """Concatenate multiple PDFs into one.
+
+    If only one path is given, nothing is written and that path is returned.
 
     Args:
-        paths: Paths to the pdfs.
-        out_path: Path to the output pdf.
+        paths: Paths to the PDFs.
+        out_path: Path to the output PDF.
 
     Returns:
-        Path to the concatenated pdf.
+        Path to the concatenated PDF.
     """
 
     # only one path given - just return it
@@ -82,10 +104,13 @@ def concat(paths: list[str], out_path: str) -> str:
 
 
 def page_count(path: str) -> int:
-    """Returns the amount of pages for a given pdf.
+    """Return the number of pages in a PDF.
 
     Args:
-        path: Path to the pdf.
+        path: Path to the PDF.
+
+    Returns:
+        The number of pages.
     """
 
     with open(path, 'rb') as fp:
@@ -100,17 +125,23 @@ def to_image_path(
     mime_type: str = gws.lib.mime.PNG,
     page: int = 1,
 ) -> str:
-    """Convert a pdf to an image.
+    """Render a PDF page as an image, using Ghostscript.
+
+    The page is scaled to fit the given size.
 
     Args:
-        in_path: Path to the input pdf.
+        in_path: Path to the input PDF.
         out_path: Path to the output image.
-        size: Size of the output image.
-        mime_type: Mime type of the output image. Must be either PNG or JPEG.
-        page: Page number to convert (1-indexed). Defaults to 1.
+        size: Size of the output image in points.
+        mime_type: Mime type of the output image, either PNG or JPEG.
+        page: Page number to convert, starting with 1.
 
     Returns:
         Path to the output image.
+
+    Raises:
+        ``ValueError``: If the mime type is not supported.
+        ``gws.lib.osx.Error``: If Ghostscript fails.
     """
 
     if mime_type == gws.lib.mime.PNG:

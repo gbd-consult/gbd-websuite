@@ -1,7 +1,39 @@
-"""Shape object.
+"""Shapes.
 
-The Shape object represents a geo-referenced geometry.
-Internally, it holds a pointer to a Shapely geometry object and a Crs object.
+A shape (``gws.Shape``) is a geo-referenced geometry: a Shapely geometry
+together with a ``gws.Crs``. Shapes are used for feature geometries, search
+geometries and map extents throughout the application.
+
+The package is a single module. It provides:
+
+- constructors that create a ``Shape`` from WKT and EWKT, WKB and EWKB (binary or
+  hex), SQLAlchemy/GeoAlchemy WKB elements, GeoJSON geometries, shape props or
+  dicts, extents, ``gws.Bounds`` and x/y coordinates,
+- the ``Shape`` class, which implements the ``gws.Shape`` interface: conversion to
+  WKB, WKT, GeoJSON and props, spatial predicates, union and intersection, type
+  conversions, buffering with a tolerance and transformation to other CRS,
+- the ``Props`` class for shapes sent to and from the client.
+
+Constructors raise ``Error`` if the input cannot be parsed or has no CRS.
+EWKT and EWKB inputs carry their own SRID; for plain WKT and WKB a default CRS
+must be given. GeoJSON inputs and extents are expected in the axis order of the
+CRS, unless ``always_xy`` is set. Circles (``{"type": "Circle", "center": ...,
+"radius": ...}``), as sent by the client, are converted to polygons.
+
+Binary predicates and set operations transform the other shape to the CRS of
+this shape first. ``to_geojson`` transforms to WGS84 unless asked to keep the CRS.
+
+Example::
+
+    import gws.base.shape
+    import gws.lib.crs
+
+    shape = gws.base.shape.from_wkt('POINT(10 20)', gws.lib.crs.WGS84)
+    area = shape.tolerance_polygon(5).transformed_to(gws.lib.crs.WEBMERCATOR)
+    ewkt = area.to_ewkt()
+
+    other = gws.base.shape.from_wkt('SRID=4326;POLYGON((0 0,30 0,30 30,0 30,0 0))')
+    print(other.contains(shape))
 """
 
 # @TODO support for SQL/MM extensions
@@ -23,18 +55,23 @@ _MIN_TOLERANCE_RADIUS = 0.01
 
 
 class Error(gws.Error):
+    """Invalid geometry or CRS."""
+
     pass
 
 
 def from_wkt(wkt: str, default_crs: gws.Crs = None) -> gws.Shape:
-    """Creates a shape object from a WKT string.
+    """Create a shape from a WKT or EWKT string.
 
     Args:
         wkt: A WKT or EWKT string.
-        default_crs: Default Crs.
+        default_crs: CRS to use if the string has no SRID.
 
     Returns:
         A Shape object.
+
+    Raises:
+        ``Error``: If the string is invalid or there is no CRS.
     """
 
     if wkt.startswith('SRID='):
@@ -56,28 +93,34 @@ def from_wkt(wkt: str, default_crs: gws.Crs = None) -> gws.Shape:
 
 
 def from_wkb(wkb: bytes, default_crs: gws.Crs = None) -> gws.Shape:
-    """Creates a shape object from a WKB byte string.
+    """Create a shape from a WKB or EWKB byte string.
 
     Args:
         wkb: A WKB or EWKB byte string.
-        default_crs: Default Crs.
+        default_crs: CRS to use if the data has no SRID.
 
     Returns:
         A Shape object.
+
+    Raises:
+        ``Error``: If the data is invalid or there is no CRS.
     """
 
     return _from_wkb(wkb, default_crs)
 
 
 def from_wkb_hex(wkb: str, default_crs: gws.Crs = None) -> gws.Shape:
-    """Creates a shape object from a hex-encoded WKB string.
+    """Create a shape from a hex-encoded WKB or EWKB string.
 
     Args:
-        wkb: A hex-encoded WKB or EWKB byte string.
-        default_crs: Default Crs.
+        wkb: A hex-encoded WKB or EWKB string.
+        default_crs: CRS to use if the data has no SRID.
 
     Returns:
         A Shape object.
+
+    Raises:
+        ``Error``: If the data is invalid or there is no CRS.
     """
 
     try:
@@ -88,6 +131,7 @@ def from_wkb_hex(wkb: str, default_crs: gws.Crs = None) -> gws.Shape:
 
 
 def _from_wkb(wkb: bytes, default_crs):
+    """Create a shape from WKB or EWKB bytes, reading the SRID from the EWKB header."""
     # http://libgeos.org/specifications/wkb/#extended-wkb
 
     try:
@@ -111,6 +155,21 @@ def _from_wkb(wkb: bytes, default_crs):
 
 
 def from_wkb_element(element: sa.geo.WKBElement, default_crs: gws.Crs = None):
+    """Create a shape from a GeoAlchemy WKB element.
+
+    The CRS is taken from the EWKB data, then from the SRID of the element, then
+    from ``default_crs``.
+
+    Args:
+        element: A WKB element, with binary or hex-encoded data.
+        default_crs: CRS to use if neither the data nor the element has a valid SRID.
+
+    Returns:
+        A Shape object.
+
+    Raises:
+        ``Error``: If the data is invalid or there is no CRS.
+    """
     data = element.data
     if isinstance(data, str):
         wkb = bytes.fromhex(data)
@@ -121,19 +180,22 @@ def from_wkb_element(element: sa.geo.WKBElement, default_crs: gws.Crs = None):
 
 
 def from_geojson(geojson: dict, crs: gws.Crs, always_xy=False) -> gws.Shape:
-    """Creates a shape object from a GeoJSON geometry dict.
+    """Create a shape from a GeoJSON geometry dict.
 
     Parses a dict as a GeoJSON geometry object (https://www.rfc-editor.org/rfc/rfc7946#section-3.1).
-
-    The coordinates are assumed to be in the projection order, unless ``always_xy`` is ``True``.
+    A ``Circle`` geometry with ``center`` and ``radius`` is converted to a polygon.
+    The coordinates are assumed to be in the axis order of the CRS, unless ``always_xy`` is ``True``.
 
     Args:
-        geojson: A GeoJSON geometry dict
+        geojson: A GeoJSON geometry dict.
         crs: A Crs object.
-        always_xy: If ``True``, coordinates are assumed to be in the XY (lon/lat) order
+        always_xy: If ``True``, coordinates are assumed to be in the XY (lon/lat) order.
 
     Returns:
         A Shape object.
+
+    Raises:
+        ``Error``: If the geometry is invalid.
     """
 
     geom = _shapely_shape(geojson)
@@ -143,12 +205,16 @@ def from_geojson(geojson: dict, crs: gws.Crs, always_xy=False) -> gws.Shape:
 
 
 def from_props(props: gws.Props) -> gws.Shape:
-    """Creates a Shape from a properties object.
+    """Create a shape from a properties object.
 
     Args:
-        props: A properties object.
+        props: A properties object with ``crs`` and ``geometry`` (a GeoJSON geometry dict).
+
     Returns:
         A Shape object.
+
+    Raises:
+        ``Error``: If the CRS or the geometry is invalid.
     """
 
     crs = gws.lib.crs.get(props.get('crs'))
@@ -159,12 +225,16 @@ def from_props(props: gws.Props) -> gws.Shape:
 
 
 def from_dict(d: dict) -> gws.Shape:
-    """Creates a Shape from a dictionary.
+    """Create a shape from a dictionary.
 
     Args:
-        d: A dictionary with the keys 'crs' and 'geometry'.
+        d: A dictionary with the keys ``crs`` and ``geometry`` (a GeoJSON geometry dict).
+
     Returns:
         A Shape object.
+
+    Raises:
+        ``Error``: If the CRS or the geometry is invalid.
     """
 
     crs = gws.lib.crs.get(d.get('crs'))
@@ -175,12 +245,13 @@ def from_dict(d: dict) -> gws.Shape:
 
 
 def from_extent(extent: gws.Extent, crs: gws.Crs, always_xy=False) -> gws.Shape:
-    """Creates a polygon Shape from an extent.
+    """Create a polygon shape from an extent.
 
     Args:
-        extent: A hex-encoded WKB byte string.
+        extent: An extent.
         crs: A Crs object.
-        always_xy: If ``True``, coordinates are assumed to be in the XY (lon/lat) order
+        always_xy: If ``True``, the extent is assumed to be in the XY (lon/lat) order,
+            otherwise in the axis order of the CRS.
 
     Returns:
         A Shape object.
@@ -193,7 +264,7 @@ def from_extent(extent: gws.Extent, crs: gws.Crs, always_xy=False) -> gws.Shape:
 
 
 def from_bounds(bounds: gws.Bounds) -> gws.Shape:
-    """Creates a polygon Shape from a Bounds object.
+    """Create a polygon shape from a Bounds object.
 
     Args:
         bounds: A Bounds object.
@@ -206,11 +277,11 @@ def from_bounds(bounds: gws.Bounds) -> gws.Shape:
 
 
 def from_xy(x: float, y: float, crs: gws.Crs) -> gws.Shape:
-    """Creates a point Shape from coordinates.
+    """Create a point shape from coordinates.
 
     Args:
-        x: X coordinate (lon/easting)
-        y: Y coordinate (lat/northing)
+        x: X coordinate (lon/easting).
+        y: Y coordinate (lat/northing).
         crs: A Crs object.
 
     Returns:
@@ -221,6 +292,7 @@ def from_xy(x: float, y: float, crs: gws.Crs) -> gws.Shape:
 
 
 def _swap_xy(geom):
+    """Return a copy of a Shapely geometry with x and y swapped."""
     def f(x: float, y: float, z: float = None) -> tuple[float, float]:
         return y, x
 
@@ -231,6 +303,7 @@ _CIRCLE_RESOLUTION = 64
 
 
 def _shapely_shape(d):
+    """Create a Shapely geometry from a GeoJSON dict, raising ``Error`` if it is invalid."""
     try:
         return _shapely_shape2(d)
     except (shapely.errors.ShapelyError, AttributeError, TypeError, ValueError) as exc:
@@ -238,6 +311,7 @@ def _shapely_shape(d):
 
 
 def _shapely_shape2(d):
+    """Create a Shapely geometry from a GeoJSON dict, converting circles to polygons."""
     if d.get('type').upper() == 'CIRCLE':
         geom = shapely.geometry.Point(d.get('center'))
         return geom.buffer(
@@ -264,9 +338,18 @@ class Props(gws.Props):
 
 
 class Shape(gws.Shape):
+    """Shape implemented with a Shapely geometry."""
+
     geom: shapely.geometry.base.BaseGeometry
+    """Shapely geometry."""
 
     def __init__(self, geom, crs: gws.Crs):
+        """Create a shape.
+
+        Args:
+            geom: Shapely geometry.
+            crs: CRS of the geometry.
+        """
         super().__init__()
         self.geom = geom
         self.crs = crs
@@ -373,6 +456,7 @@ class Shape(gws.Shape):
         return self._binary_predicate(other, 'within')
 
     def _binary_predicate(self, other, op):
+        """Apply a Shapely predicate to this shape and another one, transformed to this CRS."""
         s = other.transformed_to(self.crs)
         return getattr(self.geom, op)(getattr(s, 'geom'))
 

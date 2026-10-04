@@ -1,4 +1,4 @@
-"""Query the Gekos-Online server and create the index."""
+"""GekoS index, loaded from gek-online."""
 
 
 import math
@@ -43,10 +43,19 @@ ObjectID appears to be unique within an instance, so we generate a PK = instance
 
 
 class Object(gws.Node):
+    """GekoS index.
+
+    Loads GekoS records from gek-online and stores them in a PostGIS table.
+    """
+
     db: gws.DatabaseProvider
+    """Database provider for the index table."""
     tableName: str
+    """Name of the index table."""
     position: core.PositionConfig
+    """Position correction for points, or ``None``."""
     crs: gws.Crs
+    """CRS of the GekoS coordinates."""
 
     def configure(self):
         gws.config.util.configure_database_provider_for(self, ext_type='postgres')
@@ -55,10 +64,15 @@ class Object(gws.Node):
         self.position = self.cfg('position')
 
     def create(self):
+        """Load the records of all sources and recreate the index table.
+
+        The table is dropped, created again and filled with the records.
+        """
         recs = self._collect()
         self._write(recs)
 
     def _collect(self):
+        """Load and transform the records of all sources."""
         recs = []
 
         for source in self.cfg('sources'):
@@ -70,7 +84,7 @@ class Object(gws.Node):
         return recs
 
     def _load(self, source: core.SourceConfig):
-        """Load XML from GekOnline and create record dicts."""
+        """Load the records of a gek-online source as dicts."""
 
         res = gws.lib.net.http_request(source.url, params=dict(source.params or {}), verify=False)
         res.raise_if_failed()
@@ -87,7 +101,7 @@ class Object(gws.Node):
         return rs
 
     def _transform(self, recs, instance_name):
-        """Compute geometries and uids for record dicts."""
+        """Add uids and point geometries to records, skipping duplicate uids."""
 
         recs2 = []
         points = set()
@@ -124,7 +138,7 @@ class Object(gws.Node):
         return recs2
 
     def _free_point(self, x, y, points):
-        """Move points around, according to the 'position' config."""
+        """Apply the position correction to a point."""
 
         if not self.position:
             return x, y
@@ -157,6 +171,7 @@ class Object(gws.Node):
         return x, y
 
     def _write(self, recs):
+        """Recreate the index table and insert the records."""
         columns = [
             sa.Column('uid', sa.Text, primary_key=True),
             sa.Column('ObjectID', sa.Text),

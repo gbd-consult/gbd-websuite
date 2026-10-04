@@ -1,16 +1,16 @@
 class MapCache(Data):
-    """Map tile cache settings."""
+    """Tile cache settings of a grabber."""
 
     name: str
-    """Cache directory name."""
+    """Cache name, also the name of the cache directory."""
     maxAge: int
-    """Cache max. age (seconds), 0 disables storing."""
+    """Max. age of cached tiles in seconds, 0 disables storing."""
     maxLevel: int
-    """Max. zoom level to store."""
+    """Finest zoom level to store."""
     requestBuffer: int
-    """Pixel buffer for source requests."""
+    """Pixel buffer around source requests."""
     requestTiles: int
-    """Number of tiles to request at once."""
+    """Tiles per side of the block rendered in one source request."""
 
 
 class TileStoreStats(Data):
@@ -25,36 +25,84 @@ class TileStoreStats(Data):
 
 
 class TileStore:
-    """Tile store."""
+    """Storage for encoded map tiles of one grid.
+
+    Tiles are addressed by ``(x, y, z)``. A tile counts as stored only while it is younger than ``maxAge``.
+    """
 
     baseDir: str
     """Base directory of the store."""
     maxAge: int
-    """Max. age of stored tiles (seconds)."""
+    """Max. age of stored tiles in seconds."""
 
     def stats(self) -> TileStoreStats:
-        """Return statistics for the whole store."""
+        """Compute statistics for the whole store.
+
+        Returns:
+            Number and size of stored tiles. The tile range is not set.
+        """
 
     def stats_for_level(self, z: int) -> TileStoreStats:
-        """Return statistics for a level."""
+        """Compute statistics for a level.
+
+        Args:
+            z: Zoom level.
+
+        Returns:
+            Number, size and bounding tile range of the stored tiles of the level.
+        """
 
     def path(self, mt: MapTile) -> str:
-        """Return the file path for a tile."""
+        """Return the file path of a tile.
+
+        Args:
+            mt: Tile.
+
+        Returns:
+            The file path, whether the tile exists or not.
+        """
 
     def has(self, mt: MapTile) -> bool:
-        """True if the tile is stored and younger than the store's max. age."""
+        """Check if a tile is stored.
+
+        Args:
+            mt: Tile.
+
+        Returns:
+            ``True`` if the tile is stored and younger than ``maxAge``.
+        """
 
     def read(self, mt: MapTile) -> Optional[bytes]:
-        """Return a stored tile or ``None`` if missing or stale."""
+        """Read a stored tile.
+
+        Args:
+            mt: Tile.
+
+        Returns:
+            The tile content, or ``None`` if the tile is missing, stale or unreadable.
+        """
 
     def write(self, mt: MapTile, blob: bytes):
-        """Store a tile."""
+        """Store a tile.
+
+        Args:
+            mt: Tile.
+            blob: Encoded tile content.
+        """
 
     def drop(self):
         """Remove the whole store."""
 
     def drop_level(self, z: int):
-        """Remove all tiles of a level."""
+        """Remove all tiles of a level.
+
+        Args:
+            z: Zoom level.
+        """
 
     def drop_range(self, mtr: MapTileRange):
-        """Remove the tiles of a range."""
+        """Remove the tiles of a range.
+
+        Args:
+            mtr: Tile range.
+        """

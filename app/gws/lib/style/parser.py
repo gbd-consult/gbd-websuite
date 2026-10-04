@@ -1,4 +1,4 @@
-"""Style parser."""
+"""CSS style parser."""
 
 import re
 
@@ -7,28 +7,31 @@ from . import icon
 
 
 class Options(gws.Data):
-    """Options about an icon object"""
+    """Style parser options."""
+
     trusted: bool
-    """Indicates whether icon is created by us or someone else."""
+    """The style comes from a trusted source (the configuration). Only trusted styles can load icons from URLs and arbitrary files."""
     strict: bool
-    """Indicates whether Exceptions should be raised."""
+    """Raise an error on invalid properties and values, instead of logging and skipping them."""
     imageDirs: list[str]
-    """Paths to directories in which parsing is allowed"""
+    """Directories from which icons can be loaded in the untrusted mode."""
 
 
 def parse_dict(d: dict, opts: Options) -> dict:
-    """Adds a dictionary describing style features to a default dictionary.
+    """Parse a dict of CSS properties into style values.
+
+    Property names are normalized: dashes become underscores and a leading ``__`` (from ``--``) is removed.
+    ``None`` values are skipped. The result contains defaults for all values not given.
 
     Args:
-        d: A dictionary with new features.
-        opts: Dictionary options.
+        d: A dict of CSS property names and values.
+        opts: Parser options.
 
     Returns:
-        New dictionary of features.
+        A dict of style values.
 
     Raises:
-        ``Exception``: If  an invalid css property or value is used.
-
+        ``gws.Error``: If a property or value is invalid and ``opts.strict`` is set.
     """
     res = dict(_DEFAULTS)
 
@@ -66,15 +69,17 @@ def parse_dict(d: dict, opts: Options) -> dict:
 # @TODO use a real CSS parser
 
 def parse_text(text: str, opts: Options) -> dict:
-    """Parses a text of features to a dict containing the new features.
+    """Parse CSS text into style values.
 
     Args:
-        text: Options String formatted like ``'a:b;c:d;...'``
-        opts: Text options.
+        text: CSS declarations like ``'a: b; c: d; ...'``, without a selector and braces.
+        opts: Parser options.
 
     Returns:
-        New dictionary of features.
+        A dict of style values.
 
+    Raises:
+        ``gws.Error``: If a property or value is invalid and ``opts.strict`` is set.
     """
     d = {}
     for r in text.split(';'):

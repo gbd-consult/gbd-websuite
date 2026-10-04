@@ -1,4 +1,4 @@
-"""GBD Geoservices model."""
+"""The ``gbd_geoservices`` model."""
 
 import gws
 import gws.base.feature
@@ -21,9 +21,14 @@ class Config(gws.base.model.Config):
 
 @gws.ext.object.model('gbd_geoservices')
 class Object(gws.base.model.default_model.Object):
-    """GBD Geoservices model."""
+    """GBD Geoservices model.
+
+    Read-only model that loads features from the GBD Geoservices search
+    service.
+    """
 
     apiKey: str
+    """API key for the service."""
 
     serviceUrl = 'https://geoservices.gbd-consult.de/search'
 
@@ -95,6 +100,7 @@ class Object(gws.base.model.default_model.Object):
         return out
 
     def _request(self, url, **kwargs) -> dict:
+        """Send a request to the service and return the decoded JSON, or an empty dict on errors."""
         res = gws.lib.net.http_request(
             url,
             headers={'Authorization': f'Bearer {self.apiKey}'},
@@ -107,6 +113,7 @@ class Object(gws.base.model.default_model.Object):
         return gws.lib.jsonx.from_string(res.text)
 
     def _attributes(self, props: dict) -> dict | None:
+        """Create feature attributes from a result, or ``None`` if it has no name, address or category."""
         name = props.get('name') or ''
 
         addr1 = _join([props.get('address_street'), props.get('address_housenumber')])
@@ -150,4 +157,5 @@ _MAX_POINT_RADIUS = 10_000
 
 
 def _join(parts):
+    """Join the non-empty parts with single spaces."""
     return ' '.join(' '.join(str(p) for p in parts if p).split())

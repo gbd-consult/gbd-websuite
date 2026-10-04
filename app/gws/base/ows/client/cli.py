@@ -1,4 +1,4 @@
-"""CLI utilty for OWS services"""
+"""CLI command for OWS services."""
 
 from typing import Optional, cast
 
@@ -13,19 +13,22 @@ from . import request
 
 
 class CapsParams(gws.CliParams):
+    """Parameters for the ``owsCaps`` command."""
+
     src: str
-    """service URL or an XML file name"""
+    """Service URL or XML file name."""
     type: str = ''
-    """service type, e.g. WMS"""
+    """Service type, e.g. WMS. If omitted, it is guessed from ``src``."""
     out: str = ''
-    """output filename"""
+    """Output file name. If omitted, the result is printed."""
 
 
 class Object(gws.Node):
+    """CLI commands for OWS services."""
 
     @gws.ext.command.cli('owsCaps')
     def caps(self, p: CapsParams):
-        """Print the capabilities of a service in JSON format"""
+        """Print the capabilities of a service in JSON format."""
 
         protocol = None
 
@@ -62,6 +65,7 @@ class Object(gws.Node):
 
 
 def _caps_json(x):
+    """Convert an object that is not JSON-serializable for the JSON output."""
     if isinstance(x, gws.lib.crs.Object):
         return x.epsg
     if isinstance(x, gws.base.shape.Shape):

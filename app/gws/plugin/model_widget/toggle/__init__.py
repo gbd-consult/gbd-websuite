@@ -1,4 +1,16 @@
-"""Toggle input widget."""
+"""Toggle input widget.
+
+Checkbox or radio button for boolean values. This is the default widget of
+``bool`` fields.
+
+Example::
+
+    fields+ {
+        name "is_active"
+        type "bool"
+        widget { type "toggle" kind "checkbox" }
+    }
+"""
 
 import gws
 import gws.base.model.widget
@@ -19,6 +31,8 @@ class Props(gws.base.model.widget.Props):
 
 @gws.ext.object.modelWidget('toggle')
 class Object(gws.base.model.widget.Object):
+    """Toggle input widget object."""
+
     def props(self, user):
         return gws.u.merge(
             super().props(user),

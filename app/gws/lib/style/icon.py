@@ -1,3 +1,5 @@
+"""SVG icon parser."""
+
 from typing import Optional
 
 import base64
@@ -11,24 +13,26 @@ import gws.lib.xmlx as xmlx
 
 
 class Error(gws.Error):
+    """Raised when an icon cannot be loaded or parsed."""
+
     pass
 
 
 class ParsedIcon(gws.Data):
-    """Svg data."""
+    """A parsed icon."""
+
     svg: gws.XmlElement
-    """Structure and attributes of the svg."""
+    """The normalized SVG element."""
 
 
 def to_data_url(icon: ParsedIcon) -> str:
-    """Converts a svg to url.
+    """Convert a parsed icon to a base64 data URL.
 
     Args:
-        icon: Svg object to convert.
+        icon: Parsed icon.
 
     Returns:
-        The url, or an empty string if ``icon`` is not a svg.
-
+        A ``data:image/svg+xml;base64,...`` URL, or an empty string if the icon has no SVG.
     """
 
     if icon.svg:
@@ -38,15 +42,25 @@ def to_data_url(icon: ParsedIcon) -> str:
 
 
 def parse(val: str, opts) -> Optional[ParsedIcon]:
-    """Parses an url or directory path to a svg.
+    """Load and parse an SVG icon.
+
+    The value can be wrapped in CSS ``url(...)`` and quotes. It is resolved as follows:
+
+    - a ``data:`` URL is decoded,
+    - a path is looked up in the image directories (``opts.imageDirs``),
+    - in the trusted mode only, an ``http(s)`` URL is fetched, or any other value is read as a file path.
+
+    The SVG is normalized (unsafe elements and attributes are removed) and must have a width and a height.
 
     Args:
-        val: An url or directory path containing a svg.
-        opts: Url or directory path options.
+        val: Data URL, URL or path.
+        opts: Parser options (``gws.lib.style.parser.Options``).
 
     Returns:
-        The svg, if the url is trusted, or if the path is in a trusted directory.
+        The parsed icon, or ``None`` if the value is empty or does not contain an SVG.
 
+    Raises:
+        ``Error``: If the value is untrusted, cannot be loaded or decoded, or the SVG is invalid.
     """
     if not val:
         return

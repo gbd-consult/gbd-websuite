@@ -1,4 +1,4 @@
-"""Tile provider."""
+"""XYZ tile service provider."""
 
 from typing import Optional, cast
 
@@ -29,10 +29,16 @@ class Config(gws.Config):
 
 
 class Object(gws.Node):
+    """XYZ tile service."""
+
     url: gws.Url
+    """Tile URL with the placeholders ``{x}``, ``{y}`` and ``{z}``."""
     grid: gws.MapGrid
+    """Tile grid of the source, web mercator by default."""
     maxLevel: int
+    """Finest zoom level the source provides."""
     maxRequests: int
+    """Max. concurrent requests to the source (not used)."""
 
     def configure(self):
         self.url = self.cfg('url')
@@ -50,6 +56,11 @@ class Object(gws.Node):
         self.grid = gws.lib.grid.new(opts)
 
     def cache_hash(self):
+        """Compute a hash of the provider settings.
+
+        Returns:
+            Hash string, built from the URL and the grid.
+        """
         return gws.u.sha256([
             self.url,
             self.grid.crs.srid,
@@ -59,6 +70,19 @@ class Object(gws.Node):
         ])
 
     def get_tile(self, x: int, y: int, z: int) -> bytes:
+        """Fetch a tile from the source.
+
+        Args:
+            x: Tile column.
+            y: Tile row, counted from the top.
+            z: Zoom level.
+
+        Returns:
+            Image bytes.
+
+        Raises:
+            ``gws.ExternalServiceError``: If the request fails or the response is not an image.
+        """
         url = self.url
         url = url.replace('{x}', str(x))
         url = url.replace('{y}', str(y))

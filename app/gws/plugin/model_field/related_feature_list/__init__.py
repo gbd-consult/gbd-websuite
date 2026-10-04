@@ -1,16 +1,31 @@
-"""Related Feature List field
+"""Related feature list field.
 
 Represents a parent->child 1:M relationship to another model::
 
     +--------------+       +-------------+
     | parent table |       | child table |
     +--------------+       +-------------+
-    | key          |-----<<| parent_key  |
+    | fromColumn   |-----<<| toColumn    |
     +--------------+       +-------------+
 
-The value of the field is a list of child features.
+The value of the field is a list of child features. ``fromColumn`` is the key
+column in this model's table, by default its primary key; ``toColumn`` is the
+foreign key column in the child model.
 
-This object is implemented as a "related_multi_feature_list" with a single target model.
+The field is implemented as a ``relatedMultiFeatureList`` with a single child
+model, so it reads and writes the relationship in the same way. Without a
+configured widget, the field uses a ``featureList`` widget.
+
+Example::
+
+    fields+ {
+        name "pois"
+        type "relatedFeatureList"
+        fromColumn "id"
+        toModel "model_poi"
+        toColumn "category_id"
+        widget.type "featureList"
+    }
 """
 
 import gws
@@ -39,6 +54,8 @@ class Props(related_field.Props):
 
 @gws.ext.object.modelField('relatedFeatureList')
 class Object(related_multi_feature_list.Object):
+    """Related feature list field object."""
+
     def configure_relationship(self):
         to_mod = self.get_model(self.cfg('toModel'))
 

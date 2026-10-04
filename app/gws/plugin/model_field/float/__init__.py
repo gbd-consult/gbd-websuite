@@ -1,4 +1,13 @@
-"""Integer field."""
+"""Float field.
+
+A scalar field for floating-point numbers. Values from the client are
+converted with ``float()``. Without a configured widget, the field uses a
+``float`` widget.
+
+Example::
+
+    fields+ { name "area" type "float" title "Area" }
+"""
 
 import gws
 import gws.base.model.scalar_field

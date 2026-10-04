@@ -1,5 +1,7 @@
 # normalizer
 
+"""SVG element construction and sanitizing."""
+
 from typing import Optional
 
 import re
@@ -13,28 +15,67 @@ _SVG_NAMESPACE = xmlx.namespace.new('', 'http://www.w3.org/2000/svg')
 
 
 def fragment_to_element(fragment: list[gws.XmlElement], atts: dict = None) -> gws.XmlElement:
-    """Convert an SVG fragment to an SVG element."""
+    """Wrap an SVG fragment in an ``<svg>`` element.
+
+    Elements are sorted by their ``z-index`` attribute, so that labels come after geometries.
+
+    Args:
+        fragment: SVG elements.
+        atts: Attributes of the ``<svg>`` element.
+
+    Returns:
+        The ``<svg>`` element.
+    """
 
     fr = sorted(fragment, key=lambda el: el.attrib.get('z-index', 0))
     return _svg_tag(atts, *fr)
 
 
 def fragment_to_image(fragment: list[gws.XmlElement], size: gws.Size, mime_type=gws.lib.mime.PNG) -> gws.lib.image.Image:
-    """Convert an SVG fragment to a raster image."""
+    """Render an SVG fragment as a raster image.
+
+    Args:
+        fragment: SVG elements.
+        size: Image size in pixels.
+        mime_type: Image mime type.
+
+    Returns:
+        The image.
+    """
 
     el = fragment_to_element(fragment)
     return gws.lib.image.from_svg(el.to_string(), size, mime_type)
 
 
 def normalize_element(el: gws.XmlElement) -> gws.XmlElement:
-    """Remove unsafe stuff from an SVG element and normalize tag and attribute names."""
+    """Remove unsafe content from an SVG element and normalize tag and attribute names.
+
+    Only allowed tags and attributes are kept. Attribute values must match a pattern for that attribute,
+    and values that look like URLs (``data:``, ``http:``, ``javascript:`` etc.) are removed.
+    Text content is kept only for text tags. The element itself is turned into an ``<svg>`` element.
+
+    Args:
+        el: An SVG element.
+
+    Returns:
+        A new, normalized ``<svg>`` element.
+    """
 
     children = gws.u.compact(_normalize(c) for c in el)
     return _svg_tag(_normalize_atts(el.attrib), *children)
 
 
 def normalize_fragment(fragment: list[gws.XmlElement]) -> list[gws.XmlElement]:
-    """Remove unsafe stuff from an SVG fragment and normalize tag and attribute names."""
+    """Remove unsafe content from an SVG fragment and normalize tag and attribute names.
+
+    Elements with tags that are not allowed are removed, together with their children.
+
+    Args:
+        fragment: SVG elements.
+
+    Returns:
+        A list of normalized elements.
+    """
 
     els = [_normalize(el) for el in fragment]
     return [el for el in els if el is not None]

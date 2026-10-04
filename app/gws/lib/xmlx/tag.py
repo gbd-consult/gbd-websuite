@@ -1,37 +1,4 @@
-"""XML builder.
-
-This module provides a single function ``tag``, which creates an Xml Element from a list of arguments.
-
-The first argument to this function is interpreted as a tag name
-or a slash separated list of tag names, in which case nested elements are created
-(slashes inside the ``{uri}`` part of a Clark name do not separate).
-
-The remaining ``*args`` are interpreted as follows:
-
-- a string, number, bool, date or datetime - appended to the text content of the Element
-- an ``XmlElement`` - appended as a child to the Element
-- a dict or a ``gws.Data`` object - attributes of the Element are updated from it
-- ``None`` - ignored
-- any other iterable (list, tuple, generator) - its items are interpreted by the same rules
-
-If keyword arguments are given, they are added to the Element's attributes.
-
-Tag and attribute names are local names, Clark names (``{uri}name``) or ``ID:name``, where ``ID`` is the name
-of a well-known namespace (``GML``, ``OWS_11``), which is resolved to a Clark name.
-
-**Example:** ::
-
-    tag('geometry/GML:Point', {'GML:id': 'xy'}, tag('GML:coordinates', '12.345,56.789'), srsName=3857)
-
-creates the following element: ::
-
-    <geometry>
-        <gml:Point gml:id="xy" srsName="3857">
-            <gml:coordinates>12.345,56.789</gml:coordinates>
-        </gml:Point>
-    </geometry>
-
-"""
+"""XML builder."""
 
 import re
 
@@ -41,7 +8,30 @@ from . import element, error, namespace, util
 
 
 def tag(name: str, *args, **kwargs) -> gws.XmlElement:
-    """Build an XML element from arguments."""
+    """Build an XML element from arguments.
+
+    Tag and attribute names are local names, Clark names (``{uri}name``) or ``ID:name``, where ``ID`` is the name
+    of a well-known namespace (``GML``, ``OWS_11``), which is resolved to a Clark name.
+
+    Example::
+
+        tag('geometry/GML:Point', {'GML:id': 'xy'}, tag('GML:coordinates', '12.345,56.789'), srsName=3857)
+
+    Args:
+        name: Tag name, or a slash-separated list of tag names, in which case nested elements are created.
+            Slashes inside the ``{uri}`` part of a Clark name do not separate.
+        *args: Content of the innermost element. A string, number, bool, date or datetime is appended
+            to the text, an ``XmlElement`` is appended as a child, a dict or a ``gws.Data`` object updates
+            the attributes (``None`` values are skipped), ``None`` is ignored, and any other iterable
+            is processed item by item with the same rules.
+        **kwargs: Additional attributes of the innermost element.
+
+    Returns:
+        The outermost element.
+
+    Raises:
+        BuildError: If a tag name is empty, a namespace ``ID`` is unknown, or an argument cannot be used.
+    """
 
     elements = []
 
@@ -90,6 +80,8 @@ def _split_path(name: str) -> list[str]:
 
 
 def _add(el: gws.XmlElement, arg):
+    """Add an argument of ``tag()`` to an element."""
+
     if arg is None:
         return
 
@@ -121,6 +113,8 @@ def _add(el: gws.XmlElement, arg):
 
 
 def _add_text(el, s):
+    """Append text to the element text or to the tail of its last child."""
+
     if not s:
         return
     if len(el) == 0:

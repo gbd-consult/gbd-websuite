@@ -1,4 +1,4 @@
-"""Validate values according to specs"""
+"""Spec runtime: loads the specs and implements ``gws.SpecRuntime``."""
 
 from typing import Optional
 
@@ -18,12 +18,20 @@ LoadError = core.LoadError
 
 
 def create(manifest_path: str = '', read_cache=False, write_cache=False) -> 'Object':
-    """Create a new Runtime object by generating or loading the specs.
-    
+    """Create a spec runtime object by generating or loading the specs.
+
+    The cache file is stored in ``gws.c.SPEC_DIR``, one file per manifest path.
+
     Args:
-        manifest_path: Optional path to the application manifest. If not provided, the generator will try to find it automatically.
-        read_cache: If True, try to read the specs from a cache file. 
-        write_cache: If True, write the generated specs to a cache file.
+        manifest_path: Path to the application manifest. Without a manifest, only the built-in plugins are used.
+        read_cache: If True, load the specs from the cache file if it exists.
+        write_cache: If True, write the generated specs to the cache file.
+
+    Returns:
+        The spec runtime object.
+
+    Raises:
+        ``GeneratorError``: If the specs cannot be generated.
     """
 
     sd = _get_specs(manifest_path, read_cache, write_cache)
@@ -62,7 +70,15 @@ def _get_specs(manifest_path: str = '', read_cache=False, write_cache=False) -> 
 
 
 class Object(gws.SpecRuntime):
+    """Spec runtime object."""
+
     def __init__(self, sd: core.SpecData):
+        """Create the runtime from spec data.
+
+        Args:
+            sd: Spec data produced by the generator or loaded from a cache file.
+        """
+
         self.sd = sd
         self.manifest = gws.ApplicationManifest(sd.meta['manifest'])
         self.manifestPath = sd.meta['manifestPath']
@@ -91,10 +107,21 @@ class Object(gws.SpecRuntime):
         self._descCache = {}
 
     def __getstate__(self):
+        """Clear the descriptor cache before pickling."""
+
         self._descCache = {}
         return vars(self)
 
     def get_type(self, key):
+        """Get a type by uid or extension name.
+
+        Args:
+            key: Type uid or extension name.
+
+        Returns:
+            The type or ``None`` if not found.
+        """
+
         return self.serverTypesDict.get(key)
 
     def read(self, value, type_name, path='', options=None):
@@ -185,6 +212,20 @@ class Object(gws.SpecRuntime):
         )
 
     def cli_commands(self, lang='en'):
+        """List the CLI commands with their arguments and docs.
+
+        A command name like ``gws.ext.command.cli.serverStart`` is split into
+        ``cmd1='server'`` and ``cmd2='start'``.
+
+        Args:
+            lang: Language code for the docs, falls back to English.
+
+        Returns:
+            A list of ``gws.Data`` objects with ``cmd1``, ``cmd2``, ``doc`` and ``args``,
+            sorted by command name. Each argument has ``name``, ``type``, ``doc``,
+            ``defaultValue`` and ``hasDefault``.
+        """
+
         strings = self.strings.get(lang) or self.strings['en']
         cmds = []
 

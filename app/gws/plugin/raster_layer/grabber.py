@@ -6,9 +6,18 @@ import gws.lib.mapserver.core
 
 
 class Object(gws.base.grabber.box.Object):
+    """Grabber that renders boxes with an in-process MapServer map."""
+
     msOptions: gws.MapServerLayerOptions
+    """MapServer layer options."""
 
     def __init__(self, opts: gws.base.grabber.Options, msOptions: gws.MapServerLayerOptions):
+        """Create the grabber.
+
+        Args:
+            opts: Grabber options.
+            msOptions: MapServer layer options.
+        """
         super().__init__(opts)
         self.msOptions = msOptions
         self.sourceCrs = self.targetCrs

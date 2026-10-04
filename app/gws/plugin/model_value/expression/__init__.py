@@ -1,23 +1,32 @@
 """Expression value.
 
-This value is computed by evaluating a python expression.
+Computes the value by evaluating a Python expression. The expression is
+compiled at configuration time; a syntax error is a configuration error.
 
-The following variables are provided to the expression:
+The following variables are available in the expression:
 
-- ``app`` - the Application object
-- ``user`` - current user
-- ``project`` - current project
-- ``feature`` - feature this value is evaluated for
-- ``mc`` - ``ModelContext`` object
+- ``app``: the Application object,
+- ``user``: the current user,
+- ``project``: the current project,
+- ``feature``: the feature the value is computed for,
+- ``mc``: the ``gws.ModelContext`` object,
+- ``date``: the ``gws.lib.datetimex`` module.
 
-The following modules are available:
+Additional modules can be made available with the ``imports`` option, a list
+of module names, e.g. ``["math", "os"]``. Each module is available under its
+name. If a module cannot be imported or the evaluation fails, the error is
+logged and the value is None.
 
-- ``date`` - `gws.lib.datetimex` module
+Example::
 
-Additional modules can be imported by specifying them in the
-``imports`` configuration option. This should be a list of module names
-to import, e.g. ``["math", "os"]``.
-
+    fields+ {
+        name "area_ha"
+        type "float"
+        values+ {
+            type "expression"
+            expression "round(feature.get('area_m2', 0) / 10000, 2)"
+        }
+    }
 """
 
 from typing import Optional
@@ -39,8 +48,12 @@ class Config(gws.base.model.value.Config):
 
 @gws.ext.object.modelValue('expression')
 class Object(gws.base.model.value.Object):
+    """Expression value object."""
+
     expression: str
+    """Python expression to evaluate."""
     imports: list[str]
+    """Names of modules imported for the expression."""
 
     def configure(self):
         self.expression = (self.cfg('expression') or '').strip()

@@ -1,13 +1,26 @@
 """MapServer support.
 
-This module dynamically creates and renders MapServer maps.
+Creates and renders MapServer maps dynamically, through the ``mapscript`` Python bindings.
 
-To render a map, create a map object with `new_map`, add layers to it using ``add_`` methods
-and invoke ``draw``.
+To render a map, create a map object with ``new_map``, optionally from a mapfile string,
+add layers to it with ``Map.add_layer`` (from ``gws.MapServerLayerOptions``) or
+``Map.add_layer_from_config`` (from a mapfile ``LAYER`` block), and call ``Map.draw``,
+which renders a transparent PNG for the given bounds and size and returns it as a
+``gws.Image``. ``Map.to_string`` returns the resulting mapfile, which helps with debugging.
 
-Reference: MapServer documentation (https://mapserver.org/documentation.html)
+Layer options support raster files and tile indexes, PostGIS connections, SLD styling
+and a part of the GWS style values (geometry and label styles, markers and icons).
 
-Example usage::
+Submodules:
+
+- ``core``: the ``Map`` wrapper and ``new_map``.
+- ``live_config``: a standalone development tool, not used by the application. It runs an
+  HTTP server with a page to edit a mapfile and render it live (see its ``README.md``).
+
+Reference:
+    - https://mapserver.org/documentation.html
+
+Example::
 
     import gws
     import gws.lib.mapserver as ms
@@ -20,6 +33,7 @@ Example usage::
         gws.MapServerLayerOptions(
             type=gws.MapServerLayerType.raster,
             path='/path/to/image.tif',
+            crs=gws.lib.crs.WEBMERCATOR,
         )
     )
 
@@ -55,8 +69,6 @@ Example usage::
 
     # save the image to a file
     img.to_path('/path/to/output.png')
-
-
 """
 
 from .core import version, Error, new_map, Map

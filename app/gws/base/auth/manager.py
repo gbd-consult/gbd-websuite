@@ -1,4 +1,4 @@
-"""Authorization and session manager."""
+"""Authorization manager."""
 
 from typing import Optional, cast
 
@@ -80,6 +80,13 @@ class Object(gws.AuthManager):
             req.set_session(self.guestSession)
 
     def _try_open_session(self, req):
+        """Return the first session opened by a usable method, or ``None``.
+
+        A method that requires a secure context is skipped on insecure requests,
+        unless the client address is in its ``allowInsecureFrom``. A session whose
+        user no longer exists or whose method does not match the opening method is
+        deleted, and ``None`` is returned, so the request continues as guest.
+        """
         for meth in self.methods:
             if not self.can_use_method(req, meth):
                 gws.log.warning(f'open_session: {meth=}: insecure_context, ignore')
@@ -153,6 +160,7 @@ class Object(gws.AuthManager):
         return user
 
     def _authenticate2(self, method, credentials):
+        """Try each provider that allows the method, return the first user found."""
         for prov in self.providers:
             if prov.allowedMethods and method.extType not in prov.allowedMethods:
                 continue

@@ -1,6 +1,15 @@
 """Format value.
 
-This value is computed by applying python `format` to feature attributes.
+Computes a string by applying a Python format string to the feature
+attributes, using ``gws.u.format_map``.
+
+Example::
+
+    fields+ {
+        name "label"
+        type "text"
+        values+ { type "format" format "{street} {house_number}" }
+    }
 """
 
 import gws
@@ -17,7 +26,10 @@ class Config(gws.base.model.value.Config):
 
 @gws.ext.object.modelValue('format')
 class Object(gws.base.model.value.Object):
+    """Format value object."""
+
     format: str
+    """Format string."""
 
     def configure(self):
         self.format = self.cfg('format')

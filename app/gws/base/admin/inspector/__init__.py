@@ -1,12 +1,26 @@
 """Object inspector: an html page to inspect the object tree.
 
+The page lists all tree nodes, shows the properties of the selected object and
+lets the user follow references to other objects. It is served by the
+``adminInspector`` command of the ``admin`` action.
+
 An object is addressed by a path of ``/``-separated, url-quoted segments.
 The first segment is the uid of a tree node, or empty for the root.
 Further segments are attribute names, dict keys or list indexes.
 
-The search walks the whole object graph from the root and lists objects
-with a primitive property containing the search text (``text``),
-or a specific property containing it (``prop=text``).
+Values are shown as primitives, as links to tree nodes and other objects,
+or, for dicts, lists and ``gws.Data``, expanded inline up to a fixed depth.
+
+The search walks the whole object graph from the root, breadth first, and lists
+objects with a primitive property containing the search text (``text``),
+or a specific property containing it (``prop=text``). The search is case-insensitive
+and the number of results is limited.
+
+Example::
+
+    /_/adminInspector?path=
+    /_/adminInspector?path=<node uid>/config/layers/0
+    /_/adminInspector?search=title=roads
 """
 
 import collections
@@ -40,6 +54,19 @@ _OPAQUE_TYPES = (
 
 
 def get_content(root: gws.Root, path: str, search: str) -> gws.ContentResponse:
+    """Render the inspector page for an object path, or return a page asset.
+
+    Args:
+        root: The configuration root.
+        path: Object path, or the name of an asset (``page.js``, ``page.css``).
+        search: Optional search text, ``text`` or ``prop=text``.
+
+    Returns:
+        The rendered page or the asset.
+
+    Raises:
+        gws.NotFoundError: If the path cannot be resolved.
+    """
     path = path or ''
     search = (search or '').strip()
 
@@ -87,6 +114,7 @@ def _node_path(node: gws.Node) -> str:
 
 
 def _resolve(root: gws.Root, segs: list[str]):
+    """Return the object addressed by path segments."""
     if segs[0]:
         obj = root.uidMap.get(segs[0])
         if obj is None:
@@ -101,6 +129,7 @@ def _resolve(root: gws.Root, segs: list[str]):
 
 
 def _key(obj, seg: str):
+    """Convert a path segment into a key of an object (dict key, list index or attribute name)."""
     if isinstance(obj, dict):
         for k in obj:
             if str(k) == seg:
@@ -115,6 +144,7 @@ def _key(obj, seg: str):
 
 
 def _get(obj, key):
+    """Return a child of an object by key."""
     if isinstance(obj, (set, frozenset)):
         return list(obj)[key]
     if isinstance(obj, (dict, list, tuple)):
@@ -123,6 +153,7 @@ def _get(obj, key):
 
 
 def _entries(obj) -> list[tuple]:
+    """Return the (key, value) pairs of a dict, list or object."""
     if isinstance(obj, dict):
         return list(obj.items())
     if _is_list(obj):
@@ -136,6 +167,7 @@ def _entries(obj) -> list[tuple]:
 
 
 def _value(root: gws.Root, val, path: str, depth: int) -> dict:
+    """Describe a value for the page, expanding collections up to a fixed depth."""
     if _is_primitive(val):
         return {'kind': 'primitive', 'baseType': _base_type(val), 'value': _primitive_str(val)}
 
@@ -160,6 +192,7 @@ def _value(root: gws.Root, val, path: str, depth: int) -> dict:
 
 
 def _search(root: gws.Root, query: str) -> list[dict]:
+    """Walk the object graph breadth first and return the objects matching the query."""
     m = re.match(r'^([^=\s]+)\s*=(.*)$', query)
     prop, text = (m.group(1), m.group(2).strip()) if m else (None, query)
     text = text.lower()
@@ -198,6 +231,7 @@ def _search(root: gws.Root, query: str) -> list[dict]:
 
 
 def _match(val, text: str):
+    """Return the string form of a primitive value, or of a list item, that contains the text, or ``None``."""
     if _is_primitive(val):
         s = _primitive_str(val)
         return s if text in s.lower() else None
@@ -218,6 +252,7 @@ def _node_entry(node: gws.Node) -> dict:
 
 
 def _crumbs(root: gws.Root, path: str) -> list[dict]:
+    """Return breadcrumbs for a path: the root, the parent chain of the node and the path segments."""
     segs = _split(path)
     crumbs = []
 
@@ -238,6 +273,7 @@ def _crumbs(root: gws.Root, path: str) -> list[dict]:
 
 
 def _label(val) -> str:
+    """Return a short label for a value, with the size for collections."""
     if isinstance(val, dict):
         return f'dict[{len(val)}]'
     if _is_list(val):
@@ -248,6 +284,7 @@ def _label(val) -> str:
 
 
 def _format(val) -> str:
+    """Return ``<class uid>`` for an object, or ``<class id>`` if it has no uid."""
     if isinstance(val, gws.Root):
         return '<root>'
     if isinstance(val, gws.Application):
@@ -300,6 +337,7 @@ def _is_list(val) -> bool:
 
 
 def _is_object(val) -> bool:
+    """Check if a value is a dict or an object with attributes that can be inspected."""
     if isinstance(val, dict):
         return True
     if isinstance(val, _OPAQUE_TYPES):
@@ -308,4 +346,5 @@ def _is_object(val) -> bool:
 
 
 def _is_tree_node(root: gws.Root, val) -> bool:
+    """Check if a value is a node registered in the root by its uid."""
     return isinstance(val, gws.Node) and root.uidMap.get(vars(val).get('uid')) is val

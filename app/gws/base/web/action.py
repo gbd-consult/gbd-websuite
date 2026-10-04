@@ -1,18 +1,4 @@
-"""Handle dynamic assets.
-
-An asset is a file located in a global or project-specific ``assets`` directory.
-
-In order to access a project asset, the user must have ``read`` permission for the project itself.
-
-When the Web application receives a ``webAsset`` request with a ``path`` argument, it first checks the project-specific assets directory,
-and then the global dir.
-
-If the file is found, and its name matches :obj:`gws.base.template.manager.TEMPLATE_TYPES`, a respective ``Template`` object is generated on the fly and rendered.
-The renderer is passed a :obj:`TemplateArgs` object as an argument.
-The :obj:`gws.Response` object returned from rendering is passed back to the user.
-
-If the file is not a template and matches the ``allowMime/denyMime`` filter, its content is returned to the user.
-"""
+"""Web action for pages, assets and files."""
 
 from typing import Optional, cast
 
@@ -55,32 +41,48 @@ class Props(gws.base.action.Props):
 
 
 class AssetRequest(gws.Request):
+    """Asset request."""
+
     path: str
+    """Asset path, relative to the assets directory."""
 
 
 class PageRequest(gws.Request):
+    """Page request."""
+
     name: str
+    """Page name, ``home`` or ``project``."""
 
 
 class AssetResponse(gws.Request):
+    """Asset response for API requests."""
+
     content: str
+    """Asset content."""
     mimeType: str
+    """Asset MIME type."""
 
 
 class FileRequest(gws.Request):
+    """Request for a file stored in a feature field."""
+
     preview: bool = False
+    """Return a preview instead of the file."""
     modelUid: str
+    """Uid of the model."""
     fieldName: str
+    """Name of the file field."""
     featureUid: str
+    """Uid of the feature."""
 
 
 @gws.ext.object.action('web')
 class Object(gws.base.action.Object):
-    """Web action"""
+    """Web action, serves pages, assets and files."""
 
     @gws.ext.command.api('webAsset')
     def api_asset(self, req: gws.WebRequester, p: AssetRequest) -> AssetResponse:
-        """Return an asset under the given path and project"""
+        """Return an asset of the site or of the project."""
         res = self._serve_path(req, p)
         if res.contentPath:
             res.content = gws.u.read_file_b(res.contentPath)
@@ -88,11 +90,13 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.get('webAsset')
     def http_asset(self, req: gws.WebRequester, p: AssetRequest) -> gws.ContentResponse:
+        """Serve an asset of the site or of the project."""
         res = self._serve_path(req, p)
         return res
 
     @gws.ext.command.get('webPage')
     def get_page(self, req: gws.WebRequester, p: PageRequest) -> gws.ContentResponse:
+        """Render the application home page or a project page."""
         tpl = None
         project = None
         
@@ -108,6 +112,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.get('webDownload')
     def download(self, req: gws.WebRequester, p) -> gws.ContentResponse:
+        """Serve an asset as a download attachment."""
         res = self._serve_path(req, p)
         if res.contentPath:
             res.contentFilename = gws.lib.osx.parse_path(res.contentPath).filename
@@ -115,6 +120,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.get('webFile')
     def file(self, req: gws.WebRequester, p: FileRequest) -> gws.ContentResponse:
+        """Serve a file stored in a feature field."""
         model = cast(gws.Model, req.user.require(p.modelUid, gws.ext.object.model, gws.Access.read))
         field = model.field(p.fieldName)
         if not field:
@@ -135,6 +141,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.get('webSystemAsset')
     def sys_asset(self, req: gws.WebRequester, p: AssetRequest) -> gws.ContentResponse:
+        """Serve a client script or style sheet."""
         locale = gws.lib.intl.locale(p.localeUid, self.root.app.localeUids)
         app_templates = f'{gws.c.APP_DIR}/gws/base/application/templates/'
 
@@ -170,6 +177,7 @@ class Object(gws.base.action.Object):
         raise gws.NotFoundError(f'invalid system asset: {p.path=}')
 
     def _serve_path(self, req: gws.WebRequester, p: AssetRequest):
+        """Locate an asset in the project or site assets directory and serve or render it."""
         req_path = str(p.get('path') or '')
         if not req_path:
             raise gws.NotFoundError('no path provided')
@@ -216,6 +224,7 @@ class Object(gws.base.action.Object):
         return gws.ContentResponse(contentPath=real_path, mimeType=mime_type)
 
     def _serve_template(self, req: gws.WebRequester, p: gws.Request, tpl: gws.Template, project: Optional[gws.Project]):
+        """Render a template with the asset template arguments."""
         locale = gws.lib.intl.locale(p.localeUid, project.localeUids if project else self.root.app.localeUids)
         projects = [p for p in self.root.app.projects if req.user.can_use(p)]
         projects.sort(key=lambda p: p.title.lower())
@@ -254,6 +263,7 @@ _DEFAULT_ALLOWED_MIME_TYPES = {
 
 
 def _valid_mime_type(mt, project_assets: Optional[gws.WebDocumentRoot], site_assets: Optional[gws.WebDocumentRoot]):
+    """Check a MIME type against the allow and deny lists of the assets directories."""
     if project_assets and project_assets.allowMime:
         return mt in project_assets.allowMime
     if site_assets and site_assets.allowMime:

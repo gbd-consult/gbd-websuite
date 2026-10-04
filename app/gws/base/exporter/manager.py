@@ -1,10 +1,12 @@
+"""Exporter manager."""
+
 import gws
 import gws.lib.osx
 from . import worker
 
 
 class Object(gws.ExporterManager):
-    """Exporter manager object."""
+    """Exporter manager."""
 
     def list_exporters(self, where, user):
         exporters = []

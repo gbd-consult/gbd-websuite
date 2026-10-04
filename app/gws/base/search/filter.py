@@ -1,18 +1,4 @@
-"""OGC fes 2.0 filter
-
-Supports
-
-    - Minimum Standard Filter
-        PropertyIsEqualTo, PropertyIsNotEqualTo, PropertyIsLessThan, PropertyIsGreaterThan,
-        PropertyIsLessThanOrEqualTo, PropertyIsGreaterThanOrEqualTo.
-        Implements the logical operators. Does not implement any additional functions.
-
-    - Minimum Spatial Filter
-        Implements only the BBOX spatial operator.
-
-References:
-    - OGC® Filter Encoding 2.0 Encoding Standard (http://docs.opengeospatial.org/is/09-026r2/09-026r2.html)
-"""
+"""OGC Filter Encoding 2.0 parser and matcher."""
 
 import re
 import operator
@@ -25,6 +11,8 @@ import gws.lib.xmlx as xmlx
 
 
 class Error(gws.Error):
+    """Invalid or unsupported filter."""
+
     pass
 
 
@@ -42,47 +30,178 @@ _SUPPORTED_OPS = {
 ##
 
 class Matcher:
+    """Evaluates a search filter against Python objects.
+
+    By default, properties are object attributes and the geometry is the ``shape``
+    attribute. Subclasses can override ``get_property`` and ``get_shape`` to match
+    other kinds of objects.
+    """
+
     def get_property(self, obj, prop):
+        """Return a property value of an object.
+
+        Args:
+            obj: Object to match.
+            prop: Property name.
+
+        Returns:
+            The attribute value, or ``None`` if the object has no such attribute.
+        """
         return getattr(obj, prop, None)
 
     def get_shape(self, obj):
+        """Return the geometry of an object.
+
+        Args:
+            obj: Object to match.
+
+        Returns:
+            The ``shape`` attribute, or ``None`` if the object has none.
+        """
         return getattr(obj, 'shape', None)
 
     def matches(self, flt: gws.SearchFilter, obj):
+        """Check if an object matches a filter.
+
+        Calls the ``match_<operator>`` method for the filter operator.
+
+        Args:
+            flt: Search filter.
+            obj: Object to match.
+
+        Returns:
+            ``True`` if the object matches the filter.
+
+        Raises:
+            ``AttributeError``: If the filter operator is not supported.
+        """
         return getattr(self, f'match_{flt.operator}'.lower())(flt, obj)
 
     ##
 
     def match_and(self, flt, obj):
+        """Check if an object matches all sub-filters.
+
+        Args:
+            flt: Search filter with the ``And`` operator.
+            obj: Object to match.
+
+        Returns:
+            ``True`` if all sub-filters match.
+        """
         return all(self.matches(sf, obj) for sf in flt.subFilters)
 
     def match_or(self, flt, obj):
+        """Check if an object matches any sub-filter.
+
+        Args:
+            flt: Search filter with the ``Or`` operator.
+            obj: Object to match.
+
+        Returns:
+            ``True`` if at least one sub-filter matches.
+        """
         return any(self.matches(sf, obj) for sf in flt.subFilters)
 
     def match_not(self, flt, obj):
+        """Check if an object does not match the first sub-filter.
+
+        Args:
+            flt: Search filter with the ``Not`` operator.
+            obj: Object to match.
+
+        Returns:
+            ``True`` if the first sub-filter does not match.
+        """
         return not (self.matches(flt.subFilters[0], obj))
 
     ##
 
     def match_propertyisequalto(self, flt, obj):
+        """Check if a property is equal to the filter value.
+
+        Args:
+            flt: Search filter with the ``PropertyIsEqualTo`` operator.
+            obj: Object to match.
+
+        Returns:
+            ``True`` if the property matches.
+        """
         return self.compare(self.get_property(obj, flt.property), flt.value, operator.eq)
 
     def match_propertyisnotequalto(self, flt, obj):
+        """Check if a property is not equal to the filter value.
+
+        Args:
+            flt: Search filter with the ``PropertyIsNotEqualTo`` operator.
+            obj: Object to match.
+
+        Returns:
+            ``True`` if the property matches.
+        """
         return self.compare(self.get_property(obj, flt.property), flt.value, operator.ne)
 
     def match_propertyislessthan(self, flt, obj):
+        """Check if a property is less than the filter value.
+
+        Args:
+            flt: Search filter with the ``PropertyIsLessThan`` operator.
+            obj: Object to match.
+
+        Returns:
+            ``True`` if the property matches.
+        """
         return self.compare(self.get_property(obj, flt.property), flt.value, operator.lt)
 
     def match_propertyisgreaterthan(self, flt, obj):
+        """Check if a property is greater than the filter value.
+
+        Args:
+            flt: Search filter with the ``PropertyIsGreaterThan`` operator.
+            obj: Object to match.
+
+        Returns:
+            ``True`` if the property matches.
+        """
         return self.compare(self.get_property(obj, flt.property), flt.value, operator.gt)
 
     def match_propertyislessthanorequalto(self, flt, obj):
+        """Check if a property is less than or equal to the filter value.
+
+        Args:
+            flt: Search filter with the ``PropertyIsLessThanOrEqualTo`` operator.
+            obj: Object to match.
+
+        Returns:
+            ``True`` if the property matches.
+        """
         return self.compare(self.get_property(obj, flt.property), flt.value, operator.le)
 
     def match_propertyisgreaterthanorequalto(self, flt, obj):
+        """Check if a property is greater than or equal to the filter value.
+
+        Args:
+            flt: Search filter with the ``PropertyIsGreaterThanOrEqualTo`` operator.
+            obj: Object to match.
+
+        Returns:
+            ``True`` if the property matches.
+        """
         return self.compare(self.get_property(obj, flt.property), flt.value, operator.ge)
 
     def compare(self, a, b, op):
+        """Compare a property value with a filter value.
+
+        If the property value is a list, it matches if any of its elements matches.
+
+        Args:
+            a: Property value.
+            b: Filter value.
+            op: Comparison function, like ``operator.eq``.
+
+        Returns:
+            ``True`` if the comparison succeeds, ``False`` if the property value is ``None``.
+        """
         if a is None:
             return False
         if isinstance(a, list):
@@ -108,6 +227,15 @@ class Matcher:
     """
 
     def match_bbox(self, flt, obj):
+        """Check if the object geometry intersects the filter box.
+
+        Args:
+            flt: Search filter with the ``BBOX`` operator.
+            obj: Object to match.
+
+        Returns:
+            ``True`` if the geometry intersects the box, ``False`` if the object has no geometry.
+        """
         shape = self.get_shape(obj)
         if not shape:
             return False
@@ -118,6 +246,19 @@ class Matcher:
 
 
 def from_fes_string(src: str) -> gws.SearchFilter:
+    """Parse an FES filter from an XML string.
+
+    Namespaces are removed before parsing.
+
+    Args:
+        src: XML string with a filter element.
+
+    Returns:
+        A search filter.
+
+    Raises:
+        ``Error``: If the XML is invalid or the filter is invalid or not supported.
+    """
     try:
         el = xmlx.from_string(src, gws.XmlOptions(removeNamespaces=True))
     except Exception as exc:
@@ -126,6 +267,23 @@ def from_fes_string(src: str) -> gws.SearchFilter:
 
 
 def from_fes_element(el: gws.XmlElement) -> gws.SearchFilter:
+    """Parse an FES filter from an XML element.
+
+    The element can be a ``Filter`` root element with exactly one predicate, a logical
+    operator (``And``, ``Or``, ``Not``) or a supported comparison or ``BBOX`` predicate.
+    ``And`` and ``Or`` with a single operand are reduced to that operand. A comparison
+    requires a ``ValueReference`` or ``PropertyName`` and a ``Literal``, ``BBOX``
+    requires a property name and a GML ``Envelope``.
+
+    Args:
+        el: XML element.
+
+    Returns:
+        A search filter.
+
+    Raises:
+        ``Error``: If the filter is invalid or not supported.
+    """
     op = el.name.lower()
     sub = el.children()
 

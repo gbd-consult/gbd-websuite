@@ -1,4 +1,4 @@
-"""Account-based authorization provider."""
+"""Authorization provider for the accounts table."""
 
 from typing import Optional, cast
 
@@ -16,7 +16,10 @@ class Config(gws.base.auth.provider.Config):
 
 @gws.ext.object.authProvider('account')
 class Object(gws.base.auth.provider.Object):
+    """Authorization provider that authenticates users against the accounts table of the account helper."""
+
     h: helper.Object
+    """The account helper."""
 
     def configure(self):
         self.h = cast(helper.Object, self.root.app.helper('account'))
@@ -36,6 +39,11 @@ class Object(gws.base.auth.provider.Object):
             return self._make_user(account)
 
     def _make_user(self, account: dict) -> gws.User:
+        """Create a user from an account record.
+
+        The record is converted with ``gws.base.auth.user.from_record``, the primary key becomes the local user uid.
+        """
+
         user_rec = {}
 
         for k, v in account.items():

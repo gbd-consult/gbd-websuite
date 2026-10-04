@@ -1,8 +1,4 @@
-"""Configuration parser.
-
-Convert configuration files (in different formats) or row config dicts
-into ``gws.Config`` objects by validating them against the specs.
-"""
+"""Configuration parser: read configuration files and validate them against the specs."""
 
 from typing import Optional, cast
 
@@ -22,12 +18,15 @@ CONFIG_PATH_PATTERN = r'\.(py|json|yaml|yml|cx)$'
 
 
 def parse_from_path(path: str, as_type: str, ctx: gws.ConfigContext) -> Optional[gws.Config]:
-    """Parse a configuration from a path.
+    """Read a configuration file and validate it as a given type.
 
     Args:
         path: Path to the configuration file.
-        as_type: Type of the configuration (e.g., 'gws.base.application.core.Config').
-        ctx: Configuration context.
+        as_type: Type of the configuration, e.g. ``gws.base.application.core.Config``.
+        ctx: Configuration context. Errors are added to it.
+
+    Returns:
+        The parsed configuration, or ``None`` if there were errors.
     """
 
     pp = _Parser(ctx)
@@ -37,13 +36,16 @@ def parse_from_path(path: str, as_type: str, ctx: gws.ConfigContext) -> Optional
 
 
 def parse_dict(dct: dict | gws.Data, path: str, as_type: str, ctx: gws.ConfigContext) -> Optional[gws.Config]:
-    """Parse a configuration given as python dict.
+    """Validate a configuration dict as a given type.
 
     Args:
-        dct: Dictionary containing the configuration.
-        path: Path to the configuration file (for error reporting).
-        as_type: Type of the configuration.
-        ctx: Configuration context.
+        dct: Configuration dict or ``gws.Data`` object.
+        path: Path to the configuration file, for error reporting.
+        as_type: Type of the configuration, e.g. ``gws.ext.config.layer``.
+        ctx: Configuration context. Errors are added to it.
+
+    Returns:
+        The parsed configuration, or ``None`` if there were errors.
     """
 
     pp = _Parser(ctx)
@@ -52,11 +54,17 @@ def parse_dict(dct: dict | gws.Data, path: str, as_type: str, ctx: gws.ConfigCon
 
 
 def parse_app_from_path(path: str, ctx: gws.ConfigContext) -> Optional[gws.Config]:
-    """Parse application configuration from a path.
+    """Read and validate the application configuration file.
+
+    Sets the server time zone, then parses the application config and all
+    projects (inline ``projects``, ``projectPaths`` and files in ``projectDirs``).
 
     Args:
         path: Path to the application configuration file.
-        ctx: Configuration context.
+        ctx: Configuration context. Errors are added to it.
+
+    Returns:
+        The parsed application configuration, or ``None`` if it could not be parsed.
     """
 
     pp = _Parser(ctx)
@@ -66,12 +74,17 @@ def parse_app_from_path(path: str, ctx: gws.ConfigContext) -> Optional[gws.Confi
 
 
 def parse_app_dict(dct: dict | gws.Data, path: str, ctx: gws.ConfigContext) -> Optional[gws.Config]:
-    """Parse application configuration given as python dict.
+    """Validate an application configuration dict.
+
+    Works like ``parse_app_from_path``.
 
     Args:
-        dct: Dictionary containing the application configuration.
-        path: Path to the configuration file (for error reporting).
-        ctx: Configuration context.
+        dct: Application configuration dict or ``gws.Data`` object.
+        path: Path to the configuration file, for error reporting.
+        ctx: Configuration context. Errors are added to it.
+
+    Returns:
+        The parsed application configuration, or ``None`` if it could not be parsed.
     """
 
     pp = _Parser(ctx)
@@ -80,11 +93,16 @@ def parse_app_dict(dct: dict | gws.Data, path: str, ctx: gws.ConfigContext) -> O
 
 
 def read_from_path(path: str, ctx: gws.ConfigContext) -> Optional[dict]:
-    """Read a configuration file from a path, parse config formats.
+    """Read a configuration file into a dict, without validating it.
+
+    The format is determined by the file extension.
 
     Args:
         path: Path to the configuration file.
-        ctx: Configuration context.
+        ctx: Configuration context. Errors are added to it.
+
+    Returns:
+        The configuration dict, or ``None`` if the file could not be read or does not contain a dict.
     """
     pp = _Parser(ctx)
     val = pp.read_from_path(path)
@@ -96,6 +114,7 @@ def read_from_path(path: str, ctx: gws.ConfigContext) -> Optional[dict]:
 
 
 def _parse_app_dict(dct: dict, path, pp: '_Parser'):
+    """Set the time zone, parse the application config and collect all project configs."""
     dct = gws.u.to_dict(dct)
     if not isinstance(dct, dict):
         _register_error(pp.ctx, f'app config must be a dict', path=path)
@@ -147,6 +166,7 @@ def _parse_projects_from_path(path, pp: '_Parser'):
 
 
 def _parse_projects(cfg_list, path, pp: '_Parser'):
+    """Parse a project config or a (nested) list of them."""
     ps = []
 
     for c in _as_flat_list(cfg_list):
@@ -164,7 +184,14 @@ def _parse_projects(cfg_list, path, pp: '_Parser'):
 
 
 class _Parser:
+    """Reads configuration files and validates dicts, recording errors in the context."""
+
     def __init__(self, ctx: gws.ConfigContext):
+        """Initialize the context and enable verbose errors.
+
+        Args:
+            ctx: Configuration context.
+        """
         self.ctx = ctx
         self.ctx.errors = ctx.errors or []
         self.ctx.paths = ctx.paths or set()
@@ -172,6 +199,15 @@ class _Parser:
         self.ctx.readOptions.add(gws.SpecReadOption.verboseErrors)
 
     def ensure_dict(self, val, path):
+        """Convert a value to a plain dict.
+
+        Args:
+            val: Value to convert, a dict or a ``gws.Data`` object.
+            path: Path to the configuration file, for error reporting.
+
+        Returns:
+            A plain dict, or ``None`` if the value is ``None`` or not a dict.
+        """
         if val is None:
             return
         d = _to_plain(val)
@@ -181,6 +217,16 @@ class _Parser:
         return d
 
     def parse_dict(self, dct: dict, path: str, as_type: str) -> Optional[gws.Config]:
+        """Validate a dict against the specs.
+
+        Args:
+            dct: Configuration dict.
+            path: Path to the configuration file, recorded in the context.
+            as_type: Type of the configuration.
+
+        Returns:
+            The parsed configuration, or ``None`` if there were errors.
+        """
         if not isinstance(dct, dict):
             _register_error(self.ctx, 'unsupported configuration', path=path)
             return
@@ -199,6 +245,14 @@ class _Parser:
             _register_error(self.ctx, f'parse error: {message}', cei=cei)
 
     def read_from_path(self, path: str):
+        """Read a configuration file and convert the result to plain values.
+
+        Args:
+            path: Path to the configuration file.
+
+        Returns:
+            The configuration value, or ``None`` if the file could not be read.
+        """
         if not os.path.isfile(path):
             _register_error(self.ctx, f'file not found', path=path)
             return
@@ -212,6 +266,14 @@ class _Parser:
             return r
 
     def read2(self, path: str):
+        """Read a configuration file using the reader for its extension.
+
+        Args:
+            path: Path to the configuration file.
+
+        Returns:
+            The configuration value, or ``None`` on errors.
+        """
         if path.endswith('.py'):
             return self.read_py(path)
         if path.endswith('.json'):
@@ -224,6 +286,14 @@ class _Parser:
         _register_error(self.ctx, 'unsupported configuration', path=path)
 
     def read_py(self, path: str):
+        """Load a Python configuration file and call its ``main`` function with the context.
+
+        Args:
+            path: Path to the configuration file.
+
+        Returns:
+            The value returned by ``main``, or ``None`` on errors.
+        """
         try:
             fn = gws.lib.dynimport.load_file(path).get('main')
             if not fn:
@@ -235,12 +305,28 @@ class _Parser:
             _register_error(self.ctx, f'python error: {exc}', path=path)
 
     def read_json(self, path: str):
+        """Read a JSON configuration file.
+
+        Args:
+            path: Path to the configuration file.
+
+        Returns:
+            The decoded value, or ``None`` on errors.
+        """
         try:
             return gws.lib.jsonx.from_path(path)
         except Exception as exc:
             _register_error(self.ctx, f'json error: {exc}', path=path)
 
     def read_yaml(self, path: str):
+        """Read a YAML configuration file.
+
+        Args:
+            path: Path to the configuration file.
+
+        Returns:
+            The decoded value, or ``None`` on errors.
+        """
         try:
             with open(path, encoding='utf8') as fp:
                 return yaml.safe_load(fp)
@@ -248,6 +334,18 @@ class _Parser:
             _register_error(self.ctx, f'yaml error: {exc}', path=path)
 
     def read_cx(self, path: str):
+        """Read a ``.cx`` configuration file.
+
+        The file is a ``jump`` template that renders to SLON. Included files are
+        recorded in the context. Template variables are ``true``, ``false``,
+        ``ctx`` and ``gws``.
+
+        Args:
+            path: Path to the configuration file.
+
+        Returns:
+            The decoded value, or ``None`` on errors.
+        """
         err_cnt = [0]
 
         def _error_handler(exc, path, line, env):
@@ -310,6 +408,7 @@ def _register_warning(ctx: gws.ConfigContext, message: str, **kwargs):
 
 
 def _register_syntax_error(ctx, path, src, message, line, context=10, cause=None):
+    """Add a syntax error with the surrounding source lines to the context."""
     cei = gws.ConfigErrorInfo(
         path=path,
         line=line,
@@ -332,6 +431,7 @@ def _register_syntax_error(ctx, path, src, message, line, context=10, cause=None
 
 
 def _save_debug(src, src_path, ext):
+    """Write an intermediate parsing result to the config directory, for debugging."""
     if ext.endswith('.json') and not isinstance(src, str):
         src = gws.lib.jsonx.to_pretty_string(src)
     path = gws.u.write_file(f'{gws.c.CONFIG_DIR}/{gws.u.to_uid(src_path)}{ext}', src)
@@ -347,6 +447,7 @@ def _as_flat_list(ls):
 
 
 def _to_plain(val):
+    """Convert ``gws.Data`` objects to dicts recursively, values of keys starting with ``_`` are left as is."""
     if isinstance(val, (list, tuple)):
         return [_to_plain(x) for x in val]
     if isinstance(val, gws.Data):

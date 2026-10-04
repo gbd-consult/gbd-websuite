@@ -1,8 +1,4 @@
-"""CQL2-Text parser. See the package documentation for the parse tree format.
-
-Reference:
-    - https://docs.ogc.org/is/21-065r2/21-065r2.html#cql2-bnf
-"""
+"""CQL2-Text parser."""
 
 import re
 import datetime
@@ -15,10 +11,10 @@ def parse(s: str):
         s: CQL2-Text expression.
 
     Returns:
-        A parse tree.
+        A parse tree of nested lists, see the package documentation.
 
     Raises:
-        `ParseError` if the expression is invalid.
+        ParseError: If the expression is invalid.
     """
 
     parser = _Parser()
@@ -26,10 +22,14 @@ def parse(s: str):
 
 
 class ParseError(Exception):
+    """A CQL2-Text expression is invalid. The message contains the error position."""
+
     pass
 
 
 class Node:
+    """Node types of the parse tree."""
+
     AND = 'AND'
     ARRAY = 'ARRAY'
     BETWEEN = 'BETWEEN'
@@ -55,6 +55,8 @@ class Node:
 
 
 class C:
+    """Operator, keyword and function sets of the parser."""
+
     LITERALS = {
         Node.ARRAY,
         Node.BOOL,
@@ -65,14 +67,21 @@ class C:
         Node.TIMESTAMP,
         Node.WKT,
     }
+    """Literal node types."""
 
     COMPARISON_OPERATORS = {'=', '<>', '!=', '<', '<=', '>', '>='}
+    """Comparison operators."""
     NOT_EQUAL_OPERATORS = {'<>', '!='}
+    """Not-equal operators, emitted as ``<>``."""
     ADDITIVE_OPERATORS = {'+', '-'}
+    """Additive operators, also used as unary signs."""
     MULTIPLICATIVE_OPERATORS = {'*', '/', '%'}
+    """Multiplicative operators."""
     POWER_OPERATORS = {'^'}
+    """Power operators."""
 
     OPERATORS = COMPARISON_OPERATORS | ADDITIVE_OPERATORS | MULTIPLICATIVE_OPERATORS | POWER_OPERATORS
+    """All operators."""
 
     KEYWORDS = {
         'and',
@@ -83,6 +92,7 @@ class C:
         'between',
         'in',
     }
+    """Reserved keywords."""
 
     PREDICATE_KEYWORDS = {
         'not',
@@ -91,6 +101,7 @@ class C:
         'between',
         'in',
     }
+    """Keywords that can follow an operand in a predicate."""
 
     WKT_KEYWORDS = {
         'point',
@@ -101,6 +112,7 @@ class C:
         'multipolygon',
         'geometrycollection',
     }
+    """Geometry types that start a WKT literal."""
 
     FUNCTIONS = {
         's_intersects': 2,
@@ -137,6 +149,7 @@ class C:
         'casei': 1,
         'accenti': 1,
     }
+    """Standard functions and their number of arguments."""
 
     ARRAY_FUNCTIONS = {
         'a_contains',
@@ -144,16 +157,20 @@ class C:
         'a_equals',
         'a_overlaps',
     }
+    """Functions whose parenthesized arguments are array literals."""
 
     PATTERN_FUNCTIONS = {
         'casei',
         'accenti',
     }
+    """Functions allowed as a ``LIKE`` pattern."""
 
 ##
 
 
 class _Token:
+    """A token with its type, value and position in the input."""
+
     def __init__(self, type: str, value, pos: int):
         self.type = type
         self.value = value
@@ -176,11 +193,14 @@ _TOKENS = [
 
 
 class _Parser:
+    """Recursive descent parser for CQL2-Text."""
+
     def __init__(self):
         self.tokens = []
         self.index = 0
 
     def parse(self, s: str):
+        """Parse an expression and check that all input is consumed."""
         self.tokens = list(self.tokenize(s))
         self.tokens.append(_Token('EOF', None, len(s)))
         self.index = 0
@@ -196,6 +216,7 @@ class _Parser:
         return ParseError(f'Parse error: {message} ({pos})')
 
     def tokenize(self, s):
+        """Yield the tokens of the input, without whitespace."""
         pos = 0
         while pos < len(s):
             tok = None
@@ -292,6 +313,7 @@ class _Parser:
         return self.parse_predicate()
 
     def is_operand_follower(self):
+        """Check if the current token can follow an operand, i.e. is an operator or a predicate keyword."""
         tok = self.tok()
         if tok.type in C.OPERATORS:
             return True
@@ -519,6 +541,7 @@ class _Parser:
             raise self.error(f'invalid date')
 
     def parse_geometry_literal(self):
+        """Collect the tokens of a WKT literal into a normalized WKT string."""
         parts = []
         parens = 0
         has_word = False
@@ -566,6 +589,7 @@ class _Parser:
         return elements
 
     def parse_array_argument(self):
+        """Parse an argument of an array function, a parenthesized list being an array."""
         if self.is_a('('):
             self.pop()
             return [Node.ARRAY, *self.parse_list(')')]
@@ -582,5 +606,6 @@ class _Parser:
         return elements
 
     def unquote(self, s: str):
+        """Remove the quotes of a quoted string and unescape doubled and backslash-escaped quotes."""
         quote = s[0]
         return s[1:-1].replace('\\' + quote, quote).replace(quote + quote, quote)

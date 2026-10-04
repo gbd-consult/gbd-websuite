@@ -1,14 +1,31 @@
-"""Related Feature field
+"""Related feature field.
 
 Represents a child->parent M:1 relationship to another model::
 
     +-------------+         +--------------+
     | model       |         | toModel      |
     +-------------+         +--------------+
-    | fromKey     |-------->| toKey        |
+    | fromColumn  |-------->| toColumn     |
     +-------------+         +--------------+
 
-The value of the field is the parent feature.
+The value of the field is the parent feature. ``fromColumn`` is the foreign
+key column in this model's table, ``toColumn`` the key column in the related
+model, by default its primary key. When a feature is written, the key of the
+selected parent feature is stored in ``fromColumn``. When a parent feature is
+created together with a child feature, the child's ``fromColumn`` is set to
+the new parent's key. Without a configured widget, the field uses a
+``featureSelect`` widget.
+
+Example::
+
+    fields+ {
+        name "category"
+        type "relatedFeature"
+        fromColumn "category_id"
+        toModel "model_category"
+        toColumn "id"
+        widget.type "featureSelect"
+    }
 """
 
 import gws
@@ -36,6 +53,8 @@ class Props(related_field.Props):
 
 @gws.ext.object.modelField('relatedFeature')
 class Object(related_field.Object):
+    """Related feature field object."""
+
     attributeType = gws.AttributeType.feature
 
     def configure_relationship(self):
@@ -94,6 +113,16 @@ class Object(related_field.Object):
                     )
 
     def uids_for_key(self, rel: related_field.RelRef, key, mc):
+        """Find the uids of the features whose key column has the given value.
+
+        Args:
+            rel: The relationship side to query.
+            key: The key value.
+            mc: The model context.
+
+        Returns:
+            A set of feature uids as strings.
+        """
         sql = sa.select(rel.uid).where(rel.key.__eq__(key))
         with rel.model.db.connect() as conn:
             return set(str(u) for u in conn.execute(sql))
@@ -138,6 +167,15 @@ class Object(related_field.Object):
         self.before_write(feature, mc)
 
     def before_write(self, feature: gws.Feature, mc: gws.ModelContext):
+        """Write the key of the related feature to the foreign key column of the record.
+
+        Does nothing if the user may not write the field or the feature has no value
+        for it. An empty value clears the foreign key.
+
+        Args:
+            feature: The feature being created or updated.
+            mc: The model context.
+        """
         if not mc.user.can_write(self):
             return
 

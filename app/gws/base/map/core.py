@@ -1,3 +1,5 @@
+"""Default map object."""
+
 from typing import Optional
 
 import gws
@@ -47,12 +49,18 @@ class Props(gws.Data):
 
 
 class _RootLayer(gws.base.layer.group.Object):
+    """Root layer of a map."""
+
     parent: 'Object'
+    """The map."""
 
 
 @gws.ext.object.map('default')
 class Object(gws.Map):
+    """Default map."""
+
     wrapX: bool
+    """Repeat the world horizontally in the client."""
 
     def configure(self):
         self.title = self.cfg('title') or self.cfg('_defaultTitle') or ''

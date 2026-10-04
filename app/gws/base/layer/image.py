@@ -1,4 +1,4 @@
-"""Base image layer."""
+"""Base raster layer."""
 
 from typing import Optional, cast
 
@@ -14,7 +14,12 @@ CACHE_NAME_LENGTH = 12
 
 
 class Object(core.Object):
-    """Base image layer"""
+    """Base raster layer.
+
+    Renders boxes and tiles through grabbers (see ``gws.base.grabber``), one
+    per CRS supported by the application. Subclasses provide the grabber with
+    ``create_grabber`` and the default cache name with ``create_cache_name``.
+    """
 
     canRenderBox = True
     canRenderTile = True
@@ -23,6 +28,15 @@ class Object(core.Object):
         self.post_configure_grabbers()
 
     def post_configure_grabbers(self):
+        """Create a grabber for each CRS supported by the application.
+
+        The cache settings come from the ``cache`` configuration. The cache
+        name defaults to ``create_cache_name`` and gets the CRS code appended.
+        Caching is disabled (``maxAge`` 0) when ``withCache`` is off, and for
+        CRSs not listed in ``cache.crs`` if that list is given. CRSs that are
+        incompatible with the layer extent are skipped with a configuration
+        warning.
+        """
         if not (self.canRenderBox or self.canRenderTile):
             return
 
@@ -68,14 +82,43 @@ class Object(core.Object):
                 self.grabbers[crs.srid] = gr
 
     def create_cache_name(self, cache: gws.MapCache) -> str:
+        """Create a default cache name for the layer.
+
+        Subclasses must implement this.
+
+        Args:
+            cache: Cache settings.
+
+        Returns:
+            Cache name.
+
+        Raises:
+            ``NotImplementedError``: In the base class.
+        """
         raise NotImplementedError(f'create_cache_name not implemented in {self!r}')
 
     def create_grabber(self, opts: gws.base.grabber.Options) -> Optional[gws.Grabber]:
+        """Create a grabber for one CRS. Returns nothing in the base class.
+
+        Args:
+            opts: Grabber options: CRS, cache, extent and image format.
+
+        Returns:
+            A grabber, or ``None`` if the layer cannot serve this CRS.
+        """
         pass
 
     ##
 
     def grabber_for(self, lri: gws.LayerRenderInput) -> Optional[gws.Grabber]:
+        """Find the grabber for the target CRS of a render request.
+
+        Args:
+            lri: Render input; without ``targetCrs`` the map CRS is used.
+
+        Returns:
+            The grabber, or ``None`` if there is none for the CRS.
+        """
         crs = lri.targetCrs or self.mapCrs
         return self.grabbers.get(crs.srid)
 

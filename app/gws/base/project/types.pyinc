@@ -1,27 +1,43 @@
 class Client(Node):
-    """GWS Client control object."""
+    """Settings for the browser client: UI elements and client options."""
 
     options: dict
+    """Client options."""
     elements: list
+    """Client UI elements."""
 
 
 class Project(Node):
-    """Project object."""
+    """Project: a map application with its own map, actions, templates and services."""
 
     assetsRoot: Optional['WebDocumentRoot']
+    """Project assets directory, checked before the global assets directory."""
     client: 'Client'
+    """Project client settings, replacing the application client."""
 
     localeUids: list[str]
+    """Locales of the project."""
     map: 'Map'
+    """Main map of the project."""
     metadata: 'Metadata'
+    """Project metadata."""
     title: str
+    """Project title."""
 
     actions: list['Action']
+    """Actions available only in this project."""
     finders: list['Finder']
+    """Search providers of the project."""
     models: list['Model']
+    """Data models of the project."""
     exporters: list['Exporter']
+    """Exporters of the project."""
     printers: list['Printer']
+    """Printers of the project."""
     templates: list['Template']
+    """Templates of the project."""
     owsServices: list['OwsService']
+    """OWS services published for the project."""
 
     vars: dict
+    """Custom variables."""

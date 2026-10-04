@@ -1,4 +1,4 @@
-"""Provides the printing API."""
+"""Exporter action."""
 
 from typing import Optional, cast
 
@@ -22,23 +22,28 @@ class Props(gws.base.action.Props):
 
 
 class CliParams(gws.CliParams):
+    """Parameters of the ``gws exporter export`` command."""
+
     project: Optional[str]
-    """project uid"""
+    """Project uid. Not used, the project is taken from the request."""
     request: str
-    """path to request.json"""
+    """Path to a JSON file with a ``gws.ExportRequest``."""
     output: str
-    """output path"""
+    """Path to copy the export result to."""
 
 
 @gws.ext.object.action('exporter')
 class Object(gws.base.action.Object):
+    """Exporter action."""
+
     @gws.ext.command.api('exporterStart')
     def exporter_start(self, req: gws.WebRequester, p: gws.ExportRequest) -> gws.JobStatusResponse:
-        """Start a background export job"""
+        """Start a background export job."""
         return self.root.app.exporterMgr.start_export_job(p, req.user)
 
     @gws.ext.command.api('exporterStatus')
     def exporter_status(self, req: gws.WebRequester, p: gws.JobRequest) -> gws.JobStatusResponse:
+        """Return the status of an export job."""
         res = self.root.app.jobMgr.handle_status_request(req, p)
         if res.state == gws.JobState.complete:
             er = gws.ExportResult(self.root.app.jobMgr.require_result(req, p))
@@ -55,10 +60,12 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.api('exporterCancel')
     def exporter_cancel(self, req: gws.WebRequester, p: gws.JobRequest) -> gws.JobStatusResponse:
+        """Cancel an export job."""
         return self.root.app.jobMgr.handle_cancel_request(req, p)
 
     @gws.ext.command.get('exporterOutput')
     def exporter_output(self, req: gws.WebRequester, p: gws.JobRequest) -> gws.ContentResponse:
+        """Return the result file of a completed export job."""
         er = gws.ExportResult(self.root.app.jobMgr.require_result(req, p))
         if not er.path:
             raise gws.NotFoundError('export result not found')
@@ -69,7 +76,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.cli('exporterExport')
     def do_export(self, p: CliParams):
-        """Export using the specified params"""
+        """Run an export from the command line."""
 
         root = gws.config.load()
         request = root.specs.read(

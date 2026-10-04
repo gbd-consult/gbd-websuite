@@ -1,45 +1,4 @@
-"""Server control.
-
-Following workflows are supported:
-
-1) Server start. This is called only once upon the container start.
-
-    - (empty TMP_DIR completely in bin/gws)
-    - configure
-    - store the config
-    - write server configs
-    - (the actual invocation of the server start script takes place in bin/gws)
-
-2) Server reconfigure. Can be called anytime, e.g. by the monitor
-
-    - configure
-    - store the config
-    - write server configs
-    - empty the TRANSIENT_DIR
-    - reload all backends
-    - reload nginx
-
-3) Server reload. Can be called anytime, e.g. by the monitor
-
-    - write server configs
-    - empty the TRANSIENT_DIR
-    - reload all backends
-    - reload nginx
-
-
-4) Configure (debugging)
-
-    - configure
-    - store the config
-
-
-5) Configtest (debugging)
-
-    - configure
-
-
-
-"""
+"""Functions to start, reconfigure and reload the servers."""
 
 import gws
 import gws.config
@@ -58,6 +17,18 @@ _PID_PATHS = {
 
 
 def start(manifest_path='', config_path=''):
+    """Configure the application and write the server configuration files and the start script.
+
+    Called once on the container start. The start script itself is executed by ``bin/gws``.
+    Exits the process with code 1 if the web server is already running.
+
+    Args:
+        manifest_path: Path to the application manifest.
+        config_path: Path to the configuration file.
+
+    Raises:
+        ``gws.ConfigurationError``: If the configuration fails.
+    """
     if app_is_running('web'):
         gws.log.error(f'server already running')
         gws.u.exit(1)
@@ -66,6 +37,17 @@ def start(manifest_path='', config_path=''):
 
 
 def reconfigure(manifest_path='', config_path=''):
+    """Configure the application, rewrite the server configuration files and reload all servers.
+
+    Exits the process with code 1 if the web server is not running.
+
+    Args:
+        manifest_path: Path to the application manifest.
+        config_path: Path to the configuration file.
+
+    Raises:
+        ``gws.ConfigurationError``: If the configuration fails.
+    """
     if not app_is_running('web'):
         gws.log.error(f'server not running')
         gws.u.exit(1)
@@ -75,12 +57,40 @@ def reconfigure(manifest_path='', config_path=''):
 
 
 def configure_and_store(manifest_path='', config_path='', is_starting=False):
+    """Configure the application and store the configuration, so that the servers can load it.
+
+    Args:
+        manifest_path: Path to the application manifest.
+        config_path: Path to the configuration file.
+        is_starting: True on the server start, runs the ``server.autoRun`` command before initialization.
+
+    Returns:
+        The configured root object.
+
+    Raises:
+        ``gws.ConfigurationError``: If the configuration fails.
+    """
     root = configure(manifest_path, config_path, is_starting)
     gws.config.store(root)
     return root
 
 
 def configure(manifest_path='', config_path='', is_starting=False):
+    """Configure the application and log the configuration report.
+
+    If the configuration fails and the manifest enables ``withFallbackConfig``, a minimal fallback configuration is used.
+
+    Args:
+        manifest_path: Path to the application manifest.
+        config_path: Path to the configuration file.
+        is_starting: True on the server start, runs the ``server.autoRun`` command before initialization.
+
+    Returns:
+        The configured root object.
+
+    Raises:
+        ``gws.ConfigurationError``: If the configuration fails.
+    """
     def _pre_init(ld: gws.config.loader.Object):
         autorun = gws.u.get(ld.config, 'server.autoRun')
         if autorun:
@@ -110,6 +120,18 @@ def config_test(
         with_parse_only=False,
         with_watch=False
 ):
+    """Configure or parse the configuration and log the report.
+
+    In the watch mode, the test is repeated whenever a file in the watched directories changes,
+    and the function never returns.
+
+    Args:
+        manifest_path: Path to the application manifest.
+        config_path: Path to the configuration file.
+        dirs_to_watch: Directories to watch, ``/data`` by default.
+        with_parse_only: Only parse the configuration, do not configure the objects.
+        with_watch: Keep watching the directories and repeat the test on changes.
+    """
 
     def _check(*args):
         gws.log.info('=' * 80)
@@ -140,6 +162,11 @@ def config_test(
 ##
 
 def reload_all():
+    """Empty the transient directory and reload the spool and web servers and NGINX.
+
+    Returns:
+        Always True.
+    """
     gws.lib.osx.run(['rm', '-fr', gws.c.TRANSIENT_DIR])
     gws.u.ensure_system_dirs()
 
@@ -151,6 +178,11 @@ def reload_all():
 
 
 def reload_app(srv):
+    """Reload a uWSGI backend, if it is running.
+
+    Args:
+        srv: Backend name, ``web`` or ``spool``.
+    """
     if not app_is_running(srv):
         gws.log.debug(f'reload: {srv=} not running')
         return
@@ -159,11 +191,20 @@ def reload_app(srv):
 
 
 def reload_nginx():
+    """Reload the NGINX configuration."""
     gws.log.info(f'reloading nginx...')
     gws.lib.osx.run(['nginx', '-c', gws.c.SERVER_DIR + '/nginx.conf', '-s', 'reload'])
 
 
 def app_is_running(srv):
+    """Check whether a server is running, by its pid file.
+
+    Args:
+        srv: Server name, ``web``, ``spool`` or ``nginx``.
+
+    Returns:
+        True if the pid from the pid file belongs to a running process.
+    """
     try:
         with open(_PID_PATHS[srv]) as fp:
             pid = int(fp.read())

@@ -1,4 +1,4 @@
-"""Cache management."""
+"""Tile cache inventory, filtering and maintenance."""
 
 import os
 from typing import Optional
@@ -35,60 +35,122 @@ class GlobalConfig(gws.Config):
 
 
 class Level(gws.Data):
+    """A zoom level of a cache, with statistics."""
+
     z: int
+    """Zoom level."""
     gridRange: gws.MapTileRange
+    """Tile range of the level, possibly restricted by a filter."""
     gridSize: gws.Size
+    """Number of tile columns and rows in ``gridRange``."""
     resolution: float
+    """Resolution of the level in map units per pixel."""
     seedTime: float
+    """Seconds spent seeding this level."""
     cachedTiles: int
+    """Number of tiles already in the store."""
     failedTiles: int
+    """Number of tiles that failed during seeding."""
     fetchedTiles: int
+    """Number of tiles fetched during seeding."""
     totalTiles: int
+    """Number of tiles in ``gridRange``."""
     percentCached: int
+    """Percentage of cached tiles."""
     cachedRange: Optional[gws.MapTileRange]
+    """Bounding tile range of the stored tiles."""
     fileSize: int
+    """Total size of the stored tiles in bytes."""
 
 
 class Cache(gws.Data):
+    """A tile cache, shared by all layers with the same cache name."""
+
     name: str
+    """Cache name, also the name of the cache directory."""
     dir: str
+    """Path to the cache directory, empty if it does not exist."""
     grabber: gws.Grabber
+    """Grabber of the first layer that uses this cache."""
     layers: list[gws.Layer]
+    """Layers that use this cache."""
     layerTitle: str
+    """Title of the first layer."""
     layerType: str
+    """Type of the first layer."""
     levels: list[Level]
+    """Zoom levels of the cache, up to the cache max. level."""
     seedStatus: str
+    """Status of the last seeding run, e.g. ``timeout``, empty if it completed."""
     cachedTiles: int
+    """Number of stored tiles."""
     fileSize: int
+    """Total size of the stored tiles in bytes."""
 
 
 class Inventory(gws.Data):
+    """All tile caches of a configuration."""
+
     caches: list[Cache]
+    """Configured caches."""
     orphanDirs: list[str]
+    """Directories in the cache directory that belong to no configured cache."""
 
 
 class Filter(gws.Data):
+    """Selects caches, levels and tiles from an inventory. Empty fields select everything."""
+
     layerUids: list[str]
+    """Select caches used by any of these layers."""
     cacheNames: list[str]
+    """Select caches whose names start with any of these prefixes."""
     srids: list[int]
+    """Select caches in these CRS."""
     levels: list[int]
+    """Select these zoom levels."""
     bbox: Optional[gws.Bounds]
+    """Select tiles in this area, which must be in the CRS of the caches."""
 
 
 class SeedOptions(gws.Data):
+    """Options for a seeding run."""
+
     filter: Filter
+    """Selects caches, levels and tiles to seed."""
     maxTime: int
+    """Time limit in seconds."""
     concurrency: int
+    """Number of worker threads."""
     maxAge: Optional[int]
+    """Refetch tiles older than this (seconds), capped by the cache max. age."""
 
 
 class SeedResult(gws.Data):
+    """Result of a seeding run."""
+
     caches: list[Cache]
+    """Seeded caches, with per-level statistics."""
     seedTime: float
+    """Total run time in seconds."""
     seedStatus: str
+    """Status of the run: empty if completed, ``timeout``, ``interrupted`` or ``locked``."""
 
 
 def inventory(root: gws.Root) -> Inventory:
+    """Collect all tile caches of a configuration.
+
+    Caches are taken from the grabbers of all layers, skipping grabbers with a zero max. age.
+    Each cache gets its levels up to the cache max. level and the existing cache directory.
+    Directories in the cache directory that belong to no cache are listed as orphans.
+    Statistics are not computed here, see ``add_stats``.
+
+    Args:
+        root: Configuration root.
+
+    Returns:
+        The inventory, caches sorted by layer type, layer title and name.
+    """
+
     inv = Inventory(caches=[], orphanDirs=[])
     cmap = {}
 
@@ -155,6 +217,10 @@ def apply_filter(inv: Inventory, flt: Filter):
     Selects caches by layer, cache name prefix and CRS, then restricts their levels to ``flt.levels``
     and to the tile ranges covering ``flt.bbox``, which must be in the CRS of the caches.
     Caches without levels are removed.
+
+    Args:
+        inv: Inventory to filter.
+        flt: Filter.
     """
 
     caches = []
@@ -188,6 +254,14 @@ def apply_filter(inv: Inventory, flt: Filter):
 
 
 def add_stats(inv: Inventory):
+    """Read store statistics into the inventory.
+
+    Sets the number and size of stored tiles and the percentage cached for each level and cache.
+
+    Args:
+        inv: Inventory to update.
+    """
+
     for c in inv.caches:
         for lv in c.levels:
             s = c.grabber.store.stats_for_level(lv.z)
@@ -200,7 +274,14 @@ def add_stats(inv: Inventory):
 
 
 def percent_cached(lv: Level) -> int:
-    """Percentage of cached and fetched tiles of a level, at least 1 if any tile is present."""
+    """Compute the percentage of cached and fetched tiles of a level.
+
+    Args:
+        lv: Level.
+
+    Returns:
+        A percentage from 0 to 100, at least 1 if any tile is present.
+    """
 
     n = lv.cachedTiles + lv.fetchedTiles
     if not n or not lv.totalTiles:
@@ -209,7 +290,15 @@ def percent_cached(lv: Level) -> int:
 
 
 def percentage_by_level(c: Cache) -> list[int]:
-    """Cached percentages of a cache, indexed by level, up to the max. cache level."""
+    """Compute the cached percentages of all levels of a cache.
+
+    Args:
+        c: Cache.
+
+    Returns:
+        A list of percentages indexed by level, up to the cache max. level.
+        Levels not in the cache are 0.
+    """
 
     ps = [0] * (c.grabber.cache.maxLevel + 1)
     for lv in c.levels:
@@ -218,6 +307,12 @@ def percentage_by_level(c: Cache) -> list[int]:
 
 
 def cleanup(root: gws.Root):
+    """Remove orphan cache directories.
+
+    Args:
+        root: Configuration root.
+    """
+
     inv = inventory(root)
     for d in inv.orphanDirs:
         gws.log.info(f'cleanup: removing orphan cache directory {d}')
@@ -225,6 +320,16 @@ def cleanup(root: gws.Root):
 
 
 def drop(root: gws.Root, flt: Optional[Filter] = None):
+    """Remove cached tiles.
+
+    If the filter has neither levels nor a bbox, the whole store of each selected cache is removed.
+    Otherwise, the tile ranges covering the bbox, or the selected levels, are removed.
+
+    Args:
+        root: Configuration root.
+        flt: Filter, selects all caches if omitted.
+    """
+
     flt = flt or Filter()
     inv = inventory(root)
     apply_filter(inv, flt)
@@ -247,12 +352,11 @@ def drop(root: gws.Root, flt: Optional[Filter] = None):
 def store_in_web_cache(url: str, img: bytes):
     """Store an image in the web cache.
 
-    Args:
-        url: URL path to use as the cache key.
-        img: Binary image data to store.
+    Writes the image to ``FASTCACHE_DIR`` under the URL path. Write errors are logged and ignored.
 
-    Returns:
-        None. Image is stored in the cache.
+    Args:
+        url: URL path, used as the file path in the web cache.
+        img: Image data.
     """
     path = gws.c.FASTCACHE_DIR + url
     try:

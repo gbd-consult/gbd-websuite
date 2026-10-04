@@ -1,7 +1,12 @@
-"""WFS Service.
+"""WFS service.
 
-Implements WFS 2.0 "Basic" profile.
-This implementation only supports ``GET`` requests with ``KVP`` encoding.
+Implements the WFS 2.0 "Basic" profile. Only ``GET`` requests with ``KVP``
+encoding are supported.
+
+The service publishes the project layers that are not groups, are searchable
+and have an XML namespace. Supported operations are GetCapabilities,
+DescribeFeatureType, GetFeature, GetPropertyValue, ListStoredQueries and
+DescribeStoredQueries.
 
 Supported ad hoc query parameters:
 
@@ -13,19 +18,52 @@ Supported ad hoc query parameters:
 - ``OUTPUTFORMAT``
 - ``RESULTTYPE``
 
-@TODO: FILTER, SORTBY
+``FILTER`` and ``SORTBY`` are not supported yet.
 
 Supported stored queries:
 
 - ``urn:ogc:def:query:OGC-WFS::GetFeatureById``
 
-For ``GetPropertyValue`` only simple ``VALUEREFERENCE`` (field name) is supported.
+For ``GetPropertyValue`` only a simple ``VALUEREFERENCE`` (a field name) is supported.
+
+GetFeature runs a search with the ``BBOX`` of the request (or the map extent)
+in the requested layers and applies ``STARTINDEX`` and ``COUNT`` to the results.
+DescribeFeatureType returns an XML schema generated from the layers, unless
+a template is configured. Features can be returned as GML 3, GML 2 or GeoJSON.
+
+Each published layer needs an XML namespace, set with ``ows.featureName`` or
+``ows.xmlns``; custom namespaces must also be configured globally (see
+``gws.base.ows.server``).
+
+Templates:
+
+- ``templates/getCapabilities.cx.py``: ``ows.GetCapabilities``.
+- ``templates/getFeature3.cx.py``: ``ows.GetFeature``, GML 3.
+- ``templates/getFeatureGeoJson.cx.py``: ``ows.GetFeature``, GeoJSON.
+- ``templates/getFeature2.cx.py``: ``ows.GetFeature``, GML 2.
+- ``templates/getPropertyValue.cx.py``: ``ows.GetPropertyValue``.
+- ``templates/listStoredQueries.cx.py``: ``ows.ListStoredQueries``.
+- ``templates/describeStoredQueries.cx.py``: ``ows.DescribeStoredQueries``.
 
 References:
-    - OGC 09-025r1 (https://portal.ogc.org/files/?artifact_id=39967)
-    - https://mapserver.org/ogc/wfs_server.html
-    - https://docs.geoserver.org/latest/en/user/services/wfs/reference.html
 
+- OGC 09-025r1 (https://portal.ogc.org/files/?artifact_id=39967)
+- https://mapserver.org/ogc/wfs_server.html
+- https://docs.geoserver.org/latest/en/user/services/wfs/reference.html
+
+Example::
+
+    projects+ {
+        owsServices+ {
+            type "wfs"
+            uid "my_wfs"
+        }
+        map.layers+ {
+            type "postgres"
+            tableName "public.districts"
+            ows.featureName "my:districts"
+        }
+    }
 """
 
 import gws
@@ -40,6 +78,7 @@ import gws.lib.mime
 
 
 STORED_QUERY_GET_FEATURE_BY_ID = 'urn:ogc:def:query:OGC-WFS::GetFeatureById'
+"""Identifier of the only supported stored query."""
 
 _cdir = gws.u.dirname(__file__)
 
@@ -110,6 +149,8 @@ class Config(server.service.Config):
 
 @gws.ext.object.owsService('wfs')
 class Object(server.service.Object):
+    """WFS service that returns the features of the project layers."""
+
     protocol = gws.OwsProtocol.WFS
     supportedVersions = ['2.0.2', '2.0.1', '2.0.0']
     isVectorService = True
@@ -177,6 +218,14 @@ class Object(server.service.Object):
     ##
 
     def handle_get_capabilities(self, sr: server.request.Object):
+        """Handle the GetCapabilities operation.
+
+        Args:
+            sr: Service request.
+
+        Returns:
+            The capabilities document.
+        """
         return self.template_response(
             sr,
             sr.requested_format('OUTPUTFORMAT'),
@@ -184,6 +233,14 @@ class Object(server.service.Object):
         )
 
     def handle_list_stored_queries(self, sr: server.request.Object):
+        """Handle the ListStoredQueries operation.
+
+        Args:
+            sr: Service request.
+
+        Returns:
+            The list of stored queries.
+        """
         return self.template_response(
             sr,
             sr.requested_format('FORMAT'),
@@ -191,6 +248,17 @@ class Object(server.service.Object):
         )
 
     def handle_describe_stored_queries(self, sr: server.request.Object):
+        """Handle the DescribeStoredQueries operation.
+
+        Args:
+            sr: Service request.
+
+        Returns:
+            The description of the stored queries.
+
+        Raises:
+            ``server.error.InvalidParameterValue``: If ``STOREDQUERY_ID`` is not a supported query.
+        """
         s = sr.string_param('STOREDQUERY_ID', default='')
         if s and s != STORED_QUERY_GET_FEATURE_BY_ID:
             raise server.error.InvalidParameterValue('STOREDQUERY_ID')
@@ -202,6 +270,17 @@ class Object(server.service.Object):
         )
 
     def handle_describe_feature_type(self, sr: server.request.Object):
+        """Handle the DescribeFeatureType operation.
+
+        If a template is configured, it is used. Otherwise, an XML schema is
+        generated for the requested layers.
+
+        Args:
+            sr: Service request.
+
+        Returns:
+            The XML schema of the requested feature types.
+        """
         tpl = self.get_template(sr)
         if tpl:
             return self.template_response(sr)
@@ -218,10 +297,26 @@ class Object(server.service.Object):
         return self.xml_response(el, opts)
 
     def handle_get_feature(self, sr: server.request.Object):
+        """Handle the GetFeature operation.
+
+        Args:
+            sr: Service request.
+
+        Returns:
+            The feature collection in the requested ``OUTPUTFORMAT``.
+        """
         fc = self.get_features(sr)
         return self.template_response(sr, sr.requested_format('OUTPUTFORMAT'), featureCollection=fc)
 
     def handle_get_property_value(self, sr: server.request.Object):
+        """Handle the GetPropertyValue operation.
+
+        Args:
+            sr: Service request.
+
+        Returns:
+            The values of the ``VALUEREFERENCE`` attribute of the found features.
+        """
         value_ref = sr.string_param('VALUEREFERENCE')
         fc = self.get_features(sr)
         fc.values = [m.feature.get(value_ref) for m in fc.members]
@@ -230,6 +325,17 @@ class Object(server.service.Object):
     ##
 
     def requested_layer_caps(self, sr: server.request.Object):
+        """Find the layer caps for the feature types in ``TYPENAME`` or ``TYPENAMES``.
+
+        Args:
+            sr: Service request.
+
+        Returns:
+            The matching layer caps without duplicates, or all layer caps if no feature types are requested.
+
+        Raises:
+            ``server.error.LayerNotDefined``: If none of the requested feature types is found.
+        """
         tns = sr.list_param('TYPENAME,TYPENAMES')
         if not tns:
             return sr.layerCapsList
@@ -243,8 +349,22 @@ class Object(server.service.Object):
         return gws.u.uniq(lcs)
 
     SEARCH_MAX_TOTAL = 100_000
+    """Max. number of features a search can return, before paging."""
 
     def get_features(self, sr: server.request.Object, value_ref: str = '') -> server.FeatureCollection:
+        """Search for the features requested by GetFeature or GetPropertyValue.
+
+        With ``RESULTTYPE=hits``, only the number of found features is returned.
+        Otherwise, ``STARTINDEX`` and ``COUNT`` (or ``MAXFEATURES``) are applied
+        to the results.
+
+        Args:
+            sr: Service request.
+            value_ref: If given, only features that have this attribute are returned.
+
+        Returns:
+            The feature collection.
+        """
         # @TODO optimize paging for db-based layers
 
         lcs = self.requested_layer_caps(sr)
@@ -272,6 +392,22 @@ class Object(server.service.Object):
         return self.feature_collection(sr, lcs, hits, results)
 
     def make_search(self, sr: server.request.Object, lcs):
+        """Create the search query for a request.
+
+        For the ``GetFeatureById`` stored query, the search looks up the feature
+        given by the ``id`` parameter. Otherwise, it searches within the bounds
+        of the request.
+
+        Args:
+            sr: Service request.
+            lcs: Layer caps to search.
+
+        Returns:
+            The search query.
+
+        Raises:
+            ``server.error.InvalidParameterValue``: If ``STOREDQUERY_ID`` is not a supported query.
+        """
         search = gws.SearchQuery(
             project=sr.project,
             layers=[lc.layer for lc in lcs],

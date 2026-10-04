@@ -1,3 +1,5 @@
+"""Base vector layer."""
+
 from typing import Optional
 
 import gws
@@ -11,7 +13,11 @@ from . import core
 
 
 class Object(core.Object):
-    """Base vector layer"""
+    """Base vector layer.
+
+    Finds features through the layer's models and renders them as SVG. The
+    client loads the features from the ``mapGetFeatures`` command.
+    """
 
     # @TODO rasterize vector layers
     canRenderBox = False
@@ -19,7 +25,9 @@ class Object(core.Object):
     canRenderSvg = True
 
     geometryType: Optional[gws.GeometryType] = None
+    """Geometry type of the layer's features."""
     geometryCrs: Optional[gws.Crs] = None
+    """CRS of the layer's feature geometries."""
 
     def props(self, user):
         return gws.u.merge(
@@ -36,6 +44,18 @@ class Object(core.Object):
     #
 
     def render_svg_fragment(self, lri: gws.LayerRenderInput):
+        """Render the features in the map view as SVG elements.
+
+        Labels are rendered from the ``feature.label`` template. For a rotated
+        view, features are searched in the circumscribed square of the view
+        extent.
+
+        Args:
+            lri: Render input with the map view, style and user.
+
+        Returns:
+            A list of SVG elements, or ``None`` if no features are found.
+        """
         bounds = lri.view.bounds
         if lri.view.rotation:
             bounds = gws.Bounds(crs=lri.view.bounds.crs, extent=gws.lib.extent.circumsquare(bounds.extent))

@@ -1,8 +1,14 @@
 """Date field.
 
-Internally, ``date`` values are ``datetime`` objects.
-They are always transferred in the ISO format,
-specific locale conversions are left to the client.
+A scalar field for dates. Values from the client are parsed with
+``gws.lib.datetimex.parse`` and stored as ``datetime.date`` objects.
+They are always sent to the client as ISO date strings (``YYYY-MM-DD``);
+locale-specific formatting is left to the client. Without a configured
+widget, the field uses a ``date`` widget.
+
+Example::
+
+    fields+ { name "start_date" type "date" title "Start date" }
 """
 
 import gws
@@ -24,6 +30,8 @@ class Props(gws.base.model.scalar_field.Props):
 
 @gws.ext.object.modelField('date')
 class Object(gws.base.model.scalar_field.Object):
+    """Date field object."""
+
     attributeType = gws.AttributeType.date
 
     def configure_widget(self):

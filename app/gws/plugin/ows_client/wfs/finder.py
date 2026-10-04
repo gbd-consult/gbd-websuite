@@ -1,4 +1,4 @@
-"""WFS Finder."""
+"""WFS finder."""
 
 from typing import Optional
 
@@ -23,8 +23,11 @@ class Config(gws.base.search.finder.Config):
 
 @gws.ext.object.finder('wfs')
 class Object(gws.base.ows.client.finder.Object):
+    """Finder that searches the feature types of a WFS service by geometry."""
+
     supportsGeometrySearch = True
     provider: provider.Object
+    """WFS service provider."""
 
     def configure_provider(self):
         return gws.config.util.configure_provider_for(self, provider.Object)

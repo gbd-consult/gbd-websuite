@@ -1,4 +1,4 @@
-"""Export utilities."""
+"""Helpers for exporters."""
 
 from typing import Optional
 import gws
@@ -9,22 +9,34 @@ import gws.lib.zipx
 
 
 class Group(gws.Data):
+    """Export-ready features of one model."""
+
     title: str
+    """Group title: the model title, table name or model uid."""
     records: list[gws.FeatureRecord]
+    """Records with the exported attributes and the shape."""
     columns: dict[str, gws.AttributeType]
+    """Exported columns and their types."""
     geomType: Optional[gws.GeometryType]
+    """Geometry type, taken from the first feature with a shape."""
     crs: Optional[gws.Crs]
+    """CRS, taken from the first feature with a shape."""
 
 
 def group_features(ea: gws.ExportArgs, er: gws.ExportResult) -> list[Group]:
-    """Group features by model, determine export columns and geometry type.
+    """Group features by model and determine the export columns and geometry type.
+
+    Columns are the model fields with an attribute type supported by the
+    exporter (or by GDAL, if the exporter does not restrict the types).
+    Features that do not fit their group are skipped and reported in
+    ``er.errors``, see ``gws.base.exporter``.
 
     Args:
         ea: Export arguments.
-        er: Export result, used to report errors and counts.
+        er: Export result, used to report errors.
 
     Returns:
-        List of groups, one per model, with export-ready records.
+        A list of groups, one per model that has exportable features.
     """
 
     if not ea.features:
@@ -45,6 +57,7 @@ def group_features(ea: gws.ExportArgs, er: gws.ExportResult) -> list[Group]:
 
 
 def _create_group(features: list[gws.Feature], ea: gws.ExportArgs, er: gws.ExportResult) -> Optional[Group]:
+    """Create a group for the features of one model, or ``None`` if no feature fits."""
     grp = Group(
         records=[],
         title='',
@@ -77,6 +90,7 @@ def _create_group(features: list[gws.Feature], ea: gws.ExportArgs, er: gws.Expor
 
 
 def _feature_to_record(f: gws.Feature, grp: Group, ea: gws.ExportArgs, er: gws.ExportResult) -> Optional[gws.FeatureRecord]:
+    """Convert a feature to a record of the group, or report an error and return ``None``."""
     uid = f.uid()
 
     sh = f.shape()
@@ -111,7 +125,22 @@ def _feature_to_record(f: gws.Feature, grp: Group, ea: gws.ExportArgs, er: gws.E
 
 
 def run_gdal_vector_export(driver_name: str, mime_type: str, ea: gws.ExportArgs, er: gws.ExportResult):
-    """Run the export for a GDAL vector driver."""
+    """Export features with a GDAL vector driver.
+
+    Writes one file per group, or a single file with one layer per group if
+    the exporter has ``withMultiLayer``. Several files are zipped. Sets the
+    path, mime type and counts in the export result. Does nothing if there
+    are no features to export.
+
+    Args:
+        driver_name: GDAL driver name, e.g. ``GeoJSON``.
+        mime_type: Mime type of the result file.
+        ea: Export arguments.
+        er: Export result, filled by this function.
+
+    Raises:
+        ``gws.Error``: If the driver is not supported.
+    """
 
     di = gws.lib.gdalx.get_driver(driver_name)
     if not di:

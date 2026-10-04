@@ -1,19 +1,49 @@
-"""Tools to deal with r8 MANIFEST files."""
+"""Reader for application manifest files (``MANIFEST.json``)."""
 
 import json
 import os
 
 
 class Error(Exception):
+    """Raised when a manifest cannot be parsed."""
+
     pass
 
 
 def from_path(path):
+    """Read a manifest file.
+
+    Args:
+        path: Path to the manifest file.
+
+    Returns:
+        A dict with the manifest keys; missing keys get defaults.
+
+    Raises:
+        ``Error``: If the manifest is not valid JSON or a value is invalid.
+    """
+
     with open(path, 'rt', encoding='utf8') as fp:
         return from_text(fp.read(), path)
 
 
 def from_text(text, path):
+    """Parse a manifest from text.
+
+    Lines starting with ``//`` or ``#`` are ignored. Relative plugin and
+    ``tsConfig`` paths are resolved against the directory of ``path``.
+
+    Args:
+        text: Manifest JSON text.
+        path: Path to the manifest file.
+
+    Returns:
+        A dict with the manifest keys; missing keys get defaults.
+
+    Raises:
+        ``Error``: If the text is not valid JSON or a value is invalid.
+    """
+
     lines = []
     for s in text.split('\n'):
         # we allow // or # comments in json

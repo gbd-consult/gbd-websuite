@@ -1,3 +1,5 @@
+"""Default model."""
+
 from typing import Optional, cast
 
 import gws
@@ -15,6 +17,12 @@ class Config(core.Config):
 
 @gws.ext.object.model('default')
 class Object(core.Object):
+    """Default model.
+
+    Used when no model is configured. Copies all attributes between records,
+    features and props as they are, converting the geometry between shapes and shape props.
+    """
+
     def configure(self):
         self.uidName = core.DEFAULT_UID_NAME
         self.geometryName = core.DEFAULT_GEOMETRY_NAME
@@ -42,6 +50,19 @@ class Object(core.Object):
         return props
 
     def feature_from_record(self, record: gws.FeatureRecord, mc: gws.ModelContext) -> gws.Feature:
+        """Create a feature from a record.
+
+        The record attributes become the feature attributes. The record uid and shape,
+        if present, are stored under the uid and geometry names, and the ``layerName``
+        from the record metadata becomes the feature category.
+
+        Args:
+            record: The source record.
+            mc: The model context.
+
+        Returns:
+            A new feature of this model.
+        """
         record = cast(gws.FeatureRecord, gws.u.to_data_object(record))
         feature = gws.base.feature.new(model=self, record=record)
         feature.attributes = record.attributes

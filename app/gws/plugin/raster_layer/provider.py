@@ -1,4 +1,4 @@
-"""Raster image provider."""
+"""Image set provider for raster layers."""
 
 import fnmatch
 from typing import Optional
@@ -22,13 +22,21 @@ class Config(gws.Config):
 
 
 class ImageEntry(gws.Data):
+    """A georeferenced image file."""
+
     path: str
+    """File path."""
     bounds: gws.Bounds
+    """Image bounds in the image CRS."""
 
 
 class Object(gws.Node):
+    """Set of georeferenced image files, given as paths or a glob pattern."""
+
     paths: list[str]
+    """Image file paths."""
     crs: Optional[gws.Crs]
+    """CRS for images that have none."""
 
     def configure(self):
         p = self.cfg('crs')
@@ -55,12 +63,28 @@ class Object(gws.Node):
         raise gws.ConfigurationError('no paths or pathPattern specified for raster provider.')
 
     def cache_hash(self):
+        """Compute a hash of the provider settings.
+
+        Returns:
+            Hash string, built from the paths and the CRS.
+        """
         return gws.u.sha256([
             self.paths,
             self.crs.srid if self.crs else '',
         ])
 
     def enumerate_images(self, default_crs: gws.Crs) -> list[ImageEntry]:
+        """Read the bounds of the image files.
+
+        Files that cannot be opened, and files in a CRS other than the CRS of
+        the first image, are skipped with a configuration warning.
+
+        Args:
+            default_crs: CRS for images that have none.
+
+        Returns:
+            Image entries, all in the same CRS.
+        """
         es1 = []
 
         for path in self.paths:
@@ -85,6 +109,18 @@ class Object(gws.Node):
         return es2
 
     def make_tile_index(self, entries: list[ImageEntry], file_name: str) -> str:
+        """Create a MapServer tile index shapefile for the images.
+
+        The index has a polygon per image with the file path in the
+        ``location`` column, and a spatial index.
+
+        Args:
+            entries: Images to index.
+            file_name: Base name of the shapefile, in the object cache directory.
+
+        Returns:
+            Path to the shapefile.
+        """
         idx_path = f'{gws.c.OBJECT_CACHE_DIR}/{file_name}.shp'
 
         records = []

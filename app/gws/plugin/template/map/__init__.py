@@ -1,4 +1,20 @@
-"""Map-only template"""
+"""Map-only templates.
+
+The ``map`` template renders only the first map of the render input, without
+any page layout. The map fills the template ``pageSize``. The output is
+HTML, PDF or PNG, depending on the ``mimeOut`` of the render input; HTML is
+the default.
+
+Example::
+
+    printers+ {
+        template {
+            type "map"
+            title "Map only"
+            mimeTypes [ "application/pdf" ]
+        }
+    }
+"""
 
 import re
 
@@ -22,6 +38,7 @@ class Props(gws.base.template.Props):
 
 @gws.ext.object.template('map')
 class Object(gws.base.template.Object):
+    """Template that renders only the map, as HTML, PDF or PNG."""
 
     def render(self, tri):
         notify = tri.notify or (lambda *args: None)

@@ -1,8 +1,13 @@
 """Datetime field.
 
-Internally, ``datetime`` values are ``datetime`` objects.
-They are always transferred in the ISO format,
-specific locale conversions are left to the client.
+A scalar field for date and time values. Values from the client are parsed
+with ``gws.lib.datetimex.parse`` and stored as ``datetime`` objects. They are
+always sent to the client as ISO strings; locale-specific formatting is left
+to the client. Without a configured widget, the field uses an ``input`` widget.
+
+Example::
+
+    fields+ { name "updated_at" type "datetime" title "Last update" }
 """
 
 import gws
@@ -24,6 +29,8 @@ class Props(gws.base.model.scalar_field.Props):
 
 @gws.ext.object.modelField('datetime')
 class Object(gws.base.model.scalar_field.Object):
+    """Datetime field object."""
+
     attributeType = gws.AttributeType.datetime
 
     def configure_widget(self):

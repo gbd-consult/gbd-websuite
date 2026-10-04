@@ -2,73 +2,73 @@ class Uom(Enum):
     """Unit of measure."""
 
     mi = 'mi'
-    """statute mile (EPSG 9093)"""
+    """Statute mile (EPSG 9093)."""
     us_ch = 'us-ch'
-    """us survey chain (EPSG 9033)"""
+    """US survey chain (EPSG 9033)."""
     us_ft = 'us-ft'
-    """us survey foot (EPSG 9003)"""
+    """US survey foot (EPSG 9003)."""
     us_in = 'us-in'
-    """us survey inch us_in"""
+    """US survey inch."""
     us_mi = 'us-mi'
-    """us survey mile (EPSG 9035)"""
+    """US survey mile (EPSG 9035)."""
     us_yd = 'us-yd'
-    """us survey yard us_yd"""
+    """US survey yard."""
     cm = 'cm'
-    """centimetre (EPSG 1033)"""
+    """Centimetre (EPSG 1033)."""
     ch = 'ch'
-    """chain (EPSG 9097)"""
+    """Chain (EPSG 9097)."""
     dm = 'dm'
-    """decimeter dm"""
+    """Decimetre."""
     deg = 'deg'
-    """degree (EPSG 9102)"""
+    """Degree (EPSG 9102)."""
     fath = 'fath'
-    """fathom (EPSG 9014)"""
+    """Fathom (EPSG 9014)."""
     ft = 'ft'
-    """foot (EPSG 9002)"""
+    """Foot (EPSG 9002)."""
     grad = 'grad'
-    """grad (EPSG 9105)"""
+    """Grad (EPSG 9105)."""
     inch = 'in'
-    """inch in"""
+    """Inch."""
     km = 'km'
-    """kilometre (EPSG 9036)"""
+    """Kilometre (EPSG 9036)."""
     link = 'link'
-    """link (EPSG 9098)"""
+    """Link (EPSG 9098)."""
     m = 'm'
-    """metre (EPSG 9001)"""
+    """Metre (EPSG 9001)."""
     mm = 'mm'
-    """millimetre (EPSG 1025)"""
+    """Millimetre (EPSG 1025)."""
     kmi = 'kmi'
-    """nautical mile (EPSG 9030)"""
+    """Nautical mile (EPSG 9030)."""
     rad = 'rad'
-    """radian (EPSG 9101)"""
+    """Radian (EPSG 9101)."""
     yd = 'yd'
-    """yard (EPSG 9096)"""
+    """Yard (EPSG 9096)."""
     px = 'px'
-    """pixel"""
+    """Pixel."""
     pt = 'pt'
-    """point"""
+    """Typographic point (1/72 inch)."""
 
 
 UomValue: TypeAlias = tuple[float, Uom]
-"""A value with a unit."""
+"""A value with a unit, like ``(5, Uom.mm)``."""
 
 UomValueStr: TypeAlias = str
 """A value with a unit like ``5mm``."""
 
 UomPoint: TypeAlias = tuple[float, float, Uom]
-"""A Point with a unit."""
+"""A point with a unit, like ``(1, 2, Uom.mm)``."""
 
 UomPointStr: TypeAlias = list[str]
-"""A Point with a unit like ``["1mm", "2mm"]``."""
+"""A point with a unit like ``["1mm", "2mm"]``."""
 
 UomSize: TypeAlias = tuple[float, float, Uom]
-"""A Size with a unit."""
+"""A size with a unit, like ``(10, 20, Uom.mm)``."""
 
 UomSizeStr: TypeAlias = list[str]
 """A size with a unit like ``["1mm", "2mm"]``."""
 
 UomExtent: TypeAlias = tuple[float, float, float, float, Uom]
-"""Extent with a unit."""
+"""An extent with a unit, like ``(0, 0, 10, 20, Uom.mm)``."""
 
 UomExtentStr: TypeAlias = list[str]
 """An extent with a unit like ``["1mm", "2mm", "3mm", "4mm"]``."""

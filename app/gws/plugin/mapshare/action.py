@@ -1,4 +1,4 @@
-"""Map share action."""
+"""The ``mapshare`` action."""
 
 from typing import Optional
 
@@ -26,28 +26,47 @@ class Props(gws.base.action.Props):
 
 
 class CreateRequest(gws.Request):
+    """Request to create a share link."""
+
     shape: gws.ShapeProps
+    """Shared shape."""
     scale: Optional[int]
+    """Map scale."""
     title: Optional[str]
+    """Title of the link."""
 
 
 class CreateLinkResponse(gws.Response):
+    """Share link and its QR code."""
+
     url: str
+    """Link URL."""
     qrCode: str
+    """QR code of the link, as a data URL."""
 
 
 class DecodeLinkRequest(gws.Request):
+    """Request to decode a share link."""
+
     link: str
+    """Value of the ``s`` parameter of the link."""
 
 
 class DecodeLinkResponse(gws.Response):
+    """Decoded share link."""
+
     shape: gws.ShapeProps
+    """Shared shape, in the CRS of the project map."""
     scale: int
+    """Map scale, 0 if not given."""
     title: str
+    """Title, empty if not given."""
 
 
 @gws.ext.object.action('mapshare')
 class Object(gws.base.action.Object):
+    """Map share action."""
+
     def props(self, user):
         return gws.u.merge(
             super().props(user),
@@ -66,7 +85,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.api('mapshareDecodeLink')
     def decode_link(self, req: gws.WebRequester, p: DecodeLinkRequest) -> DecodeLinkResponse:
-        """Decode the ``s`` parameter of a share link."""
+        """Decode a share link."""
 
         project = req.user.require_project(p.projectUid)
         shape, scale, title = self._decode_link(p.link, project.map.bounds.crs)
@@ -78,6 +97,7 @@ class Object(gws.base.action.Object):
         )
 
     def _create_url(self, req: gws.WebRequester, p: CreateRequest) -> str:
+        """Create the share URL for a position."""
         project = req.user.require_project(p.projectUid)
         crs = project.map.bounds.crs
 
@@ -96,6 +116,7 @@ class Object(gws.base.action.Object):
         )
 
     def _encode_link(self, shape: gws.Shape, scale: int, title: str) -> str:
+        """Encode a shape, scale and title as a link parameter."""
         s = str(scale)
 
         prec = 0 if shape.crs.uom == gws.Uom.m else 5
@@ -138,6 +159,7 @@ class Object(gws.base.action.Object):
     '''
 
     def _decode_link(self, link: str, crs: gws.Crs) -> tuple[gws.Shape, int, str]:
+        """Decode a link parameter into a shape, scale and title."""
         m = re.match(self.LINK_RE, link)
         if not m:
             raise gws.BadRequestError('mapshare: invalid link')

@@ -1,4 +1,4 @@
-"""Deal with client bundles created by the js bundler (app/js/helpers/builder.js)"""
+"""Client JavaScript and CSS bundles created by the JS bundler."""
 
 import gws
 import gws.lib.jsonx
@@ -13,6 +13,18 @@ DEFAULT_THEME = 'light'
 
 
 def javascript(root: gws.Root, category: str, locale: gws.Locale) -> str:
+    """Return a JavaScript bundle.
+
+    Args:
+        root: The configuration root.
+        category: ``vendor`` for the vendor libraries, ``app`` for the client
+            application with the UI strings for the locale language
+            (German if not available).
+        locale: The client locale.
+
+    Returns:
+        The JavaScript code, or ``None`` for an unknown category.
+    """
     if category == 'vendor':
         return gws.u.read_file(gws.c.APP_DIR + '/' + gws.c.JS_VENDOR_BUNDLE)
 
@@ -21,6 +33,16 @@ def javascript(root: gws.Root, category: str, locale: gws.Locale) -> str:
 
 
 def css(root: gws.Root, category: str, theme: str):
+    """Return a CSS bundle.
+
+    Args:
+        root: The configuration root.
+        category: Bundle category, only ``app`` has CSS.
+        theme: Theme name, ``light`` if empty.
+
+    Returns:
+        The CSS code, ``None`` if the theme is not found, or an empty string for other categories.
+    """
     if category == 'app':
         bundles = _load_app_bundles(root)
         theme = theme or DEFAULT_THEME
@@ -31,6 +53,7 @@ def css(root: gws.Root, category: str, theme: str):
 ##
 
 def _load_app_bundles(root):
+    """Load and concatenate the application bundle files, cached per server unless the ``web.reload_bundles`` developer option is set."""
 
     def _load():
         bundles = {}
@@ -53,6 +76,7 @@ def _load_app_bundles(root):
 
 
 def _make_app_js(root, locale):
+    """Build the application script from the bundle template, the modules and the UI strings."""
     bundles = _load_app_bundles(root)
 
     modules = bundles[BUNDLE_KEY_MODULES]

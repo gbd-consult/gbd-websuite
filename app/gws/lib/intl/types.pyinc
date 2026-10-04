@@ -3,41 +3,56 @@ LocaleUid: TypeAlias = str
 
 
 class Locale(Data):
-    """Locale data."""
+    """Locale data: language, territory, date and number conventions."""
 
     uid: str
+    """Locale uid like ``de_DE``. A locale without a territory has the territory ``ZZ``."""
     dateFormatLong: str
+    """Long date format pattern."""
     dateFormatMedium: str
+    """Medium date format pattern."""
     dateFormatShort: str
+    """Short date format pattern."""
     dateUnits: str
-    """date unit names, e.g. 'YMD' for 'en', 'JMT' for 'de'"""
+    """Narrow names of year, month and day, e.g. ``YMD`` for ``en``, ``JMT`` for ``de``."""
     dayNamesLong: list[str]
+    """Full day names."""
     dayNamesShort: list[str]
+    """Abbreviated day names."""
     dayNamesNarrow: list[str]
+    """Narrow day names."""
     firstWeekDay: int
+    """First day of the week, ``0`` is Monday."""
 
     language: str
-    """Language code: ``de``"""
+    """Language code: ``de``."""
     language3: str
-    """ISO 3166-1 alpha-3 language code: ``deu``."""
+    """ISO 639 alpha-3 language code: ``deu``."""
     languageBib: str
-    """Bibliographic language code.."""
+    """ISO 639-2 bibliographic language code: ``ger``."""
     languageName: str
     """Native language name: ``Deutsch``."""
     languageNameEn: str
     """English language name: ``German``."""
 
     territory: str
+    """Territory code: ``DE``."""
     territoryName: str
+    """Native territory name: ``Deutschland``."""
     monthNamesLong: list[str]
+    """Full month names."""
     monthNamesShort: list[str]
+    """Abbreviated month names."""
     monthNamesNarrow: list[str]
+    """Narrow month names."""
     numberDecimal: str
+    """Decimal separator."""
     numberGroup: str
+    """Group (thousands) separator."""
 
 
 class DateTimeFormat(Enum):
-    """Enumeration indicating the length of the date/time format."""
+    """Date or time format."""
     short = 'short'
     """Local short format."""
     medium = 'medium'
@@ -49,13 +64,13 @@ class DateTimeFormat(Enum):
 
 
 class NumberFormat(Enum):
-    """Enumeration indicating the number format."""
+    """Number format."""
     decimal = 'decimal'
     """Locale decimal format."""
     grouped = 'grouped'
     """Locale grouped format."""
     currency = 'currency'
-    """Locale currency format"""
+    """Locale currency format."""
     percent = 'percent'
     """Locale percent format."""
 
@@ -64,79 +79,179 @@ class DateFormatter:
     """Locale-aware date formatter."""
 
     def format(self, fmt: DateTimeFormat | str, date: Optional[Union['datetime.date', str]] = None) -> str:
-        """Formats the date.
+        """Format a date.
 
         Args:
-            fmt: Format type or a `strftime` format string
-            date: Date, if none is given the current date will be used as default.
+            fmt: Format type, or a ``babel`` (CLDR) date pattern like ``dd.MM.yyyy``.
+            date: Date or date string, the current date by default.
 
         Returns:
-            A formatted date string.
+            The formatted date.
+
+        Raises:
+            ``Error``: If the date cannot be parsed.
         """
 
     def short(self, date=None) -> str:
-        """Returns the date in the short format ``11.12.13``."""
+        """Format a date in the short format of the locale, e.g. ``11.12.13``.
+
+        Args:
+            date: Date or date string, the current date by default.
+
+        Returns:
+            The formatted date.
+        """
 
     def medium(self, date=None) -> str:
-        """Returns the date in the medium format ``11.12.2013``."""
+        """Format a date in the medium format of the locale, e.g. ``11.12.2013``.
+
+        Args:
+            date: Date or date string, the current date by default.
+
+        Returns:
+            The formatted date.
+        """
 
     def long(self, date=None) -> str:
-        """Returns the date in the medium format ``11. Dezember 2013``."""
+        """Format a date in the long format of the locale, e.g. ``11. Dezember 2013``.
+
+        Args:
+            date: Date or date string, the current date by default.
+
+        Returns:
+            The formatted date.
+        """
 
     def iso(self, date=None) -> str:
-        """Returns the date in the ISO 8601 format ``2013-12-11``."""
+        """Format a date in the ISO 8601 format, e.g. ``2013-12-11``.
+
+        Args:
+            date: Date or date string, the current date by default.
+
+        Returns:
+            The formatted date.
+        """
 
 
 class TimeFormatter:
     """Locale-aware time formatter."""
 
     def format(self, fmt: DateTimeFormat | str, time: Optional[Union['datetime.time', str]] = None) -> str:
-        """Formats the time.
+        """Format a time.
 
         Args:
-            fmt: Format type or a `strftime` format string
-            time: Time, if none is given the current time will be used as default.
+            fmt: Format type, or a ``babel`` (CLDR) time pattern like ``HH:mm``.
+            time: Time, datetime or time string, the current time by default.
 
         Returns:
-            A formatted time string.
+            The formatted time.
+
+        Raises:
+            ``Error``: If the time cannot be parsed.
         """
 
     def short(self, time=None) -> str:
-        """Returns the time in the short format ``11:22``."""
+        """Format a time in the short format of the locale, e.g. ``11:22``.
+
+        Args:
+            time: Time, datetime or time string, the current time by default.
+
+        Returns:
+            The formatted time.
+        """
 
     def medium(self, time=None) -> str:
-        """Returns the time in the medium format ``11:22:33``."""
+        """Format a time in the medium format of the locale, e.g. ``11:22:33``.
+
+        Args:
+            time: Time, datetime or time string, the current time by default.
+
+        Returns:
+            The formatted time.
+        """
 
     def long(self, time=None) -> str:
-        """Returns the time in the medium format ``11:22:33``."""
+        """Format a time in the long format of the locale, which usually includes the time zone.
+
+        Args:
+            time: Time, datetime or time string, the current time by default.
+
+        Returns:
+            The formatted time.
+        """
 
     def iso(self, time=None) -> str:
-        """Returns the time and date in the ISO 8601 format."""
+        """Format a time in the ISO 8601 format, with the time zone offset, e.g. ``11:22:33+0100``.
+
+        Args:
+            time: Time, datetime or time string, the current time by default.
+
+        Returns:
+            The formatted time.
+        """
 
 
 class NumberFormatter:
     """Locale-aware number formatter."""
 
     def format(self, fmt: NumberFormat | str, n, *args, **kwargs) -> str:
-        """Formats the number with respect to the locale.
+        """Format a number.
 
         Args:
-            fmt: Format type or a python `format` string
+            fmt: Format type. For an unknown format, the number is converted with ``str``.
             n: Number.
-            kwargs: Passes the currency parameter forward.
+            *args: Arguments for the format method, e.g. the currency for ``currency``.
+            **kwargs: Keyword arguments for the format method.
 
         Returns:
-            A formatted number.
+            The formatted number.
         """
 
     def decimal(self, n, *args, **kwargs) -> str:
-        """Returns formatted decimal value."""
+        """Format a number as a decimal without group separators.
+
+        Args:
+            n: Number.
+            *args: Arguments for ``babel.numbers.format_decimal``.
+            **kwargs: Keyword arguments for ``babel.numbers.format_decimal``.
+
+        Returns:
+            The formatted number.
+        """
 
     def grouped(self, n, *args, **kwargs) -> str:
-        """Returns formatted decimal value with group separators."""
+        """Format a number as a decimal with group separators.
+
+        Args:
+            n: Number.
+            *args: Arguments for ``babel.numbers.format_decimal``.
+            **kwargs: Keyword arguments for ``babel.numbers.format_decimal``.
+
+        Returns:
+            The formatted number.
+        """
 
     def currency(self, n, currency: str, *args, **kwargs) -> str:
-        """Returns formatted currency value."""
+        """Format a number as a currency value.
+
+        Args:
+            n: Number.
+            currency: Currency code like ``EUR``.
+            *args: Arguments for ``babel.numbers.format_currency``.
+            **kwargs: Keyword arguments for ``babel.numbers.format_currency``.
+
+        Returns:
+            The formatted value.
+        """
 
     def percent(self, n, *args, **kwargs) -> str:
-        """Returns formatted percent value."""
+        """Format a number as a percentage, ``0.5`` is 50 percent.
+
+        Args:
+            n: Number.
+            *args: Arguments for ``babel.numbers.format_percent``.
+            **kwargs: Keyword arguments for ``babel.numbers.format_percent``.
+
+        Returns:
+            The formatted value.
+        """

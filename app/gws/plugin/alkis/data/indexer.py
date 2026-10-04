@@ -1,3 +1,5 @@
+"""Build the ALKIS index from source data."""
+
 from typing import Optional, Iterable
 
 import re
@@ -21,6 +23,23 @@ from .geo_info_dok import gid6 as gid
 
 
 def run(ix: index.Object, data_schema: str, with_force=False, with_cache=False):
+    """Build the ALKIS index.
+
+    Reads the source tables with the norBIT GeoInfoDok 6 reader and writes
+    all index tables that do not have data yet. Does nothing if the index is
+    already complete, unless ``with_force`` is set.
+
+    Args:
+        ix: Index to build.
+        data_schema: Schema with the ALKIS source tables.
+        with_force: Drop all index tables before building.
+        with_cache: Cache source data and collected objects in the cache
+            directory and reuse them in later runs.
+
+    Raises:
+        ``gws.Error``: If the index schema does not exist.
+    """
+
     if not ix.has_schema():
         raise gws.Error(f'ALKIS: schema {ix.schema!r} does not exist')
 
@@ -40,20 +59,61 @@ T = TypeVar("T")
 
 
 class _ObjectDict(Generic[T]):
+    """Collection of entities of one type, by uid."""
+
     def __init__(self, cls):
+        """Create an empty collection.
+
+        Args:
+            cls: Entity class.
+        """
+
         self.d = {}
         self.cls = cls
 
     def add(self, uid, recs) -> T:
+        """Create an entity and add it to the collection.
+
+        The entity is historic if all of its records are.
+
+        Args:
+            uid: Entity uid.
+            recs: Entity records.
+
+        Returns:
+            The new entity.
+        """
+
         o = self.cls(uid=uid, recs=recs)
         o.isHistoric = all(r.isHistoric for r in recs)
         self.d[o.uid] = o
         return o
 
     def get(self, uid, default=None) -> Optional[T]:
+        """Return an entity by uid.
+
+        Args:
+            uid: Entity uid.
+            default: Value to return if the uid is not found.
+
+        Returns:
+            The entity or the default value.
+        """
+
         return self.d.get(uid, default)
 
     def get_many(self, uids) -> list[T]:
+        """Return entities by uids.
+
+        Unknown uids are skipped, duplicates are returned once.
+
+        Args:
+            uids: Entity uids.
+
+        Returns:
+            A list of entities, in the order of ``uids``.
+        """
+
         res = {}
 
         for uid in uids:
@@ -65,6 +125,18 @@ class _ObjectDict(Generic[T]):
         return list(res.values())
 
     def get_from_ptr(self, obj: dt.Entity, attr):
+        """Return the entities referenced by an attribute of the records of an entity.
+
+        The attribute is removed from the records.
+
+        Args:
+            obj: Entity whose records hold the references.
+            attr: Attribute name, holding a uid or a list of uids.
+
+        Returns:
+            A list of referenced entities.
+        """
+
         uids = []
 
         for r in obj.recs:
@@ -84,6 +156,7 @@ class _ObjectDict(Generic[T]):
 
 
 class _ObjectMap:
+    """Collections of all entities collected by an indexer."""
 
     def __init__(self):
         self.Anschrift: _ObjectDict[dt.Anschrift] = _ObjectDict(dt.Anschrift)
@@ -102,19 +175,41 @@ class _ObjectMap:
 
 
 class _Indexer:
+    """Base class for indexers.
+
+    An indexer collects entities of some kinds from the source data into its
+    object map and writes them into index tables. The object map can be cached
+    between runs.
+    """
+
     CACHE_KEY: str = ''
+    """Cache file name, caching is disabled if empty."""
 
     def __init__(self, runner: '_Runner'):
+        """Create an indexer.
+
+        Args:
+            runner: Runner that owns this indexer.
+        """
+
         self.rr = runner
         self.ix: index.Object = runner.ix
         self.om = _ObjectMap()
 
     def load_or_collect(self):
+        """Load the object map from the cache, or collect it and store it in the cache."""
+
         if not self.load_cache():
             self.collect()
             self.store_cache()
 
     def load_cache(self):
+        """Load the object map from the cache.
+
+        Returns:
+            ``True`` if the object map was loaded.
+        """
+
         if not self.rr.withCache or not self.CACHE_KEY:
             return False
         cpath = self.rr.cacheDir + '/' + self.CACHE_KEY
@@ -128,6 +223,8 @@ class _Indexer:
         return True
 
     def store_cache(self):
+        """Store the object map in the cache, if caching is enabled."""
+
         if not self.rr.withCache or not self.CACHE_KEY:
             return
         cpath = self.rr.cacheDir + '/' + self.CACHE_KEY
@@ -135,30 +232,58 @@ class _Indexer:
         gws.log.info(f'ALKIS: store cache {self.CACHE_KEY!r}')
 
     def collect(self):
+        """Collect entities from the source data into the object map."""
+
         pass
 
     def write_table(self, table_id, values):
+        """Create and fill an index table, unless it already has data.
+
+        Args:
+            table_id: Table id.
+            values: Rows as dicts.
+        """
+
         if self.ix.has_table(table_id):
             return
         with ProgressIndicator(f'ALKIS: write {table_id!r}', len(values)) as progress:
             self.ix.create_table(table_id, values, progress)
 
     def write(self):
+        """Write the collected entities into the index tables."""
+
         pass
 
 
 class _PlaceIndexer(_Indexer):
-    """Index places (Administration- und Verwaltungseinheiten).
+    """Indexer for places (Administrations- und Verwaltungseinheiten).
 
-    References: https://de.wikipedia.org/wiki/Amtlicher_Gemeindeschl%C3%BCssel
+    Collects current Laender, Regierungsbezirke, Kreise, Gemeinden, Gemarkungen,
+    Buchungsblattbezirke and Dienststellen. Place codes are built from the key
+    parts as in the official municipality key, see
+    https://de.wikipedia.org/wiki/Amtlicher_Gemeindeschl%C3%BCssel
     """
 
     CACHE_KEY = 'obj_place'
 
     empty1 = dt.EnumPair(code='0', text='')
+    """Empty place value for one-digit codes."""
     empty2 = dt.EnumPair(code='00', text='')
+    """Empty place value for two-digit codes."""
 
     def add(self, kind, ax, key_obj, **kwargs):
+        """Add a place, unless it is historic.
+
+        Args:
+            kind: Place kind, a ``PlaceKind`` value.
+            ax: Source object.
+            key_obj: Key object of the place.
+            **kwargs: Higher level places.
+
+        Returns:
+            The place value, or ``None`` if the place is historic.
+        """
+
         if ax.lebenszeitintervall.endet is not None:
             return
 
@@ -223,30 +348,112 @@ class _PlaceIndexer(_Indexer):
         self.write_table(index.TABLE_PLACE, values)
 
     def get_land(self, o):
+        """Return the Land for a key object.
+
+        Args:
+            o: Key object.
+
+        Returns:
+            The place value, or an empty value if not found.
+        """
+
         return self.get('land', o) or self.empty2
 
     def get_regierungsbezirk(self, o):
+        """Return the Regierungsbezirk for a key object.
+
+        Args:
+            o: Key object.
+
+        Returns:
+            The place value, or an empty value if not found.
+        """
+
         return self.get('regierungsbezirk', o) or self.empty1
 
     def get_kreis(self, o):
+        """Return the Kreis for a key object.
+
+        Args:
+            o: Key object.
+
+        Returns:
+            The place value, or an empty value if not found.
+        """
+
         return self.get('kreis', o) or self.empty2
 
     def get_gemeinde(self, o):
+        """Return the Gemeinde for a key object.
+
+        Args:
+            o: Key object.
+
+        Returns:
+            The place value, or an empty value if not found.
+        """
+
         return self.get('gemeinde', o) or self.empty1
 
     def get_gemarkung(self, o):
+        """Return the Gemarkung for a key object.
+
+        Args:
+            o: Key object.
+
+        Returns:
+            The place value, or an empty value if not found.
+        """
+
         return self.get('gemarkung', o) or self.empty1
 
     def get_buchungsblattbezirk(self, o):
+        """Return the Buchungsblattbezirk for a key object.
+
+        Args:
+            o: Key object.
+
+        Returns:
+            The place value, or an empty value if not found.
+        """
+
         return self.get('buchungsblattbezirk', o) or self.empty1
 
     def get_dienststelle(self, o):
+        """Return the Dienststelle for a key object.
+
+        Args:
+            o: Key object.
+
+        Returns:
+            The place value, or an empty value if not found.
+        """
+
         return self.get('dienststelle', o) or self.empty1
 
     def get(self, kind, o):
+        """Return a place by kind and key object.
+
+        Args:
+            kind: Place kind.
+            o: Key object.
+
+        Returns:
+            The place value, or ``None`` if not found.
+        """
+
         return self.om.placeIdx.get(kind + self.code(kind, o))
 
     def is_empty(self, p: dt.EnumPair):
+        """Check whether a place value is empty.
+
+        Args:
+            p: Place value.
+
+        Returns:
+            ``True`` if the code is ``0`` or ``00``.
+        """
+
         return p.code == '0' or p.code == '00'
 
     CODES = {
@@ -258,12 +465,30 @@ class _PlaceIndexer(_Indexer):
         'buchungsblattbezirk': lambda o: o.land + o.bezirk,
         'dienststelle': lambda o: o.land + o.stelle,
     }
+    """Functions that build a place code from a key object, by place kind."""
 
     def code(self, kind, o):
+        """Build a place code.
+
+        Args:
+            kind: Place kind.
+            o: Key object.
+
+        Returns:
+            The place code.
+        """
+
         return self.CODES[kind](o)
 
 
 class _LageIndexer(_Indexer):
+    """Indexer for location designations (Lage) and buildings (Gebaeude).
+
+    The coordinates of a Lage are taken from its house number label (``AP_PTO``
+    with ``art=HNR``). Buildings are linked to the Lage they point to.
+    Building geometries are not stored.
+    """
+
     CACHE_KEY = 'obj_lage'
 
     def collect(self):
@@ -342,11 +567,29 @@ class _LageIndexer(_Indexer):
                 la.gebaeudeList.append(ge)
 
     def strasse(self, ax):
+        """Return the street name of a source Lage object.
+
+        Args:
+            ax: Source Lage object.
+
+        Returns:
+            The unencoded street name, or the name from the catalog for an encoded one.
+        """
+
         if isinstance(ax.lagebezeichnung, str):
             return ax.lagebezeichnung
         return self.om.catalog.get(self.lage_key(ax.lagebezeichnung), '')
 
     def lage_key(self, r):
+        """Return the catalog key for an encoded location.
+
+        Args:
+            r: Encoded location or catalog key object.
+
+        Returns:
+            A string of the key parts joined with commas.
+        """
+
         return _comma([
             getattr(r, 'land'),
             getattr(r, 'regierungsbezirk'),
@@ -369,9 +612,17 @@ class _LageIndexer(_Indexer):
 
 
 class _BuchungIndexer(_Indexer):
+    """Indexer for land register data.
+
+    Collects Buchungsblaetter with their Buchungsstellen and Namensnummern,
+    Persons and their Anschriften, and the parent-child relations of
+    Buchungsstellen.
+    """
+
     CACHE_KEY = 'obj_buchungsblatt'
 
     buchungsblattkennzeichenMap: dict[str, dt.Buchungsblatt] = {}
+    """Buchungsblaetter by their identifier."""
 
     def collect(self):
         for uid, axs in self.rr.read_grouped(gid.AX_Anschrift):
@@ -511,15 +762,27 @@ class _BuchungIndexer(_Indexer):
 
 
 class _PartIndexer(_Indexer):
+    """Indexer for Parts (Nutzung, Festlegung, Bewertung).
+
+    Reads all object types with a geometry in the Part categories and
+    intersects their geometries with the most recent Flurstueck geometries.
+    Intersections smaller than ``MIN_PART_AREA`` are skipped.
+    """
+
     CACHE_KEY = 'obj_part'
     MIN_PART_AREA = 1
+    """Minimum area of an intersection."""
 
     parts: list[dt.Part] = []
+    """Computed parts."""
 
     fs_list = []
+    """Flurstuecke, in the order of ``fs_geom``."""
     fs_geom = []
+    """Most recent Flurstueck geometries."""
 
     stree: shapely.strtree.STRtree
+    """Spatial index of ``fs_geom``."""
 
     def collect(self):
 
@@ -544,6 +807,12 @@ class _PartIndexer(_Indexer):
             pa.isHistoric = all(r.isHistoric for r in pa.recs)
 
     def collect_kind(self, kind):
+        """Collect source objects of all object types of a Part kind.
+
+        Args:
+            kind: Part kind.
+        """
+
         _, key = dt.Part.KIND[kind]
         classes = [
             getattr(gid, meta['name'])
@@ -559,6 +828,13 @@ class _PartIndexer(_Indexer):
             self.collect_class(kind, cls)
 
     def collect_class(self, kind, cls):
+        """Collect source objects of one object type.
+
+        Args:
+            kind: Part kind.
+            cls: GeoInfoDok class from ``gid6``.
+        """
+
         meta = gid.METADATA[cls.__name__]
         atts = _meta_attributes(meta)
 
@@ -575,6 +851,12 @@ class _PartIndexer(_Indexer):
             pa.name = dt.EnumPair(meta['uid'], meta['title'])
 
     def compute_intersections(self, pa: dt.Part):
+        """Intersect a source object with the Flurstuecke and add the resulting parts.
+
+        Args:
+            pa: Source object as a Part.
+        """
+
         parts_map = {}
 
         for r in pa.recs:
@@ -644,6 +926,14 @@ class _PartIndexer(_Indexer):
 
 
 class _FsDataIndexer(_Indexer):
+    """Indexer for Flurstuecke.
+
+    Collects current and historic Flurstuecke and links them to their Lage,
+    Gebaeude and Buchung data. Flurstuecke without a geometry or with an unknown
+    Gemarkung or Gemeinde are skipped and counted in ``counts``. Also fills in
+    the predecessor lists from the successor lists.
+    """
+
     CACHE_KEY = 'obj_flurstueck'
 
     def __init__(self, runner: '_Runner'):
@@ -703,6 +993,15 @@ class _FsDataIndexer(_Indexer):
                 nf_fs.recs[-1].vorgaengerFlurstueckskennzeichen.append(fs.flurstueckskennzeichen)
 
     def record(self, ax):
+        """Create a Flurstueck record from a source object.
+
+        Args:
+            ax: Source Flurstueck object.
+
+        Returns:
+            The record, or ``None`` if the Flurstueck has no geometry or an unknown Gemarkung or Gemeinde.
+        """
+
         r: dt.FlurstueckRecord = _from_ax(
             dt.FlurstueckRecord,
             ax,
@@ -747,6 +1046,12 @@ class _FsDataIndexer(_Indexer):
         return r
 
     def process_lage(self, fs: dt.Flurstueck):
+        """Set the Lage list of a Flurstueck.
+
+        Args:
+            fs: Flurstueck.
+        """
+
         fs.lageList = []
 
         # AX_Flurstueck.weistAuf -> AX_LagebezeichnungMitHausnummer
@@ -755,6 +1060,12 @@ class _FsDataIndexer(_Indexer):
         fs.lageList.extend(self.rr.lage.om.Lage.get_from_ptr(fs, '_zeigtAuf'))
 
     def process_gebaeude(self, fs: dt.Flurstueck):
+        """Set the Gebaeude list and total building areas of a Flurstueck.
+
+        Args:
+            fs: Flurstueck, with its Lage list set.
+        """
+
         ge_map = {}
 
         for la in fs.lageList:
@@ -768,6 +1079,18 @@ class _FsDataIndexer(_Indexer):
         fs.gebaeudeGeomFlaeche = sum(ge.recs[-1].geomFlaeche for ge in fs.gebaeudeList if not ge.recs[-1].endet)
 
     def process_buchung(self, fs: dt.Flurstueck):
+        """Set the Buchung list of a Flurstueck.
+
+        Collects the Buchungsstellen of all Flurstueck records, including their
+        parents and children, and groups them by Buchungsblatt.
+
+        Args:
+            fs: Flurstueck.
+
+        Returns:
+            The Flurstueck.
+        """
+
         bs_historic_map = {}
         bs_seen = set()
         buchung_map = {}
@@ -813,6 +1136,16 @@ class _FsDataIndexer(_Indexer):
         return fs
 
     def historic_buchungsstelle_list(self, r: dt.FlurstueckRecord, hist_buchung):
+        """Create historic Buchungsstellen for a historic Flurstueck record.
+
+        Args:
+            r: Historic Flurstueck record.
+            hist_buchung: ``buchung`` structs of the historic Flurstueck.
+
+        Returns:
+            A list of Buchungsstellen for the Buchungsblaetter that are found.
+        """
+
         # an AX_HistorischesFlurstueck with a special 'buchung' reference
 
         bs_list = []
@@ -845,6 +1178,15 @@ class _FsDataIndexer(_Indexer):
         return bs_list
 
     def buchungsstelle_list(self, r: dt.FlurstueckRecord):
+        """Return the Buchungsstelle of a Flurstueck record with its parents and children.
+
+        Args:
+            r: Flurstueck record.
+
+        Returns:
+            A list of Buchungsstellen: the parents, the Buchungsstelle itself and the children.
+        """
+
         # AX_Flurstueck.istGebucht -> AX_Buchungsstelle
 
         this_bs = self.rr.buchung.om.Buchungsstelle.get(_pop(r, '_istGebucht'))
@@ -904,6 +1246,8 @@ class _FsDataIndexer(_Indexer):
 
 
 class _FsIndexIndexer(_Indexer):
+    """Indexer for the flat search tables (``index*``)."""
+
     entries = {
         index.TABLE_INDEXFLURSTUECK: [],
         index.TABLE_INDEXLAGE: [],
@@ -911,6 +1255,7 @@ class _FsIndexIndexer(_Indexer):
         index.TABLE_INDEXPERSON: [],
         index.TABLE_INDEXGEOM: [],
     }
+    """Rows by table id."""
 
     def collect(self):
         with ProgressIndicator(f'ALKIS: creating indexes', len(self.rr.fsdata.om.Flurstueck)) as progress:
@@ -920,6 +1265,13 @@ class _FsIndexIndexer(_Indexer):
                 progress.update(1)
 
     def add(self, fs: dt.Flurstueck, r: dt.FlurstueckRecord):
+        """Add search table rows for a Flurstueck record.
+
+        Args:
+            fs: Flurstueck.
+            r: Flurstueck record.
+        """
+
         base = dict(
             fs=r.uid,
             fshistoric=r.isHistoric,
@@ -1025,7 +1377,17 @@ class _FsIndexIndexer(_Indexer):
 
 
 class _Runner:
+    """Runs all indexers in order and writes the index tables."""
+
     def __init__(self, ix: index.Object, reader: dt.Reader, with_cache=False):
+        """Create a runner.
+
+        Args:
+            ix: Index to build.
+            reader: Source data reader.
+            with_cache: Whether to cache source data and collected objects.
+        """
+
         self.ix: index.Object = ix
         self.reader: dt.Reader = reader
 
@@ -1044,6 +1406,8 @@ class _Runner:
         self.initMemory = gws.lib.osx.process_rss_size()
 
     def run(self):
+        """Collect all data and write the index tables."""
+
         with self.ix.db.connect() as conn:
             with ProgressIndicator(f'ALKIS: indexing'):
                 self.place.load_or_collect()
@@ -1073,11 +1437,22 @@ class _Runner:
                 self.fsindex.write()
 
     def memory_info(self):
+        """Log the memory used since the runner was created."""
+
         v = gws.lib.osx.process_rss_size() - self.initMemory
         if v > 0:
             gws.log.info(f'ALKIS: memory used: {v:.2f} MB', stacklevel=2)
 
     def read_flat(self, cls):
+        """Read all source objects of a type.
+
+        Args:
+            cls: GeoInfoDok class from ``gid6``.
+
+        Returns:
+            A list of objects.
+        """
+
         cpath = self.cacheDir + '/flat_' + cls.__name__
         if self.withCache and gws.u.is_file(cpath):
             return gws.u.unserialize_from_path(cpath)
@@ -1089,6 +1464,8 @@ class _Runner:
         return rs
 
     def _read_flat(self, cls):
+        """Read all source objects of a type, without the cache."""
+
         cnt = self.reader.count(cls)
         if cnt <= 0:
             gws.log.warning(f'ALKIS: read {cls.__name__}: empty table')
@@ -1102,6 +1479,15 @@ class _Runner:
         return rs
 
     def read_grouped(self, cls):
+        """Read all source objects of a type, grouped by identifier.
+
+        Args:
+            cls: GeoInfoDok class from ``gid6``.
+
+        Returns:
+            A list of ``(identifier, objects)`` tuples, objects sorted by start date.
+        """
+
         cpath = self.cacheDir + '/grouped_' + cls.__name__
         if self.withCache and gws.u.is_file(cpath):
             return gws.u.unserialize_from_path(cpath)
@@ -1113,6 +1499,8 @@ class _Runner:
         return rs
 
     def _read_grouped(self, cls):
+        """Read and group source objects of a type, without the cache."""
+
         cnt = self.reader.count(cls)
         if cnt <= 0:
             gws.log.warning(f'ALKIS: read {cls.__name__}: empty table')
@@ -1129,6 +1517,18 @@ class _Runner:
         return list(groups.items())
 
     def props_from(self, ax, atts):
+        """Extract descriptive properties from a source object.
+
+        Object values and empty values are skipped, dates are formatted as ``DD.MM.YYYY``.
+
+        Args:
+            ax: Source object.
+            atts: Attribute metadata.
+
+        Returns:
+            An object with the properties.
+        """
+
         d = {}
 
         for a in atts:
@@ -1145,6 +1545,8 @@ class _Runner:
 
 
 def _from_ax(cls, ax, **kwargs):
+    """Create a record from a source object, its life span and extra values."""
+
     d = {}
 
     if ax:
@@ -1167,6 +1569,8 @@ def _from_ax(cls, ax, **kwargs):
 
 
 def _anteil(ax):
+    """Format the share of a source object as a fraction string."""
+
     try:
         z = float(ax.anteil.zaehler)
         z = str(int(z) if z.is_integer() else z)
@@ -1178,6 +1582,8 @@ def _anteil(ax):
 
 
 def _meta_attributes(meta):
+    """Return the attributes of a class that are known properties, sorted by title."""
+
     return sorted(
         [a for a in meta['attributes'] if a['name'] in dt.PROPS],
         key=lambda a: a['title']
@@ -1185,6 +1591,8 @@ def _meta_attributes(meta):
 
 
 def _geom_of(o):
+    """Return the shapely geometry of an object, or ``None`` with a warning."""
+
     if not o.geom:
         gws.log.warning(f'{o.__class__.__name__}:{o.uid}: no geometry')
         return
@@ -1192,6 +1600,8 @@ def _geom_of(o):
 
 
 def _pop(obj, attr):
+    """Remove an attribute from an object and return its value."""
+
     v = getattr(obj, attr, None)
     try:
         delattr(obj, attr)
@@ -1230,6 +1640,8 @@ def _sortkey_gebaeude(ge: dt.Gebaeude):
 
 
 def _natkey(v):
+    """Return a key for natural sorting of strings with numbers."""
+
     if not v:
         return []
     return [
@@ -1239,8 +1651,12 @@ def _natkey(v):
 
 
 def _comma(a):
+    """Join values with commas, ``None`` becomes an empty string."""
+
     return ','.join(str(s) if s is not None else '' for s in a)
 
 
 def _str(x):
+    """Convert to a string, keeping ``None``."""
+
     return None if x is None else str(x)

@@ -16,6 +16,16 @@ from gws.lib.xmlx import tag
 # OGC 06-121r9 Table 34
 # Ordered sequence of two double values in decimal degrees, with longitude before latitude
 def ows_wgs84_bounding_box(lc: core.LayerCaps, ns: str = 'OWS_11'):
+    """Create a ``WGS84BoundingBox`` element for a layer.
+
+    Args:
+        lc: Layer caps.
+        ns: Namespace prefix of the OWS elements.
+
+    Returns:
+        The XML element.
+    """
+
     return tag(
         f'{ns}:WGS84BoundingBox',
         tag(f'{ns}:LowerCorner', coord_dms(lc.layer.wgsExtent[0]), ' ', coord_dms(lc.layer.wgsExtent[1])),
@@ -25,6 +35,16 @@ def ows_wgs84_bounding_box(lc: core.LayerCaps, ns: str = 'OWS_11'):
 
 # OGC 06-121r3 sec 7.4.4
 def ows_service_identification(ta: server.TemplateArgs, ns: str = 'OWS_11'):
+    """Create a ``ServiceIdentification`` element from the service metadata.
+
+    Args:
+        ta: Template arguments.
+        ns: Namespace prefix of the OWS elements.
+
+    Returns:
+        The XML element.
+    """
+
     md = ta.service.metadata
 
     return tag(
@@ -41,6 +61,16 @@ def ows_service_identification(ta: server.TemplateArgs, ns: str = 'OWS_11'):
 
 # OGC 06-121r3 sec 7.4.5
 def ows_service_provider(ta: server.TemplateArgs, ns: str = 'OWS_11'):
+    """Create a ``ServiceProvider`` element from the service contact metadata.
+
+    Args:
+        ta: Template arguments.
+        ns: Namespace prefix of the OWS elements.
+
+    Returns:
+        The XML element.
+    """
+
     md = ta.service.metadata
 
     return tag(
@@ -80,6 +110,18 @@ def ows_service_provider(ta: server.TemplateArgs, ns: str = 'OWS_11'):
 
 
 def ows_service_url(ta: server.TemplateArgs, get=True, post=False, ns: str = 'OWS_11'):
+    """Create ``DCP/HTTP/Get`` and ``DCP/HTTP/Post`` elements with the service URL.
+
+    Args:
+        ta: Template arguments.
+        get: Include the GET URL.
+        post: Include the POST URL.
+        ns: Namespace prefix of the OWS elements.
+
+    Yields:
+        XML elements.
+    """
+
     if get:
         yield tag(
             f'{ns}:DCP/{ns}:HTTP/{ns}:Get',
@@ -93,10 +135,29 @@ def ows_service_url(ta: server.TemplateArgs, get=True, post=False, ns: str = 'OW
 
 
 def ows_value(value, ns: str = 'OWS_11'):
+    """Create a ``Value`` element.
+
+    Args:
+        value: Element text.
+        ns: Namespace prefix of the OWS elements.
+
+    Returns:
+        The XML element.
+    """
+
     return tag(f'{ns}:Value', value)
 
 
 def online_resource(url):
+    """Create an ``OnlineResource`` element with a simple xlink.
+
+    Args:
+        url: Link URL.
+
+    Returns:
+        The XML element.
+    """
+
     return tag('OnlineResource', {'XLINK:type': 'simple', 'XLINK:href': url})
 
 
@@ -107,10 +168,30 @@ def online_resource(url):
 
 
 def dcp_service_url(ta: server.TemplateArgs):
+    """Create a ``DCPType/HTTP/Get`` element with the service URL (WMS style).
+
+    Args:
+        ta: Template arguments.
+
+    Returns:
+        The XML element.
+    """
+
     return tag('DCPType/HTTP/Get', online_resource(ta.serviceUrl + '?'))
 
 
 def legend_url_nested(ta: server.TemplateArgs, lc: core.LayerCaps, size=None):
+    """Create a ``LegendURL`` element with nested ``Format`` and ``OnlineResource`` (WMS style).
+
+    Args:
+        ta: Template arguments.
+        lc: Layer caps.
+        size: Legend size as ``(width, height)``, optional.
+
+    Returns:
+        The XML element.
+    """
+
     return tag(
         'LegendURL',
         {'width': size[0], 'height': size[1]} if size else {},
@@ -120,6 +201,17 @@ def legend_url_nested(ta: server.TemplateArgs, lc: core.LayerCaps, size=None):
 
 
 def legend_url(ta: server.TemplateArgs, lc: core.LayerCaps, size=None):
+    """Create a ``LegendURL`` element with the format and URL as attributes (WMTS style).
+
+    Args:
+        ta: Template arguments.
+        lc: Layer caps.
+        size: Not used.
+
+    Returns:
+        The XML element.
+    """
+
     return tag(
         'LegendURL',
         {
@@ -130,14 +222,36 @@ def legend_url(ta: server.TemplateArgs, lc: core.LayerCaps, size=None):
 
 
 def feature_name(ta: server.TemplateArgs, lc: core.LayerCaps) -> str:
+    """Return the qualified feature type name of a layer, with the requested custom prefixes applied.
+
+    Args:
+        ta: Template arguments.
+        lc: Layer caps.
+
+    Returns:
+        The name as ``prefix:name``, or the plain name if the layer has no namespace.
+    """
+
     return layer_caps.qualified_feature_name(lc, ta.serviceRequest.customNamespacePrefixes)
 
 
 def ows_keywords(md: gws.Metadata, ns: str = 'OWS_11'):
+    """Create ``Keywords`` elements for the keyword groups in the metadata.
+
+    Args:
+        md: Metadata.
+        ns: Namespace prefix of the OWS elements.
+
+    Returns:
+        A list of XML elements.
+    """
+
     return [_ows_keyword_group(kg, ns) for kg in gws.base.metadata.keyword_groups(md)]
 
 
 def _ows_keyword_group(kg: gws.base.metadata.KeywordGroup, ns: str):
+    """Create a ``Keywords`` element for a keyword group."""
+
     tags = []
     for kw in kg.keywords:
         tags.append(tag(f'{ns}:Keyword', kw))
@@ -147,6 +261,16 @@ def _ows_keyword_group(kg: gws.base.metadata.KeywordGroup, ns: str):
 
 
 def wms_keywords(md: gws.Metadata, with_vocabulary: bool = False):
+    """Create a WMS ``KeywordList`` element.
+
+    Args:
+        md: Metadata.
+        with_vocabulary: Add the ``vocabulary`` attribute for keywords with a code space.
+
+    Returns:
+        The XML element.
+    """
+
     tags = []
     for kg in gws.base.metadata.keyword_groups(md):
         for kw in kg.keywords:
@@ -158,6 +282,15 @@ def wms_keywords(md: gws.Metadata, with_vocabulary: bool = False):
 
 
 def lon_lat_envelope(lc: core.LayerCaps):
+    """Create a ``lonLatEnvelope`` element for a layer.
+
+    Args:
+        lc: Layer caps.
+
+    Returns:
+        The XML element.
+    """
+
     return tag(
         'lonLatEnvelope',
         {'srsName': 'urn:ogc:def:crs:OGC:1.3:CRS84'},
@@ -172,12 +305,33 @@ def lon_lat_envelope(lc: core.LayerCaps):
 
 
 def meta_links_nested(ta: server.TemplateArgs, md: gws.Metadata):
+    """Create ``MetadataURL`` elements in the nested format for the metadata links.
+
+    Args:
+        ta: Template arguments.
+        md: Metadata.
+
+    Yields:
+        Generators of XML elements, one for each link.
+    """
+
     if md.metaLinks:
         for ml in md.metaLinks:
             yield meta_url_nested(ta, ml, 'MetadataURL')
 
 
 def meta_url_nested(ta: server.TemplateArgs, ml: gws.MetadataLink, name: str):
+    """Create a metadata link element in the nested format, with ``Format`` and ``OnlineResource``.
+
+    Args:
+        ta: Template arguments.
+        ml: Metadata link, may be empty.
+        name: Element name.
+
+    Yields:
+        The XML element, if the link is not empty.
+    """
+
     if ml:
         yield tag(name, {'type': ml.type}, tag('Format', ml.format), online_resource(ta.url_for(ml.url)))
 
@@ -191,17 +345,47 @@ def meta_url_nested(ta: server.TemplateArgs, ml: gws.MetadataLink, name: str):
 
 
 def meta_links_simple(ta: server.TemplateArgs, md: gws.Metadata):
+    """Create ``MetadataURL`` elements in the simple format for the metadata links.
+
+    Args:
+        ta: Template arguments.
+        md: Metadata.
+
+    Yields:
+        Generators of XML elements, one for each link.
+    """
+
     if md.metaLinks:
         for ml in md.metaLinks:
             yield meta_url_simple(ta, ml, 'MetadataURL')
 
 
 def meta_url_simple(ta: server.TemplateArgs, ml: gws.MetadataLink, name: str):
+    """Create a metadata link element in the simple format, with ``xlink:href`` and ``about`` attributes.
+
+    Args:
+        ta: Template arguments.
+        ml: Metadata link, may be empty.
+        name: Element name.
+
+    Yields:
+        The XML element, if the link is not empty.
+    """
+
     if ml:
         yield tag(name, {'XLINK:href': ta.url_for(ml.url), 'about': ml.about})
 
 
 def wfs_feature_collection(ta: server.TemplateArgs):
+    """Create a ``wfs:FeatureCollection`` element from the feature collection in the template arguments.
+
+    Args:
+        ta: Template arguments.
+
+    Returns:
+        The XML element.
+    """
+
     return tag(
         'WFS:FeatureCollection',
         wfs_feature_collection_attributes(ta),
@@ -220,6 +404,15 @@ def wfs_feature_collection(ta: server.TemplateArgs):
 
 
 def wfs_value_collection(ta: server.TemplateArgs):
+    """Create a ``wfs:ValueCollection`` element from the values in the feature collection.
+
+    Args:
+        ta: Template arguments.
+
+    Returns:
+        The XML element.
+    """
+
     return tag(
         'WFS:ValueCollection',
         wfs_feature_collection_attributes(ta),
@@ -228,6 +421,15 @@ def wfs_value_collection(ta: server.TemplateArgs):
 
 
 def wfs_feature_collection_attributes(ta):
+    """Return the attributes of a WFS feature or value collection.
+
+    Args:
+        ta: Template arguments.
+
+    Returns:
+        A dict with ``timeStamp``, ``numberMatched`` and ``numberReturned``.
+    """
+
     return {
         'timeStamp': ta.featureCollection.timestamp,
         'numberMatched': ta.featureCollection.numMatched,
@@ -236,6 +438,16 @@ def wfs_feature_collection_attributes(ta):
 
 
 def wfs_feature_collection_member(ta: server.TemplateArgs, m: server.FeatureCollectionMember):
+    """Create the attribute elements of a feature collection member.
+
+    Args:
+        ta: Template arguments.
+        m: Collection member.
+
+    Yields:
+        XML elements, one for each attribute; the geometry comes last.
+    """
+
     geom = None
     for name, val in m.feature.attributes.items():
         if m.layerCaps:
@@ -250,6 +462,16 @@ def wfs_feature_collection_member(ta: server.TemplateArgs, m: server.FeatureColl
 
 
 def gml_format_uid(ta: server.TemplateArgs, uid):
+    """Format a feature uid as a valid ``gml:id``.
+
+    Args:
+        ta: Template arguments.
+        uid: Feature uid.
+
+    Returns:
+        The uid, prefixed with ``_`` if it starts with a digit, or ``_`` if it is empty.
+    """
+
     if not uid:
         return '_'
     s = str(uid)
@@ -259,6 +481,16 @@ def gml_format_uid(ta: server.TemplateArgs, uid):
 
 
 def gml_format_value(ta, val):
+    """Format an attribute value for GML output.
+
+    Args:
+        ta: Template arguments.
+        val: Attribute value.
+
+    Returns:
+        A string, or a GML element for shapes.
+    """
+
     s, ok = xmlx.util.atom_to_string(val)
     if ok:
         return s
@@ -280,6 +512,15 @@ def gml_format_value(ta, val):
 
 
 def inspire_extended_capabilities(ta: server.TemplateArgs):
+    """Create the INSPIRE extended capabilities elements from the service metadata.
+
+    Args:
+        ta: Template arguments.
+
+    Returns:
+        A list of XML elements.
+    """
+
     md = ta.service.metadata
     return [
         tag(
@@ -335,27 +576,70 @@ def inspire_extended_capabilities(ta: server.TemplateArgs):
 
 
 def coord_dms(n):
+    """Format a coordinate in degrees, with the default precision for degrees.
+
+    Args:
+        n: Coordinate value.
+
+    Returns:
+        The formatted string.
+    """
+
     prec = gws.lib.uom.DEFAULT_PRECISION[gws.Uom.deg]
     return f'{round(n, prec):.{prec}f}'
 
 
 def coord_m(n):
+    """Format a coordinate in meters, with the default precision for meters.
+
+    Args:
+        n: Coordinate value.
+
+    Returns:
+        The formatted string.
+    """
+
     prec = gws.lib.uom.DEFAULT_PRECISION[gws.Uom.m]
     return f'{round(n, prec):.{prec}f}'
 
 
 def iso_date(d):
+    """Format a date as an ISO date string.
+
+    Args:
+        d: Date value or string.
+
+    Returns:
+        The ISO date, or an empty string if the value cannot be parsed.
+    """
+
     dd = dtx.parse(d)
     return dtx.to_iso_date_string(dd) if dd else ''
 
 
 def iso_datetime(d):
+    """Format a date as an ISO date-time string with time zone.
+
+    Args:
+        d: Date value or string.
+
+    Returns:
+        The ISO date-time, or an empty string if the value cannot be parsed.
+    """
+
     dd = dtx.parse(d)
     return dtx.to_iso_string(dd, with_tz=':') if dd else ''
 
 
 def namespaces_from_caps(ta: server.TemplateArgs) -> list[gws.XmlNamespace]:
-    """Feature type namespaces, to declare in documents that reference feature types by QName."""
+    """Return the feature type namespaces, to declare in documents that reference feature types by QName.
+
+    Args:
+        ta: Template arguments.
+
+    Returns:
+        The distinct namespaces of the layers in ``layerCapsList``.
+    """
 
     d = {}
     for lc in ta.layerCapsList:
@@ -373,6 +657,8 @@ def to_xml_response(
 ) -> gws.ContentResponse:
     """Create an XML response.
 
+    For SOAP requests, the element is wrapped in a SOAP envelope.
+
     Args:
         ta: Template arguments.
         el: Root element.
@@ -381,6 +667,9 @@ def to_xml_response(
             e.g. for QName values.
         doctype: DTD for DTD-based formats (WMS 1.1.x). These have no namespace declarations on the root;
             ``xlink`` is declared inline where it is used (as per the DTD's #FIXED xmlns:xlink).
+
+    Returns:
+        The XML response.
     """
 
     if extra_namespaces:

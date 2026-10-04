@@ -1,9 +1,25 @@
+"""Collect documentation strings from docstrings and ``strings.ini`` files."""
+
 import re
 
 from . import base, util
 
 
 def collect(gen: base.Generator):
+    """Collect the documentation strings.
+
+    English strings come from the docstrings of the server types and enum
+    members. Then all ``strings.ini`` and ``strings.<suffix>.ini`` files under
+    the root directory are read; ini sections are language codes. A string
+    starting with ``[xx]`` is stored under the language ``xx``.
+
+    Args:
+        gen: Generator state.
+
+    Returns:
+        A dict of strings, keyed by language code and type uid.
+    """
+
     strings_dct = {}
 
     for typ in gen.serverTypes:
@@ -23,10 +39,7 @@ def collect(gen: base.Generator):
 
 
 def _add_string(strings_dct, lang, uid, text):
-    """Add a docstring to the dict.
-
-    If the string starts with a [xx], override the given language.
-    """
+    """Add a string to the dict, a leading ``[xx]`` overrides the language."""
 
     text = (text or '').strip()
     m = re.match(r'^\[(\w\w)](.+)$', text)

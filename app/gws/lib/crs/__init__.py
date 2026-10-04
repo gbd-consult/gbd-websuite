@@ -1,3 +1,47 @@
+"""Coordinate reference systems.
+
+This package provides ``gws.Crs`` objects, which describe coordinate reference systems
+and transform extents, points and resolutions between them. CRS objects are created
+from EPSG definitions with ``pyproj``, and are cached, so that there is one object per SRID.
+Only CRSs with meter or degree units are supported. CRS objects with the same SRID compare equal.
+
+``transform_resolution`` samples nine points of the extent (corners, edge midpoints, centre),
+transforms each together with a one-pixel step in x and in y, and returns the smallest
+finite positive step length in the target CRS.
+
+A CRS can be referenced by a ``gws.CrsName`` in one of these formats (see ``gws.CrsFormat``):
+
+- numeric SRID: ``4326``
+- EPSG code: ``EPSG:4326``
+- OGC HTTP URL: ``http://www.opengis.net/gml/srs/epsg.xml#4326``
+- OGC experimental URN: ``urn:x-ogc:def:crs:EPSG:4326``
+- OGC URN: ``urn:ogc:def:crs:EPSG::4326``
+- OGC HTTP URI: ``http://www.opengis.net/def/crs/EPSG/0/4326``
+
+Names are case-insensitive. Some aliases, like ``CRS:84`` or ``EPSG:900913``, are also recognized.
+
+The package provides:
+
+- predefined CRS objects ``WGS84`` and ``WEBMERCATOR`` and related constants,
+- ``get``, ``require`` and ``parse`` to look up a CRS by name,
+- ``best_match`` to pick a CRS from a list of supported CRSs,
+- ``qgis_extent_width`` to compute the width of a geographic extent the way QGIS does.
+
+The ``gws.Crs`` interface itself is defined in ``types.pyinc``.
+
+Example::
+
+    import gws.lib.crs
+
+    crs = gws.lib.crs.require('EPSG:25832')
+    crs.to_string(gws.CrsFormat.urn)  # 'urn:ogc:def:crs:EPSG::25832'
+
+    ext = gws.lib.crs.WGS84.transform_extent((5.0, 47.0, 15.0, 55.0), crs)
+
+    fmt, crs = gws.lib.crs.parse('urn:ogc:def:crs:EPSG::4326')
+    crs.axis_for_format(fmt)  # gws.Axis.yx
+"""
+
 from typing import Optional
 
 import math
@@ -15,7 +59,14 @@ import gws
 
 
 class Object(gws.Crs):
+    """Coordinate reference system."""
+
     def __init__(self, **kwargs):
+        """Create a CRS object with the given attributes.
+
+        Args:
+            **kwargs: Attribute values, see ``gws.Crs``.
+        """
         vars(self).update(kwargs)
 
     # crs objects with the same srid must be equal
@@ -41,15 +92,6 @@ class Object(gws.Crs):
         return _transform_extent_check(ext, self.srid, crs_to.srid)
 
     def transform_resolution(self, extent, res, crs_to):
-        """Transform a resolution from this CRS to another.
-
-        Samples nine points of the extent (corners, edge midpoints, centre), transforms each
-        together with a one-pixel step in x and in y, and measures the step lengths in the
-        target CRS. The smallest finite positive length is returned, so that the target
-        resolution is never coarser than the source resolution anywhere in the extent;
-        ``0.0`` if no sample transforms.
-        """
-
         tr = self.transformer(crs_to)
 
         x0, y0, x1, y1 = extent
@@ -156,6 +198,17 @@ class Object(gws.Crs):
 
 
 def qgis_extent_width(extent: gws.Extent) -> float:
+    """Compute the width of a geographic extent in meters, the way QGIS does.
+
+    This is a port of ``QgsScaleCalculator::calculateGeographicDistance`` from QGIS.
+    The distance is measured along the middle latitude of the extent.
+
+    Args:
+        extent: Extent in degrees.
+
+    Returns:
+        The width in meters.
+    """
     # straight port from QGIS/src/core/qgsscalecalculator.cpp QgsScaleCalculator::calculateGeographicDistance
     x0, y0, x1, y1 = extent
 
@@ -197,6 +250,7 @@ WGS84: gws.Crs = Object(
     wgsMaxExtent=(-180, -90, 180, 90),
     coordinatePrecision=COORDINATE_PRECISION_DEG,
 )
+"""WGS 84 geographic CRS (EPSG:4326)."""
 
 WGS84.bounds = gws.Bounds(crs=WGS84, extent=WGS84.extent)
 
@@ -227,6 +281,7 @@ WEBMERCATOR: gws.Crs = Object(
     wgsMaxExtent=(-180, -85.06, 180, 85.06),
     coordinatePrecision=COORDINATE_PRECISION_M,
 )
+"""WGS 84 / Pseudo-Mercator CRS (EPSG:3857)."""
 
 WEBMERCATOR.bounds = gws.Bounds(crs=WEBMERCATOR, extent=WEBMERCATOR.extent)
 
@@ -242,21 +297,39 @@ WEBMERCATOR_SQUARE = (
     +math.pi * WEBMERCATOR_RADIUS,
     +math.pi * WEBMERCATOR_RADIUS,
 )
+"""Square web mercator extent that covers the whole world width, in meters."""
 
 
 class Error(gws.Error):
+    """CRS error."""
+
     pass
 
 
 def get(crs_name: Optional[gws.CrsName]) -> Optional[gws.Crs]:
-    """Returns the CRS for a given CRS-code or SRID."""
+    """Get the CRS for a given CRS name or SRID.
+
+    Args:
+        crs_name: CRS name in any supported format, or an SRID.
+
+    Returns:
+        The CRS object, or ``None`` if the name is empty, cannot be parsed or refers to an unsupported CRS.
+    """
     if not crs_name:
         return None
     return _get_crs(crs_name)
 
 
 def parse(crs_name: gws.CrsName) -> tuple[gws.CrsFormat, Optional[gws.Crs]]:
-    """Parses a CRS to a tuple of CRS-format and the CRS itself."""
+    """Parse a CRS name into its format and the CRS itself.
+
+    Args:
+        crs_name: CRS name in any supported format, or an SRID.
+
+    Returns:
+        A tuple of the name format and the CRS object. If the name cannot be parsed,
+        ``(CrsFormat.none, None)``. If the CRS is unknown or unsupported, the CRS is ``None``.
+    """
     fmt, srid = _parse(crs_name)
     if not fmt:
         return gws.CrsFormat.none, None
@@ -264,7 +337,17 @@ def parse(crs_name: gws.CrsName) -> tuple[gws.CrsFormat, Optional[gws.Crs]]:
 
 
 def require(crs_name: gws.CrsName) -> gws.Crs:
-    """Raises an error if no correct CRS is given."""
+    """Get the CRS for a given CRS name or SRID, and fail if there is none.
+
+    Args:
+        crs_name: CRS name in any supported format, or an SRID.
+
+    Returns:
+        The CRS object.
+
+    Raises:
+        ``Error``: If the name cannot be parsed or refers to an unknown or unsupported CRS.
+    """
     crs = _get_crs(crs_name)
     if not crs:
         raise Error(f'invalid CRS {crs_name!r}')
@@ -275,14 +358,19 @@ def require(crs_name: gws.CrsName) -> gws.Crs:
 
 
 def best_match(crs: gws.Crs, supported_crs: list[gws.Crs]) -> gws.Crs:
-    """Return a crs from the list that most closely matches the given crs.
+    """Return a CRS from the list that most closely matches the given CRS.
+
+    If the CRS is in the list, it is returned. Otherwise, for a projected CRS, web mercator
+    or the first projected CRS from the list is preferred, and for a geographic CRS,
+    WGS84 or the first geographic CRS. Failing that, the first CRS from the list is returned,
+    or the given CRS if the list is empty.
 
     Args:
-        crs: target CRS
-        supported_crs: CRS list
+        crs: Target CRS.
+        supported_crs: List of supported CRSs.
 
     Returns:
-        A CRS object
+        A CRS object.
     """
 
     if crs in supported_crs:

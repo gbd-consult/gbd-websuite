@@ -1,3 +1,5 @@
+"""Base OWS service provider."""
+
 from typing import Optional
 import base64
 
@@ -63,6 +65,15 @@ class Config(gws.Config):
 
 
 class Object(gws.OwsServiceProvider):
+    """Base OWS service provider.
+
+    Holds the service URL, version, operations and source layers of a remote
+    OWS service, and prepares request arguments for its operations. Provides
+    subclasses with capabilities download and caching, merging of configured
+    and reported operations and format selection. Protocol-specific subclasses
+    set ``protocol`` and parse the capabilities.
+    """
+
     def configure(self):
         self.alwaysXY = self.cfg('alwaysXY', default=False)
         self.forceCrs = gws.lib.crs.get(self.cfg('forceCrs'))
@@ -76,6 +87,17 @@ class Object(gws.OwsServiceProvider):
         self.authorization = gws.OwsAuthorization(p) if p else None
 
     def configure_operations(self, operations_from_caps):
+        """Set up the provider operations.
+
+        Operations from the configuration replace those from the capabilities
+        with the same verb; attributes missing in the configuration are taken from
+        the capabilities. A preferred format is then chosen for each operation:
+        PNG or JPEG for image requests, GML3, GML or XML for others.
+
+        Args:
+            operations_from_caps: Operations read from the capabilities.
+        """
+
         d = {}
 
         for op in operations_from_caps:
@@ -99,6 +121,7 @@ class Object(gws.OwsServiceProvider):
             op.preferredFormat = self._preferred_format(op)
 
     def _preferred_format(self, op: gws.OwsOperation) -> Optional[str]:
+        """Pick the best supported format of an operation, or the first one if none is preferred."""
         prefer_fmts = _PREFER_IMAGE_MIME if op.verb in _IMAGE_VERBS else _PREFER_XML_MIME
 
         if not op.formats:
@@ -121,6 +144,12 @@ class Object(gws.OwsServiceProvider):
         return best_fmt or op.formats[0]
 
     def cache_hash(self):
+        """Compute a hash of the provider settings, used to build cache keys.
+
+        Returns:
+            A hash of the URL, the forced CRS and the axis order setting.
+        """
+
         return gws.u.sha256([
             self.url,
             self.forceCrs.srid if self.forceCrs else '',
@@ -135,6 +164,24 @@ class Object(gws.OwsServiceProvider):
                     return op
 
     def prepare_operation(self, op: gws.OwsOperation, method: gws.RequestMethod = None, params=None) -> request.Args:
+        """Prepare the request arguments for an operation.
+
+        For GET requests, the operation parameters are included. Parameter names
+        are upper-cased and checked against the operation's allowed values.
+        Adds a basic ``Authorization`` header if configured.
+
+        Args:
+            op: Operation.
+            method: Request method, ``GET`` by default.
+            params: Request parameters.
+
+        Returns:
+            Request arguments, to be passed to ``request.get``.
+
+        Raises:
+            ``gws.Error``: If a parameter value is not allowed by the operation.
+        """
+
         args = request.Args(
             method=method or gws.RequestMethod.GET,
             headers={},
@@ -168,6 +215,17 @@ class Object(gws.OwsServiceProvider):
         return args
 
     def get_capabilities(self):
+        """Download the capabilities document of the service.
+
+        The document is cached for ``capsCacheMaxAge``.
+
+        Returns:
+            The capabilities XML text.
+
+        Raises:
+            ``gws.ExternalServiceError``: If the request fails.
+        """
+
         url, params = gws.lib.net.extract_params(self.url)
         op = gws.OwsOperation(
             formats=[gws.lib.mime.XML],

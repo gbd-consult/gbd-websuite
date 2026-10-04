@@ -75,114 +75,261 @@ class XmlElement(Iterable):
     def __getitem__(self, item: int) -> 'XmlElement': ...
 
     def append(self, subelement: 'XmlElement'):
-        """Adds the element subelement to the end of this element’s internal list of subelements."""
+        """Add a child at the end of the list of children.
+
+        Args:
+            subelement: The element to add.
+        """
 
     def clear(self):
-        """Resets an element."""
+        """Remove the attributes, namespace declarations, children, text and tail of this element."""
 
     def extend(self, subelements: Iterable['XmlElement']):
-        """Appends subelements from a sequence object with zero or more elements."""
+        """Add children at the end of the list of children.
+
+        Args:
+            subelements: The elements to add.
+        """
 
     def find(self, path: str) -> Optional['XmlElement']:
-        """Finds first matching element by tag name or path (ElementTree syntax, names local or Clark)."""
+        """Find the first matching subelement.
+
+        Args:
+            path: Tag name or path in ``ElementTree`` syntax, with local or Clark names.
+
+        Returns:
+            The element, or ``None`` if nothing matches.
+        """
 
     def require(self, path: str) -> 'XmlElement':
-        """Finds first matching element and raises an error if not found."""
+        """Find the first matching subelement, which must exist.
+
+        Args:
+            path: Tag name or path in ``ElementTree`` syntax, with local or Clark names.
+
+        Returns:
+            The element.
+
+        Raises:
+            gws.lib.xmlx.Error: If nothing matches.
+        """
 
     def findall(self, path: str) -> list['XmlElement']:
-        """Finds all matching subelements by name or path."""
+        """Find all matching subelements.
+
+        Args:
+            path: Tag name or path in ``ElementTree`` syntax, with local or Clark names.
+
+        Returns:
+            A list of elements in document order.
+        """
 
     def findtext(self, path: str, default: str = '') -> str:
-        """Finds text for first matching element by name or path."""
+        """Find the text of the first matching subelement.
+
+        Args:
+            path: Tag name or path in ``ElementTree`` syntax, with local or Clark names.
+            default: Value to return if nothing matches.
+
+        Returns:
+            The text of the element, or ``default``.
+        """
 
     def get(self, key: str, default: str = '') -> str:
-        """Gets the element attribute named key."""
+        """Get an attribute value.
+
+        Args:
+            key: Attribute name, local or Clark.
+            default: Value to return if the attribute does not exist.
+
+        Returns:
+            The attribute value, or ``default``.
+        """
 
     def insert(self, index: int, subelement: 'XmlElement'):
-        """Inserts subelement at the given position in this element."""
+        """Insert a child at the given position.
+
+        Args:
+            index: Position in the list of children.
+            subelement: The element to insert.
+        """
 
     def items(self) -> Iterable[tuple[str, Any]]:
-        """Returns the element attributes as a sequence of (name, value) pairs."""
+        """Get the attributes.
+
+        Returns:
+            The attributes as ``(name, value)`` pairs.
+        """
 
     def iter(self, tag: Optional[str] = None) -> Iterable['XmlElement']:
-        """Creates a tree iterator."""
+        """Iterate over this element and all its descendants, depth-first.
+
+        Args:
+            tag: Only return elements with this tag; ``None`` or ``*`` returns all elements.
+
+        Returns:
+            An iterator of elements, starting with this element if it matches.
+        """
 
     def iterfind(self, path: str) -> Iterable['XmlElement']:
-        """Returns an iterable of all matching subelements by name or path."""
+        """Iterate over all matching subelements.
+
+        Args:
+            path: Tag name or path in ``ElementTree`` syntax, with local or Clark names.
+
+        Returns:
+            An iterator of elements in document order.
+        """
 
     def itertext(self) -> Iterable[str]:
-        """Creates a text iterator and returns all inner text."""
+        """Iterate over the text content of this element and its descendants.
+
+        Returns:
+            An iterator of the non-empty texts and tails in document order, without the tail of this element.
+        """
 
     def keys(self) -> Iterable[str]:
-        """Returns the elements attribute names as a list."""
+        """Get the attribute names.
+
+        Returns:
+            The attribute names.
+        """
 
     def remove(self, other: 'XmlElement'):
-        """Removes the other element from the element."""
+        """Remove a child.
+
+        Args:
+            other: The child to remove.
+
+        Raises:
+            ValueError: If the element is not a child of this element.
+        """
 
     def set(self, key: str, value: Any):
-        """Set the attribute key on the element to value."""
+        """Set an attribute.
+
+        Args:
+            key: Attribute name, local or Clark.
+            value: Attribute value.
+        """
 
     # extensions
 
     def hasattr(self, key: str) -> bool:
-        """Check if an attribute exists."""
+        """Check if an attribute exists.
+
+        Args:
+            key: Attribute name, local or Clark.
+
+        Returns:
+            ``True`` if the attribute exists.
+        """
 
     def isa(self, *names: str) -> bool:
-        """Check if the element name matches one of the given names, case-insensitively."""
+        """Check if the local name of this element matches one of the given names, case-insensitively.
+
+        Args:
+            *names: Local names.
+
+        Returns:
+            ``True`` if the name matches.
+        """
 
     def add(self, tag: str, attrib: Optional[dict] = None, **extra) -> 'XmlElement':
-        """Creates a new element and adds it as a child.
+        """Create a new element and add it as a child.
 
         Names are taken as they are (local or Clark); ``ID:name`` resolution is done by ``tag()`` only.
 
         Args:
-            tag: XML tag, local or Clark name.
-            attrib: XML attributes ``{key, value}``.
+            tag: Tag name, local or Clark.
+            attrib: Attributes.
+            **extra: Additional attributes.
+
+        Returns:
+            The new element.
         """
 
     def children(self) -> list['XmlElement']:
-        """Returns the children of the current element."""
-
-    def declare(self, *namespaces: XmlNamespace):
-        """Adds namespace declarations to this element (``xmlns`` attributes on output), skipping those already declared."""
-
-    def findfirst(self, *paths) -> Optional['XmlElement']:
-        """Given a list of paths, returns the first matching element."""
-
-    def textof(self, *paths) -> str:
-        """Given a list of paths, returns the text of the first matching element that has text."""
-
-    def textlist(self, *paths, deep=False) -> list[str]:
-        """Collects texts from child elements.
-
-        Args:
-            paths: List of paths to search for.
-            deep: If ``False`` it only looks into direct children, otherwise search the entire subtree.
+        """Get the children of this element.
 
         Returns:
-            A list containing all the text from the child-elements.
+            The list of children. This is the internal list, not a copy.
+        """
+
+    def declare(self, *namespaces: XmlNamespace):
+        """Add namespace declarations to this element.
+
+        The declarations are written as ``xmlns`` attributes on output. Namespaces already declared
+        with the same prefix and URI are skipped.
+
+        Args:
+            *namespaces: Namespaces to declare.
+        """
+
+    def findfirst(self, *paths) -> Optional['XmlElement']:
+        """Find the first element that matches one of the given paths.
+
+        Args:
+            *paths: Tag names or paths in ``ElementTree`` syntax, tried in order.
+
+        Returns:
+            The first match, or ``None``. Without paths, the first child, or ``None`` if there are no children.
+        """
+
+    def textof(self, *paths) -> str:
+        """Get the text of the first matching element that has text.
+
+        Args:
+            *paths: Tag names or paths in ``ElementTree`` syntax, tried in order.
+
+        Returns:
+            The text, or an empty string if no matching element has text.
+        """
+
+    def textlist(self, *paths, deep=False) -> list[str]:
+        """Collect texts from subelements.
+
+        Texts are stripped, empty texts are skipped.
+
+        Args:
+            *paths: Tag names or paths in ``ElementTree`` syntax. Without paths, the direct children are used.
+            deep: If ``True``, also collect texts from all descendants of the found elements.
+
+        Returns:
+            A list of texts in document order.
         """
 
     def textdict(self, *paths, deep=False) -> dict[str, str]:
-        """Collects texts from child elements.
+        """Collect texts from subelements, keyed by tag.
+
+        Texts are stripped, empty texts are skipped. If several elements have the same tag, the last text wins.
 
         Args:
-            paths: List of paths to search for.
-            deep: If ``False`` it only looks into direct children, otherwise search the entire subtree.
+            *paths: Tag names or paths in ``ElementTree`` syntax. Without paths, the direct children are used.
+            deep: If ``True``, also collect texts from all descendants of the found elements.
 
         Returns:
-            A dict tag name -> text.
+            A dict of tags (local or Clark) and texts.
         """
 
     def to_string(self, opts: Optional[XmlOptions] = None) -> str:
-        """Converts the Element object to a string.
+        """Serialize this element and its subtree.
 
         Args:
-            opts: XML options for serialization.
+            opts: Serialization options.
 
         Returns:
             An XML string.
+
+        Raises:
+            gws.lib.xmlx.WriteError: If the tree contains an invalid or prefixed name.
+            gws.lib.xmlx.NamespaceError: If a namespace is unknown, or one prefix is used for different URIs.
         """
 
     def to_dict(self) -> dict:
-        """Creates a dictionary (``tag``, ``attrib``, ``text``, ``tail``, ``children``) from the element tree."""
+        """Convert the element tree to a dict.
+
+        Returns:
+            A dict with the keys ``tag``, ``attrib``, ``text``, ``tail`` and ``children``,
+            where ``children`` is a list of such dicts.
+        """

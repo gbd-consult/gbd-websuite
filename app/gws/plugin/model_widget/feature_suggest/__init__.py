@@ -1,4 +1,18 @@
-"""Feature suggest widget."""
+"""Feature suggest widget.
+
+Input for choosing the related feature of a ``relatedFeature`` field, which
+suggests matching features as the user types.
+
+Example::
+
+    fields+ {
+        name "street"
+        type "relatedFeature"
+        fromColumn "street_id"
+        toModel "model_street"
+        widget.type "featureSuggest"
+    }
+"""
 
 import gws
 import gws.base.model.widget
@@ -18,4 +32,6 @@ class Props(gws.base.model.widget.Props):
 
 @gws.ext.object.modelWidget('featureSuggest')
 class Object(gws.base.model.widget.Object):
+    """Feature suggest widget object."""
+
     pass

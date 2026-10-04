@@ -1,4 +1,14 @@
-"""Static legend."""
+"""Static legend.
+
+Uses an image file as the legend.
+
+Example::
+
+    legend {
+        type "static"
+        path "/data/legend.png"
+    }
+"""
 
 import gws
 import gws.lib.image
@@ -15,7 +25,10 @@ class Config(gws.base.legend.Config):
 
 @gws.ext.object.legend('static')
 class Object(gws.base.legend.Object):
+    """Static legend."""
+
     path: str
+    """Path to the image file."""
 
     def configure(self):
         self.path = self.cfg('path')

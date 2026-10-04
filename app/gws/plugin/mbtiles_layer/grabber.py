@@ -6,9 +6,21 @@ import gws.lib.mapserver.core
 
 
 class Object(gws.base.grabber.box.Object):
+    """Box grabber that renders an MBTiles file with MapServer."""
+
     msOptions: gws.MapServerLayerOptions
+    """MapServer layer options for the file."""
 
     def __init__(self, opts: gws.base.grabber.Options, msOptions: gws.MapServerLayerOptions):
+        """Create an MBTiles grabber.
+
+        The source CRS is set to the target CRS, since MapServer reprojects
+        the raster. One source request is limited to 9000 pixels.
+
+        Args:
+            opts: Grabber options.
+            msOptions: MapServer layer options for the file.
+        """
         super().__init__(opts)
         self.msOptions = msOptions
         self.sourceCrs = self.targetCrs

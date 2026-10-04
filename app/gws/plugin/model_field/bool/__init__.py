@@ -1,4 +1,13 @@
-"""Boolean field."""
+"""Boolean field.
+
+A scalar field for ``True``/``False`` values. Values from the client are
+converted with ``bool()``. Without a configured widget, the field uses a
+``toggle`` widget.
+
+Example::
+
+    fields+ { name "is_active" type "bool" title "Active" }
+"""
 
 import gws
 import gws.base.model.scalar_field
@@ -18,6 +27,8 @@ class Props(gws.base.model.scalar_field.Props):
 
 @gws.ext.object.modelField('bool')
 class Object(gws.base.model.scalar_field.Object):
+    """Boolean field object."""
+
     attributeType = gws.AttributeType.bool
 
     def configure_widget(self):

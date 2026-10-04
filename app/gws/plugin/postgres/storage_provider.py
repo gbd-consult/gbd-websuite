@@ -1,4 +1,4 @@
-"""Postgres storage provider."""
+"""PostgreSQL storage provider."""
 
 from typing import Optional
 
@@ -21,6 +21,7 @@ TABLE_DDL = """
         PRIMARY KEY (category, name)
     )
 """
+"""DDL of the storage table; ``{table_name}`` is the table name. The provider does not create the table."""
 
 
 @gws.ext.config.storageProvider('postgres')
@@ -35,19 +36,38 @@ class Config(gws.Config):
 
 @gws.ext.object.storageProvider('postgres')
 class Object(gws.StorageProvider):
+    """Storage provider that keeps records in a PostgreSQL table."""
+
     db: provider.Object
+    """Database provider."""
     tableName: str
+    """Table for the stored records."""
 
     def configure(self):
         self.configure_provider()
         self.configure_table()
 
     def configure_table(self):
+        """Set the table name from the configuration and check that the table exists.
+
+        The table must have the columns given in ``TABLE_DDL``.
+
+        Raises:
+            ``gws.ConfigurationError``: If the table does not exist.
+        """
         self.tableName = self.cfg('tableName') or self.cfg('_defaultTableName')
         if not self.db.has_table(self.tableName):
             raise gws.ConfigurationError(f'table {self.tableName!r} not found')
 
     def configure_provider(self):
+        """Set the database provider from ``dbUid``, or the first ``postgres`` provider.
+
+        Returns:
+            ``True`` if a provider was set.
+
+        Raises:
+            ``gws.Error``: If no provider is found.
+        """
         return gws.config.util.configure_database_provider_for(self)
 
     def list_names(self, category):
@@ -87,4 +107,5 @@ class Object(gws.StorageProvider):
             conn.exec_commit(sql)
 
     def _table(self):
+        """Return the SQLAlchemy table object of the storage table."""
         return self.db.table(self.tableName)

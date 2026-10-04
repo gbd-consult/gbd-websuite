@@ -7,10 +7,22 @@ from . import provider
 
 
 class Object(gws.base.grabber.box.Object):
+    """Box grabber that fetches map images from a WMS service with GetMap."""
+
     provider: provider.Object
+    """WMS service provider."""
     sourceLayers: list[gws.SourceLayer]
+    """Source layers to render."""
 
     def __init__(self, opts: gws.base.grabber.Options, provider: provider.Object, sourceLayers: list[gws.SourceLayer], sourceCrs: gws.Crs):
+        """Create the grabber.
+
+        Args:
+            opts: Grabber options.
+            provider: WMS service provider.
+            sourceLayers: Source layers to render.
+            sourceCrs: CRS of the GetMap requests.
+        """
         super().__init__(opts)
         self.provider = provider
         self.sourceLayers = sourceLayers

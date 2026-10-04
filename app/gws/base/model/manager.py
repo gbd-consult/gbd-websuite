@@ -7,6 +7,8 @@ from . import default_model
 
 
 class Object(gws.ModelManager):
+    """Model manager."""
+
     def get_model(self, uid, user=None, access=None):
         model = cast(gws.Model, self.root.get(uid, gws.ext.object.model))
         if not model:
@@ -24,6 +26,7 @@ class Object(gws.ModelManager):
                 return p
 
     def _find(self, obj, user, access):
+        """Return the first model of an object the user can access."""
         for model in getattr(obj, 'models', []):
             if user and access and not user.can(access, model):
                 continue

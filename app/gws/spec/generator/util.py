@@ -1,3 +1,5 @@
+"""File, JSON and ini helpers for the generator."""
+
 import os
 import re
 import json
@@ -21,14 +23,49 @@ def _json(x):
 
 
 def write_json(path, obj):
+    """Write an object to a JSON file.
+
+    Objects are written as their attribute dicts, bytes as hex strings,
+    other values that are not JSON serializable as their ``repr``.
+
+    Args:
+        path: File path.
+        obj: Object to write.
+    """
+
     write_file(path, json.dumps(obj, default=_json, indent=4, sort_keys=True))
 
 
 def read_json(path):
+    """Read a JSON file.
+
+    Args:
+        path: File path.
+
+    Returns:
+        The parsed JSON value.
+    """
+
     return json.loads(read_file(path))
 
 
 def parse_ini(text):
+    """Parse an ini-style strings file.
+
+    Lines starting with ``;``, ``#`` or ``//`` are comments. A line without
+    ``=`` continues the value of the previous key. ``\\n`` in values is
+    converted to a newline.
+
+    Args:
+        text: File content.
+
+    Returns:
+        A dict of sections, each a dict of keys and values.
+
+    Raises:
+        ``ValueError``: If a line cannot be parsed.
+    """
+
     dct = {}
     section = ''
     key = ''
@@ -54,6 +91,17 @@ def parse_ini(text):
 
 
 def make_ini(dct):
+    """Create an ini-style text from a dict of sections.
+
+    Keys are sorted, newlines in values are written as ``\\n``.
+
+    Args:
+        dct: A dict of sections, each a dict of keys and values.
+
+    Returns:
+        The ini text.
+    """
+
     buf = []
 
     for sec, rows in dct.items():

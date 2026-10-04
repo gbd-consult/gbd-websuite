@@ -1,3 +1,26 @@
+"""Features.
+
+A feature is a set of named attributes that belongs to a model. The model
+defines which attribute is the unique id (``uidName``) and which one holds the
+geometry (``geometryName``), as a ``gws.Shape``. See ``gws.base.model`` for how
+models read and write features.
+
+Besides its attributes, a feature carries the raw data from its source
+(``record``), the data from or for the client (``props``), rendered views
+(``views``, e.g. ``title`` or ``label`` from feature templates) and validation
+errors (``errors``).
+
+This package contains the feature implementation and the ``new`` function to
+create features.
+
+Example::
+
+    f = gws.base.feature.new(model=model, attributes={'id': 1, 'name': 'A'})
+    f.set('geom', gws.base.shape.from_wkt('POINT(1 2)', crs))
+    f.uid()             # '1', if the model's uidName is 'id'
+    f.to_geojson()
+"""
+
 from typing import Optional
 
 import gws
@@ -12,6 +35,17 @@ def new(
     record: Optional[gws.FeatureRecord] = None,
     props: Optional[gws.FeatureProps] = None,
 ) -> gws.Feature:
+    """Create a feature.
+
+    Args:
+        model: Model the feature belongs to.
+        attributes: Feature attributes.
+        record: Raw data from the source. Defaults to an empty record.
+        props: Data from the client. Defaults to empty props.
+
+    Returns:
+        The feature.
+    """
     f = Feature(model)
     f.attributes = attributes or {}
     f.record = record or gws.FeatureRecord(attributes={})
@@ -20,7 +54,14 @@ def new(
 
 
 class Feature(gws.Feature):
+    """Feature object."""
+
     def __init__(self, model: gws.Model):
+        """Create an empty feature.
+
+        Args:
+            model: Model the feature belongs to.
+        """
         self.attributes = {}
         self.category = ''
         self.cssSelector = ''

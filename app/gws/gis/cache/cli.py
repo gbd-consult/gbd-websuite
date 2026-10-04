@@ -16,6 +16,8 @@ from . import core, seed
 
 
 class FilterParams(gws.CliParams):
+    """Parameters that select caches."""
+
     layerUids: Optional[list[str]]
     """List of layer IDs."""
     cacheNames: Optional[list[str]]
@@ -25,6 +27,8 @@ class FilterParams(gws.CliParams):
 
 
 class StatusParams(FilterParams):
+    """Parameters of the ``cache status`` command."""
+
     details: bool = False
     """Print detailed status."""
     json: str = ''
@@ -32,6 +36,8 @@ class StatusParams(FilterParams):
 
 
 class FilterParamsWithGeom(FilterParams):
+    """Parameters that select caches, levels and an area."""
+
     bbox: Optional[list[float]]
     """Bounding box [minx, miny, maxx, maxy]."""
     wkt: str = ''
@@ -41,10 +47,14 @@ class FilterParamsWithGeom(FilterParams):
 
 
 class DropParams(FilterParamsWithGeom):
+    """Parameters of the ``cache drop`` command."""
+
     pass
 
 
 class SeedParams(FilterParamsWithGeom):
+    """Parameters of the ``cache seed`` command."""
+
     maxTime: Optional[int]
     """Max. seeding time in seconds."""
     concurrency: Optional[int]
@@ -57,6 +67,8 @@ class SeedParams(FilterParamsWithGeom):
 
 @gws.ext.object.cli('cache')
 class Object(gws.Node):
+    """Command line commands for the tile cache."""
+
     @gws.ext.command.cli('cacheStatus')
     def do_status(self, p: StatusParams):
         """Display the cache status."""
@@ -81,14 +93,14 @@ class Object(gws.Node):
 
     @gws.ext.command.cli('cacheDrop')
     def do_drop(self, p: DropParams):
-        """Remove active cache directories."""
+        """Remove cached tiles."""
 
         root = gws.config.loader.load()
         core.drop(root, _filter_with_geom(p))
 
     @gws.ext.command.cli('cacheSeed')
     def do_seed(self, p: SeedParams):
-        """Seed cache for layers."""
+        """Seed the selected caches."""
 
         root = gws.config.loader.load()
 

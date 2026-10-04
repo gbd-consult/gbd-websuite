@@ -1,4 +1,4 @@
-"""Postgres models."""
+"""PostgreSQL model."""
 
 import gws
 import gws.base.database.model
@@ -21,4 +21,6 @@ class Props(gws.base.database.model.Props):
 
 @gws.ext.object.model('postgres')
 class Object(gws.base.database.model.Object):
+    """Data model for the records of a PostgreSQL table."""
+
     pass

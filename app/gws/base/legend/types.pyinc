@@ -2,13 +2,24 @@ class LegendRenderOutput(Data):
     """Legend render output."""
 
     html: str
+    """HTML representation of the legend; not set by the built-in legend types."""
     image: 'Image'
+    """Legend image."""
     size: Size
+    """Size of the legend image in pixels."""
 
 
 class Legend(Node):
     """Legend object."""
 
-    def render(self, args: Optional[dict | Data] = None) -> Optional[LegendRenderOutput]: ...
+    def render(self, args: Optional[dict | Data] = None) -> Optional[LegendRenderOutput]:
+        """Render the legend.
+
+        Args:
+            args: Arguments for the renderer, for example template arguments.
+
+        Returns:
+            Legend output, or ``None`` if there is nothing to show.
+        """
 
 

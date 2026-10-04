@@ -17,14 +17,23 @@ class TemplateRenderInput(Data):
     """Template render input."""
 
     args: dict | Data
+    """Template arguments."""
     crs: 'Crs'
+    """CRS for maps."""
     dpi: int
+    """Output resolution in dots per inch."""
     locale: 'Locale'
+    """Locale for the output."""
     maps: list[MapRenderInput]
+    """Maps to render, for print templates."""
     mimeOut: str
+    """Requested output MIME type."""
     notify: Callable
+    """Callback for progress messages."""
     project: 'Project'
+    """Current project."""
     user: 'User'
+    """Current user."""
 
 
 class TemplateQualityLevel(Config):
@@ -37,7 +46,7 @@ class TemplateQualityLevel(Config):
 
 
 class Template(Node):
-    """Template object."""
+    """Template, generates content from data."""
 
     mapSize: UomSize
     """Default map size for the template."""
@@ -48,19 +57,62 @@ class Template(Node):
     pageMargin: UomExtent
     """Default page margin for printing."""
     subject: str
-    """Template subject (category)."""
+    """Template subject, the purpose the template serves, like ``feature.description``."""
     title: str
     """Template title."""
 
     def render(self, tri: TemplateRenderInput) -> ContentResponse:
-        """Render the template and return the generated response."""
+        """Render the template.
+
+        Args:
+            tri: Render input.
+
+        Returns:
+            A response with the generated content.
+        """
 
 
 class TemplateManager(Node):
-    """Template manager."""
+    """Template manager, finds templates by subject and creates them from files."""
 
-    def find_templates(self, subjects: list[str], where: list[Node], user: 'User' = None, mime_type: str = None) -> list['Template']: ...
+    def find_templates(self, subjects: list[str], where: list[Node], user: 'User' = None, mime_type: str = None) -> list['Template']:
+        """Find templates for several subjects.
 
-    def find_template(self, subject: str, where: list[Node], user: 'User' = None, mime_type: str = None) -> Optional['Template']: ...
+        Args:
+            subjects: Template subjects.
+            where: Objects whose templates are searched, in this order.
+            user: If given, only templates this user can use.
+            mime_type: If given, only templates which can produce this MIME type.
 
-    def template_from_path(self, path: str) -> Optional['Template']: ...
+        Returns:
+            Found templates, one per subject at most.
+        """
+
+    def find_template(self, subject: str, where: list[Node], user: 'User' = None, mime_type: str = None) -> Optional['Template']:
+        """Find a template for a subject.
+
+        The templates of the objects in ``where`` are searched in the given order,
+        then the application templates. A template without ``mimeTypes`` matches any
+        MIME type.
+
+        Args:
+            subject: Template subject.
+            where: Objects whose templates are searched, in this order.
+            user: If given, only templates this user can use.
+            mime_type: If given, only templates which can produce this MIME type.
+
+        Returns:
+            The first matching template, or ``None``.
+        """
+
+    def template_from_path(self, path: str) -> Optional['Template']:
+        """Create a template from a file.
+
+        The template type is derived from the file extension.
+
+        Args:
+            path: File path.
+
+        Returns:
+            A template, or ``None`` if the file is not a template.
+        """

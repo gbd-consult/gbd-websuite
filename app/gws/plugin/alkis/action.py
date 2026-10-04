@@ -1,4 +1,4 @@
-"""Backend for the Flurstückssuche (cadaster parlcels search) form."""
+"""The ``alkis`` action, the backend for the Flurstückssuche (cadastre parcel search)."""
 
 from typing import Optional, cast
 
@@ -32,10 +32,20 @@ class EigentuemerConfig(gws.ConfigWithAccess):
 
 
 class EigentuemerOptions(gws.Node):
+    """Access options for owner (Eigentuemer) data.
+
+    Holds the read permissions for owner data, the control mode and the
+    table for logging access to owner data.
+    """
+
     controlMode: bool
+    """Require a control input before owner data is shown."""
     controlRules: list[str]
+    """Regular expressions the control input must match."""
     logTableName: str
+    """Name of the table for logging access to owner data."""
     logTable: Optional[sa.Table]
+    """Table for logging access to owner data, set by the action."""
 
     def configure(self):
         self.controlMode = self.cfg('controlMode')
@@ -51,6 +61,11 @@ class BuchungConfig(gws.ConfigWithAccess):
 
 
 class BuchungOptions(gws.Node):
+    """Access options for the Grundbuch (register) data.
+
+    Holds the read permissions for register data.
+    """
+
     pass
 
 
@@ -172,117 +187,205 @@ class Props(gws.base.action.Props):
 
 
 class GetToponymsRequest(gws.Request):
+    """Request for the ``alkisGetToponyms`` command."""
+
     pass
 
 
 class GetToponymsResponse(gws.Response):
+    """Response of the ``alkisGetToponyms`` command."""
+
     gemeinde: list[list[str]]
+    """Gemeinden (municipalities) as ``[name, code]`` pairs, sorted."""
     gemarkung: list[list[str]]
+    """Gemarkungen (districts) as ``[name, code, gemeindeCode]`` lists, sorted."""
     strasse: list[list[str]]
+    """Streets as ``[name, gemeindeCode, gemarkungCode]`` lists, sorted."""
 
 
 class FindFlurstueckRequest(gws.Request):
+    """Request for a Flurstück (parcel) search."""
+
     flurnummer: Optional[str]
+    """Flur number."""
     flurstuecksfolge: Optional[str]
+    """Flurstücksfolge (parcel sequence number)."""
     zaehler: Optional[str]
+    """Numerator of the parcel number."""
     nenner: Optional[str]
+    """Denominator of the parcel number."""
     fsnummer: Optional[str]
+    """Parcel identifier: a ``DE...`` gml id, a Flurstückskennzeichen or a compound parcel number."""
 
     flaecheBis: Optional[float]
+    """Maximum parcel area."""
     flaecheVon: Optional[float]
+    """Minimum parcel area."""
 
     gemarkung: Optional[str]
+    """Gemarkung (district) name."""
     gemarkungCode: Optional[str]
+    """Gemarkung code."""
     gemeinde: Optional[str]
+    """Gemeinde (municipality) name."""
     gemeindeCode: Optional[str]
+    """Gemeinde code."""
     kreis: Optional[str]
+    """Kreis (county) name."""
     kreisCode: Optional[str]
+    """Kreis code."""
     land: Optional[str]
+    """Land (state) name."""
     landCode: Optional[str]
+    """Land code."""
     regierungsbezirk: Optional[str]
+    """Regierungsbezirk (administrative region) name."""
     regierungsbezirkCode: Optional[str]
+    """Regierungsbezirk code."""
 
     strasse: Optional[str]
+    """Street name."""
     hausnummer: Optional[str]
+    """House number."""
 
     bblatt: Optional[str]
+    """Buchungsblatt (register sheet) numbers, separated by spaces, commas or semicolons."""
 
     personName: Optional[str]
+    """Last name of the owner."""
     personVorname: Optional[str]
+    """First name of the owner."""
 
     combinedFlurstueckCode: Optional[str]
+    """Combined code ``land_gemarkung_flur_zaehler_nenner_folge``; empty and ``0`` parts are ignored."""
 
     shapes: Optional[list[gws.base.shape.Props]]
+    """Search area; several shapes are merged."""
 
     uids: Optional[list[str]]
+    """Parcel uids."""
 
     crs: Optional[gws.CrsName]
+    """CRS for the returned features, defaults to the project map CRS."""
     eigentuemerControlInput: Optional[str]
+    """Control input for owner data access in control mode."""
     limit: Optional[int]
+    """Unused, the action limit applies."""
 
     wantEigentuemer: Optional[bool]
+    """Request owner data."""
     wantHistorySearch: Optional[bool]
+    """Include historic parcels in the search."""
     wantHistoryDisplay: Optional[bool]
+    """Include history in the parcel details."""
 
     displayThemes: Optional[list[dt.DisplayTheme]]
+    """Themes to include in the parcel details."""
 
 
 class FindFlurstueckResponse(gws.Response):
+    """Response of a Flurstück (parcel) search."""
+
     features: list[gws.FeatureProps]
+    """Found parcels as features, sorted by title."""
     total: int
+    """Number of found parcels."""
 
 
 class FindFlurstueckResult(gws.Data):
+    """Result of a Flurstück (parcel) search."""
+
     flurstueckList: list[dt.Flurstueck]
+    """Found parcels."""
     total: int
+    """Number of found parcels."""
     query: dt.FlurstueckQuery
+    """The query that was run."""
 
 
 class FindAdresseRequest(gws.Request):
+    """Request for an Adresse (address) search."""
+
     crs: Optional[gws.CrsName]
+    """CRS for the returned features, defaults to the project map CRS."""
 
     gemarkung: Optional[str]
+    """Gemarkung (district) name."""
     gemarkungCode: Optional[str]
+    """Gemarkung code."""
     gemeinde: Optional[str]
+    """Gemeinde (municipality) name."""
     gemeindeCode: Optional[str]
+    """Gemeinde code."""
     kreis: Optional[str]
+    """Kreis (county) name."""
     kreisCode: Optional[str]
+    """Kreis code."""
     land: Optional[str]
+    """Land (state) name."""
     landCode: Optional[str]
+    """Land code."""
     regierungsbezirk: Optional[str]
+    """Regierungsbezirk (administrative region) name."""
     regierungsbezirkCode: Optional[str]
+    """Regierungsbezirk code."""
 
     strasse: Optional[str]
+    """Street name."""
     hausnummer: Optional[str]
+    """House number."""
     bisHausnummer: Optional[str]
+    """Upper bound of a house number range."""
     hausnummerNotNull: Optional[bool]
+    """Return only addresses with a house number."""
 
     wantHistorySearch: Optional[bool]
+    """Include historic addresses in the search."""
 
     combinedAdresseCode: Optional[str]
+    """Combined code ``strasse_hausnummer_plz_gemeinde_bisHausnummer``; empty and ``0`` parts are ignored."""
 
 
 class FindAdresseResponse(gws.Response):
+    """Response of an Adresse (address) search."""
+
     features: list[gws.FeatureProps]
+    """Found addresses as features."""
     total: int
+    """Number of found addresses."""
 
 
 class PrintFlurstueckRequest(gws.Request):
+    """Request to print found parcels."""
+
     findRequest: FindFlurstueckRequest
+    """The parcel search to run."""
     printRequest: gws.PrintRequest
+    """The print request; its first map is used as the base map for each parcel."""
     featureStyle: gws.StyleProps
+    """Style for the parcel features."""
 
 
 class ExportFlurstueckRequest(gws.Request):
+    """Request to export found parcels."""
+
     findRequest: FindFlurstueckRequest
+    """The parcel search to run."""
     exporterUid: str
+    """Exporter uid, the first usable exporter if empty."""
     modelUids: Optional[list[str]]
+    """Uids of the export models to use."""
     eigentuemerControlInput: Optional[str]
+    """Control input for owner data access, unused; the one in ``findRequest`` is checked."""
 
 
 class ExportFlurstueckResponse(gws.Response):
+    """Response of a parcel export."""
+
     content: str
+    """Exported data."""
     mimeType: str
+    """Mime type of the exported data."""
 
 
 ##
@@ -342,6 +445,8 @@ _DEFAULT_PRINTER = gws.Config(
 
 
 class Model(gws.base.model.default_model.Object):
+    """Model for the parcel and address features returned by the action."""
+
     def configure(self):
         self.uidName = 'uid'
         self.geometryName = 'geometry'
@@ -350,31 +455,55 @@ class Model(gws.base.model.default_model.Object):
 
 @gws.ext.object.action('alkis')
 class Object(gws.base.action.Object):
+    """The ``alkis`` action.
+
+    Searches parcels and addresses in the ALKIS index, returns them with
+    owner and register data where the user may read it, and prints, exports
+    and stores selections of parcels.
+    """
+
     db: gws.DatabaseProvider
+    """Database provider with the ALKIS data."""
 
     ix: index.Object
+    """The ALKIS index."""
     ixStatus: dt.IndexStatus
+    """Index status, set on activation."""
 
     buchung: BuchungOptions
+    """Access options for register data."""
     eigentuemer: EigentuemerOptions
+    """Access options for owner data."""
 
     dataSchema: str
+    """Schema with the ALKIS source tables."""
     indexSchema: str
+    """Schema with the index tables."""
 
     model: gws.Model
+    """Model for the returned features."""
     ui: Ui
+    """User interface options."""
     limit: int
+    """Maximum number of parcels returned by a search."""
 
     templates: list[gws.Template]
+    """Templates for parcel and address views."""
     printers: list[gws.Printer]
+    """Printers for parcels."""
 
     exporters: list[exporter.Object]
+    """Exporters for parcel data."""
 
     strasseSearchOptions: gws.TextSearchOptions
+    """How street names are matched."""
     nameSearchOptions: gws.TextSearchOptions
+    """How person names are matched."""
     buchungsblattSearchOptions: gws.TextSearchOptions
+    """How register sheet numbers are matched."""
 
     storage: Optional[gws.base.storage.Object]
+    """Storage for saved parcel selections."""
 
     def configure(self):
         gws.config.util.configure_database_provider_for(self, ext_type='postgres')
@@ -477,7 +606,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.api('alkisGetToponyms')
     def get_toponyms(self, req: gws.WebRequester, p: GetToponymsRequest) -> GetToponymsResponse:
-        """Return all Toponyms (Gemeinde/Gemarkung/Strasse) in the area"""
+        """Return all toponyms (Gemeinde, Gemarkung, Strasse) in the index."""
 
         req.user.require_project(p.projectUid)
 
@@ -498,7 +627,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.api('alkisFindAdresse')
     def find_adresse(self, req: gws.WebRequester, p: FindAdresseRequest) -> FindAdresseResponse:
-        """Perform an Adresse search."""
+        """Search for addresses."""
 
         project = req.user.require_project(p.projectUid)
         crs = p.get('crs') or project.map.bounds.crs
@@ -534,7 +663,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.api('alkisFindFlurstueck')
     def find_flurstueck(self, req: gws.WebRequester, p: FindFlurstueckRequest) -> FindFlurstueckResponse:
-        """Perform a Flurstueck search"""
+        """Search for parcels."""
 
         project = req.user.require_project(p.projectUid)
         crs = p.get('crs') or project.map.bounds.crs
@@ -578,12 +707,24 @@ class Object(gws.base.action.Object):
         )
 
     def get_exporter(self, uid: Optional[str], user: gws.User) -> Optional[exporter.Object]:
+        """Find an exporter the user can use.
+
+        Args:
+            uid: Exporter uid. If empty, the first usable exporter is returned.
+            user: The user.
+
+        Returns:
+            The exporter, or ``None`` if not found.
+        """
+
         for exp in self.exporters:
             if user.can_use(exp) and (not uid or exp.uid == uid):
                 return exp
 
     @gws.ext.command.api('alkisExportFlurstueck')
     def export_flurstueck(self, req: gws.WebRequester, p: ExportFlurstueckRequest) -> ExportFlurstueckResponse:
+        """Search for parcels and export them."""
+
         exp = self.get_exporter(p.exporterUid, req.user)
         if not exp:
             raise gws.NotFoundError()
@@ -620,7 +761,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.api('alkisPrintFlurstueck')
     def print_flurstueck(self, req: gws.WebRequester, p: PrintFlurstueckRequest) -> gws.JobStatusResponse:
-        """Print Flurstueck features"""
+        """Search for parcels and start a print job for them."""
 
         project = req.user.require_project(p.projectUid)
 
@@ -673,6 +814,8 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.api('alkisSelectionStorage')
     def handle_storage(self, req: gws.WebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:
+        """Read or write saved parcel selections."""
+
         if not self.storage:
             raise gws.NotFoundError('no storage configured')
         return self.storage.handle_request(req, p)
@@ -680,6 +823,22 @@ class Object(gws.base.action.Object):
     ##
 
     def find_flurstueck_objects(self, req: gws.WebRequester, p: FindFlurstueckRequest) -> tuple[list[dt.Flurstueck], dt.FlurstueckQuery]:
+        """Run a parcel search in the index.
+
+        Checks access to owner and register data if requested, and logs owner data access.
+
+        Args:
+            req: Web requester.
+            p: Search parameters.
+
+        Returns:
+            A tuple of the found parcels and the query.
+
+        Raises:
+            ``gws.ForbiddenError`` if owner or register data is requested without access.
+            ``gws.BadRequestError`` if the parcel number is invalid.
+        """
+
         query = self._prepare_flurstueck_query(req, p)
         fs_list = self.ix.find_flurstueck(query)
 
@@ -695,6 +854,16 @@ class Object(gws.base.action.Object):
         return fs_list, query
 
     def find_adresse_objects(self, req: gws.WebRequester, p: FindAdresseRequest) -> tuple[list[dt.Adresse], dt.AdresseQuery]:
+        """Run an address search in the index.
+
+        Args:
+            req: Web requester.
+            p: Search parameters.
+
+        Returns:
+            A tuple of the found addresses and the query.
+        """
+
         query = self._prepare_adresse_query(req, p)
         ad_list = self.ix.find_adresse(query)
         return ad_list, query
@@ -723,6 +892,7 @@ class Object(gws.base.action.Object):
         'personVorname',
         'uids',
     ]
+    """Request fields copied into a parcel query."""
     ADRESSE_QUERY_FIELDS = [
         'gemarkung',
         'gemarkungCode',
@@ -739,10 +909,15 @@ class Object(gws.base.action.Object):
         'bisHausnummer',
         'hausnummerNotNull',
     ]
+    """Request fields copied into an address query."""
     COMBINED_FLURSTUECK_FIELDS = ['landCode', 'gemarkungCode', 'flurnummer', 'zaehler', 'nenner', 'flurstuecksfolge']
+    """Query fields for the parts of a combined parcel code, in order."""
     COMBINED_ADRESSE_FIELDS = ['strasse', 'hausnummer', 'plz', 'gemeinde', 'bisHausnummer']
+    """Query fields for the parts of a combined address code, in order."""
 
     def _prepare_flurstueck_query(self, req: gws.WebRequester, p: FindFlurstueckRequest) -> dt.FlurstueckQuery:
+        """Build a parcel query from a request and check access to owner and register data."""
+
         query = dt.FlurstueckQuery()
 
         for f in self.FLURSTUECK_QUERY_FIELDS:
@@ -796,6 +971,8 @@ class Object(gws.base.action.Object):
         return query
 
     def _prepare_adresse_query(self, req: gws.WebRequester, p: FindAdresseRequest) -> dt.AdresseQuery:
+        """Build an address query from a request."""
+
         query = dt.AdresseQuery()
 
         for f in self.ADRESSE_QUERY_FIELDS:
@@ -813,6 +990,8 @@ class Object(gws.base.action.Object):
         return query
 
     def _query_fsnummer(self, query: dt.FlurstueckQuery, vn: str):
+        """Add a parcel identifier (gml id, Flurstueckskennzeichen or compound number) to the query."""
+
         if vn.startswith('DE'):
             # search by gml_id
             query.uids = query.uids or []
@@ -833,6 +1012,8 @@ class Object(gws.base.action.Object):
         query.update(parts)
 
     def _query_combined_code(self, query: dt.FlurstueckQuery | dt.AdresseQuery, code_value: str, code_fields: list[str]):
+        """Set query fields from the underscore-separated parts of a combined code."""
+
         for val, field in zip(code_value.split('_'), code_fields):
             if val and val != '0':
                 setattr(query, field, val)
@@ -840,6 +1021,8 @@ class Object(gws.base.action.Object):
     ##
 
     def _check_eigentuemer_access(self, req: gws.WebRequester, control_input: str):
+        """Raise ``gws.ForbiddenError`` if the user may not read owner data or the control input fails."""
+
         if not req.user.can_read(self.eigentuemer):
             raise gws.ForbiddenError('cannot read eigentuemer')
         if self.eigentuemer.controlMode and not self._check_eigentuemer_control_input(control_input):
@@ -847,10 +1030,14 @@ class Object(gws.base.action.Object):
             raise gws.ForbiddenError('eigentuemer control input failed')
 
     def _check_buchung_access(self, req: gws.WebRequester, control_input: str):
+        """Raise ``gws.ForbiddenError`` if the user may not read register data."""
+
         if not req.user.can_read(self.buchung):
             raise gws.ForbiddenError('cannot read buchung')
 
     def _log_eigentuemer_access(self, req: gws.WebRequester, control_input: str, is_ok: bool, total=None, fs_uids=None):
+        """Write an owner data access record to the log table, if configured."""
+
         if self.eigentuemer.logTable is None:
             return
 
@@ -873,6 +1060,8 @@ class Object(gws.base.action.Object):
         gws.log.debug(f'alkis: _log_eigentuemer_access {is_ok=}')
 
     def _check_eigentuemer_control_input(self, control_input):
+        """Return ``True`` if there are no control rules or the input matches one of them."""
+
         if not self.eigentuemer.controlRules:
             return True
 

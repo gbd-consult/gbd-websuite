@@ -1,4 +1,4 @@
-"""Generate configuration references."""
+"""Generate the configuration reference in Markdown."""
 
 import re
 import json
@@ -46,6 +46,19 @@ LABELS = 'added|deprecated|changed'
 
 
 def create(gen: base.Generator, lang: str):
+    """Create the configuration reference.
+
+    The reference starts with the application ``Config`` and contains a
+    section for each reachable class, type alias, enum and variant.
+
+    Args:
+        gen: Generator state, with strings already collected.
+        lang: Language code, ``en`` or ``de``.
+
+    Returns:
+        The reference as Markdown text.
+    """
+
     return _Creator(gen, lang).run()
 
 
@@ -53,6 +66,8 @@ def create(gen: base.Generator, lang: str):
 
 
 class _Creator:
+    """Builds the reference by walking the types from the application config."""
+
     start_tid = 'gws.base.application.core.Config'
     exclude_props = ['uid', 'access', 'type']
 
@@ -64,6 +79,12 @@ class _Creator:
         self.blocks = []
 
     def run(self):
+        """Create the reference.
+
+        Returns:
+            The Markdown text, with sections sorted by kind and uid.
+        """
+
         self.queue = [self.start_tid]
         self.blocks = []
         done = set()
@@ -78,6 +99,12 @@ class _Creator:
         return nl(b[-1] for b in sorted(self.blocks))
 
     def process(self, tid):
+        """Create the section for a type and enqueue the types it refers to.
+
+        Args:
+            tid: Type uid.
+        """
+
         typ = self.gen.require_type(tid)
 
         if typ.c == base.c.CLASS:
@@ -97,6 +124,15 @@ class _Creator:
             self.queue.append(typ.tItem)
 
     def process_class(self, tid):
+        """Create the section for a class, with a table of its properties.
+
+        Args:
+            tid: Type uid.
+
+        Yields:
+            Markdown blocks.
+        """
+
         typ = self.gen.require_type(tid)
 
         yield header('object', tid)
@@ -127,6 +163,15 @@ class _Creator:
         )
 
     def process_enum(self, tid):
+        """Create the section for an enum, with a table of its values.
+
+        Args:
+            tid: Type uid.
+
+        Yields:
+            Markdown blocks.
+        """
+
         typ = self.gen.require_type(tid)
 
         yield header('enum', tid)
@@ -140,6 +185,15 @@ class _Creator:
         )
 
     def process_variant(self, tid):
+        """Create the section for a variant, with a table of its members.
+
+        Args:
+            tid: Type uid.
+
+        Yields:
+            Markdown blocks.
+        """
+
         typ = self.gen.require_type(tid)
 
         yield header('variant', tid)
@@ -159,10 +213,28 @@ class _Creator:
         )
 
     def process_type(self, tid):
+        """Create the section for a type alias.
+
+        Args:
+            tid: Type uid.
+
+        Yields:
+            Markdown blocks.
+        """
+
         yield header('type', tid)
         yield subhead(self.strings['category_type'], self.docstring_as_header(tid))
 
     def type_string(self, tid):
+        """Format a type for a table cell.
+
+        Args:
+            tid: Type uid.
+
+        Returns:
+            A link for named types, a formatted name for other types.
+        """
+
         typ = self.gen.require_type(tid)
 
         if typ.c in {base.c.CLASS, base.c.TYPE, base.c.ENUM, base.c.VARIANT}:
@@ -183,6 +255,16 @@ class _Creator:
         return typ.c
 
     def default_string(self, tid):
+        """Format the default value of a property.
+
+        Args:
+            tid: Property type uid.
+
+        Returns:
+            The formatted default, or an empty string if there is no default,
+            it is empty, or the property type is a literal.
+        """
+
         typ = self.gen.require_type(tid)
         val = typ.tValue
 
@@ -196,16 +278,49 @@ class _Creator:
         return as_literal(v)
 
     def docstring_as_header(self, tid, enum_value=None):
+        """Format a docstring for a section header, keeping line breaks.
+
+        Args:
+            tid: Type uid.
+            enum_value: Enum member name, to format the docstring of the member.
+
+        Returns:
+            The formatted docstring.
+        """
+
         text, label, dev_label = self.docstring_elements(tid, enum_value)
         lines = text.split('\n')
         lines[0] += label + dev_label
         return '\n\n'.join(lines)
 
     def docstring_as_cell(self, tid, enum_value=None):
+        """Format a docstring for a table cell, on a single line.
+
+        Args:
+            tid: Type uid.
+            enum_value: Enum member name, to format the docstring of the member.
+
+        Returns:
+            The formatted docstring.
+        """
+
         text, label, dev_label = self.docstring_elements(tid, enum_value)
         return re.sub(r'\s+', ' ', text) + label + dev_label
 
     def docstring_elements(self, tid, enum_value=None):
+        """Get the parts of a docstring in the reference language.
+
+        Uses the translated string if present, otherwise the English one,
+        marked as a missing translation. The default value is appended to the text.
+
+        Args:
+            tid: Type uid.
+            enum_value: Enum member name, to get the docstring of the member.
+
+        Returns:
+            A list ``[text, label, dev_label]``.
+        """
+
         # get the original (spec) docstring
         typ = self.gen.require_type(tid)
         en_text = typ.enumDocs.get(enum_value) if enum_value else typ.doc
@@ -241,6 +356,15 @@ class _Creator:
         return [text, label, dev_label]
 
     def extract_label(self, text):
+        """Extract a version label like ``(added in 8.1)`` from the end of a docstring.
+
+        Args:
+            text: Docstring.
+
+        Returns:
+            A tuple ``(text without the label, formatted label)``; the label is empty if there is none.
+        """
+
         m = re.match(rf'(.+?)\(({LABELS}) in (\d[\d.]+)\)$', text)
         if not m:
             return text, ''
@@ -252,48 +376,151 @@ class _Creator:
 
 
 def as_literal(s):
+    """Format a value as a literal.
+
+    Args:
+        s: Value, formatted as JSON.
+
+    Returns:
+        Markdown text.
+    """
+
     v = json.dumps(s, ensure_ascii=False)
     return f'`{v}`{{.configref_literal}}'
 
 
 def as_typename(s):
+    """Format a type name.
+
+    Args:
+        s: Type name.
+
+    Returns:
+        Markdown text.
+    """
+
     return f'`{s}`{{.configref_typename}}'
 
 
 def as_category(s):
+    """Format a category name.
+
+    Args:
+        s: Category name.
+
+    Returns:
+        Markdown text.
+    """
+
     return f'`{s}`{{.configref_category}}'
 
 
 def as_propname(s):
+    """Format the name of an optional property.
+
+    Args:
+        s: Property name.
+
+    Returns:
+        Markdown text.
+    """
+
     return f'`{s}`{{.configref_propname}}'
 
 
 def as_required(s):
+    """Format the name of a required property.
+
+    Args:
+        s: Property name.
+
+    Returns:
+        Markdown text.
+    """
+
     return f'`{s}`{{.configref_required}}'
 
 
 def as_code(s):
+    """Format text as inline code.
+
+    Args:
+        s: Text.
+
+    Returns:
+        Markdown text.
+    """
+
     return f'`{s}`'
 
 
 def header(cat, tid):
+    """Format a section header.
+
+    Args:
+        cat: Category, used in the CSS class of the header.
+        tid: Type uid, used as the header text and the anchor.
+
+    Returns:
+        Markdown text.
+    """
+
     return f'\n## <span class="configref_category_{cat}"></span>{tid} :{tid}\n'
 
 
 def subhead(category, text):
+    """Format the text below a section header.
+
+    Args:
+        category: Category name (not used).
+        text: Text.
+
+    Returns:
+        Markdown text.
+    """
+
     # return as_category(category) + ' ' + text + '\n'
     return text + '\n'
 
 
 def link(target, text):
+    """Format a link to the section of a type.
+
+    Args:
+        target: Type uid.
+        text: Link text.
+
+    Returns:
+        Markdown text.
+    """
+
     return f'[{text}](../{target})'
 
 
 def first_line(s):
+    """Get the first line of a text.
+
+    Args:
+        s: Text or ``None``.
+
+    Returns:
+        The first line, stripped.
+    """
+
     return (s or '').strip().split('\n')[0].strip()
 
 
 def table(heads, rows):
+    """Format a Markdown table with padded columns.
+
+    Args:
+        heads: Column headers.
+        rows: Table rows, lists of cell values.
+
+    Returns:
+        Markdown text.
+    """
+
     widths = [len(h) for h in heads]
 
     for r in rows:
@@ -311,6 +538,16 @@ def table(heads, rows):
 
 
 def escape(s, quote=True):
+    """Escape HTML special characters.
+
+    Args:
+        s: Text.
+        quote: If True, escape double quotes as well.
+
+    Returns:
+        The escaped text.
+    """
+
     s = s.replace('&', '&amp;')
     s = s.replace('<', '&lt;')
     s = s.replace('>', '&gt;')

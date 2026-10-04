@@ -2,61 +2,100 @@ class SearchSort(Data):
     """Search sort specification."""
 
     fieldName: str
+    """Field name to sort by."""
     reverse: bool
+    """Sort in descending order."""
 
 
 class SearchFilterOperator(Enum):
-    """Search filter operator."""
+    """Search filter operator, as defined in OGC Filter Encoding 2.0."""
 
     And = 'And'
+    """All sub-filters match."""
     Or = 'Or'
+    """At least one sub-filter matches."""
     Not = 'Not'
+    """The sub-filter does not match."""
 
     PropertyIsEqualTo = 'PropertyIsEqualTo'
+    """Property is equal to the value."""
     PropertyIsNotEqualTo = 'PropertyIsNotEqualTo'
+    """Property is not equal to the value."""
     PropertyIsLessThan = 'PropertyIsLessThan'
+    """Property is less than the value."""
     PropertyIsGreaterThan = 'PropertyIsGreaterThan'
+    """Property is greater than the value."""
     PropertyIsLessThanOrEqualTo = 'PropertyIsLessThanOrEqualTo'
+    """Property is less than or equal to the value."""
     PropertyIsGreaterThanOrEqualTo = 'PropertyIsGreaterThanOrEqualTo'
+    """Property is greater than or equal to the value."""
     PropertyIsLike = 'PropertyIsLike'
+    """Property matches a pattern."""
     PropertyIsNull = 'PropertyIsNull'
+    """Property is null."""
     PropertyIsNil = 'PropertyIsNil'
+    """Property is nil."""
     PropertyIsBetween = 'PropertyIsBetween'
+    """Property is between two values."""
 
     Equals = 'Equals'
+    """Geometry is equal to the shape."""
     Disjoint = 'Disjoint'
+    """Geometry does not intersect the shape."""
     Touches = 'Touches'
+    """Geometry touches the shape."""
     Within = 'Within'
+    """Geometry is within the shape."""
     Overlaps = 'Overlaps'
+    """Geometry overlaps the shape."""
     Crosses = 'Crosses'
+    """Geometry crosses the shape."""
     Intersects = 'Intersects'
+    """Geometry intersects the shape."""
     Contains = 'Contains'
+    """Geometry contains the shape."""
     DWithin = 'DWithin'
+    """Geometry is within a distance of the shape."""
     Beyond = 'Beyond'
+    """Geometry is beyond a distance of the shape."""
     BBOX = 'BBOX'
+    """Geometry intersects the bounding box."""
 
 
 class SearchFilterMatchAction(Enum):
-    """Search filter match action."""
+    """How a filter is applied to a multi-valued property."""
 
     All = 'All'
+    """All values must match."""
     Any = 'Any'
+    """At least one value must match."""
     One = 'One'
+    """Exactly one value must match."""
 
 
 class SearchFilter(Data):
-    """Search filter."""
+    """Search filter, a tree of filter operators."""
 
     operator: SearchFilterOperator
+    """Filter operator."""
     property: str
+    """Property name for comparison and spatial operators."""
     value: str
+    """Value for comparison operators."""
     shape: 'Shape'
+    """Shape for spatial operators."""
     subFilters: list['SearchFilter']
+    """Operands of logical operators."""
     matchCase: bool
+    """Compare strings case-sensitively."""
     matchAction: SearchFilterMatchAction
+    """How to match multi-valued properties."""
     wildCard: str
+    """Wildcard character for ``PropertyIsLike``."""
     singleChar: str
+    """Single character placeholder for ``PropertyIsLike``."""
     escapeChar: str
+    """Escape character for ``PropertyIsLike``."""
 
 
 class SearchQuery(Data):
@@ -69,7 +108,7 @@ class SearchQuery(Data):
     extraColumns: list
     """Extra columns to select."""
     extraParams: dict
-    """Extra parameters to pass to a provider"""
+    """Extra parameters to pass to a provider."""
     extraWhere: list
     """Extra where clauses."""
     keyword: str
@@ -98,8 +137,11 @@ class SearchResult(Data):
     """Search result."""
 
     feature: 'Feature'
+    """Found feature."""
     layer: 'Layer'
+    """Layer whose finder found the feature, or ``None`` for project and application finders."""
     finder: 'Finder'
+    """Finder that found the feature."""
 
 
 class TextSearchType(Enum):
@@ -138,31 +180,74 @@ class SortOptions(Data):
 
 
 class SearchManager(Node):
-    """Search Manager."""
+    """Search manager, runs search queries through the finders."""
 
-    def run_search(self, search: 'SearchQuery', user: 'User') -> list['SearchResult']: ...
+    def run_search(self, search: 'SearchQuery', user: 'User') -> list['SearchResult']:
+        """Run a search query.
+
+        Runs the finders of the query layers, the project finders and the application
+        finders the user may use and which can run the query.
+
+        Args:
+            search: Search query.
+            user: User running the search.
+
+        Returns:
+            Search results, at most ``search.limit`` if a limit is given.
+        """
 
 
 class Finder(Node):
-    """Finder object."""
+    """Search provider, finds features for search queries."""
 
     title: str
+    """Finder title."""
     category: str
+    """Category assigned to the results."""
 
     supportsFilterSearch: bool = False
+    """The finder supports filter searches."""
     supportsGeometrySearch: bool = False
+    """The finder supports geometry searches."""
     supportsKeywordSearch: bool = False
+    """The finder supports keyword searches."""
 
     withFilter: bool
+    """Filter searches are enabled."""
     withGeometry: bool
+    """Geometry searches are enabled."""
     withKeyword: bool
+    """Keyword searches are enabled."""
 
     templates: list['Template']
+    """Templates to format the found features."""
     models: list['Model']
+    """Models used to read the features."""
     sourceLayers: list['SourceLayer']
+    """Source layers to search in, for finders of OWS and QGIS sources."""
 
     tolerance: 'UomValue'
+    """Tolerance for geometry searches."""
 
-    def run(self, search: SearchQuery, user: 'User', layer: Optional['Layer'] = None) -> list['Feature']: ...
+    def run(self, search: SearchQuery, user: 'User', layer: Optional['Layer'] = None) -> list['Feature']:
+        """Run a search query.
 
-    def can_run(self, search: SearchQuery, user: 'User') -> bool: ...
+        Args:
+            search: Search query.
+            user: User running the search.
+            layer: Layer the finder belongs to, if any.
+
+        Returns:
+            Found features.
+        """
+
+    def can_run(self, search: SearchQuery, user: 'User') -> bool:
+        """Check if the finder can run a search query.
+
+        Args:
+            search: Search query.
+            user: User running the search.
+
+        Returns:
+            ``True`` if the finder can run the query.
+        """

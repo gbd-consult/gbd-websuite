@@ -1,4 +1,4 @@
-"""Parse py source files and create a list of units of interest"""
+"""Parse Python source files into spec types."""
 
 import ast
 import re
@@ -9,6 +9,19 @@ from . import base, util
 
 
 def parse(gen: base.Generator, parse_all=False):
+    """Parse the Python files of all chunks and add their types to the generator.
+
+    Modules containing ``# gws:nospec`` are skipped.
+
+    Args:
+        gen: Generator state.
+        parse_all: If True, parse all methods with all arguments, otherwise
+            only command methods with their last argument.
+
+    Raises:
+        ``GeneratorError``: If a file cannot be parsed.
+    """
+
     _init_parser(gen)
 
     for chunk in gen.chunks:
@@ -54,11 +67,24 @@ def _parse_path(gen: base.Generator, path: str, base_name: str, base_dir: str, p
 
 
 class _PythonParser:
+    """Parser for a single Python module.
+
+    Adds types for the module, its type aliases and constants, its classes
+    and enums with their properties, ``gws.ext`` declarations and decorated
+    classes and command methods. Only names starting with an uppercase letter
+    are considered types.
+    """
+
     lines: list[str]
+    """Not used."""
     moduleNode: ast.Module
+    """Root node of the module."""
     moduleName: str
+    """Qualified module name."""
     docs: dict[int, str]
+    """Not used."""
     imports: dict[str, str]
+    """Imported names mapped to qualified names."""
 
     def __init__(self, gen: base.Generator, module_name: str, path: str, text: str, parse_all: bool):
         self.gen = gen
@@ -72,6 +98,12 @@ class _PythonParser:
         self.parseAll = parse_all
 
     def run(self):
+        """Parse the module.
+
+        Raises:
+            ``ValueError``: If the module contains an invalid declaration.
+        """
+
         if any('# gws:nospec' in ln for ln in self.source_lines):
             return
 
@@ -108,6 +140,12 @@ class _PythonParser:
                 )
 
     def prepare_imports(self):
+        """Map imported names to qualified names and register aliases for imported types.
+
+        Returns:
+            A dict of imported names and their qualified names.
+        """
+
         # map import names to module names
         imp = {}
 
@@ -145,6 +183,18 @@ class _PythonParser:
         return imp
 
     def parse_ext_declaration(self, node):
+        """Parse a ``gws.ext.new.<category>('<name>', ...)`` declaration.
+
+        Adds ``EXT`` types for the object, config and props, pointing to the
+        given classes or to ``Object``, ``Config`` and ``Props`` of the module.
+
+        Args:
+            node: Expression node.
+
+        Raises:
+            ``ValueError``: If the declaration has no arguments.
+        """
+
         if _cls(node.value) != 'Call':
             return
         call = cast(ast.Call, node.value)
@@ -164,7 +214,13 @@ class _PythonParser:
         self.add(c=base.c.EXT, extName=base.v.EXT_PROPS_PREFIX + tail, tTarget=self.qname(args.pop(0) if args else base.v.EXT_PROPS_CLASS))
 
     def parse_assign(self, node, doc, annotated):
-        """Parse a module level assignment, possibly a type alias or a constant."""
+        """Parse a module level assignment, possibly a type alias or a constant.
+
+        Args:
+            node: ``Assign`` or ``AnnAssign`` node.
+            doc: Docstring following the assignment.
+            annotated: True for an ``AnnAssign`` node.
+        """
 
         if annotated:
             name_node = node.target
@@ -206,6 +262,15 @@ class _PythonParser:
             )
 
     def parse_class(self, node):
+        """Parse a class with its properties and command methods.
+
+        ``Enum`` subclasses are parsed by ``parse_enum``. A ``gws.ext``
+        class decorator adds an ``EXT`` type pointing to the class.
+
+        Args:
+            node: ``ClassDef`` node.
+        """
+
         if not _is_type_name(node.name):
             return
 
@@ -234,6 +299,15 @@ class _PythonParser:
                 self.parse_method(typ, nn)
 
     def parse_enum(self, node):
+        """Parse an ``Enum`` subclass.
+
+        Args:
+            node: ``ClassDef`` node.
+
+        Raises:
+            ``ValueError``: If an item value is not a literal.
+        """
+
         docs = {}
         vals = {}
 
@@ -256,6 +330,19 @@ class _PythonParser:
         )
 
     def parse_property(self, owner_typ: base.Type, node, doc: str, annotated: bool):
+        """Parse a class property.
+
+        Private properties are skipped. A literal value becomes the default,
+        a name or attribute becomes a default expression. ``Optional``
+        properties get ``None`` as default if they have none.
+
+        Args:
+            owner_typ: Owning class type.
+            node: ``Assign`` or ``AnnAssign`` node.
+            doc: Docstring following the property.
+            annotated: True for an ``AnnAssign`` node.
+        """
+
         ident = node.target.id if annotated else node.targets[0].id
         if ident.startswith('_'):
             return
@@ -299,6 +386,13 @@ class _PythonParser:
                 typ.tValue = property_type.uid
 
     def parse_method(self, owner_typ: base.Type, node):
+        """Parse a command method, or any method if ``parseAll`` is set.
+
+        Args:
+            owner_typ: Owning class type.
+            node: ``FunctionDef`` node.
+        """
+
         ext = self.gws_decorator(node, 'method')
 
         if not ext and not self.parseAll:
@@ -335,6 +429,19 @@ class _PythonParser:
             typ.tReturn = ret_type.uid if ret_type else 'any'
 
     def gws_decorator(self, node, kind):
+        """Get the ``gws.ext`` name from a decorator, like ``@gws.ext.command.api('mapGetBox')``.
+
+        Args:
+            node: Class or function node.
+            kind: ``class`` or ``method``.
+
+        Returns:
+            The full extension name, or an empty string if there is no ``gws.ext`` decorator.
+
+        Raises:
+            ``ValueError``: If the decorator is not valid for the kind of node.
+        """
+
         for d in getattr(node, 'decorator_list', []):
             if _cls(d) != 'Call' or len(d.args) != 1:
                 continue
@@ -363,6 +470,18 @@ class _PythonParser:
     ##
 
     def type_from_node(self, node) -> base.Type:
+        """Create a type for a type annotation or alias value.
+
+        Args:
+            node: Annotation node.
+
+        Returns:
+            The type.
+
+        Raises:
+            ``ValueError``: If the annotation is not supported.
+        """
+
         # here, node is a type declaration (an alias or an annotation)
 
         cc = _cls(node)
@@ -394,6 +513,23 @@ class _PythonParser:
         raise ValueError(f'unsupported type: {cc!r}')
 
     def type_from_name(self, name: str, param=None) -> base.Type:
+        """Create a type for a type name, optionally with generic parameters.
+
+        Handles ``Literal``, ``Optional``, ``list``, ``set``, ``dict``,
+        ``Union``, ``tuple``, ``Callable`` and other built-in names. Unknown
+        names become ``UNDEFINED`` types, which may be resolved later.
+
+        Args:
+            name: Qualified type name.
+            param: Subscript node with the generic parameters.
+
+        Returns:
+            The type.
+
+        Raises:
+            ``ValueError``: If the generic parameters are invalid.
+        """
+
         if not param and name in self.gen.typeDict:
             return self.gen.typeDict[name]
 
@@ -477,9 +613,24 @@ class _PythonParser:
 
     @property
     def pos(self):
+        """Current source position.
+
+        Returns:
+            The position as ``path:line``.
+        """
+
         return self.modulePath + ':' + str(self.context[-1].lineno if self.context else 0)
 
     def add(self, **kwargs) -> base.Type:
+        """Add a type, with the current position and module.
+
+        Args:
+            **kwargs: Type attributes.
+
+        Returns:
+            The new type.
+        """
+
         kwargs['pos'] = self.pos
         kwargs['tModule'] = self.tModule
         kwargs['doc'] = (kwargs.get('doc') or '').strip()
@@ -488,12 +639,27 @@ class _PythonParser:
         return typ
 
     def inner_doc(self, node):
-        """Returns a normal docstring (first child of the node)."""
+        """Get the docstring of a module, class or function.
+
+        Args:
+            node: Node with a body.
+
+        Returns:
+            The docstring or an empty string.
+        """
 
         return self.docstring_from(node.body[0]) if node.body else ''
 
     def outer_doc(self, node, nodes):
-        """Returns a docstring which immediately follows this node in a list of nodes."""
+        """Get the docstring that immediately follows a node, as used for attributes.
+
+        Args:
+            node: Node.
+            nodes: List of nodes that contains the node.
+
+        Returns:
+            The docstring or an empty string.
+        """
 
         try:
             nxt = nodes[nodes.index(node) + 1]
@@ -502,7 +668,14 @@ class _PythonParser:
         return self.docstring_from(nxt)
 
     def docstring_from(self, node):
-        """If node is a docstring, return its content."""
+        """Get the content of a docstring node.
+
+        Args:
+            node: Node.
+
+        Returns:
+            The stripped string if the node is a string expression, otherwise an empty string.
+        """
 
         if _cls(node) == 'Expr':
             if _cls(node.value) == 'Constant':
@@ -514,6 +687,15 @@ class _PythonParser:
         return ''
 
     def qname(self, node):
+        """Get the qualified name for a name node.
+
+        Args:
+            node: Name node or string.
+
+        Returns:
+            The built-in name, or the name qualified by the imports or the module name.
+        """
+
         name = _name(node)
         b = _builtin_name(name)
         if b:
@@ -522,6 +704,15 @@ class _PythonParser:
         return name
 
     def qualified(self, name):
+        """Qualify a name using the module imports.
+
+        Args:
+            name: Name, possibly dotted.
+
+        Returns:
+            The qualified name. Names not found in the imports are prefixed with the module name.
+        """
+
         for alias, mod in self.imports.items():
             if name == mod or name.startswith(mod + DOT):
                 return name
@@ -532,6 +723,16 @@ class _PythonParser:
         return self.moduleName + DOT + name
 
     def nodes(self, where, *cls):
+        """Iterate over nodes, keeping track of the current node for error positions.
+
+        Args:
+            where: List of nodes.
+            *cls: Node class names to include. Include all if empty.
+
+        Yields:
+            Matching nodes.
+        """
+
         for node in where:
             if not cls or _cls(node) in cls:
                 self.context.append(node)
@@ -541,12 +742,38 @@ class _PythonParser:
     ##
 
     def parse_literal_value(self, node):
+        """Parse a scalar literal value.
+
+        Args:
+            node: Value node.
+
+        Returns:
+            The value.
+
+        Raises:
+            ``ValueError``: If the node is not a scalar literal.
+        """
+
         c, value = self.parse_const_value(node)
         if c == base.c.LITERAL and _is_scalar(value):
             return value
         raise ValueError(f'invalid literal value')
 
     def parse_const_value(self, node):
+        """Parse a constant value.
+
+        Literals, lists, tuples and dicts of literals are returned as ``LITERAL``.
+        Names and attributes (references to constants or enum members), and
+        lists and dicts containing them, are returned as ``EXPR``.
+
+        Args:
+            node: Value node.
+
+        Returns:
+            A tuple ``(kind, value)``, where kind is ``LITERAL`` or ``EXPR``,
+            or a falsy kind if the value is not constant.
+        """
+
         if node is None:
             return None, None
 

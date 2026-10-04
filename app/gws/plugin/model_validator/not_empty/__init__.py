@@ -1,4 +1,22 @@
-"""Validator for non-empty values."""
+"""Validator for non-empty values.
+
+Fails if the field value is None or a string that is empty or consists only of
+whitespace. Fields with ``isAuto`` always pass when a feature is created,
+since their value is set by the database.
+
+Every field runs a default instance of this validator; a failure is reported
+only if the field is required (``isRequired``). A configured ``notEmpty``
+validator replaces the default one, e.g. to set a custom message.
+
+Example::
+
+    fields+ {
+        name "name"
+        type "text"
+        isRequired true
+        validators+ { type "notEmpty" message "Name is required" }
+    }
+"""
 
 import gws
 import gws.base.model.validator
@@ -13,6 +31,8 @@ class Config(gws.base.model.validator.Config):
 
 @gws.ext.object.modelValidator('notEmpty')
 class Object(gws.base.model.validator.Object):
+    """Not-empty validator object."""
+
     def validate(self, field, feature, mc):
         val = feature.attributes.get(field.name)
 

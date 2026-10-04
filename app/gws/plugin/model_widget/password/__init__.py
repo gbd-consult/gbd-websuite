@@ -1,4 +1,16 @@
-"""Password widget."""
+"""Password widget.
+
+Text input that masks the typed characters, with an optional placeholder text
+and an optional button that reveals the password.
+
+Example::
+
+    fields+ {
+        name "password"
+        type "text"
+        widget { type "password" withShow true }
+    }
+"""
 
 import gws
 import gws.base.model.widget
@@ -22,6 +34,8 @@ class Props(gws.base.model.widget.Props):
 
 @gws.ext.object.modelWidget('password')
 class Object(gws.base.model.widget.Object):
+    """Password widget object."""
+
     def props(self, user):
         return gws.u.merge(
             super().props(user),

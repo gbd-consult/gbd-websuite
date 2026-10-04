@@ -1,3 +1,5 @@
+"""Client object and UI elements."""
+
 from typing import Optional
 
 import gws
@@ -30,19 +32,33 @@ class Config(gws.ConfigWithAccess):
 
 
 class ElementProps(gws.Data):
+    """Client UI element properties."""
+
     tag: str
 
 
 class Props(gws.Data):
+    """Client properties."""
+
     options: Optional[dict]
     elements: Optional[list[ElementProps]]
 
 
 class Element(gws.Node):
+    """Client UI element.
+
+    An element of the browser client, identified by its tag, with element options
+    and access rules.
+    """
+
     tag: str
+    """Element tag, for example ``Toolbar.Print``."""
     after: str
+    """Tag of the element this one was inserted after."""
     before: str
+    """Tag of the element this one was inserted before."""
     options: dict
+    """Element-specific options."""
 
     def configure(self):
         self.tag = self.cfg('tag')
@@ -55,8 +71,12 @@ class Element(gws.Node):
 
 
 class Object(gws.Client):
+    """Client object."""
+
     options: dict
+    """Client options."""
     elements: list[Element]
+    """Client UI elements."""
 
     def configure(self):
         app_client = gws.u.get(self.root.app, 'client')
@@ -74,6 +94,11 @@ class Object(gws.Client):
         )
 
     def _get_elements(self, app_client):
+        """Return the element list, either configured or inherited from the application client and modified.
+
+        An added element replaces an inherited one with the same tag. An element
+        with ``before`` or ``after`` is only added if the referenced tag is present.
+        """
         elements = self.cfg('elements')
         if elements:
             return elements
@@ -104,6 +129,7 @@ class Object(gws.Client):
         return [e for e in elements if e.tag not in remove_tags]
 
     def _find_element(self, elements, tag):
+        """Return the index of the element with the given tag, or -1."""
         for n, el in enumerate(elements):
             if el.tag == tag:
                 return n

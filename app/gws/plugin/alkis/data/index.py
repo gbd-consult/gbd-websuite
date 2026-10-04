@@ -1,3 +1,5 @@
+"""ALKIS index tables: storage, search and loading of Flurstuecke and addresses."""
+
 from typing import Optional, Iterable
 
 import re
@@ -30,7 +32,15 @@ TABLE_INDEXGEOM = 'indexgeom'
 
 
 class Object(gws.Node):
+    """ALKIS index.
+
+    Manages the index tables in the index schema, reports their status, runs
+    Flurstueck and address searches against them and loads the found objects
+    with their related data.
+    """
+
     VERSION = '84'
+    """Index version, part of the table names."""
 
     TABLES_BASIC = [
         TABLE_PLACE,
@@ -41,32 +51,46 @@ class Object(gws.Node):
         TABLE_INDEXLAGE,
         TABLE_INDEXGEOM,
     ]
+    """Tables of the basic index."""
 
     TABLES_BUCHUNG = [
         TABLE_BUCHUNGSBLATT,
         TABLE_INDEXBUCHUNGSBLATT,
     ]
+    """Tables with land register data."""
 
     TABLES_EIGENTUEMER = [
         TABLE_BUCHUNGSBLATT,
         TABLE_INDEXBUCHUNGSBLATT,
         TABLE_INDEXPERSON,
     ]
+    """Tables with owner data."""
 
     ALL_TABLES = TABLES_BASIC + TABLES_BUCHUNG + TABLES_EIGENTUEMER
+    """All index tables."""
 
     db: gws.plugin.postgres.provider.Object
+    """Database provider."""
     crs: gws.Crs
+    """CRS of the geometries."""
     schema: str
+    """Schema of the index tables."""
     excludeGemarkung: set[str]
+    """Gemarkung numbers excluded from indexing."""
     gemarkungFilter: set[str]
+    """Gemarkung codes searches are restricted to."""
 
     saMeta: sa.MetaData
+    """SQLAlchemy metadata for the index tables."""
     tables: dict[str, sa.Table]
+    """Index tables by table id."""
 
     columnDct = {}
+    """Column definitions by table id."""
 
     def __getstate__(self):
+        """Return the state for pickling, without the SQLAlchemy metadata."""
+
         return gws.u.omit(vars(self), 'saMeta')
 
     def configure(self):
@@ -207,6 +231,15 @@ class Object(gws.Node):
     ##
 
     def table(self, table_id: str) -> sa.Table:
+        """Return an index table.
+
+        Args:
+            table_id: Table id, one of the ``TABLE_`` constants.
+
+        Returns:
+            The table object.
+        """
+
         if table_id not in self.tables:
             table_name = f'alkis_{self.VERSION}_{table_id}'
             self.tables[table_id] = sa.Table(
@@ -218,10 +251,21 @@ class Object(gws.Node):
         return self.tables[table_id]
 
     def table_size(self, table_id) -> int:
+        """Return the number of rows in an index table.
+
+        Args:
+            table_id: Table id.
+
+        Returns:
+            The number of rows, 0 if the table does not exist.
+        """
+
         sizes = self._table_size_map([table_id])
         return sizes.get(table_id, 0)
 
     def _table_size_map(self, table_ids):
+        """Return a dict of table id to the number of rows."""
+
         d = {}
 
         with self.db.connect():
@@ -234,12 +278,33 @@ class Object(gws.Node):
         return d
 
     def has_schema(self) -> bool:
+        """Check whether the index schema exists.
+
+        Returns:
+            ``True`` if the schema exists.
+        """
+
         return self.db.has_schema(self.schema)
 
     def has_table(self, table_id: str) -> bool:
+        """Check whether an index table exists and has data.
+
+        Args:
+            table_id: Table id.
+
+        Returns:
+            ``True`` if the table has at least one row.
+        """
+
         return self.table_size(table_id) > 0
 
     def status(self) -> dt.IndexStatus:
+        """Return the index status.
+
+        Returns:
+            The status, computed from the number of rows in the index tables.
+        """
+
         sizes = self._table_size_map(self.ALL_TABLES)
         s = dt.IndexStatus(
             basic=all(sizes.get(tid, 0) > 0 for tid in self.TABLES_BASIC),
@@ -252,21 +317,32 @@ class Object(gws.Node):
         return s
 
     def drop_table(self, table_id: str):
+        """Drop an index table, if it exists.
+
+        Args:
+            table_id: Table id.
+        """
+
         with self.db.connect() as conn:
             self._drop_table(conn, table_id)
             conn.commit()
 
     def drop(self):
+        """Drop all index tables."""
+
         with self.db.connect() as conn:
             for table_id in self.ALL_TABLES:
                 self._drop_table(conn, table_id)
             conn.commit()
 
     def _drop_table(self, conn, table_id):
+        """Drop an index table using an open connection."""
+
         tab = self.table(table_id)
         conn.execute(sa.text(f'DROP TABLE IF EXISTS {self.schema}.{tab.name}'))
 
     INSERT_SIZE = 5000
+    """Number of rows inserted per statement."""
 
     def create_table(
         self,
@@ -274,6 +350,14 @@ class Object(gws.Node):
         values: list[dict],
         progress: Optional[ProgressIndicator] = None,
     ):
+        """Create an index table and fill it with rows.
+
+        Args:
+            table_id: Table id.
+            values: Rows as dicts of column names and values.
+            progress: Progress indicator, updated after each chunk of rows.
+        """
+
         tab = self.table(table_id)
         self.saMeta.create_all(self.db.engine(), tables=[tab])
 
@@ -288,8 +372,17 @@ class Object(gws.Node):
     ##
 
     _defaultLand: dt.EnumPair = None
+    """Cached default Land."""
 
     def default_land(self):
+        """Return the Land of a Gemarkung in the index.
+
+        The value is cached once found.
+
+        Returns:
+            The Land as an ``EnumPair``, or ``None`` if there are no Gemarkungen.
+        """
+
         if self._defaultLand:
             return self._defaultLand
 
@@ -302,8 +395,18 @@ class Object(gws.Node):
                 return self._defaultLand
 
     _strasseList: list[dt.Strasse] = []
+    """Cached street list."""
 
     def strasse_list(self) -> list[dt.Strasse]:
+        """Return all streets in the index.
+
+        Each distinct combination of Gemeinde, Gemarkung and street name is
+        returned once. The list is cached.
+
+        Returns:
+            A list of streets.
+        """
+
         if self._strasseList:
             return self._strasseList
 
@@ -335,6 +438,19 @@ class Object(gws.Node):
         return self._strasseList
 
     def find_adresse(self, q: dt.AdresseQuery) -> list[dt.Adresse]:
+        """Find addresses.
+
+        Args:
+            q: Search criteria and options.
+
+        Returns:
+            A list of addresses, in the order of the search, after applying offset and page size.
+
+        Raises:
+            ``gws.ResponseTooLargeError``: If there are more results than the configured limit.
+            ``gws.BadRequestError``: If the query is invalid, e.g. a house number without a street.
+        """
+
         indexlage = self.table(TABLE_INDEXLAGE)
 
         qo = q.options or dt.AdresseQueryOptions()
@@ -377,6 +493,19 @@ class Object(gws.Node):
         return gws.u.compact(adresse_map.get(uid) for uid in lage_uids)
 
     def find_flurstueck(self, q: dt.FlurstueckQuery) -> list[dt.Flurstueck]:
+        """Find Flurstuecke and load them with their related data.
+
+        Args:
+            q: Search criteria and options.
+
+        Returns:
+            A list of Flurstuecke, in the order of the search, after applying offset and page size.
+
+        Raises:
+            ``gws.ResponseTooLargeError``: If there are more results than the configured limit.
+            ``gws.BadRequestError``: If the query is invalid, e.g. a house number without a street.
+        """
+
         qo = q.options or dt.FlurstueckQueryOptions()
         sel = self._make_flurstueck_select(q, qo)
 
@@ -401,6 +530,15 @@ class Object(gws.Node):
         return fs_list
 
     def count_all(self, qo: dt.FlurstueckQueryOptions) -> int:
+        """Count all Flurstueck records in the index.
+
+        Args:
+            qo: Query options. Historic records are counted only with ``withHistorySearch``.
+
+        Returns:
+            The number of rows in the Flurstueck index table.
+        """
+
         indexfs = self.table(TABLE_INDEXFLURSTUECK)
         sel = sa.select(sa.func.count()).select_from(indexfs)
         if not qo.withHistorySearch:
@@ -411,6 +549,18 @@ class Object(gws.Node):
             return r[0][0]
 
     def iter_all(self, qo: dt.FlurstueckQueryOptions) -> Iterable[dt.Flurstueck]:
+        """Iterate over all Flurstuecke in the index.
+
+        Flurstuecke are loaded in chunks of ``qo.pageSize``, with a new
+        database connection for each chunk.
+
+        Args:
+            qo: Query options. ``pageSize`` must be set.
+
+        Yields:
+            Flurstuecke with their related data.
+        """
+
         indexfs = self.table(TABLE_INDEXFLURSTUECK)
         sel = sa.select(indexfs.c.fs).with_only_columns(indexfs.c.fs).order_by(indexfs.c.n)
         if not qo.withHistorySearch:
@@ -433,8 +583,11 @@ class Object(gws.Node):
             offset += qo.pageSize
 
     HAUSNUMMER_NOT_NULL_VALUE = '*'
+    """House number value that matches any non-empty house number."""
 
     def _make_flurstueck_select(self, q: dt.FlurstueckQuery, qo: dt.FlurstueckQueryOptions):
+        """Build a select statement for matching Flurstueck uids."""
+
         indexfs = self.table(TABLE_INDEXFLURSTUECK)
         indexbuchungsblatt = self.table(TABLE_INDEXBUCHUNGSBLATT)
         indexgeom = self.table(TABLE_INDEXGEOM)
@@ -572,6 +725,8 @@ class Object(gws.Node):
         return self._make_sort(sel, qo.sort, indexfs)
 
     def _make_adresse_select(self, q: dt.AdresseQuery, qo: dt.AdresseQueryOptions):
+        """Build a select statement for matching Lage uids."""
+
         indexlage = self.table(TABLE_INDEXLAGE)
         where = []
 
@@ -617,6 +772,8 @@ class Object(gws.Node):
         return self._make_sort(sel, qo.sort, indexlage)
 
     def _make_places_where(self, q: dt.FlurstueckQuery | dt.AdresseQuery, table: sa.Table):
+        """Build where clauses for place names and codes."""
+
         where = []
         land_code = ''
 
@@ -644,6 +801,8 @@ class Object(gws.Node):
         return where
 
     def _make_sort(self, sel, sort, table: sa.Table):
+        """Add the sort order to a select statement."""
+
         if not sort:
             return sel
 
@@ -656,10 +815,23 @@ class Object(gws.Node):
         return sel
 
     def load_flurstueck(self, fs_uids: list[str], qo: dt.FlurstueckQueryOptions) -> list[dt.Flurstueck]:
+        """Load Flurstuecke with their related data.
+
+        Args:
+            fs_uids: Flurstueck uids.
+            qo: Query options, the display themes select the related data.
+
+        Returns:
+            A list of Flurstuecke in the order of ``fs_uids``. Missing and,
+            unless ``withHistoryDisplay`` is set, historic Flurstuecke are left out.
+        """
+
         with self.db.connect() as conn:
             return self._load_flurstueck(conn, fs_uids, qo)
 
     def _load_flurstueck(self, conn, fs_uids, qo: dt.FlurstueckQueryOptions):
+        """Load Flurstuecke and related data using an open connection."""
+
         with_lage = dt.DisplayTheme.lage in qo.displayThemes
         with_gebaeude = dt.DisplayTheme.gebaeude in qo.displayThemes
         with_nutzung = dt.DisplayTheme.nutzung in qo.displayThemes
@@ -739,8 +911,11 @@ class Object(gws.Node):
         return gws.u.compact(fs_map.get(uid) for uid in fs_uids)
 
     _historicKeys = ['vorgaengerFlurstueckskennzeichen']
+    """Record attributes removed when history is not displayed."""
 
     def _remove_historic(self, objects, with_history_display: bool):
+        """Remove historic objects and records, unless history is displayed."""
+
         if with_history_display:
             return objects
 
@@ -770,6 +945,20 @@ class Object(gws.Node):
 
 
 def serialize(o: dt.Object, encode_enum_pairs=True) -> dict:
+    """Convert an object to a JSON-compatible structure.
+
+    Objects become dicts with sorted keys, dates become ``DD.MM.YYYY``
+    strings. Empty values are kept as they are.
+
+    Args:
+        o: Object to convert.
+        encode_enum_pairs: If ``True``, ``EnumPair`` values are encoded as
+            ``$code$text`` strings, otherwise as dicts.
+
+    Returns:
+        A dict.
+    """
+
     def encode(r):
         if not r:
             return r
@@ -797,6 +986,18 @@ def serialize(o: dt.Object, encode_enum_pairs=True) -> dict:
 
 
 def unserialize(data: dict):
+    """Convert a structure created by ``serialize`` back to objects.
+
+    Dicts become ``types.Object`` instances and ``$code$text`` strings
+    become ``EnumPair`` values.
+
+    Args:
+        data: Serialized data.
+
+    Returns:
+        The object.
+    """
+
     def decode(r):
         if not r:
             return r
@@ -819,7 +1020,17 @@ def unserialize(data: dict):
 
 
 def text_key(s):
-    """Normalize a text string for full-text search."""
+    """Normalize a string for text search.
+
+    The string is lower-cased, umlauts are transliterated and punctuation is
+    replaced by spaces.
+
+    Args:
+        s: String to normalize.
+
+    Returns:
+        The normalized string, an empty string for ``None``.
+    """
 
     if s is None:
         return ''
@@ -829,7 +1040,18 @@ def text_key(s):
 
 
 def strasse_key(s):
-    """Normalize a steet name for full-text search."""
+    """Normalize a street name for text search.
+
+    Works like ``text_key``, but also expands the abbreviations ``str.`` and
+    ``pl.`` and separates common street name suffixes, so that for example
+    ``Hauptstr.`` and ``Haupt-Strasse`` give the same key.
+
+    Args:
+        s: Street name.
+
+    Returns:
+        The normalized street name, an empty string for ``None``.
+    """
 
     if s is None:
         return ''
@@ -844,6 +1066,8 @@ def strasse_key(s):
 
 
 def _text_umlauts(s):
+    """Transliterate lower-case umlauts and sharp s."""
+
     s = s.replace('ä', 'ae')
     s = s.replace('ë', 'ee')
     s = s.replace('ö', 'oe')
@@ -854,11 +1078,20 @@ def _text_umlauts(s):
 
 
 def _text_nopunct(s):
+    """Replace runs of non-word characters with a space."""
+
     return re.sub(r'\W+', ' ', s)
 
 
 def normalize_hausnummer(s):
-    """Clean up house number formatting."""
+    """Normalize a house number by removing all whitespace.
+
+    Args:
+        s: House number, e.g. ``12 a``.
+
+    Returns:
+        The normalized house number, e.g. ``12a``, an empty string for ``None``.
+    """
 
     if s is None:
         return ''
@@ -869,7 +1102,18 @@ def normalize_hausnummer(s):
 
 
 def make_fsnummer(r: dt.FlurstueckRecord):
-    """Create a 'fsnummer' for a Flurstueck, which is 'flur-zaeher/nenner (folge)'."""
+    """Create a display number for a Flurstueck.
+
+    The format is ``<gemarkung> <flur>-<zaehler>/<nenner> (<folge>)``.
+    The Flur, the denominator and the sequence number are omitted if empty,
+    the sequence number also if it is ``00``.
+
+    Args:
+        r: Flurstueck record.
+
+    Returns:
+        The display number.
+    """
 
     v = r.gemarkung.code + ' '
 
@@ -918,7 +1162,18 @@ _RE_FSNUMMER = r"""(?x)
 
 
 def parse_fsnummer(s):
-    """Parse a Flurstueck fsnummer into parts."""
+    """Parse a Flurstueck display number into its parts.
+
+    The format is the one created by ``make_fsnummer``, all parts are optional.
+
+    Args:
+        s: Display number.
+
+    Returns:
+        A dict with the keys ``gemarkungCode``, ``flurnummer``, ``zaehler``,
+        ``nenner`` and ``flurstuecksfolge`` for the parts found, or ``None``
+        if the string does not match the format.
+    """
 
     m = re.match(_RE_FSNUMMER, s.strip())
     if not m:
@@ -927,6 +1182,17 @@ def parse_fsnummer(s):
 
 
 def text_search_clause(column, val, tso: gws.TextSearchOptions):
+    """Create a where clause that matches a column against a search string.
+
+    Args:
+        column: Column to match.
+        val: Search string.
+        tso: Text search options. Without options, the value is matched exactly.
+
+    Returns:
+        A clause, or ``None`` if the value is empty or shorter than the minimum length.
+    """
+
     # @TODO merge with model_field/text
 
     if val is None:
@@ -959,6 +1225,8 @@ def text_search_clause(column, val, tso: gws.TextSearchOptions):
 
 
 def _escape_like(s, escape='\\'):
+    """Escape special characters for a LIKE pattern."""
+
     return s.replace(escape, escape + escape).replace('%', escape + '%').replace('_', escape + '_')
 
 
@@ -969,12 +1237,40 @@ _FLATTEN_EXCLUDE_KEYS = {'fsUids', 'childUids', 'parentUids'}
 
 
 def flatten_fs(fs: dt.Flurstueck, keys_to_extract: set[str]) -> list[dict]:
-    """Flatten a Flurstueck into a list of dicts with keys from keys_to_extract."""
+    """Flatten a Flurstueck into a list of dicts.
+
+    The nested Flurstueck structure is turned into flat dicts whose keys are
+    attribute paths joined with ``_``, starting with ``fs``, e.g.
+    ``fs_recs_gemarkung_text``. ``EnumPair`` values give two keys, ``_code``
+    and ``_text``. For list values, the dicts are repeated for each list item,
+    so the result is the product of all lists, for example::
+
+        record:
+            a:x, b:[1,2], c:[3,4]
+
+        flat list:
+            a:x, b:1, c:3
+            a:x, b:1, c:4
+            a:x, b:2, c:3
+            a:x, b:2, c:4
+
+    Only paths leading to ``keys_to_extract`` are followed, which keeps the
+    product small. Still, some combinations of keys produce many rows.
+
+    Args:
+        fs: Flurstueck to flatten.
+        keys_to_extract: Flat keys to include.
+
+    Returns:
+        A list of dicts.
+    """
 
     return _flatten(fs, 'fs', keys_to_extract, [{}])
 
 
 def _flatten(val, key, keys_to_extract, flat_lst):
+    """Recursively add a value under a key prefix to all dicts in a list."""
+
     if not any(k.startswith(key) for k in keys_to_extract):
         return flat_lst
 
@@ -1003,12 +1299,20 @@ def _flatten(val, key, keys_to_extract, flat_lst):
 
 
 def all_flat_keys():
-    """Return a dict key->type for all flat keys in the Flurstueck structure."""
+    """Return all flat keys of the Flurstueck structure.
+
+    The keys are derived from the type annotations in ``types``, see ``flatten_fs``.
+
+    Returns:
+        A dict of flat keys and their types, sorted by key.
+    """
 
     return {k: typ for k, typ in sorted(set(_get_flat_keys(dt.Flurstueck, 'fs')))}
 
 
 def _get_flat_keys(cls, key):
+    """Yield flat keys and types for a class from its annotations."""
+
     if isinstance(cls, str):
         cls = getattr(dt, cls, None)
 

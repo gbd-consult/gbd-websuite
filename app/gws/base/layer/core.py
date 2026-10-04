@@ -1,4 +1,4 @@
-"""Base layer object."""
+"""Base layer object and the configuration shared by all layers."""
 
 from typing import Optional, cast
 
@@ -138,9 +138,20 @@ class Props(gws.Props):
 
 
 class Object(gws.Layer):
+    """Base layer.
+
+    Provides the attributes common to all layers, the configuration protocol
+    ``configure_layer``, client props and the URLs of the map action commands.
+    Subclasses call ``configure_layer`` from their ``configure`` method,
+    override the ``configure_*`` steps they need and implement ``render_box``,
+    ``render_tile`` or ``render_svg`` for the outputs they support.
+    """
+
     parent: gws.Layer
+    """Parent layer."""
 
     clientOptions: ClientOptions
+    """Display options for the client layer tree."""
 
     canRenderBox = False
     canRenderSvg = False
@@ -154,7 +165,9 @@ class Object(gws.Layer):
     hasLegend = False
 
     parentWgsExtent: gws.Extent
+    """WGS84 extent of the parent layer or map."""
     parentResolutions: list[float]
+    """Resolutions of the parent layer or map."""
 
     def configure(self):
         if self.cfg('grid') is not None:
@@ -198,7 +211,11 @@ class Object(gws.Layer):
         self.grabbers = {}
 
     def configure_layer(self):
-        """Layer configuration protocol."""
+        """Run the layer configuration steps in a fixed order.
+
+        The steps are provider, sources, group, models, extent, bounds, zoom
+        bounds, resolutions, legend, metadata, templates, search and OWS.
+        """
 
         self.configure_provider()
         self.configure_sources()
@@ -217,9 +234,22 @@ class Object(gws.Layer):
     ##
 
     def configure_group(self):
+        """Create child layers. Does nothing in the base class.
+
+        Returns:
+            ``True`` if child layers were created, ``None`` otherwise.
+        """
         pass
 
     def configure_extent(self):
+        """Set ``wgsExtent`` from the configured ``extent``.
+
+        Returns:
+            ``True`` if an extent is configured, ``None`` otherwise.
+
+        Raises:
+            ``gws.ConfigurationError``: If the configured extent is invalid.
+        """
         p = self.cfg('extent')
         if p:
             ext = gws.lib.extent.from_list(p)
@@ -229,7 +259,18 @@ class Object(gws.Layer):
             return True
 
     def configure_bounds(self):
-        """Bounds in the map CRS: the WGS extent clipped to the parent extent and to the CRS."""
+        """Set ``bounds`` in the map CRS.
+
+        The bounds are the WGS extent clipped to the parent extent and to the
+        CRS. If the extent lies outside of the parent extent, a configuration
+        warning is issued and the parent extent is used.
+
+        Returns:
+            ``True``.
+
+        Raises:
+            ``gws.ConfigurationError``: If no extent can be determined.
+        """
 
         extent = gws.lib.extent.intersection(self.wgsExtent, self.parentWgsExtent)
         if extent:
@@ -246,6 +287,14 @@ class Object(gws.Layer):
         return True
 
     def configure_zoom_bounds(self):
+        """Set ``zoomBounds`` from the configured ``zoomExtent``.
+
+        Returns:
+            ``True`` if a zoom extent is configured, ``None`` otherwise.
+
+        Raises:
+            ``gws.ConfigurationError``: If the configured zoom extent is invalid.
+        """
         p = self.cfg('zoomExtent')
         if p:
             ext = gws.lib.extent.from_list(p)
@@ -255,6 +304,12 @@ class Object(gws.Layer):
             return True
 
     def configure_legend(self):
+        """Create the legend from the ``legend`` configuration.
+
+        Returns:
+            ``True`` if a legend is configured or legends are disabled with
+            ``withLegend``, ``None`` otherwise.
+        """
         if not self.cfg('withLegend'):
             return True
         p = self.cfg('legend')
@@ -263,18 +318,43 @@ class Object(gws.Layer):
             return True
 
     def configure_metadata(self):
+        """Set ``metadata`` from the ``metadata`` configuration.
+
+        Returns:
+            ``True`` if metadata is configured, ``None`` otherwise.
+        """
         p = self.cfg('metadata')
         if p:
             self.metadata = gws.base.metadata.from_config(p)
             return True
 
     def configure_models(self):
+        """Create the models from the ``models`` configuration.
+
+        Returns:
+            ``True`` if models are configured, ``False`` otherwise.
+        """
         return gws.config.util.configure_models_for(self)
 
     def configure_provider(self):
+        """Set up the data provider. Does nothing in the base class.
+
+        Returns:
+            ``True`` if a provider was configured, ``None`` otherwise.
+        """
         pass
 
     def configure_resolutions(self):
+        """Set ``resolutions`` from the ``zoom`` configuration.
+
+        Without a ``zoom`` configuration the layer keeps the parent resolutions.
+
+        Returns:
+            ``True`` if a zoom configuration is present, ``None`` otherwise.
+
+        Raises:
+            ``gws.Error``: If the zoom configuration yields no resolutions.
+        """
         p = self.cfg('zoom')
         if p:
             gws.gis.zoom.warn_deprecated_options(p, self.root)
@@ -284,17 +364,38 @@ class Object(gws.Layer):
             return True
 
     def configure_search(self):
+        """Create the search providers from the ``finders`` configuration.
+
+        Returns:
+            ``True`` if finders are configured or search is disabled with
+            ``withSearch``, ``False`` otherwise.
+        """
         if not self.cfg('withSearch'):
             return True
         return gws.config.util.configure_finders_for(self)
 
     def configure_sources(self):
+        """Set up the source layers. Does nothing in the base class.
+
+        Returns:
+            ``True`` if sources were configured, ``None`` otherwise.
+        """
         pass
 
     def configure_templates(self):
+        """Create the templates from the ``templates`` configuration.
+
+        Returns:
+            ``True`` if at least one template was created, ``False`` otherwise.
+        """
         return gws.config.util.configure_templates_for(self)
 
     def configure_ows(self):
+        """Create the OWS binding and set ``isEnabledForOws`` from ``withOws``.
+
+        The OWS layer and feature names default to the layer title converted
+        to a UID.
+        """
         self.isEnabledForOws = self.cfg('withOws', default=True)
         self.ows = self.create_child(ows.Object, self.cfg('ows'), _defaultName=gws.u.to_uid(self.title))
 
@@ -365,12 +466,36 @@ class Object(gws.Layer):
             return self.render_svg(lri)
 
     def render_box(self, lri):
+        """Render the layer as a single image. Returns nothing in the base class.
+
+        Args:
+            lri: Render input with the map view.
+
+        Returns:
+            Render output with the encoded image, or ``None``.
+        """
         pass
 
     def render_tile(self, lri):
+        """Render a single tile. Returns nothing in the base class.
+
+        Args:
+            lri: Render input with the tile coordinates.
+
+        Returns:
+            Render output with the encoded tile, or ``None``.
+        """
         pass
 
     def render_svg(self, lri):
+        """Render the layer as SVG. Returns nothing in the base class.
+
+        Args:
+            lri: Render input with the map view and style.
+
+        Returns:
+            Render output with SVG tags, or ``None``.
+        """
         pass
 
     def render_legend(self, args=None):

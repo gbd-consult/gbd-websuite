@@ -11,6 +11,8 @@ class Config(gws.Config):
 
 
 class Object(gws.StorageManager):
+    """Storage manager."""
+
     def configure(self):
         self.providers = []
 

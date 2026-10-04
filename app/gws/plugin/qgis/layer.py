@@ -1,7 +1,4 @@
-"""qgis layer.
-
-"qgis" layers display QGIS layers as WebSuite layers, keeping the tree structure.
-"""
+"""The ``qgis`` layer."""
 
 from typing import Optional, cast
 
@@ -26,9 +23,18 @@ class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
 
 @gws.ext.object.layer('qgis')
 class Object(gws.base.layer.group.Object):
+    """Group layer that shows a QGIS project as a tree of layers.
+
+    The child layers are created from the project layer tree. With
+    ``compositeRender``, the layer renders its visible children as one image.
+    """
+
     provider: provider.Object
+    """QGIS provider."""
     compositeRender: bool = False
+    """Render all visible sublayers as one image."""
     sqlFilters: dict
+    """SQL filters passed to the child layers, mapping a source layer name (or ``*``) to a filter expression."""
 
     def configure(self):
         self.compositeRender = self.cfg('compositeRender', default=False)
@@ -115,6 +121,18 @@ class Object(gws.base.layer.group.Object):
         return gws.base.layer.image.Object.render_tile(self, lri)
 
     def composite_render_params(self, lri: gws.LayerRenderInput) -> Optional[dict]:
+        """Build the GetMap parameters for a composite render.
+
+        The parameters combine ``LAYERS`` and ``FILTER`` of the ``qgisflat``
+        descendants listed in ``compositeLayerUids`` of the extra render
+        parameters. Layers the user cannot read are skipped.
+
+        Args:
+            lri: Render input.
+
+        Returns:
+            GetMap parameters, or ``None`` if no layers are requested.
+        """
         leaves = dict(lri.extraParams or {}).get('compositeLayerUids', [])
         if not leaves:
             return

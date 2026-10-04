@@ -1,3 +1,16 @@
+"""HTML utilities.
+
+Escapes strings for HTML and renders HTML documents to PDF or PNG files with the
+external ``wkhtmltopdf`` and ``wkhtmltoimage`` tools. The HTML is first written to
+``<out_path>.html``, which is left in place, and the tool converts it to ``out_path``.
+JavaScript is disabled and local files can be loaded.
+
+Example::
+
+    html = f'<h1>{gws.lib.htmlx.escape(title)}</h1>'
+    gws.lib.htmlx.render_to_pdf(html, '/tmp/out.pdf', page_size=(210, 297, gws.Uom.mm))
+"""
+
 import html
 
 import gws
@@ -6,21 +19,33 @@ import gws.lib.uom
 
 
 def escape(s: str, quote=True) -> str:
-    """Escapes a string for use in HTML."""
+    """Escape a string for use in HTML.
+
+    Args:
+        s: A string.
+        quote: If ``True``, also escape double and single quotes.
+
+    Returns:
+        The escaped string.
+    """
     return html.escape(s, quote=quote)
 
 
 def render_to_pdf(html: str, out_path: str, page_size: gws.UomSize = None, page_margin: gws.UomExtent = None) -> str:
-    """Renders an HTML string to a PDF file.
+    """Render an HTML string to a PDF file with ``wkhtmltopdf``.
 
     Args:
-        html: The HTML content to be converted into a PDF.
-        out_path: The output file path for the generated PDF.
-        page_size: The size of the page in user-defined units. Defaults to None.
-        page_margin: The margins of the page in user-defined units. Defaults to None.
+        html: HTML content.
+        out_path: Path of the PDF file to create.
+        page_size: Page size, converted to mm. A4 portrait by default.
+        page_margin: Page margins (top, right, bottom, left). The values are passed to
+            ``wkhtmltopdf`` as millimetres, the unit is not converted. No margins by default.
 
     Returns:
-        The output file path of the generated PDF.
+        The output path.
+
+    Raises:
+        ``gws.lib.osx.Error``: If the command fails.
     """
     mar = page_margin or (0, 0, 0, 0, gws.Uom.mm)
 
@@ -62,16 +87,21 @@ def render_to_pdf(html: str, out_path: str, page_size: gws.UomSize = None, page_
 
 
 def render_to_png(html: str, out_path: str, page_size: gws.UomSize = None, page_margin: list[int] = None) -> str:
-    """Renders an HTML string to a PNG image.
+    """Render an HTML string to a PNG image with ``wkhtmltoimage``.
+
+    The image has a transparent background.
 
     Args:
-        html: The HTML content to be converted into an image.
-        out_path: The output file path for the generated PNG.
-        page_size: The size of the image in user-defined units. Defaults to None.
-        page_margin: The margins of the image in pixels (top, right, bottom, left). Defaults to None.
+        html: HTML content.
+        out_path: Path of the PNG file to create.
+        page_size: Image size, converted to pixels at ``gws.lib.uom.PDF_DPI``. If set, the image is cropped to this size.
+        page_margin: Margins in pixels (top, right, bottom, left), applied as a body style.
 
     Returns:
-        The output file path of the generated PNG.
+        The output path.
+
+    Raises:
+        ``gws.lib.osx.Error``: If the command fails.
     """
     if page_margin:
         mar = page_margin

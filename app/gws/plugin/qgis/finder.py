@@ -1,4 +1,4 @@
-"""QGIS Server-based Finder."""
+"""Finder for QGIS project layers."""
 
 from typing import Optional
 
@@ -24,8 +24,11 @@ class Config(gws.base.search.finder.Config):
 
 @gws.ext.object.finder('qgis')
 class Object(gws.base.ows.client.finder.Object):
+    """Finder that queries QGIS project layers with GetFeatureInfo."""
+
     supportsGeometrySearch = True
     provider: provider.Object
+    """QGIS provider."""
 
     def configure_provider(self):
         return gws.config.util.configure_provider_for(self, provider.Object)

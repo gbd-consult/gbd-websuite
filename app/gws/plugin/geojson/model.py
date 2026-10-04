@@ -1,4 +1,4 @@
-"""GeoJSON model."""
+"""The ``geojson`` model."""
 
 from typing import Optional
 
@@ -22,9 +22,10 @@ class Config(gws.base.model.Config):
 
 @gws.ext.object.model('geojson')
 class Object(gws.base.model.default_model.Object):
-    """GeoJSON Model."""
+    """GeoJSON model."""
 
     provider: provider.Object
+    """The GeoJSON provider."""
 
     def configure(self):
         self.uidName = 'id'

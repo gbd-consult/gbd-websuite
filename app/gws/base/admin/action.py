@@ -19,17 +19,27 @@ class Props(gws.base.action.Props):
 
 
 class ViewCacheRequest(gws.Request):
+    """Request for the cache viewer."""
+
     path: str = ''
+    """Page or tile path: empty, ``<cache>``, ``<cache>/<z>``, ``<cache>/<z>/<x>/<y>.<ext>`` or an asset name."""
 
 
 class InspectorRequest(gws.Request):
+    """Request for the object inspector."""
+
     path: str = ''
+    """Object path, or an asset name."""
     search: str = ''
+    """Search text, ``text`` or ``prop=text``."""
 
 
 @gws.ext.object.action('admin')
 class Object(gws.base.action.Object):
-    """Admin action."""
+    """Admin action.
+
+    Serves the administration tools: the object inspector and the tile cache viewer.
+    """
 
     @gws.ext.command.get('adminMapCache')
     def admin_map_cache(self, req: gws.WebRequester, p: ViewCacheRequest) -> gws.ContentResponse:
@@ -46,5 +56,6 @@ class Object(gws.base.action.Object):
         return inspector.get_content(self.root, p.path, p.search)
 
     def _ensure_admin(self, req: gws.WebRequester):
+        """Raise ``ForbiddenError`` unless the user has the ``admin`` role."""
         if not req.user.has_role('admin'):
             raise gws.ForbiddenError()

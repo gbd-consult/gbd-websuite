@@ -1,3 +1,5 @@
+"""Spool server application."""
+
 import gws
 import gws.config
 import gws.server.uwsgi_module
@@ -6,10 +8,26 @@ from . import runner
 
 
 def application(environ, start_response):
+    """WSGI application of the spool server, which does nothing.
+
+    Args:
+        environ: WSGI environment.
+        start_response: WSGI ``start_response`` callable.
+    """
     pass
 
 
 def spooler(env):
+    """Run a queued job, called by the uWSGI spooler.
+
+    Errors are logged, the job is never retried by the spooler.
+
+    Args:
+        env: Spooler arguments.
+
+    Returns:
+        The uWSGI ``SPOOL_OK`` code, so the spooler removes the task.
+    """
     try:
         runner.run(gws.config.get_root(), env)
     except:
@@ -21,6 +39,11 @@ def spooler(env):
 
 
 def init():
+    """Initialize the spool server.
+
+    Loads the stored configuration, installs the spooler callback, sets the log level
+    and starts the monitor if ``server.withMonitor`` is set. Exits the process with code 1 on errors.
+    """
     root = None
 
     try:

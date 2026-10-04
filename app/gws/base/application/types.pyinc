@@ -1,11 +1,29 @@
 class MiddlewareManager(Node):
-    """Manage middleware and their dependencies."""
+    """Middleware manager.
+
+    Middleware objects process every web request: the web server calls
+    ``enter_middleware`` on each of them in dependency order before the action,
+    and ``exit_middleware`` in reverse order after it.
+    """
 
     def register(self, obj: Node, name: str, depends_on: Optional[list[str]] = None):
-        """Register an object as a middleware."""
+        """Register an object as a middleware.
+
+        Args:
+            obj: The middleware object.
+            name: Middleware name, for example ``db`` or ``auth``.
+            depends_on: Names of middleware that must run before this one.
+        """
 
     def objects(self) -> list[Node]:
-        """Return a list of registered middleware objects."""
+        """Return the registered middleware objects in dependency order.
+
+        Returns:
+            A list of middleware objects, dependencies first.
+
+        Raises:
+            Error: If the dependencies are cyclic or refer to an unknown name.
+        """
 
 
 class TemplateOptions(Data):
@@ -24,112 +42,158 @@ class TemplateOptions(Data):
 
 
 class Application(Node):
-    """Main Application object."""
+    """Application object.
+
+    The top-level node of the configuration tree. It holds the managers, the
+    global objects and the projects, and is available as ``root.app``.
+    """
 
     client: 'Client'
-    """Represents the client object associated with the application."""
+    """Default client, used by projects without their own client configuration."""
 
     localeUids: list[str]
-    """List of locale identifiers."""
+    """Default locale uids for all projects."""
 
     metadata: 'Metadata'
-    """Metadata for the application."""
+    """Application metadata."""
 
     monitor: 'ServerMonitor'
-    """Server monitor object."""
+    """Server monitor, watches configuration files and runs periodic tasks."""
 
     templateOptions: TemplateOptions
-    """Options for default templates."""
+    """Options for the built-in home page templates."""
 
     title: str
     """Application title."""
 
     vars: dict
-    """Application variables."""
+    """Custom variables from the configuration."""
 
     version: str
-    """Application version as a string."""
+    """Application version, for example ``8.5.3``."""
 
     versionString: str
-    """Full version string for display purposes."""
+    """Version string for display, with the revision if known."""
 
     def supported_crs(self) -> list['Crs']:
-        """All CRS used by maps, overview maps and OWS services, plus registered ones, computed on first call."""
+        """Return all CRS supported by the application.
+
+        These are the CRS of all maps and the CRS supported by OWS services,
+        plus the registered ones. The list is computed on the first call.
+
+        Returns:
+            A list of CRS objects, sorted by srid.
+        """
 
     def register_supported_crs(self, crs: 'Crs'):
-        """Register an additional supported CRS (must be called during configuration)."""
+        """Register an additional supported CRS.
+
+        Must be called during configuration.
+
+        Args:
+            crs: The CRS object.
+        """
 
     defaultPrinter: 'Printer'
-    """Default printer object."""
+    """Default printer, used when no printer is configured."""
 
     actionMgr: 'ActionManager'
-    """Manager for application actions."""
+    """Action manager."""
 
     authMgr: 'AuthManager'
-    """Manager for authentication operations."""
+    """Authorization manager."""
 
     databaseMgr: 'DatabaseManager'
-    """Manager for database operations."""
+    """Database manager."""
 
     exporterMgr: 'ExporterManager'
-    """Manager for exporters."""
+    """Exporter manager."""
 
     jobMgr: 'JobManager'
-    """Manager for handling jobs."""
+    """Job manager."""
 
     middlewareMgr: 'MiddlewareManager'
-    """Manager for middleware and dependencies."""
+    """Middleware manager."""
 
     modelMgr: 'ModelManager'
-    """Manager for model operations."""
+    """Model manager."""
 
     printerMgr: 'PrinterManager'
-    """Manager for printers."""
+    """Printer manager."""
 
     searchMgr: 'SearchManager'
-    """Manager for search functionality."""
+    """Search manager."""
 
     serverMgr: 'ServerManager'
-    """Manager for server operations."""
+    """Server manager."""
 
     storageMgr: 'StorageManager'
-    """Manager for storage operations."""
+    """Storage manager."""
 
     templateMgr: 'TemplateManager'
-    """Manager for templates."""
+    """Template manager."""
 
     webMgr: 'WebManager'
-    """Manager for web operations."""
+    """Web manager."""
 
     actions: list['Action']
-    """List of defined application actions."""
+    """Actions available in all projects."""
 
     projects: list['Project']
-    """List of configured projects."""
+    """Configured projects."""
 
     exporters: list['Exporter']
-    """List of configured exporters."""
+    """Global exporters."""
 
     finders: list['Finder']
-    """List of finder objects."""
+    """Finders available in all projects."""
 
     templates: list['Template']
-    """List of global templates."""
+    """Global templates, including the built-in ones."""
 
     printers: list['Printer']
-    """List of global printer objects."""
+    """Global printers."""
 
     models: list['Model']
-    """List of global models."""
+    """Global models."""
 
     owsServices: list['OwsService']
-    """List of OWS services."""
+    """OWS services provided by the server."""
 
     def project(self, uid: str) -> Optional['Project']:
-        """Get a Project object by its uid."""
+        """Find a project by its uid.
+
+        Args:
+            uid: Project uid.
+
+        Returns:
+            The project, or ``None`` if not found.
+        """
 
     def helper(self, ext_type: str) -> Optional['Node']:
-        """Get a Helper object by its extension type."""
+        """Return a helper object by its type.
+
+        A helper that is not configured is created with default options on the first call.
+
+        Args:
+            ext_type: Helper type, for example ``upload``.
+
+        Returns:
+            The helper object.
+
+        Raises:
+            Error: If the helper type does not exist.
+        """
 
     def developer_option(self, key: str):
-        """Get a value of a developer option."""
+        """Return the value of a developer option.
+
+        Developer options are configured in the ``developer`` property of the
+        application config and are meant for development and debugging only.
+
+        Args:
+            key: Option name, for example ``template.always_reload``.
+
+        Returns:
+            The option value, or ``None`` if it is not set.
+        """

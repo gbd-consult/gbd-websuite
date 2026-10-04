@@ -1,29 +1,4 @@
-"""WMS provider.
-
-References.
-
-    - OGC 01-068r3: WMS 1.1.1
-    - OGC 06-042: WMS 1.3.0
-
-see also https://docs.geoserver.org/latest/en/user/services/wms/reference.html
-
-A note on layer order:
-
-Internally we always list source layers topmost layer first,
-which corresponds to the layer tree display.
-
-WMS capabilities are assumed to be top-first by default,
-for servers with bottom-first caps, set ``bottomFirst=True``,
-in which case the capabilities parser will revert all layer lists.
-
-The order of GetMap is always bottom first:
-
-> A WMS shall render the requested layers by drawing the leftmost in the list bottommost,
-> the next one over that, and so on. (OGC 06-042, 7.3.3.3)
-
-therefore when invoking GetMap, our layer lists should be reversed.
-
-"""
+"""WMS service provider."""
 
 from typing import Optional, cast
 
@@ -48,9 +23,16 @@ class Config(gws.base.ows.client.provider.Config):
 
 
 class Object(gws.base.ows.client.provider.Object):
+    """WMS service provider.
+
+    Reads the capabilities of a WMS service and runs GetMap and GetFeatureInfo
+    requests for the layers, finders and models that use the service.
+    """
+
     protocol = gws.OwsProtocol.WMS
 
     maxRequestPixels: int
+    """Max. width and height of a single GetMap request in pixels; the grabber fetches larger images in chunks."""
 
     def configure(self):
         self.maxRequestPixels = self.cfg('maxRequestPixels')
@@ -70,6 +52,25 @@ class Object(gws.base.ows.client.provider.Object):
         ])
 
     def get_map(self, bounds: gws.Bounds, width: int, height: int, source_layers: list[gws.SourceLayer], mime_type: str) -> bytes:
+        """Fetch a map image with GetMap.
+
+        The source layers are given top-first and sent bottom-first, as WMS expects.
+        The image is requested with a transparent background.
+
+        Args:
+            bounds: Bounds of the image; their CRS is the request CRS.
+            width: Image width in pixels.
+            height: Image height in pixels.
+            source_layers: Source layers to render, topmost first.
+            mime_type: Image format to request.
+
+        Returns:
+            The image content.
+
+        Raises:
+            ``gws.ExternalServiceError``: If the service has no GetMap operation
+                or the response is not an image.
+        """
         v3 = self.version >= '1.3'
 
         bbox = bounds.extent
@@ -102,8 +103,19 @@ class Object(gws.base.ows.client.provider.Object):
         return res.content
 
     DEFAULT_GET_FEATURE_LIMIT = 100
+    """Value of ``FEATURE_COUNT`` in GetFeatureInfo requests, if the search has no limit."""
 
     def create_leaf_layer_config(self, source_layers):
+        """Create the configuration of a ``wmsflat`` layer for the given source layers.
+
+        Used by the ``wms`` tree layer to create its leaf layers.
+
+        Args:
+            source_layers: Source layers to render in the layer.
+
+        Returns:
+            A layer configuration that uses this provider.
+        """
         return dict(
             type='wmsflat',
             _defaultProvider=self,

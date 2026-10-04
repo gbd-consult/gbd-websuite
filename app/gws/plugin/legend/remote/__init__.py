@@ -1,4 +1,16 @@
-"""Remote legend."""
+"""Remote legend.
+
+Downloads legend images from URLs and combines them into one image.
+Downloads are cached for ``cacheMaxAge``. Responses that are not images are
+logged and skipped.
+
+Example::
+
+    legend {
+        type "remote"
+        urls ["https://example.com/legend_1.png", "https://example.com/legend_2.png"]
+    }
+"""
 
 import gws
 import gws.base.legend
@@ -16,7 +28,10 @@ class Config(gws.base.legend.Config):
 
 @gws.ext.object.legend('remote')
 class Object(gws.base.legend.Object):
+    """Remote legend."""
+
     urls: list[str]
+    """URLs of the legend images."""
 
     def configure(self):
         self.urls = self.cfg('urls')

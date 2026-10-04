@@ -1,3 +1,5 @@
+"""Base finder."""
+
 from typing import Optional, cast
 
 import gws
@@ -39,7 +41,17 @@ class Config(gws.ConfigWithAccess):
 
 
 class Object(gws.Finder):
+    """Base class for finders.
+
+    Reads the common finder options and decides whether a query can be run. Runs
+    a query by reading the features through a model, within the area given by
+    ``context_shape``. Subclasses declare which kinds of search they support and
+    configure their models and templates, using ``configure_models`` and
+    ``configure_templates``.
+    """
+
     spatialContext: SpatialContext
+    """Area searched by keyword searches without a user geometry."""
 
     def configure(self):
         self.templates = []
@@ -56,9 +68,19 @@ class Object(gws.Finder):
     ##
 
     def configure_models(self):
+        """Create the models from the ``models`` config.
+
+        Returns:
+            ``True`` if models are configured.
+        """
         return gws.config.util.configure_models_for(self)
 
     def configure_templates(self):
+        """Create the templates from the ``templates`` config.
+
+        Returns:
+            ``True`` if templates are configured.
+        """
         return gws.config.util.configure_templates_for(self)
 
     ##
@@ -87,6 +109,17 @@ class Object(gws.Finder):
         return has_param
 
     def context_shape(self, search: gws.SearchQuery) -> gws.Shape:
+        """Return the shape to search in.
+
+        This is the query shape if given. Otherwise, it is the query bounds if
+        ``spatialContext`` is ``view``, or the bounds of the project map.
+
+        Args:
+            search: Search query.
+
+        Returns:
+            The search shape, or ``None`` if there is none.
+        """
         if search.shape:
             return search.shape
         if self.spatialContext == SpatialContext.view and search.bounds:

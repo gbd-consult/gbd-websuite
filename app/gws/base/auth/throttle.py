@@ -1,8 +1,4 @@
-"""Authentication throttle.
-
-Counts failed authentication attempts and blocks further attempts once a limit is reached.
-Attempts are counted per remote address and, optionally, per login name.
-"""
+"""Authentication throttle."""
 
 from typing import Optional
 
@@ -33,16 +29,27 @@ _MAX_NAME_LENGTH = 128
 
 
 class Object(gws.Node):
-    """Authentication throttle."""
+    """Authentication throttle.
+
+    Counts failed authentication attempts per remote address and, optionally,
+    per login name, and blocks further attempts once a limit is reached.
+    """
 
     maxAttemptsPerIp: int
+    """Failed attempts from one address before blocking, 0 for no limit."""
     maxAttemptsPerUser: int
+    """Failed attempts per login name before blocking, 0 for no limit."""
     windowTime: int
+    """Time span in seconds in which failed attempts are counted."""
     blockTime: int
+    """Blocking time in seconds."""
     allowFrom: set[str]
+    """IP addresses exempt from throttling."""
     dbPath: str
+    """Path to the sqlite database."""
 
     table = 'throttle'
+    """Name of the database table."""
 
     def configure(self):
         self.maxAttemptsPerIp = self.cfg('maxAttemptsPerIp', default=10)
@@ -58,7 +65,16 @@ class Object(gws.Node):
     ##
 
     def blocked_for(self, req: gws.WebRequester, method: gws.AuthMethod, credentials: gws.Data) -> int:
-        """Return the time in seconds the given attempt remains blocked, 0 if it is allowed."""
+        """Return how long an authentication attempt remains blocked.
+
+        Args:
+            req: The web request, provides the remote address.
+            method: The authentication method.
+            credentials: The credentials, provide the login name as ``username``.
+
+        Returns:
+            The remaining blocking time in seconds, 0 if the attempt is allowed.
+        """
 
         u_addr, u_user = self._get_uids(req, credentials)
         if not u_addr and not u_user:
@@ -75,7 +91,17 @@ class Object(gws.Node):
         return max(0, (t or 0) - now)
 
     def register(self, ok: bool, req: gws.WebRequester, method: gws.AuthMethod, credentials: gws.Data):
-        """Register the outcome of an authentication attempt."""
+        """Register the outcome of an authentication attempt.
+
+        A success removes the counts for the address and the login name.
+        A failure increments them and starts a block once a limit is reached.
+
+        Args:
+            ok: Whether the attempt was successful.
+            req: The web request, provides the remote address.
+            method: The authentication method.
+            credentials: The credentials, provide the login name as ``username``.
+        """
 
         u_addr, u_user = self._get_uids(req, credentials)
         if not u_addr and not u_user:
@@ -100,6 +126,8 @@ class Object(gws.Node):
     _cleanupTime = 0
 
     def cleanup(self):
+        """Remove the counts whose window has elapsed and which hold no active block."""
+
         # a row may only be dropped when its window has elapsed *and* it holds no live block,
         # the row is the only place a block is recorded
 
@@ -114,6 +142,7 @@ class Object(gws.Node):
     ##
 
     def _add_failure(self, uid: str, max_attempts: int):
+        """Increment the failure count of a key, starting a new window if needed, and block if the limit is reached."""
         now = gws.u.stime()
 
         # a new attempt starts a new window if the current one has elapsed.
@@ -147,6 +176,7 @@ class Object(gws.Node):
         )
 
     def _get_uids(self, req: gws.WebRequester, credentials: gws.Data) -> tuple[str, str]:
+        """Return the address and login name keys of an attempt, empty if not counted."""
         ip = req.ip
         if ip and ip in self.allowFrom:
             return '', ''
@@ -164,6 +194,7 @@ class Object(gws.Node):
         return u_addr, u_user
 
     def _login_name(self, credentials: gws.Data) -> str:
+        """Return the normalized login name from the credentials."""
         s = credentials.get('username')
         if not isinstance(s, str):
             return ''
@@ -174,6 +205,7 @@ class Object(gws.Node):
     _sqlitex: gws.lib.sqlitex.Object
 
     def _db(self):
+        """Return the sqlite database, creating the table on first use."""
         if getattr(self, '_sqlitex', None) is None:
             ddl = f"""
                 CREATE TABLE IF NOT EXISTS {self.table} (

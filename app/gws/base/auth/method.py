@@ -1,3 +1,5 @@
+"""Base authentication method."""
+
 from typing import Optional
 import gws
 
@@ -12,6 +14,13 @@ class Config(gws.Config):
 
 
 class Object(gws.AuthMethod):
+    """Base authentication method.
+
+    Reads the ``secure`` and ``allowInsecureFrom`` options, which the manager
+    checks before it uses the method. Subclasses implement opening and closing
+    sessions for web requests.
+    """
+
     def configure(self):
         self.secure = self.cfg('secure')
         self.allowInsecureFrom = self.cfg('allowInsecureFrom', default=[])

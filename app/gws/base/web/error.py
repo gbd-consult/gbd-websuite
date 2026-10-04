@@ -1,3 +1,5 @@
+"""HTTP exceptions and conversion of GWS errors to HTTP errors."""
+
 from typing import Optional
 
 import gws
@@ -37,7 +39,20 @@ HTTPException = werkzeug.exceptions.HTTPException
 
 
 def from_exception(exc: Exception) -> HTTPException:
-    """Convert generic errors to http errors."""
+    """Convert an exception to an HTTP exception.
+
+    HTTP exceptions are returned as is. ``gws.NotFoundError``, ``gws.ForbiddenError``,
+    ``gws.BadRequestError``, ``gws.TooManyRequestsError`` and ``gws.ResponseTooLargeError``
+    are converted to 404, 403, 400, 429 and 409 and logged as warnings. Other exceptions
+    are logged with the traceback and converted to 500. The original exception is
+    set as the cause of the new one.
+
+    Args:
+        exc: An exception.
+
+    Returns:
+        An HTTP exception.
+    """
 
     if isinstance(exc, HTTPException):
         return exc

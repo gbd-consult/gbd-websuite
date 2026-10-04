@@ -1,94 +1,178 @@
 class MetadataLink(Data):
+    """Link to a metadata document or another resource related to an object."""
+
     about: str
+    """Aspect of the object the link describes."""
     description: str
+    """Description of the linked resource."""
     format: str
+    """Format of the linked resource."""
     formatVersion: str
+    """Version of the format of the linked resource."""
     function: str
+    """Function of the link."""
     mimeType: str
+    """MIME type of the linked resource."""
     scheme: str
+    """Link scheme or protocol."""
     title: str
+    """Link title."""
     type: str
+    """Link type."""
     url: str
+    """Link URL."""
 
 
 class Metadata(Data):
+    """Metadata of an object, used in the client, in OWS services and in catalog records."""
+
     name: str
+    """Object name."""
     title: str
+    """Object title."""
 
     abstract: str
+    """Abstract, a brief description of the object."""
     accessConstraints: str
+    """Access constraints."""
     accessConstraintsType: str
+    """Type of the access constraints."""
     attribution: str
+    """Attribution text."""
     attributionUrl: str
+    """URL of the attribution."""
     dateCreated: Optional['datetime.datetime']
+    """Creation date."""
     dateUpdated: Optional['datetime.datetime']
+    """Last update date."""
     fees: str
+    """Fees for using the object."""
     image: str
+    """Image URL or path associated with the object."""
     keywords: list[str]
+    """Keywords, optionally prefixed with a vocabulary, e.g. ``gemet:river``."""
     license: str
+    """License text."""
     licenseUrl: str
+    """License URL."""
 
     contactAddress: str
+    """Street address of the contact."""
     contactAddressType: str
+    """Type of the contact address."""
     contactArea: str
+    """Administrative area, state or province of the contact address."""
     contactCity: str
+    """Contact city."""
     contactCountry: str
+    """Contact country."""
     contactEmail: str
+    """Contact email address."""
     contactFax: str
+    """Contact fax number."""
     contactOrganization: str
+    """Contact organization."""
     contactPerson: str
+    """Contact person name."""
     contactPhone: str
+    """Contact phone number."""
     contactPosition: str
+    """Contact position or job title."""
     contactProviderName: str
+    """Name of the service provider."""
     contactProviderSite: str
+    """Website of the service provider."""
     contactRole: str
+    """Role of the contact, an ISO ``CI_RoleCode`` value."""
     contactUrl: str
+    """Website of the contact."""
     contactZip: str
+    """Contact postal code."""
 
     authorityIdentifier: str
+    """Identifier issued by the authority."""
     authorityName: str
+    """Name of the authority that issues identifiers."""
     authorityUrl: str
+    """URL of the authority that issues identifiers."""
 
     metaLinks: list[MetadataLink]
+    """Links to metadata documents."""
     serviceMetadataURL: str
+    """URL of the service metadata document."""
 
     catalogCitationUid: str
+    """Identifier of the resource in catalog records."""
     catalogUid: str
+    """Identifier of the metadata record."""
 
     language: str
+    """Language as an ISO 639-1 code."""
     language3: str
+    """Language as an ISO 639-2 three-letter code, derived from ``language``."""
     languageBib: str
+    """Language as an ISO 639-2 bibliographic code, derived from ``language``."""
     languageName: str
+    """Name of the language."""
 
     parentIdentifier: str
+    """Identifier of the parent metadata record."""
     wgsExtent: Optional[Extent]
+    """Geographic extent in WGS84."""
     crs: Optional['Crs']
+    """Reference system of the data."""
     temporalBegin: Optional['datetime.datetime']
+    """Start of the temporal extent."""
     temporalEnd: Optional['datetime.datetime']
+    """End of the temporal extent."""
 
     inspireMandatoryKeyword: str
+    """INSPIRE mandatory keyword (service type)."""
     inspireDegreeOfConformity: str
+    """Degree of conformity with the INSPIRE implementing rules."""
     inspireResourceType: str
+    """INSPIRE resource type."""
     inspireSpatialDataServiceType: str
+    """INSPIRE spatial data service type."""
     inspireSpatialScope: str
+    """INSPIRE spatial scope."""
     inspireSpatialScopeName: str
+    """Display name of the INSPIRE spatial scope."""
     inspireTheme: str
+    """INSPIRE data theme code."""
 
     inspireThemeNameLocal: str
+    """Name of the INSPIRE theme in the metadata language, derived from ``inspireTheme``."""
     inspireThemeNameEn: str
+    """English name of the INSPIRE theme, derived from ``inspireTheme``."""
 
     isoMaintenanceFrequencyCode: str
+    """How often the data is updated."""
     isoQualityConformanceExplanation: str
+    """Explanation of the conformance result."""
     isoQualityConformanceQualityPass: bool
+    """The data passes the conformance test."""
     isoQualityConformanceSpecificationDate: str
+    """Publication date of the conformance specification."""
     isoQualityConformanceSpecificationTitle: str
+    """Title of the conformance specification."""
     isoQualityLineageSource: str
+    """Description of the source data."""
     isoQualityLineageSourceScale: int
+    """Scale denominator of the source data."""
     isoQualityLineageStatement: str
+    """Statement on the lineage of the data."""
     isoRestrictionCode: str
+    """Restrictions on access or use of the data."""
     isoServiceFunction: str
+    """ISO service function."""
     isoScope: str
+    """Scope of the metadata."""
     isoScopeName: str
+    """Name of the scope."""
     isoSpatialRepresentationType: str
+    """How the data is represented spatially."""
     isoTopicCategories: list[str]
+    """ISO 19115 topic categories."""
     isoSpatialResolution: int
+    """Spatial resolution as a scale denominator."""

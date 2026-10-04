@@ -1,4 +1,22 @@
-"""Password tools."""
+"""Password hashing, checking and generation.
+
+Passwords are hashed with PBKDF2 (100000 iterations) and a random salt. The encoded hash
+has the form ``$algorithm$salt$hash``, where the hash is base64 (URL-safe) encoded.
+``check`` reads the algorithm and salt back from the encoded value.
+
+``generate`` creates random passwords with a configurable length and number of lowercase,
+uppercase, digit and punctuation characters. ``generate_with_groups`` does the same for
+arbitrary character groups (``SymbolGroup``).
+
+Example::
+
+    import gws.lib.password
+
+    encoded = gws.lib.password.encode('secret')
+    gws.lib.password.check('secret', encoded)  # True
+
+    pw = gws.lib.password.generate(min_len=12, max_len=16, min_digit=2)
+"""
 
 import base64
 import hashlib
@@ -8,28 +26,28 @@ import string
 
 
 def compare(a: str, b: str) -> bool:
-    """Compares two Strings in a safe way to prevent timing attacks.
+    """Compare two strings in constant time, to prevent timing attacks.
 
-        Args:
-            a: 1st String.
-            b: 2nd String.
+    Args:
+        a: First string.
+        b: Second string.
 
-        Returns:
-            ``True`` if a equals b, ``False`` otherwise.
+    Returns:
+        ``True`` if the strings are equal, ``False`` otherwise.
     """
 
     return hmac.compare_digest(a.encode('utf8'), b.encode('utf8'))
 
 
 def encode(password: str, algo: str = 'sha512') -> str:
-    """Encode a password into a hash.
+    """Encode a password into a salted PBKDF2 hash.
 
     Args:
-          password: String password.
-          algo: Hashing algorithm. Default is SHA512.
+        password: Plain text password.
+        algo: Hash algorithm name, as in ``hashlib``.
 
     Returns:
-        Respective hash value in the format ``$algorithm$salt$hash``.
+        The encoded hash in the format ``$algorithm$salt$hash``.
     """
 
     salt = _random_string(8)
@@ -38,14 +56,14 @@ def encode(password: str, algo: str = 'sha512') -> str:
 
 
 def check(password: str, encoded: str) -> bool:
-    """Check if a password matches a hash.
+    """Check if a password matches an encoded hash.
 
     Args:
-         password: Password as a string.
-         encoded: Hash of the input password as a string.
+        password: Plain text password.
+        encoded: Encoded hash, as returned by ``encode``.
 
     Returns:
-        ``True`` if password matches the hash, else ``False``.
+        ``True`` if the password matches, ``False`` if it does not or if the encoded hash is invalid.
     """
 
     try:
@@ -59,7 +77,16 @@ def check(password: str, encoded: str) -> bool:
 
 
 class SymbolGroup:
+    """A group of characters with the minimum and maximum number of occurrences in a generated password."""
+
     def __init__(self, s, min_len, max_len):
+        """Create a symbol group.
+
+        Args:
+            s: Characters of the group.
+            min_len: Minimum number of characters from this group.
+            max_len: Maximum number of characters from this group.
+        """
         self.chars = s
         self.max = max_len
         self.min = min_len
@@ -78,7 +105,26 @@ def generate(
         min_punct: int = 0,
         max_punct: int = 255,
 ) -> str:
-    """Generate a random password."""
+    """Generate a random password.
+
+    Args:
+        min_len: Minimum password length.
+        max_len: Maximum password length.
+        min_lower: Minimum number of lowercase letters.
+        max_lower: Maximum number of lowercase letters.
+        min_upper: Minimum number of uppercase letters.
+        max_upper: Maximum number of uppercase letters.
+        min_digit: Minimum number of digits.
+        max_digit: Maximum number of digits.
+        min_punct: Minimum number of punctuation characters.
+        max_punct: Maximum number of punctuation characters.
+
+    Returns:
+        The password.
+
+    Raises:
+        ``ValueError``: If the constraints cannot be satisfied.
+    """
 
     groups = [
         SymbolGroup(string.ascii_lowercase, min_lower, max_lower),
@@ -94,7 +140,21 @@ def generate_with_groups(
         min_len: int = 16,
         max_len: int = 16,
 ) -> str:
-    """Generate a random password from a list of `SymbolGroup` objects."""
+    """Generate a random password from a list of symbol groups.
+
+    The ``count`` attribute of each group is updated.
+
+    Args:
+        groups: Symbol groups.
+        min_len: Minimum password length.
+        max_len: Maximum password length.
+
+    Returns:
+        The password.
+
+    Raises:
+        ``ValueError``: If the constraints cannot be satisfied.
+    """
 
     r = random.SystemRandom()
     p = []

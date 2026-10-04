@@ -1,3 +1,5 @@
+"""Project information action."""
+
 from typing import Optional
 
 import gws
@@ -19,18 +21,23 @@ class Props(gws.base.action.Props):
 
 
 class InfoResponse(gws.Response):
+    """Response of the ``projectInfo`` command."""
+
     project: gws.ext.props.project
+    """Project properties for the current user."""
     locale: gws.Locale
+    """Locale for the request."""
     user: Optional[gws.base.auth.user.Props]
+    """Current user, or ``None`` for a guest."""
 
 
 @gws.ext.object.action('project')
 class Object(gws.base.action.Object):
-    """Project information action"""
+    """Project action, provides the project configuration to the client."""
 
     @gws.ext.command.api('projectInfo')
     def info(self, req: gws.WebRequester, p: gws.Request) -> InfoResponse:
-        """Return the project configuration"""
+        """Return the project properties, the locale and the current user."""
 
         project = req.user.require_project(p.projectUid)
 

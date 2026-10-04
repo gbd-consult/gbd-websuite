@@ -1,4 +1,4 @@
-"""Basic WSGI request/response handling."""
+"""WSGI requester and responder based on Werkzeug."""
 
 import gzip
 import io
@@ -20,7 +20,14 @@ from . import error
 
 
 class Responder(gws.WebResponder):
+    """Web responder that wraps a Werkzeug response."""
+
     def __init__(self, **kwargs):
+        """Create a responder.
+
+        Args:
+            **kwargs: Either ``wz``, an existing Werkzeug response, or arguments for a new ``werkzeug.wrappers.Response``.
+        """
         if 'wz' in kwargs:
             self._wz = kwargs['wz']
         else:
@@ -53,6 +60,8 @@ class Responder(gws.WebResponder):
 
 
 class Requester(gws.WebRequester):
+    """Web requester that wraps a Werkzeug request."""
+
     _STRUCT_JSON = 'json'
     _STRUCT_MSGPACK = 'msgpack'
 
@@ -62,6 +71,18 @@ class Requester(gws.WebRequester):
     }
 
     def __init__(self, root: gws.Root, environ: dict, site: gws.WebSite, **kwargs):
+        """Create a requester.
+
+        The user is the guest user until a session is set. POST requests with a
+        form content type are form requests, POST requests with a JSON or
+        MessagePack body are API requests.
+
+        Args:
+            root: Object tree root.
+            environ: WSGI environment.
+            site: Web site the request is processed for.
+            **kwargs: ``wz``, an existing Werkzeug request to use instead of creating one.
+        """
         if 'wz' in kwargs:
             self._wz = kwargs['wz']
         else:
@@ -317,11 +338,13 @@ class Requester(gws.WebRequester):
     _CMD_PARAM_NAME = 'cmd'
 
     def _parse(self):
+        """Parse the request once, on the first access to the parsed data."""
         if not self._parsed:
             self._parsed = True
             self._parse2()
 
     def _parse2(self):
+        """Parse the origin, the command, the parameters and the structured payload."""
         self._parse_origin()
 
         # the server only understands requests to /_ or /_/commandName
@@ -359,6 +382,11 @@ class Requester(gws.WebRequester):
             self._parsed_query_params = dict(self._wz.args)
 
     def _parse_origin(self):
+        """Determine the scheme, host, port and client address, and check the host.
+
+        If the site has proxies, the values are taken from the ``X-Forwarded-*``
+        headers. Requests for a host not in the site host names are rejected.
+        """
         scheme = 'https' if self.site.ssl or self._wz.is_secure else 'http'
         host = self.environ.get('HTTP_HOST', '')
         ip = self.environ.get('REMOTE_ADDR', '')
@@ -393,6 +421,7 @@ class Requester(gws.WebRequester):
         self.ip = ip
 
     def _parse_proxy_headers(self):
+        """Read the client's scheme, host, port and address from the ``X-Forwarded-*`` headers."""
         # read the client's scheme, host, port and address from the X-Forwarded headers
         # each value is returned as given, or as None if it cannot be trusted or is absent,
         # the caller is expected to provide the fallbacks
@@ -434,6 +463,7 @@ class Requester(gws.WebRequester):
         return d
 
     def _struct_type(self, header):
+        """Return the structured data type (json or msgpack) for a content type header."""
         if header:
             header = header.lower()
             if header.startswith(self._struct_mime[self._STRUCT_JSON]):
@@ -442,6 +472,7 @@ class Requester(gws.WebRequester):
                 return self._STRUCT_MSGPACK
 
     def _encode_struct(self, data, typ):
+        """Encode data as JSON or MessagePack."""
         if typ == self._STRUCT_JSON:
             return gws.lib.jsonx.to_string(data)
         if typ == self._STRUCT_MSGPACK:
@@ -449,6 +480,7 @@ class Requester(gws.WebRequester):
         raise ValueError(f'invalid struct type {typ!r}')
 
     def _decode_struct(self, typ):
+        """Decode the POST data as JSON or MessagePack."""
         if typ == self._STRUCT_JSON:
             try:
                 data = gws.u.require(self.data())

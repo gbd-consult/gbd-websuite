@@ -1,4 +1,28 @@
-"""Zipfile wrappers."""
+"""Zip archive utilities.
+
+Thin wrappers around ``zipfile`` that create and unpack zip archives in one call.
+
+Archives are created from a list of sources (``zip_to_path``, ``zip_to_bytes``). A source is a file path,
+a directory path, which is scanned recursively, or a dict of archive names and contents. Entries are compressed
+with ``ZIP_DEFLATED``. Archive names are the normalized source paths, optionally with ``base_dir`` stripped,
+or only the base names with ``flat=True``.
+
+Archives are unpacked from a file or from bytes, into a directory (``unzip_path``, ``unzip_bytes``)
+or into a dict of names and contents (``unzip_path_to_dict``, ``unzip_bytes_to_dict``). Directory entries
+are skipped. Entries with unsafe names (absolute, starting with a dot or containing ``..``) are skipped
+with a warning. With ``flat=True``, entries are unpacked by their base names, so entries with the same
+base name overwrite each other.
+
+Example::
+
+    import gws.lib.zipx as zipx
+
+    zipx.zip_to_path('/tmp/out.zip', ['/data/report', {'readme.txt': 'hello'}], base_dir='/data/')
+    content = zipx.zip_to_bytes(['/data/a.txt', '/data/b.txt'], flat=True)
+
+    zipx.unzip_path('/tmp/out.zip', '/tmp/unpacked')
+    files = zipx.unzip_bytes_to_dict(content)  # {'a.txt': b'...', 'b.txt': b'...'}
+"""
 
 import io
 import os
@@ -9,21 +33,28 @@ import gws
 
 
 class Error(gws.Error):
+    """Zip archive error."""
+
     pass
 
 
 def zip_to_path(path: str, sources: list[str | dict], base_dir: str = '', flat: bool = False) -> int:
     """Create a zip archive in a file.
 
+    If there are no files to add, no archive is created.
+
     Args:
         path: Path to the archive.
-        sources: A list of paths or dicts to zip. If a dict is given, 
-                its keys are file names in the archive and its values are the file contents.
-        base_dir: If given, this path is stripped from the beginning of the file paths in the archive.
-        flat: If ``True`` only base names are being kept in archive.
+        sources: File paths, directory paths (scanned recursively) or dicts that map
+            archive names to contents (``str`` or ``bytes``).
+        base_dir: Prefix to remove from the beginning of the file paths in the archive.
+        flat: If ``True``, only the base names of the files are kept in the archive.
 
     Returns:
-        The amount of files in the archive.
+        The number of files in the archive.
+
+    Raises:
+        Error: If a source is neither a dict, a file nor a directory.
     """
 
     return _zip(path, sources, base_dir, flat)
@@ -33,13 +64,16 @@ def zip_to_bytes(sources: list[str | dict], base_dir: str = '', flat: bool = Fal
     """Create a zip archive in memory.
 
     Args:
-        sources: A list of paths or dicts to zip. If a dict is given, 
-                its keys are file names in the archive and its values are the file contents.
-        base_dir: If given, this path is stripped from the beginning of the file paths in the archive.
-        flat: If ``True`` only base names are being kept in archive.
+        sources: File paths, directory paths (scanned recursively) or dicts that map
+            archive names to contents (``str`` or ``bytes``).
+        base_dir: Prefix to remove from the beginning of the file paths in the archive.
+        flat: If ``True``, only the base names of the files are kept in the archive.
 
     Returns:
-        The zipped content as bytes.
+        The archive content, or empty bytes if there are no files to add.
+
+    Raises:
+        Error: If a source is neither a dict, a file nor a directory.
     """
 
     with io.BytesIO() as fp:
@@ -48,32 +82,32 @@ def zip_to_bytes(sources: list[str | dict], base_dir: str = '', flat: bool = Fal
 
 
 def unzip_path(path: str, target_dir: str, flat: bool = False) -> int:
-    """Unpack a zip archive into a directory.
+    """Unpack a zip archive file into a directory.
 
     Args:
-        path: Path to the zip archive.
+        path: Path to the archive.
         target_dir: Path to the target directory.
-        flat: If ``True`` omit path and consider only base name of files in the zip archive,
-                else complete paths are considered of files in the zip archive. Default is ``False``.
+        flat: If ``True``, files are unpacked by their base names directly into ``target_dir``,
+            which must exist; otherwise the directories of the archive are created as needed.
 
     Returns:
-        The number of unzipped files.
+        The number of unpacked files.
     """
 
     return _unzip(path, target_dir, None, flat)
 
 
 def unzip_bytes(source: bytes, target_dir: str, flat: bool = False) -> int:
-    """Unpack a zip archive in memory into a directory.
+    """Unpack a zip archive from bytes into a directory.
 
     Args:
-        source: Path to the zip archive.
+        source: The archive content.
         target_dir: Path to the target directory.
-        flat: If ``True`` omit path and consider only base name of files in the zip archive,
-                else complete paths are considered of files in the zip archive. Default is ``False``.
+        flat: If ``True``, files are unpacked by their base names directly into ``target_dir``,
+            which must exist; otherwise the directories of the archive are created as needed.
 
     Returns:
-        The number of unzipped files.
+        The number of unpacked files.
     """
 
     with io.BytesIO(source) as fp:
@@ -81,15 +115,14 @@ def unzip_bytes(source: bytes, target_dir: str, flat: bool = False) -> int:
 
 
 def unzip_path_to_dict(path: str, flat: bool = False) -> dict[str, bytes]:
-    """Unpack a zip archive into a dict.
+    """Unpack a zip archive file into a dict.
 
     Args:
-        path: Path to the zip archive.
-        flat: If ``True`` then the result contains the base names of the unzipped files,
-                else it contains the whole path. Default is ``False``.
+        path: Path to the archive.
+        flat: If ``True``, the keys are the base names of the files, otherwise their paths in the archive.
 
     Returns:
-        A dictionary whose keys are the file paths or base names and values are the file contents.
+        A dict of file names and contents.
     """
 
     dct = {}
@@ -98,15 +131,14 @@ def unzip_path_to_dict(path: str, flat: bool = False) -> dict[str, bytes]:
 
 
 def unzip_bytes_to_dict(source: bytes, flat: bool = False) -> dict[str, bytes]:
-    """Unpack a zip archive in memory into a dict.
+    """Unpack a zip archive from bytes into a dict.
 
     Args:
-        source: Path to zip archive.
-        flat: If ``True`` then the result contains the base names of the unzipped files,
-                else it contains the whole path. Default is ``False``.
+        source: The archive content.
+        flat: If ``True``, the keys are the base names of the files, otherwise their paths in the archive.
 
     Returns:
-        A dictionary whose keys are the file paths or base names and values are the file contents.
+        A dict of file names and contents.
     """
 
     with io.BytesIO(source) as fp:
@@ -119,6 +151,8 @@ def unzip_bytes_to_dict(source: bytes, flat: bool = False) -> dict[str, bytes]:
 
 
 def _zip(target, sources, base_dir, flat):
+    """Write sources to a zip file or file object, return the number of files."""
+
     def norm_path(p):
         p = os.path.normpath(p)
         if flat:
@@ -163,6 +197,8 @@ def _zip(target, sources, base_dir, flat):
 
 
 def _unzip(source, target_dir, target_dict, flat):
+    """Unpack a zip file or file object into a directory or a dict, return the number of files."""
+
     cnt = 0
 
     with zipfile.ZipFile(source, 'r') as zf:

@@ -1,25 +1,50 @@
 """Date and time utilities.
 
-These utilities are wrappers around the `datetime` module,
-some functions also use `pendulum` (https://pendulum.eustace.io/),
-however all functions here return strictly stock ``datetime.datetime`` objects.
+These utilities are wrappers around the ``datetime`` module. Some functions also use
+``pendulum`` (https://pendulum.eustace.io/), however all functions here return
+stock ``datetime.datetime`` objects, and all returned objects are timezone-aware.
 
-``date`` objects are silently promoted to ``datetime`` with time set to midnight UTC.
-``time`` objects are silently promoted to ``datetime`` in the local timezone with the today's date.
+Functions in this package fall into these groups:
 
-This module always returns timezone-aware objects.
+- time zones: ``time_zone``, ``is_valid_time_zone``, ``set_local_time_zone``,
+- constructors and parsers: ``new``, ``now``, ``today``, ``parse``, ``from_string``, ``from_iso_string``, ``from_timestamp`` and others,
+- formatters: ``to_iso_string``, ``to_iso_date_string``, ``to_basic_string``, ``to_string`` and others,
+- converters: ``to_timestamp``, ``to_millis``, ``to_utc``, ``to_local``, ``to_time_zone``,
+- predicates: ``is_date``, ``is_datetime``, ``is_utc``, ``is_local``,
+- arithmetic: ``add``, ``difference``, ``total_difference``, ``next``, ``prev``,
+- wrappers for ``pendulum`` helpers: ``start_of_<unit>`` and ``end_of_<unit>`` (for ``second``, ``minute``, ``hour``, ``day``, ``week``, ``month``, ``year``),
+  ``day_of_week``, ``day_of_year``, ``week_of_month``, ``week_of_year``, ``days_in_month``,
+- durations: ``parse_duration``, ``format_duration``.
 
-When constructing an object (e.g. from a string), the default time zone should be passed
-as a zoneinfo string (like ``Europe/Berlin``). An empty zoneinfo string (default) means the local time zone.
-Alias names like ``CEST`` are not supported.
+Time zones are given as zoneinfo strings, like ``Europe/Berlin``. An empty string (the default)
+means the local time zone. Alias names like ``CEST`` are not supported.
 
-Naive datetime arguments are assumed to be in the local time zone.
+When a function accepts a date or time argument, it is converted to a datetime as follows:
+
+- ``None`` means the current date and time,
+- naive ``datetime`` objects are assumed to be in the local time zone,
+- ``date`` objects are promoted to ``datetime`` with the time set to midnight UTC,
+- ``time`` objects are promoted to ``datetime`` with today's date.
+
+Parsers (``parse``, ``from_string`` etc.) attach the given time zone to naive input,
+and a parsed date becomes midnight in that time zone.
 
 When running in a docker container, there are several ways to set up the local time zone:
 
-- by setting the config variable ``server.timeZone`` (see `gws.config.parser`)
-- by setting the ``TZ`` environment variable
-- mounting a host zone info file to ``/etc/localtime``
+- by setting the config variable ``server.timeZone`` (see ``gws.config.parser``),
+- by setting the ``TZ`` environment variable,
+- by mounting a host zone info file to ``/etc/localtime``.
+
+Example::
+
+    import gws.lib.datetimex as datetimex
+
+    d = datetimex.parse('2024-05-01T12:30:00', tz='Europe/Berlin')
+    datetimex.to_iso_string(d)  # '2024-05-01T12:30:00+0200'
+    datetimex.to_iso_string(datetimex.to_utc(d), with_tz='Z')  # '2024-05-01T10:30:00Z'
+
+    next_week = datetimex.add(d, weeks=1)
+    datetimex.parse_duration('1h30m')  # 5400
 """
 
 from typing import Optional
@@ -41,10 +66,13 @@ import gws.lib.osx
 
 
 class Error(gws.Error):
+    """Date and time error."""
+
     pass
 
 
 UTC = zoneinfo.ZoneInfo('UTC')
+"""The UTC time zone."""
 
 _ZI_CACHE = {
     'utc': UTC,
@@ -62,7 +90,10 @@ def is_valid_time_zone(tz: str) -> bool:
     """Check if a time zone string is valid.
 
     Args:
-        tz: Time zone string (e.g. 'Europe/Berlin')
+        tz: Time zone string, like ``Europe/Berlin``.
+
+    Returns:
+        ``True`` if the time zone is known.
     """
 
     return tz in _ZI_CACHE or tz in _ZI_ALL
@@ -71,11 +102,14 @@ def is_valid_time_zone(tz: str) -> bool:
 def set_local_time_zone(tz: str):
     """Set the local time zone for the system.
 
+    The time zone is set by linking ``/etc/localtime`` to the zone info file,
+    which requires root privileges. Nothing is done if the time zone is already set.
+
     Args:
-        tz: Time zone string (e.g. 'Europe/Berlin')
+        tz: Time zone string, like ``Europe/Berlin``.
 
     Raises:
-        Error: If the time zone is invalid.
+        ``Error``: If the time zone is invalid, or the process is not running as root.
     """
     new_zi = time_zone(tz)
     cur_zi = _zone_info_from_localtime()
@@ -92,8 +126,16 @@ def set_local_time_zone(tz: str):
 def time_zone(tz: str = '') -> zoneinfo.ZoneInfo:
     """Get a ZoneInfo object for the specified time zone.
 
+    The local time zone is determined from ``/etc/localtime``; if that fails, UTC is assumed.
+
     Args:
-        tz: Time zone string (e.g. 'Europe/Berlin'). Empty string returns local time zone.
+        tz: Time zone string, like ``Europe/Berlin``. An empty string means the local time zone.
+
+    Returns:
+        The ZoneInfo object.
+
+    Raises:
+        ``Error``: If the time zone is invalid.
     """
 
     if tz in _ZI_CACHE:
@@ -167,15 +209,21 @@ def new(year, month, day, hour=0, minute=0, second=0, microsecond=0, fold=0, tz:
     """Create a new datetime object with the specified components.
 
     Args:
-        year: Year component
-        month: Month component
-        day: Day component
-        hour: Hour component (default 0)
-        minute: Minute component (default 0)
-        second: Second component (default 0)
-        microsecond: Microsecond component (default 0)
-        fold: Fold component for ambiguous times (default 0)
-        tz: Time zone string (default empty for local time zone)
+        year: Year.
+        month: Month.
+        day: Day.
+        hour: Hour.
+        minute: Minute.
+        second: Second.
+        microsecond: Microsecond.
+        fold: Fold value for ambiguous local times, see ``datetime.datetime``.
+        tz: Time zone string, the local time zone by default.
+
+    Returns:
+        A timezone-aware datetime.
+
+    Raises:
+        ``Error``: If the time zone is invalid.
     """
 
     return dt.datetime(year, month, day, hour, minute, second, microsecond, fold=fold, tzinfo=time_zone(tz))
@@ -185,14 +233,21 @@ def now(tz: str = '') -> dt.datetime:
     """Get the current date and time.
 
     Args:
-        tz: Time zone string (default empty for local time zone)
+        tz: Time zone string, the local time zone by default.
+
+    Returns:
+        The current datetime in the given time zone.
     """
 
     return _now(time_zone(tz))
 
 
 def now_utc() -> dt.datetime:
-    """Get the current date and time in UTC."""
+    """Get the current date and time in UTC.
+
+    Returns:
+        The current datetime in UTC.
+    """
 
     return _now(UTC)
 
@@ -204,6 +259,11 @@ _MOCK_NOW = None
 
 @contextlib.contextmanager
 def mock_now(d):
+    """Context manager that makes all functions here use a fixed current date and time, for testing.
+
+    Args:
+        d: Datetime to use as the current date and time.
+    """
     global _MOCK_NOW
     _MOCK_NOW = d
     yield
@@ -218,14 +278,21 @@ def today(tz: str = '') -> dt.datetime:
     """Get today's date at midnight.
 
     Args:
-        tz: Time zone string (default empty for local time zone)
+        tz: Time zone string, the local time zone by default.
+
+    Returns:
+        A datetime at midnight of the current day in the given time zone.
     """
 
     return now(tz).replace(hour=0, minute=0, second=0, microsecond=0)
 
 
 def today_utc() -> dt.datetime:
-    """Get today's date at midnight in UTC."""
+    """Get today's date at midnight in UTC.
+
+    Returns:
+        A datetime at midnight of the current day in UTC.
+    """
 
     return now_utc().replace(hour=0, minute=0, second=0, microsecond=0)
 
@@ -233,9 +300,14 @@ def today_utc() -> dt.datetime:
 def parse(s: str | dt.datetime | dt.date | None, tz: str = '') -> Optional[dt.datetime]:
     """Parse a string, datetime, or date into a datetime object.
 
+    Strings are parsed like in ``from_string``. Dates become midnight in the given time zone.
+
     Args:
-        s: Input to parse (string, datetime, date, or None)
-        tz: Default time zone string for timezone-naive inputs
+        s: Input to parse.
+        tz: Time zone for timezone-naive inputs, the local time zone by default.
+
+    Returns:
+        A datetime, or ``None`` if the input is empty or cannot be parsed.
     """
 
     if not s:
@@ -254,11 +326,16 @@ def parse(s: str | dt.datetime | dt.date | None, tz: str = '') -> Optional[dt.da
 
 
 def parse_time(s: str | dt.time | None, tz: str = '') -> Optional[dt.datetime]:
-    """Parse a string or time into a datetime object.
+    """Parse a string or time into a datetime object with today's date.
+
+    Strings are parsed like in ``from_iso_time_string``.
 
     Args:
-        s: Input to parse (string, time, or None)
-        tz: Default time zone string for timezone-naive inputs
+        s: Input to parse.
+        tz: Time zone for timezone-naive inputs, the local time zone by default.
+
+    Returns:
+        A datetime, or ``None`` if the input is empty or cannot be parsed.
     """
 
     if not s:
@@ -274,33 +351,56 @@ def parse_time(s: str | dt.time | None, tz: str = '') -> Optional[dt.datetime]:
 
 
 def from_string(s: str, tz: str = '') -> dt.datetime:
-    """Parse a datetime string using flexible parsing.
+    """Parse a date or datetime string.
+
+    Accepts ISO 8601 and some other common formats understood by ``pendulum``.
+    A date without time becomes midnight in the given time zone.
 
     Args:
-        s: Date/time string to parse
-        tz: Default time zone string for timezone-naive inputs
+        s: Date or datetime string.
+        tz: Time zone for timezone-naive inputs, the local time zone by default.
+
+    Returns:
+        A datetime.
+
+    Raises:
+        ``Error``: If the string cannot be parsed or is not a date or datetime.
     """
 
     return _pend_parse_datetime(s.strip(), tz, iso_only=False)
 
 
 def from_iso_string(s: str, tz: str = '') -> dt.datetime:
-    """Parse an ISO 8601 datetime string.
+    """Parse an ISO 8601 date or datetime string.
+
+    A date without time becomes midnight in the given time zone.
 
     Args:
-        s: ISO 8601 date/time string to parse
-        tz: Default time zone string for timezone-naive inputs
+        s: ISO 8601 date or datetime string.
+        tz: Time zone for timezone-naive inputs, the local time zone by default.
+
+    Returns:
+        A datetime.
+
+    Raises:
+        ``Error``: If the string cannot be parsed or is not a date or datetime.
     """
 
     return _pend_parse_datetime(s.strip(), tz, iso_only=True)
 
 
 def from_iso_time_string(s: str, tz: str = '') -> dt.datetime:
-    """Parse an ISO 8601 time string.
+    """Parse an ISO 8601 time string into a datetime with today's date.
 
     Args:
-        s: ISO 8601 time string to parse
-        tz: Default time zone string for timezone-naive inputs
+        s: ISO 8601 time string.
+        tz: Time zone for timezone-naive inputs, the local time zone by default.
+
+    Returns:
+        A datetime.
+
+    Raises:
+        ``Error``: If the string cannot be parsed or is not a time.
     """
 
     return _pend_parse_time(s.strip(), tz, iso_only=True)
@@ -310,8 +410,11 @@ def from_timestamp(n: float, tz: str = '') -> dt.datetime:
     """Create a datetime from a Unix timestamp.
 
     Args:
-        n: Unix timestamp (seconds since epoch)
-        tz: Time zone string (default empty for local time zone)
+        n: Unix timestamp, in seconds since the epoch.
+        tz: Time zone string, the local time zone by default.
+
+    Returns:
+        A datetime in the given time zone.
     """
 
     return dt.datetime.fromtimestamp(n, tz=time_zone(tz))
@@ -321,12 +424,16 @@ def from_timestamp(n: float, tz: str = '') -> dt.datetime:
 
 
 def to_iso_string(d: Optional[dt.date] = None, with_tz='+', sep='T') -> str:
-    """Convert a date or time to an ISO string.
+    """Convert a date or time to an ISO 8601 datetime string.
 
     Args:
-        d: Date or time to convert. If None, the current date and time is used.
-        with_tz: If set, append the time zone information. Can be "Z" (for UTC), ":" (for ISO 8601 format) or "+" (for +hhmm format).
-        sep: Separator between date and time. Default is "T".
+        d: Date or time to convert, the current date and time by default.
+        with_tz: Time zone suffix: ``"+"`` for ``+hhmm``, ``":"`` for ``+hh:mm``,
+            ``"Z"`` for ``Z`` if the offset is zero and ``+hhmm`` otherwise. An empty value omits the time zone.
+        sep: Separator between date and time.
+
+    Returns:
+        A string like ``2024-05-01T12:30:00+0200``.
     """
 
     d = _datetime(d)
@@ -342,20 +449,27 @@ def to_iso_string(d: Optional[dt.date] = None, with_tz='+', sep='T') -> str:
 
 
 def to_iso_date_string(d: Optional[dt.date] = None) -> str:
-    """Convert a date to an ISO date string (YYYY-MM-DD format).
+    """Convert a date to an ISO date string.
 
     Args:
-        d: Date to convert (default current date/time)
+        d: Date to convert, the current date and time by default.
+
+    Returns:
+        A string like ``2024-05-01``.
     """
 
     return _datetime(d).strftime('%Y-%m-%d')
 
 
 def to_basic_string(d: Optional[dt.date] = None, with_ms=False) -> str:
-    """Convert a date to a basic string format (YYYYMMDDHHMMSS).
+    """Convert a date to a compact string without separators.
 
     Args:
-        d: Date to convert (default current date/time)
+        d: Date to convert, the current date and time by default.
+        with_ms: Append milliseconds as three digits.
+
+    Returns:
+        A string like ``20240501123000``, or ``20240501123000123`` with milliseconds.
     """
 
     d = _datetime(d)
@@ -366,11 +480,15 @@ def to_basic_string(d: Optional[dt.date] = None, with_ms=False) -> str:
 
 
 def to_iso_time_string(d: Optional[dt.date] = None, with_tz='+') -> str:
-    """Convert a date to an ISO time string.
+    """Convert a date to an ISO 8601 time string.
 
     Args:
-        d: Date to convert (default current date/time)
-        with_tz: Include timezone information ('+' for +hhmm, 'Z' for UTC as Z, False for no timezone)
+        d: Date to convert, the current date and time by default.
+        with_tz: Time zone suffix: ``"+"`` for ``+hhmm``, ``"Z"`` for ``Z`` if the offset is zero
+            and ``+hhmm`` otherwise. An empty value omits the time zone.
+
+    Returns:
+        A string like ``12:30:00+0200``.
     """
 
     fmt = '%H:%M:%S'
@@ -386,19 +504,25 @@ def to_string(fmt: str, d: Optional[dt.date] = None) -> str:
     """Convert a date to a string using a custom format.
 
     Args:
-        fmt: strftime format string
-        d: Date to convert (default current date/time)
+        fmt: ``strftime`` format string.
+        d: Date to convert, the current date and time by default.
+
+    Returns:
+        The formatted string.
     """
 
     return _datetime(d).strftime(fmt)
 
 
 def time_to_iso_string(d: Optional[dt.date | dt.time] = None, with_tz='+') -> str:
-    """Convert a date or time to an ISO time string.
+    """Convert a date or time to a time string without time zone.
 
     Args:
-        d: Date or time to convert (default returns 00:00:00)
-        with_tz: Include timezone information (unused in current implementation)
+        d: Datetime or time to convert. For a date or ``None``, ``00:00:00`` is returned.
+        with_tz: Not used.
+
+    Returns:
+        A string like ``12:30:00``.
     """
 
     if isinstance(d, (dt.datetime, dt.time)):
@@ -413,48 +537,66 @@ def to_timestamp(d: Optional[dt.date] = None) -> int:
     """Convert a date to a Unix timestamp.
 
     Args:
-        d: Date to convert (default current date/time)
+        d: Date to convert, the current date and time by default.
+
+    Returns:
+        Whole seconds since the epoch.
     """
 
     return int(_datetime(d).timestamp())
 
 
 def to_millis(d: Optional[dt.date] = None) -> int:
-    """Convert a date to milliseconds since Unix epoch.
+    """Convert a date to milliseconds since the Unix epoch.
 
     Args:
-        d: Date to convert (default current date/time)
+        d: Date to convert, the current date and time by default.
+
+    Returns:
+        Whole milliseconds since the epoch.
     """
 
     return int(_datetime(d).timestamp() * 1000)
 
 
 def to_utc(d: Optional[dt.date] = None) -> dt.datetime:
-    """Convert a date to UTC timezone.
+    """Convert a date to the UTC time zone.
 
     Args:
-        d: Date to convert (default current date/time)
+        d: Date to convert, the current date and time by default.
+
+    Returns:
+        A datetime in UTC.
     """
 
     return _datetime(d).astimezone(time_zone('UTC'))
 
 
 def to_local(d: Optional[dt.date] = None) -> dt.datetime:
-    """Convert a date to local timezone.
+    """Convert a date to the local time zone.
 
     Args:
-        d: Date to convert (default current date/time)
+        d: Date to convert, the current date and time by default.
+
+    Returns:
+        A datetime in the local time zone.
     """
 
     return _datetime(d).astimezone(time_zone(''))
 
 
 def to_time_zone(tz: str, d: Optional[dt.date] = None) -> dt.datetime:
-    """Convert a date to a specific timezone.
+    """Convert a date to a specific time zone.
 
     Args:
-        tz: Target timezone string
-        d: Date to convert (default current date/time)
+        tz: Target time zone string.
+        d: Date to convert, the current date and time by default.
+
+    Returns:
+        A datetime in the target time zone.
+
+    Raises:
+        ``Error``: If the time zone is invalid.
     """
 
     return _datetime(d).astimezone(time_zone(tz))
@@ -467,7 +609,10 @@ def is_date(x) -> bool:
     """Check if an object is a date.
 
     Args:
-        x: Object to check
+        x: Object to check.
+
+    Returns:
+        ``True`` if the object is a ``date``. Since ``datetime`` is a subclass of ``date``, this is also ``True`` for datetimes.
     """
 
     return isinstance(x, dt.date)
@@ -477,27 +622,36 @@ def is_datetime(x) -> bool:
     """Check if an object is a datetime.
 
     Args:
-        x: Object to check
+        x: Object to check.
+
+    Returns:
+        ``True`` if the object is a ``datetime``.
     """
 
     return isinstance(x, dt.datetime)
 
 
 def is_utc(d: dt.datetime) -> bool:
-    """Check if a datetime is in UTC timezone.
+    """Check if a datetime is in the UTC time zone.
 
     Args:
-        d: Datetime to check
+        d: Datetime to check. A naive datetime is assumed to be local.
+
+    Returns:
+        ``True`` if the time zone of the datetime is UTC.
     """
 
     return _zone_info_from_tzinfo(gws.u.require(_datetime(d).tzinfo)) == UTC
 
 
 def is_local(d: dt.datetime) -> bool:
-    """Check if a datetime is in the local timezone.
+    """Check if a datetime is in the local time zone.
 
     Args:
-        d: Datetime to check
+        d: Datetime to check. A naive datetime is assumed to be local.
+
+    Returns:
+        ``True`` if the time zone of the datetime is the local time zone.
     """
 
     return _zone_info_from_tzinfo(gws.u.require(_datetime(d).tzinfo)) == time_zone('')
@@ -507,18 +661,23 @@ def is_local(d: dt.datetime) -> bool:
 
 
 def add(d: Optional[dt.date] = None, years=0, months=0, days=0, weeks=0, hours=0, minutes=0, seconds=0, microseconds=0) -> dt.datetime:
-    """Add time components to a datetime.
+    """Add a duration to a date.
+
+    Negative values subtract.
 
     Args:
-        d: Base datetime (default current date/time)
-        years: Years to add
-        months: Months to add
-        days: Days to add
-        weeks: Weeks to add
-        hours: Hours to add
-        minutes: Minutes to add
-        seconds: Seconds to add
-        microseconds: Microseconds to add
+        d: Base date, the current date and time by default.
+        years: Years to add.
+        months: Months to add.
+        days: Days to add.
+        weeks: Weeks to add.
+        hours: Hours to add.
+        minutes: Minutes to add.
+        seconds: Seconds to add.
+        microseconds: Microseconds to add.
+
+    Returns:
+        The resulting datetime.
     """
 
     return pendulum.helpers.add_duration(
@@ -535,27 +694,40 @@ def add(d: Optional[dt.date] = None, years=0, months=0, days=0, weeks=0, hours=0
 
 
 class Diff:
-    """Difference between two dates."""
+    """Difference between two dates, as returned by ``difference`` and ``total_difference``."""
 
     years: int
+    """Years."""
     months: int
+    """Months."""
     weeks: int
+    """Weeks."""
     days: int
+    """Days."""
     hours: int
+    """Hours."""
     minutes: int
+    """Minutes."""
     seconds: int
+    """Seconds."""
     microseconds: int
+    """Microseconds."""
 
     def __repr__(self):
         return repr(vars(self))
 
 
 def difference(d1: dt.date, d2: Optional[dt.date] = None) -> Diff:
-    """Compute the difference between two dates.
+    """Compute the difference between two dates, broken down into components.
+
+    The components add up to the whole difference, for example ``1 year, 2 months, 1 week, 3 days``.
 
     Args:
-        d1: The first date.
-        d2: The second date. If None, the current date and time is used.
+        d1: The start date.
+        d2: The end date, the current date and time by default.
+
+    Returns:
+        The difference from ``d1`` to ``d2``.
     """
 
     pd = _precise_diff(d1, d2)
@@ -576,9 +748,15 @@ def difference(d1: dt.date, d2: Optional[dt.date] = None) -> Diff:
 def total_difference(d1: dt.date, d2: Optional[dt.date] = None) -> Diff:
     """Compute the total difference between two dates in each unit.
 
+    Each component holds the whole difference expressed in that unit,
+    for example, for a difference of one year and two months, ``years`` is 1 and ``months`` is 14.
+
     Args:
-        d1: First date
-        d2: Second date (default current date/time)
+        d1: The start date.
+        d2: The end date, the current date and time by default.
+
+    Returns:
+        The difference from ``d1`` to ``d2``.
     """
 
     pd = _precise_diff(d1, d2)
@@ -663,9 +841,12 @@ def next(day: int | str, d: Optional[dt.date] = None, keep_time=False) -> dt.dat
     """Get the next occurrence of a specific weekday.
 
     Args:
-        day: Day of week (0-6 for Monday-Sunday or weekday name string)
-        d: Starting date (default current date/time)
-        keep_time: Whether to keep the time component
+        day: Day of the week, ``0`` to ``6`` for Monday to Sunday, or a lowercase weekday name like ``monday``.
+        d: Starting date, the current date and time by default.
+        keep_time: Keep the time of the starting date, otherwise the time is set to midnight.
+
+    Returns:
+        The datetime of the next occurrence after the starting date.
     """
 
     return _unpend(_pend(d).next(_WD[day], keep_time))
@@ -675,9 +856,12 @@ def prev(day: int | str, d: Optional[dt.date] = None, keep_time=False) -> dt.dat
     """Get the previous occurrence of a specific weekday.
 
     Args:
-        day: Day of week (0-6 for Monday-Sunday or weekday name string)
-        d: Starting date (default current date/time)
-        keep_time: Whether to keep the time component
+        day: Day of the week, ``0`` to ``6`` for Monday to Sunday, or a lowercase weekday name like ``monday``.
+        d: Starting date, the current date and time by default.
+        keep_time: Keep the time of the starting date, otherwise the time is set to midnight.
+
+    Returns:
+        The datetime of the previous occurrence before the starting date.
     """
 
     return _unpend(_pend(d).previous(_WD[day], keep_time))
@@ -695,10 +879,19 @@ _DURATION_UNITS = {
 
 
 def parse_duration(s: str) -> int:
-    """Convert duration string to seconds.
+    """Convert a duration string to seconds.
+
+    The string consists of numbers followed by units ``w``, ``d``, ``h``, ``m`` or ``s``,
+    like ``1w2d3h4m5s``. A trailing number without a unit is taken as seconds.
 
     Args:
-        s: Duration string (e.g. '1w2d3h4m5s') or integer seconds
+        s: Duration string, or an integer number of seconds, which is returned as is.
+
+    Returns:
+        The duration in seconds.
+
+    Raises:
+        ``Error``: If the string is not a valid duration.
     """
 
     if isinstance(s, int):
@@ -727,7 +920,10 @@ def format_duration(s: int) -> str:
     """Format a duration in seconds to a string.
 
     Args:
-        s: Duration in seconds
+        s: Duration in seconds.
+
+    Returns:
+        A string like ``1d 2h 30m``, or ``0s`` for a zero duration.
     """
 
     r = ''

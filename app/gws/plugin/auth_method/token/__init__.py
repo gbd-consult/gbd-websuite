@@ -1,17 +1,24 @@
-"""HTTP Token authorisation method.
+"""HTTP token authentication method.
 
-The token authorization works by passing a token in an HTTP header.
-For example, with this configuration::
+The client passes a token in an HTTP header. The method reads the configured
+header, checks the optional prefix and passes the token to the authentication
+providers as ``token`` credentials. For an authenticated user, the token is
+stored in ``user.authToken`` and a transient session is opened. No cookie is
+set.
+
+The prefix is compared case-insensitively. Without a prefix, the header value
+must be the token alone.
+
+Example::
 
     auth.methods+ {
         type "token"
         header "X-My-Auth"
         prefix "Bearer"
-
     }
 
-the application would expect a header like ``X-My-Auth: Bearer <token>``, extract the token value
-and pass it along to authorization providers.
+With this configuration, the application expects a header like
+``X-My-Auth: Bearer <token>``.
 """
 
 import gws
@@ -31,8 +38,12 @@ class Config(gws.base.auth.method.Config):
 
 @gws.ext.object.authMethod('token')
 class Object(gws.base.auth.method.Object):
+    """HTTP token authentication method."""
+
     header: str
+    """Name of the HTTP header that carries the token."""
     prefix: str
+    """Prefix expected before the token, empty if none."""
 
     def configure(self):
         self.uid = 'gws.plugin.auth_method.token'
@@ -52,6 +63,7 @@ class Object(gws.base.auth.method.Object):
             return am.create_transient_session(self, user)
 
     def _parse_header(self, req: gws.WebRequester):
+        """Extract the token from the configured header."""
         h = req.header(self.header)
         if not h:
             return

@@ -1,12 +1,24 @@
+"""Action manager and helpers for CLI commands."""
+
 from typing import Optional
 import gws
 import gws.spec.runtime
 
 
 def get_action_for_cli(root: gws.Root, action_name: str, project_uid: Optional[str] = None) -> Optional[gws.Action]:
-    """Get an action object by its name and optional project UID.
+    """Find an action for a CLI command, as the system user.
 
-    If no project UID is provided, it searches for the action in the global scope and then in all projects.
+    With a project uid, the action is searched in that project first. If it is not
+    found there, or no project uid is given, it is searched among the application
+    actions and then in all projects in turn. Errors are logged, not raised.
+
+    Args:
+        root: The configuration root.
+        action_name: Action type, for example ``alkis``.
+        project_uid: Optional project uid.
+
+    Returns:
+        The action object, or ``None`` if the project or the action is not found.
     """
 
     if project_uid:
@@ -39,7 +51,24 @@ def parse_cli_request(
     params: dict,
     read_options=None,
 ):
-    """Parse a CLI request and return the action handler and request object."""
+    """Parse command parameters and return a command handler on a new action object.
+
+    The action class is instantiated directly, it is not a configured tree node.
+
+    Args:
+        root: The configuration root.
+        command_category: Command category.
+        command_name: Command name.
+        params: Raw command parameters.
+        read_options: Options for the spec reader.
+
+    Returns:
+        A tuple of the bound command method and the parsed request object.
+
+    Raises:
+        gws.NotFoundError: If the command is not found.
+        gws.BadRequestError: If the parameters cannot be parsed.
+    """
 
     desc = root.specs.command_descriptor(command_category, command_name)
     if not desc:
@@ -58,6 +87,8 @@ def parse_cli_request(
 
 
 class Object(gws.ActionManager):
+    """Action manager."""
+
     def actions_for_project(self, project, user):
         d = {}
 
@@ -126,6 +157,7 @@ class Object(gws.ActionManager):
     # @TODO build indexes for this
 
     def _find_by_ext_name(self, obj, ext_name: str, user: gws.User):
+        """Find an action of an object by its extension name, raise ``ForbiddenError`` if the user may not use it."""
         for a in obj.actions:
             if a.extName == ext_name:
                 if not user.can_use(a):
@@ -133,6 +165,7 @@ class Object(gws.ActionManager):
                 return a
 
     def _find_by_ext_type(self, obj, ext_type: str, user: gws.User):
+        """Find an action of an object by its extension type, raise ``ForbiddenError`` if the user may not use it."""
         for a in obj.actions:
             if a.extType == ext_type:
                 if not user.can_use(a):

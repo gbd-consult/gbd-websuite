@@ -1,4 +1,21 @@
-"""Feature select widget."""
+"""Feature list widget.
+
+Shows the related features of a ``relatedFeatureList``,
+``relatedMultiFeatureList`` or ``relatedLinkedFeatureList`` field as a list.
+Buttons to create a new related feature, link an existing one, edit, unlink
+or delete the selected one can be turned on and off. This is the default
+widget of feature list fields.
+
+Example::
+
+    fields+ {
+        name "pois"
+        type "relatedFeatureList"
+        toModel "model_poi"
+        toColumn "category_id"
+        widget { type "featureList" withDeleteButton true }
+    }
+"""
 
 import gws
 import gws.base.model.widget
@@ -31,6 +48,8 @@ class Props(gws.base.model.widget.Props):
 
 @gws.ext.object.modelWidget('featureList')
 class Object(gws.base.model.widget.Object):
+    """Feature list widget object."""
+
     def props(self, user):
         return gws.u.merge(
             super().props(user),

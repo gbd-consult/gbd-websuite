@@ -1,7 +1,4 @@
-"""ALKIS exporter.
-
-Export Flurstuecke to CSV or GeoJSON.
-"""
+"""Export of Flurstuecke to CSV or GeoJSON."""
 
 from typing import Iterable, Optional, cast
 
@@ -62,8 +59,15 @@ _DEFAULT_FIELDS = [
 
 
 class Model(gws.base.model.Object):
+    """Export model, a set of fields written to the export file.
+
+    The field names are flat Flurstueck keys, see ``index.flatten_fs``.
+    """
+
     withEigentuemer: bool
+    """Whether the model has fields with owner (Eigentuemer) data."""
     withBuchung: bool
+    """Whether the model has fields with land register (Buchung) data."""
 
     def configure(self):
         self.configure_model()
@@ -82,10 +86,20 @@ _READ_WRITE_PERMISSIONS = gws.Config(read='allow all', write='allow all')
 
 
 class Object(gws.Node):
+    """ALKIS exporter.
+
+    Writes Flurstuecke to a CSV or GeoJSON file, using export models the user
+    can choose from.
+    """
+
     models: list[Model]
+    """Export models the user can choose from."""
     title: str
+    """Title to display in the UI."""
     type: str
+    """Export type, ``csv`` or ``geojson``."""
     mimeType: str
+    """Mime type of the export file."""
 
     def configure(self):
         self.type = self.cfg('type') or 'csv'
@@ -118,6 +132,21 @@ class Object(gws.Node):
             self.models.append(mod)
 
     def props_with_flags(self, user: gws.User, withEigentuemer: bool, withBuchung: bool) -> Optional[Props]:
+        """Return exporter properties with the models available to the user.
+
+        Models with owner or land register fields are left out if the user
+        has no access to that data.
+
+        Args:
+            user: The user.
+            withEigentuemer: Whether the user may see owner data.
+            withBuchung: Whether the user may see land register data.
+
+        Returns:
+            Exporter properties, or ``None`` if the user cannot use the exporter
+            or no model is available.
+        """
+
         if not user.can_use(self):
             return
 
@@ -136,6 +165,18 @@ class Object(gws.Node):
         return Props(uid=self.uid, title=self.title, models=models)
 
     def get_models(self, user: gws.User, uids: Optional[list[str]] = None) -> list[Model]:
+        """Return export models the user can use.
+
+        Unknown uids are logged and ignored.
+
+        Args:
+            user: The user.
+            uids: Model uids to select. If empty, all models are considered.
+
+        Returns:
+            A list of models.
+        """
+
         if not uids:
             ms = self.models
         else:
@@ -151,7 +192,14 @@ class Object(gws.Node):
         return [m for m in ms if user.can_use(m)]
 
     def run(self, args: Args):
-        """Export a Flurstueck list to a file."""
+        """Export a list of Flurstuecke to a file.
+
+        Args:
+            args: Export arguments, including the Flurstuecke, the models and the output path.
+
+        Raises:
+            ``gws.NotFoundError``: If the export type is not supported.
+        """
 
         if self.type == 'csv':
             return self._export_csv(args)
@@ -160,6 +208,8 @@ class Object(gws.Node):
         raise gws.NotFoundError(f'Unsupported export format')
 
     def _export_csv(self, args: Args):
+        """Write rows to a CSV file."""
+
         csv_helper = cast(gws.plugin.csv_helper.Object, self.root.app.helper('csv'))
 
         with open(args.path, 'wb') as fp:
@@ -168,6 +218,8 @@ class Object(gws.Node):
                 writer.write_dict(row)
 
     def _export_geojson(self, args: Args):
+        """Write rows to a GeoJSON feature collection."""
+
         with open(args.path, 'wb') as fp:
             fp.write(b'{"type": "FeatureCollection", "features": [')
             comma = b'\n '
@@ -184,23 +236,7 @@ class Object(gws.Node):
             fp.write(b'\n]}\n')
 
     def _iter_rows(self, args: Args, with_geometry=False):
-        """Iterate over a Flurstueck list and yield flat rows (dicts).
-
-        The Flurstueck structure, as created by our indexer, is deeply nested.
-        We flatten it, creating a dict 'nested_key->value'. For list values, we repeat the dict
-        for each item in the list, thus creating a product of all lists, e.g.
-
-        record:
-            a:x, b:[1,2], c:[3,4]
-
-        flat list:
-            a:x, b:1, c:3
-            a:x, b:1, c:4
-            a:x, b:2, c:3
-            a:x, b:2, c:4
-
-        @TODO: with certain combinations of keys this can explode very quickly
-        """
+        """Yield flat, deduplicated rows for the Flurstuecke, keyed by field titles."""
 
         if len(args.models) == 1:
             export_model = args.models[0]

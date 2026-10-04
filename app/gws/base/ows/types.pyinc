@@ -2,7 +2,7 @@ import gws
 
 
 class OwsProtocol(Enum):
-    """Supported OWS protocol."""
+    """Supported OWS protocols."""
 
     WMS = 'WMS'
     WMTS = 'WMTS'
@@ -12,9 +12,14 @@ class OwsProtocol(Enum):
 
 
 class OwsAuthorization(Data):
+    """Credentials for accessing an OWS service."""
+
     type: str
+    """Authorization type, only ``basic`` is supported."""
     username: str
+    """User name."""
     password: str
+    """Password."""
 
 
 class OwsVerb(Enum):
@@ -44,31 +49,45 @@ class OwsVerb(Enum):
 
 
 class OwsOperation(Data):
-    """OWS operation."""
+    """OWS operation, as offered by a remote service or by our own service."""
 
     allowedParameters: dict[str, list[str]]
+    """Allowed values for parameters, keyed by the upper-cased parameter name."""
     constraints: dict[str, list[str]]
+    """Operation constraints."""
     formats: list[str]
+    """Supported output formats."""
     handlerName: str
+    """Name of the service method that handles this operation (server side)."""
     params: dict[str, str]
+    """Extra parameters for GET requests (client side)."""
     postUrl: Url
+    """URL for POST requests."""
     preferredFormat: str
+    """Output format to use in requests (client side)."""
     url: Url
+    """URL for GET requests."""
     verb: OwsVerb
+    """Request type."""
 
 
 class OwsCapabilities(Data):
-    """OWS capabilities structure."""
+    """Parsed capabilities of a remote OWS service."""
 
     metadata: 'Metadata'
+    """Service metadata."""
     operations: list['OwsOperation']
+    """Operations offered by the service."""
     sourceLayers: list['SourceLayer']
+    """Layers or feature types of the service."""
     tileMatrixSets: list['TileMatrixSet']
+    """Tile matrix sets (WMTS)."""
     version: str
+    """Service version."""
 
 
 class OwsService(Node):
-    """OWS Service."""
+    """OWS service provided by GBD WebSuite."""
 
     isRasterService: bool = False
     """Service provides raster services."""
@@ -113,28 +132,75 @@ class OwsService(Node):
     """Strict parameter checking."""
 
     def handle_request(self, req: 'WebRequester') -> ContentResponse:
-        """Handle a service request."""
+        """Handle a service request.
+
+        Errors are returned as OWS exception documents, not raised.
+
+        Args:
+            req: Web request.
+
+        Returns:
+            The service response.
+        """
 
     def layer_is_compatible(self, layer: 'Layer') -> bool:
-        """True if layer can be used in this service."""
+        """Check if a layer can be used in this service.
+
+        Args:
+            layer: Layer object.
+
+        Returns:
+            ``True`` if the layer can be published by this service.
+        """
 
 
 class OwsServiceProvider(Node):
-    """OWS service used as a data provider."""
+    """Remote OWS service used as a data provider."""
 
     alwaysXY: bool
+    """Force XY axis order for CRSs with lat/lon axis order."""
     authorization: Optional['OwsAuthorization']
+    """Credentials for the service."""
     bounds: Optional[Bounds]
+    """Service bounds, if known."""
     forceCrs: 'Crs'
+    """CRS to use for requests, if configured."""
     maxRequests: int
+    """Max. number of concurrent requests to the service."""
     metadata: 'Metadata'
+    """Service metadata."""
     operations: list['OwsOperation']
+    """Operations offered by the service."""
     protocol: 'OwsProtocol'
+    """Service protocol."""
     sourceLayers: list['SourceLayer']
+    """Layers or feature types of the service."""
     url: Url
+    """Service URL."""
     version: str
+    """Service version."""
     wgsExtent: Optional[Extent]
+    """Service extent in WGS84, if known."""
 
-    def get_operation(self, verb: 'OwsVerb', method: Optional['RequestMethod'] = None) -> Optional['OwsOperation']: ...
+    def get_operation(self, verb: 'OwsVerb', method: Optional['RequestMethod'] = None) -> Optional['OwsOperation']:
+        """Find an operation by its verb.
 
-    def get_features(self, args: 'SearchQuery', source_layers: list['SourceLayer']) -> list['FeatureRecord']: ...
+        Args:
+            verb: Request type.
+            method: Request method. For ``POST``, the operation must have a POST URL,
+                otherwise a GET URL.
+
+        Returns:
+            The operation, or ``None`` if the service does not support it.
+        """
+
+    def get_features(self, args: 'SearchQuery', source_layers: list['SourceLayer']) -> list['FeatureRecord']:
+        """Search for features in the given source layers.
+
+        Args:
+            args: Search query.
+            source_layers: Source layers to search.
+
+        Returns:
+            Found feature records.
+        """

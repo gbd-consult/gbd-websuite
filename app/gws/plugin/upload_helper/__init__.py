@@ -1,6 +1,29 @@
-"""Manage chunked uploads.
+"""Helper for chunked file uploads.
 
-In your action, declare an endpoint with ``p: ChunkRequest`` as a parameter. This endpoint should invoke ``handle_chunk_request``::
+Large files are uploaded by the client in chunks, one request per chunk. The
+helper stores the chunks in the ephemeral directory and, when asked for the
+upload, joins them into one file. The helper does not provide endpoints of its
+own: an action declares an endpoint that receives the chunks and passes them to
+the helper, and another endpoint that processes the finished upload.
+
+Each chunk request contains the file name, the total size, the number of chunks
+and the chunk number, starting from 0. The first chunk has an empty
+``uploadUid``, which starts a new upload. The handler responds with the
+``uploadUid``, which subsequent chunks must provide. Chunks can come in any
+order. The total size and the number of chunks are limited by ``maxSize``: the
+maximum number of chunks is derived from it, so that a chunk is at least 500 KB
+on average.
+
+Once the client has sent all chunks, it calls another endpoint of the action
+with the ``uploadUid``. That endpoint calls ``get_upload`` to get the final
+file. The file is stored in a temporary location and should be moved to a
+permanent location if necessary.
+
+Example::
+
+    helpers+ { type "upload" maxSize 2000 }
+
+Example::
 
     import gws.plugin.upload_helper as uh
 
@@ -10,11 +33,6 @@ In your action, declare an endpoint with ``p: ChunkRequest`` as a parameter. Thi
         # check permissions, etc...
         helper = self.root.app.helper('upload')
         return helper.handle_chunk_request(req, p)
-        ...
-
-The client sends chunks to this endpoint, one by one. Each chunk contains the file name and total size. The first chunk has an empty ``uploadUid``, indicating a new upload. Subsequent chunks must provide a valid ``uploadUid``. The handler responds with an ``uploadUid``. Each chunk must have a serial number, starting from 0. Chunks can come in any order.
-
-Once the client decides that the upload is complete, it proceeds with invoking some other endpoint of your action, mentioning the ``uploadUid`` returned by the first chunk. The endpoint should invoke ``get_upload`` to retrieve the final file. The file is stored in a temporary location and should be moved to a permanent location if necessary::
 
     @gws.ext.command.api('myProcessUploadedFile')
     def do_process(self, req, p: MyProcessRequest):
@@ -24,9 +42,6 @@ Once the client decides that the upload is complete, it proceeds with invoking s
         except uh.Error:
             ...upload not ready yet...
         ...process(upload.path)
-
-
-
 """
 
 import shutil
@@ -45,40 +60,76 @@ class Config(gws.Config):
 
 
 class ChunkRequest(gws.Request):
+    """Request that carries one chunk of an upload."""
+
     uploadUid: str = ''
+    """Upload uid returned for the first chunk, empty for the first chunk."""
     fileName: str
+    """Name of the uploaded file."""
     totalSize: int
+    """Total size of the file in bytes."""
     chunkNumber: int
+    """Number of this chunk, starting from 0."""
     chunkCount: int
+    """Total number of chunks."""
     content: bytes
+    """Chunk content."""
 
 
 class ChunkResponse(gws.Response):
+    """Response to a chunk request."""
+
     uploadUid: str
+    """Upload uid, to be passed with subsequent chunks."""
 
 
 class Upload(gws.Data):
+    """State of an upload."""
+
     uid: str
+    """Upload uid."""
     fileName: str
+    """Name of the uploaded file, as sent by the client."""
     totalSize: int
+    """Total size of the file in bytes."""
     chunkCount: int
+    """Total number of chunks."""
     path: str
+    """Path of the assembled file, empty until the upload is finalized."""
 
 
 class Error(gws.Error):
+    """Upload error, raised for invalid chunks and incomplete or missing uploads."""
+
     pass
 
 
 @gws.ext.object.helper('upload')
 class Object(gws.Node):
+    """Upload helper, which receives file uploads in chunks and assembles them."""
+
     maxSize: int
+    """Maximum upload size in bytes."""
     maxChunkCount: int
+    """Maximum number of chunks per upload."""
 
     def configure(self):
         self.maxSize = self.cfg('maxSize', default=1000) * 1024 * 1024
         self.maxChunkCount = max(1, self.maxSize // (500 * 1024))  # min. 500K chunks
 
     def handle_chunk_request(self, req: gws.WebRequester, p: ChunkRequest) -> ChunkResponse:
+        """Store a chunk of an upload, starting a new upload if ``uploadUid`` is empty.
+
+        Args:
+            req: Web requester.
+            p: Chunk request.
+
+        Returns:
+            Response with the upload uid.
+
+        Raises:
+            ``gws.BadRequestError``: If the chunk or the upload is invalid.
+        """
         try:
             up = self._save_chunk(p)
             return ChunkResponse(uploadUid=up.uid)
@@ -87,6 +138,17 @@ class Object(gws.Node):
             raise gws.BadRequestError('upload_error') from exc
 
     def get_upload(self, uid: str) -> Upload:
+        """Get a finished upload, joining its chunks into one file on the first call.
+
+        Args:
+            uid: Upload uid.
+
+        Returns:
+            The upload, with ``path`` pointing to the assembled file.
+
+        Raises:
+            ``Error``: If the upload is not found, not complete or the file size does not match.
+        """
         up = self._load_upload(uid)
         out_path = _base_path(up.uid, 'out')
 
@@ -100,6 +162,7 @@ class Object(gws.Node):
     ##
 
     def _save_chunk(self, p: ChunkRequest) -> Upload:
+        """Validate a chunk and write it to the upload directory."""
         up = self._load_upload(p.uploadUid) if p.uploadUid else self._create_upload(p)
 
         if p.chunkNumber < 0 or p.chunkNumber >= up.chunkCount:
@@ -114,6 +177,7 @@ class Object(gws.Node):
         return up
 
     def _finalize(self, up: Upload, out_path):
+        """Join all chunks into the output file and delete the chunks."""
         chunks = [_base_path(up.uid, n) for n in range(0, up.chunkCount)]
         complete = all(gws.u.is_file(c) for c in chunks)
         if not complete:
@@ -142,6 +206,7 @@ class Object(gws.Node):
             gws.lib.osx.unlink(c)
 
     def _create_upload(self, p: ChunkRequest) -> Upload:
+        """Validate the size and chunk count and create a new upload state."""
         if p.totalSize <= 0 or p.totalSize > self.maxSize:
             raise Error(f'upload: invalid total size {p.totalSize!r}')
         if p.chunkCount <= 0 or p.chunkCount > self.maxChunkCount:
@@ -159,6 +224,7 @@ class Object(gws.Node):
         return up
 
     def _load_upload(self, uid) -> Upload:
+        """Load the state of an existing upload."""
         if not uid.isalnum():
             raise Error(f'upload: invalid uid {uid!r}')
         try:
@@ -168,4 +234,5 @@ class Object(gws.Node):
 
 
 def _base_path(uid, p):
+    """Return the path of a file in the upload directory."""
     return gws.u.ephemeral_dir(f'upload_{uid}') + f'/{p}'

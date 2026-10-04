@@ -1,3 +1,5 @@
+"""WMTS capabilities parser."""
+
 import gws
 import gws.base.ows.client
 import gws.lib.crs
@@ -11,6 +13,17 @@ import gws.base.ows.client.parseutil as u
 
 
 def parse(xml: str) -> gws.OwsCapabilities:
+    """Read WMTS capabilities from the GetCapabilities XML.
+
+    Matrices in each tile matrix set are sorted from the coarsest to the finest
+    scale. Each source layer refers to the tile matrix sets it is linked to.
+
+    Args:
+        xml: GetCapabilities XML.
+
+    Returns:
+        The parsed capabilities, including the tile matrix sets.
+    """
     caps_el = xmlx.from_string(xml, gws.XmlOptions(compactWhitespace=True, removeNamespaces=True))
     tms_lst = [_tile_matrix_set(el) for el in caps_el.findall('Contents/TileMatrixSet')]
     tms_dct = {tms.identifier: tms for tms in tms_lst}
@@ -25,6 +38,7 @@ def parse(xml: str) -> gws.OwsCapabilities:
 
 
 def _layer(layer_el: gws.XmlElement, tms_dct):
+    """Create a source layer from a ``Layer`` element."""
     # <Layer>
     #   <ows:Title>...
     #   <Style>...
@@ -64,6 +78,7 @@ def _layer(layer_el: gws.XmlElement, tms_dct):
 
 
 def _tile_matrix_set(tms_el: gws.XmlElement):
+    """Create a tile matrix set from a ``TileMatrixSet`` element."""
     # <TileMatrixSet>
     #   <ows:Identifier>...
     #   <ows:SupportedCRS>...
@@ -80,6 +95,7 @@ def _tile_matrix_set(tms_el: gws.XmlElement):
 
 
 def _tile_matrix(tm_el: gws.XmlElement, crs: gws.Crs):
+    """Create a tile matrix from a ``TileMatrix`` element."""
     # <TileMatrix>
     #   <ows:Identifier>
     #   <ScaleDenominator>

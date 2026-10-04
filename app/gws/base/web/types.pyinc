@@ -13,7 +13,7 @@ class RequestMethod(Enum):
 
 
 class WebRequester:
-    """Web Requester object."""
+    """Web requester, gives access to an incoming web request."""
 
     environ: dict
     """Request environment."""
@@ -29,7 +29,7 @@ class WebRequester:
     session: 'AuthSession'
     """Current session."""
     user: 'User'
-    """Current use."""
+    """Current user."""
 
     isGet: bool
     """The request is a GET request."""
@@ -40,7 +40,7 @@ class WebRequester:
     isForm: bool
     """The request provides form data in the POST body."""
     isSecure: bool
-    """The request is secure."""
+    """The request is made over https."""
 
     scheme: str
     """Request scheme, http or https."""
@@ -52,31 +52,79 @@ class WebRequester:
     """Client address."""
 
     def parse(self):
-        """Parse the request data, raise an error if the request is invalid."""
+        """Parse the request path, the parameters and the structured payload.
+
+        Also determines the scheme, host, port and client address, taking proxy
+        headers into account if the site has proxies.
+
+        Raises:
+            ``gws.base.web.error.HTTPException``: If the request path, the host or the payload is invalid.
+        """
 
     def params(self) -> dict:
-        """GET parameters, including parsed path params."""
+        """Return the GET parameters.
+
+        Returns:
+            Parameters from the query string and from the request path.
+        """
 
     def query_params(self) -> dict:
-        """GET parameters from the query string."""
+        """Return the GET parameters from the query string.
+
+        Returns:
+            Query string parameters.
+        """
 
     def path(self) -> str:
-        """Request path, after the command is removed."""
+        """Return the request path after the command.
+
+        Returns:
+            The rest of the path after ``/_/<command>/``.
+        """
 
     def struct(self) -> dict:
-        """Structured JSON payload."""
+        """Return the structured payload of an API request.
+
+        Returns:
+            The decoded JSON or MessagePack payload.
+        """
 
     def command(self) -> str:
-        """Command name from the request."""
+        """Return the command name.
+
+        Returns:
+            The command from the path, or from the ``cmd`` parameter.
+        """
 
     def data(self) -> bytes:
-        """Raw POST data."""
+        """Return the raw POST data, unzipped if gzip-encoded.
+
+        Returns:
+            POST data, empty for non-POST requests.
+
+        Raises:
+            ``gws.base.web.error.HTTPException``: If the content length is invalid or too large, or the data cannot be unzipped.
+        """
 
     def form(self) -> list[tuple[str, Any]]:
-        """POST form data as a list of (key, value) tuples."""
+        """Return the POST form data.
+
+        Returns:
+            A list of ``(key, value)`` tuples, including uploaded files; empty if the request is not a form.
+
+        Raises:
+            ``gws.base.web.error.HTTPException``: If the form data cannot be decoded.
+        """
 
     def text(self) -> str:
-        """POST data decoded to text."""
+        """Return the POST data decoded to text, with the charset of the request.
+
+        Returns:
+            POST data as text.
+
+        Raises:
+            ``gws.base.web.error.HTTPException``: If the data cannot be decoded.
+        """
 
     def cookie(self, key: str, default: str = '') -> str:
         """Get a cookie.
@@ -101,14 +149,17 @@ class WebRequester:
         """
 
     def has_param(self, key: str) -> bool:
-        """Check if a GET parameter exists.
+        """Check if a GET parameter exists, ignoring case.
 
         Args:
             key: Parameter name.
+
+        Returns:
+            ``True`` if the parameter exists.
         """
 
     def param(self, key: str, default: str = '') -> str:
-        """Get a GET parameter.
+        """Get a GET parameter, ignoring case.
 
         Args:
             key: Parameter name.
@@ -119,7 +170,7 @@ class WebRequester:
         """
 
     def env(self, key: str, default: str = '') -> str:
-        """Get an environment variable.
+        """Get a WSGI environment variable.
 
         Args:
             key: Variable name.
@@ -130,88 +181,90 @@ class WebRequester:
         """
 
     def content_responder(self, response: ContentResponse) -> 'WebResponder':
-        """Return a Responder object for a content response.
+        """Create a responder for a content response.
 
         Args:
-            response: Response object.
+            response: Response with literal content or a content path.
 
         Returns:
-            A Responder.
+            A responder.
         """
 
     def redirect_responder(self, response: RedirectResponse) -> 'WebResponder':
-        """Return a Responder object for a redirect response.
+        """Create a responder for a redirect response.
 
         Args:
-            response: Response object.
+            response: Redirect response.
 
         Returns:
-            A Responder.
+            A responder.
         """
 
     def api_responder(self, response: Response) -> 'WebResponder':
-        """Return a Responder object for an Api (structured) response.
+        """Create a responder for an API (structured) response.
+
+        The response is encoded as JSON or MessagePack, depending on the request.
 
         Args:
             response: Response object.
 
         Returns:
-            A Responder.
+            A responder.
         """
 
     def error_responder(self, exc: Exception) -> 'WebResponder':
-        """Return a Responder object for an Exception.
+        """Create a responder for an exception.
 
         Args:
-            exc: An Exception.
+            exc: An exception; anything but an HTTP exception results in a 500 response.
 
         Returns:
-            A Responder.
+            A responder.
         """
 
     def absolute_url_for(self, request_path: str, **params) -> str:
-        """Return an absolute Url, pointing to the requested host.
+        """Create an absolute URL pointing to the requested host.
 
         Args:
             request_path: Request path.
             **params: Additional GET parameters.
 
         Returns:
-            An URL.
+            A URL.
         """
 
     def relative_url_for(self, request_path: str, **params) -> str:
-        """Return a host-relative Url.
+        """Create a host-relative URL.
 
         Args:
             request_path: Request path.
             **params: Additional GET parameters.
 
         Returns:
-            An URL.
+            A URL.
         """
 
     def canonical_url_for(self, request_path: str, **params) -> str:
-        """Return an absolute Url, pointing to the canonical host.
+        """Create an absolute URL pointing to the canonical host.
 
         Args:
             request_path: Request path.
             **params: Additional GET parameters.
 
         Returns:
-            An URL.
+            A URL.
         """
 
     def set_session(self, session: 'AuthSession'):
-        """Attach a session to the requester.
+        """Attach a session to the requester and set the user from it.
 
         Args:
-            session: A Session object.
+            session: A session object.
         """
 
 
 class WebResponder:
-    """Web Responder object."""
+    """Web responder, builds and sends the response to a web request."""
 
     status: int
     """Response status."""
@@ -222,6 +275,9 @@ class WebResponder:
         Args:
             environ: WSGI environment.
             start_response: WSGI ``start_response`` function.
+
+        Returns:
+            The WSGI response iterable.
         """
 
     def set_cookie(self, key: str, value: str, **kwargs):
@@ -260,12 +316,12 @@ class WebResponder:
         """Set the response body.
 
         Args:
-            body: New response body.
+            body: New response body; strings are encoded as UTF-8.
         """
 
 
 class WebDocumentRoot(Data):
-    """Web document root."""
+    """Directory served over the web."""
 
     dir: DirPath
     """Local directory."""
@@ -276,36 +332,40 @@ class WebDocumentRoot(Data):
 
 
 class WebRewriteRule(Data):
-    """Rewrite rule."""
+    """URL rewrite rule."""
 
     pattern: Regex
     """URL matching pattern."""
     target: str
-    """Rule target, with dollar placeholders."""
+    """Rule target, with ``$1``, ``$2`` etc. placeholders for the pattern groups."""
     options: dict
     """Extra options."""
     reversed: bool
-    """Reversed rewrite rule."""
+    """The rule rewrites URLs generated by the server, not incoming URLs."""
 
 
 class WebCors(Data):
     """CORS options."""
 
     allowCredentials: bool
+    """Allow credentials in cross-origin requests."""
     allowHeaders: str
+    """Headers allowed in cross-origin requests."""
     allowMethods: str
+    """Methods allowed in cross-origin requests."""
     allowOrigin: str
+    """Origins allowed to make cross-origin requests."""
 
 
 class WebManager(Node):
-    """Web manager."""
+    """Web manager, holds the web site."""
 
     site: 'WebSite'
     """Configured web site."""
 
 
 class WebSite(Node):
-    """Web site."""
+    """Web site the server responds to."""
 
     assetsRoot: Optional[WebDocumentRoot]
     """Root directory for assets."""
@@ -316,7 +376,7 @@ class WebSite(Node):
     hostnames: list[str]
     """Host names this site responds to."""
     rewriteRules: list[WebRewriteRule]
-    """Rewrite rule."""
+    """URL rewrite rules."""
     proxyCount: int
     """Number of proxies in front of the server."""
     ssl: bool
@@ -325,14 +385,22 @@ class WebSite(Node):
     """Root directory for static files."""
 
     def url_for(self, req: 'WebRequester', path: str, mode: str, **params) -> str:
-        """Rewrite a request path to an Url.
+        """Create a URL for a request path, applying the reversed rewrite rules.
+
+        If the path, or the rewritten path, is an absolute URL, only the parameters
+        are added. In the ``absolute`` and ``canonical`` modes, the URL gets the scheme
+        of the request. The host is the canonical host in the ``canonical`` mode, and
+        the request host and port otherwise or if there is no canonical host.
 
         Args:
-            req: Web Requester.
-            path: Raw request path.
+            req: Web requester.
+            path: Request path.
             mode: ``absolute``, ``relative`` or ``canonical``.
-            **params: Extra GET params.
+            **params: Extra GET parameters.
 
         Returns:
-            A rewritten URL.
+            A URL.
+
+        Raises:
+            ``gws.BadRequestError``: If an absolute URL is requested and there is no host.
         """

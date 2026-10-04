@@ -9,9 +9,19 @@ from . import error, namespace, serializer
 
 
 class XmlElement(gws.XmlElement):
-    """XML element, see ``gws.XmlElement`` for the documented interface."""
+    """XML element."""
 
     def __init__(self, tag: str, attrib: Optional[dict] = None, **extra):
+        """Create an element.
+
+        Names are taken as they are, no namespace resolution is done.
+
+        Args:
+            tag: Tag name, local or Clark.
+            attrib: Attributes.
+            **extra: Additional attributes.
+        """
+
         self.tag = tag
         self.name = namespace.plain_name(tag)
         self.text = ''
@@ -31,9 +41,23 @@ class XmlElement(gws.XmlElement):
         return f'<{self.__class__.__name__} {self.tag!r} at {id(self):#x}>'
 
     def makeelement(self, tag, attrib):
+        """Create a new element of the same class, as in ``ElementTree``.
+
+        The new element is not added to this element.
+
+        Args:
+            tag: Tag name, local or Clark.
+            attrib: Attributes.
+
+        Returns:
+            A new element.
+        """
+
         return self.__class__(tag, attrib)
 
     def __copy__(self):
+        """Shallow copy: the children are shared with the original."""
+
         elem = self.__class__(self.tag, self.attrib)
         elem.text = self.text
         elem.tail = self.tail
@@ -48,9 +72,13 @@ class XmlElement(gws.XmlElement):
         return self._children[index]
 
     def __setitem__(self, index, element):
+        """Replace the child at the given index."""
+
         self._children[index] = element
 
     def __delitem__(self, index):
+        """Remove the child at the given index."""
+
         del self._children[index]
 
     def append(self, subelement):
@@ -117,6 +145,8 @@ class XmlElement(gws.XmlElement):
     ## extensions
 
     def __bool__(self):
+        """An element is always true, also when it has no children."""
+
         return True
 
     def __iter__(self):
@@ -188,6 +218,8 @@ class XmlElement(gws.XmlElement):
         return dict(ls)
 
     def _collect_tags_and_text(self, paths, deep):
+        """Collect ``(tag, stripped text)`` pairs for ``textlist`` and ``textdict``."""
+
         def walk(el):
             s = (el.text or '').strip()
             if s:

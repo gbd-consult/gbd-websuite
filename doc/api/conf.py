@@ -98,7 +98,7 @@ autoapi_options = [
     'undoc-members',
     # 'private-members',
     # 'special-members',
-    # 'show-inheritance',
+    'show-inheritance',
     # 'show-inheritance-diagram',
     # 'show-module-summary',
     # 'imported-members',

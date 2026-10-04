@@ -1,3 +1,5 @@
+"""System directories, role names and other constants."""
+
 from . import env
 
 import os

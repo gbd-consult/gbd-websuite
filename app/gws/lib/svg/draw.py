@@ -1,4 +1,4 @@
-"""SVG builders."""
+"""Build SVG fragments from shapes and drawing soups."""
 
 from typing import Optional, cast
 
@@ -26,7 +26,24 @@ MAX_SOUP_TAGS = 5000
 
 
 def shape_to_fragment(shape: gws.Shape, view: gws.MapView, label: str = None, style: gws.Style = None) -> list[gws.XmlElement]:
-    """Convert a shape to a list of XmlElements (a "fragment")."""
+    """Convert a shape to an SVG fragment.
+
+    The shape is transformed to pixel coordinates using the view. Without a style, only the geometry is drawn.
+    With a style, the fragment can contain a marker definition, the geometry, an icon and a label,
+    depending on the style values and the view scale.
+
+    Args:
+        shape: Shape to draw.
+        view: Map view, which defines the pixel transformation, scale and dpi.
+        label: Label text, can contain newlines.
+        style: Style to apply.
+
+    Returns:
+        A list of SVG elements, empty if the shape is missing or empty.
+
+    Raises:
+        ``gws.Error``: If the geometry type is not supported.
+    """
 
     if not shape:
         return []
@@ -101,25 +118,35 @@ def shape_to_fragment(shape: gws.Shape, view: gws.MapView, label: str = None, st
 
 
 def soup_to_fragment(view: gws.MapView, points: list[gws.Point], tags: list) -> list[gws.XmlElement]:
-    """Convert an svg "soup" to a list of XmlElements (a "fragment").
+    """Convert an SVG "soup" to an SVG fragment.
 
-    A soup has two components:
+    A soup represents client-side SVG drawings (e.g. dimensions) in a resolution-independent way.
+    It has two components:
 
-    - a list of points, in the map coordinate system
-    - a list of tuples (tag-name, {atts}, child1, child2....), where children are tuples of the same form or strings
+    - a list of points, in the map coordinate system,
+    - a list of tuples ``(tag-name, {atts}, child1, child2, ...)``, where children are tuples of the same form or strings.
 
-    The idea is to represent client-side svg drawings (e.g. dimensions) in a resolution-independent way
+    First, points are converted to pixels using the view's transform. Then, the attributes of each tag are evaluated.
+    If an attribute value is a list, it is a function call: the first element is a function name,
+    the rest are arguments. The functions are:
 
-    First, points are converted to pixels using the view's transform. Then, each tag's attributes are iterated.
-    If any attribute value is an array, it's assumed to be a 'function'.
-    The first element is a function name, the rest are arguments.
-    Attribute 'functions' are
+    - ``['x', n]``: returns the x pixel coordinate of ``points[n]``,
+    - ``['y', n]``: returns the y pixel coordinate of ``points[n]``,
+    - ``['r', p1, p2, r]``: computes the slope between ``points[p1]`` and ``points[p2]`` and returns
+      ``rotate(slope, x, y)`` with the coordinates of ``points[r]``.
 
-    - ['x', n] - returns points[n][0]
-    - ['y', n] - returns points[n][1]
-    - ['r', p1, p2, r] - computes a slope between points[p1] points[p2] and returns a string
-        `rotate(slope, points[r].x, points[r].y)`
+    The result is normalized, so unsafe tags and attributes are removed.
 
+    Args:
+        view: Map view, which defines the pixel transformation.
+        points: Points in map coordinates.
+        tags: Tag tuples.
+
+    Returns:
+        A list of SVG elements.
+
+    Raises:
+        ``gws.Error``: If the soup is too large or invalid, or uses an unknown function.
     """
 
     if len(points) > MAX_SOUP_POINTS:

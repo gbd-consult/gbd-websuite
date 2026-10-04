@@ -1,9 +1,4 @@
-"""Core utilities
-
-Most common function which are needed everywhere.
-
-This module is available as ``gws.u`` everywhere.
-"""
+"""General utilities, available as ``gws.u``."""
 
 import fcntl
 import hashlib
@@ -23,10 +18,30 @@ from . import const, log
 
 
 def is_data_object(x) -> bool:
+    """Check if the argument is a ``Data`` object.
+
+    This is a placeholder, replaced by ``gws.is_data_object`` when ``gws`` is imported.
+
+    Args:
+        x: A value.
+
+    Returns:
+        ``True`` if the value is a ``Data`` object.
+    """
     return False
 
 
 def to_data_object(x):
+    """Convert a value to a ``Data`` object.
+
+    This is a placeholder, replaced by ``gws.to_data_object`` when ``gws`` is imported.
+
+    Args:
+        x: A value.
+
+    Returns:
+        A ``Data`` object.
+    """
     pass
 
 
@@ -44,7 +59,18 @@ T = TypeVar('T')
 
 
 def require(value: Optional[T], message: str = '') -> T:
-    """Return the value if not None, otherwise raise an Exception."""
+    """Return the value if it is not ``None``, otherwise raise an error.
+
+    Args:
+        value: A value.
+        message: Error message.
+
+    Returns:
+        The value.
+
+    Raises:
+        ValueError: If the value is ``None``.
+    """
     if value is None:
         raise ValueError(message or 'unexpected None value')
     return value
@@ -56,25 +82,66 @@ def require(value: Optional[T], message: str = '') -> T:
 
 
 def is_list(x):
+    """Check if the value is a list or a tuple.
+
+    Args:
+        x: A value.
+
+    Returns:
+        ``True`` if the value is a list or a tuple.
+    """
     return isinstance(x, (list, tuple))
 
 
 def is_dict(x):
+    """Check if the value is a dict.
+
+    Args:
+        x: A value.
+
+    Returns:
+        ``True`` if the value is a dict.
+    """
     return isinstance(x, dict)
 
 
 def is_bytes(x):
+    """Check if the value is ``bytes`` or ``bytearray``.
+
+    Args:
+        x: A value.
+
+    Returns:
+        ``True`` if the value is ``bytes`` or ``bytearray``.
+    """
     return isinstance(x, (bytes, bytearray))
     # @TODO how to handle bytes-alikes?
     # return hasattr(x, 'decode')
 
 
 def is_atom(x):
+    """Check if the value is ``None`` or a scalar (number, bool, string or bytes).
+
+    Args:
+        x: A value.
+
+    Returns:
+        ``True`` if the value is an atom.
+    """
     return x is None or isinstance(x, (int, float, bool, str, bytes))
 
 
 def is_empty(x) -> bool:
-    """Check if the value is empty (None, empty list/dict/object)."""
+    """Check if the value is empty.
+
+    A value is empty if it is ``None``, has zero length, or is an object without attributes.
+
+    Args:
+        x: A value.
+
+    Returns:
+        ``True`` if the value is empty.
+    """
 
     if x is None:
         return True
@@ -93,11 +160,11 @@ def is_empty(x) -> bool:
 
 
 def get(x, key, default=None):
-    """Get a nested value/attribute from a structure.
+    """Get a nested value or attribute from a structure.
 
     Args:
-        x: A dict, list or Data.
-        key: A list or a dot separated string of nested keys.
+        x: A dict, list, ``Data`` or any object.
+        key: A list or a dot-separated string of nested keys. List elements are addressed by numeric keys.
         default: The default value.
 
     Returns:
@@ -115,14 +182,14 @@ def get(x, key, default=None):
 
 
 def has(x, key) -> bool:
-    """True if a nested value/attribute exists in a structure.
+    """Check if a nested value or attribute exists in a structure.
 
     Args:
-        x: A dict, list or Data.
-        key: A list or a dot separated string of nested keys.
+        x: A dict, list, ``Data`` or any object.
+        key: A list or a dot-separated string of nested keys.
 
     Returns:
-        True if a key exists
+        ``True`` if the key exists.
     """
 
     if not x:
@@ -137,6 +204,7 @@ def has(x, key) -> bool:
 
 
 def _get(x, keys):
+    """Follow the keys into a structure, raise an error if a key is missing."""
     for k in keys:
         if is_dict(x):
             x = x[k]
@@ -152,6 +220,16 @@ def _get(x, keys):
 
 
 def pop(x, key, default=None):
+    """Remove a key from a dict or a ``Data`` object and return its value.
+
+    Args:
+        x: A dict or ``Data``.
+        key: The key.
+        default: Value to return if the key is missing or ``x`` is of another type.
+
+    Returns:
+        The value or the default.
+    """
     if is_dict(x):
         return x.pop(key, default)
     if is_data_object(x):
@@ -160,6 +238,15 @@ def pop(x, key, default=None):
 
 
 def pick(x, *keys):
+    """Return a copy of a dict or a ``Data`` object with the given keys only.
+
+    Args:
+        x: A dict or ``Data``.
+        *keys: Keys to keep.
+
+    Returns:
+        A new object of the same type, or an empty dict if ``x`` is of another type.
+    """
     def _pick(d):
         r = {}
         for k in keys:
@@ -175,6 +262,15 @@ def pick(x, *keys):
 
 
 def omit(x, *keys):
+    """Return a copy of a dict or a ``Data`` object without the given keys.
+
+    Args:
+        x: A dict or ``Data``.
+        *keys: Keys to remove.
+
+    Returns:
+        A new object of the same type, or an empty dict if ``x`` is of another type.
+    """
     def _omit(d):
         r = {}
         for k, v in d.items():
@@ -190,6 +286,14 @@ def omit(x, *keys):
 
 
 def collect(pairs):
+    """Group values by keys.
+
+    Args:
+        pairs: An iterable of ``(key, value)`` pairs. Pairs with a ``None`` key are skipped.
+
+    Returns:
+        A dict mapping each key to the list of its values.
+    """
     m = {}
 
     for key, val in pairs:
@@ -200,26 +304,43 @@ def collect(pairs):
 
 
 def first(it):
+    """Return the first element of an iterable.
+
+    Args:
+        it: An iterable.
+
+    Returns:
+        The first element, or ``None`` if the iterable is empty.
+    """
     for x in it:
         return x
 
 
 def first_not_none(*args):
+    """Return the first argument that is not ``None``.
+
+    Args:
+        *args: Values.
+
+    Returns:
+        The first value that is not ``None``, or ``None``.
+    """
     for a in args:
         if a is not None:
             return a
 
 
 def merge(*args, **kwargs) -> Union[dict, 'Data']:
-    """Create a new dict/Data object by merging values from dicts/Datas or kwargs.
-    Latter vales overwrite former ones unless None.
+    """Create a new dict or ``Data`` object by merging values from dicts, ``Data`` objects and keyword args.
+
+    Later values override earlier ones, unless they are ``None``.
 
     Args:
-        *args: dicts or Datas.
-        **kwargs: Keyword args.
+        *args: Dicts or ``Data`` objects. Empty values are skipped.
+        **kwargs: Keyword args, merged last.
 
     Returns:
-        A new object (dict or Data).
+        A new object of the same type as the first argument, or a dict if it is a dict or ``None``.
     """
 
     def _merge(arg):
@@ -241,7 +362,14 @@ def merge(*args, **kwargs) -> Union[dict, 'Data']:
 
 
 def compact(x):
-    """Remove all None values from a collection."""
+    """Remove all ``None`` values from a collection.
+
+    Args:
+        x: A dict, ``Data`` or an iterable.
+
+    Returns:
+        A new dict or ``Data`` object, or a list for other iterables.
+    """
 
     if is_dict(x):
         return {k: v for k, v in x.items() if v is not None}
@@ -252,7 +380,14 @@ def compact(x):
 
 
 def strip(x):
-    """Strip all strings and remove empty values from a collection."""
+    """Strip all strings and remove empty values from a collection.
+
+    Args:
+        x: A dict, ``Data`` or an iterable.
+
+    Returns:
+        A new dict or ``Data`` object, or a list for other iterables.
+    """
 
     def _strip(v):
         if isinstance(v, (str, bytes, bytearray)):
@@ -277,7 +412,14 @@ def strip(x):
 
 
 def uniq(x):
-    """Remove duplicate elements from a collection."""
+    """Remove duplicate elements from a collection, keeping the order.
+
+    Args:
+        x: An iterable.
+
+    Returns:
+        A list of unique elements.
+    """
 
     s = set()
     r = []
@@ -298,7 +440,14 @@ def uniq(x):
 
 
 def to_int(x) -> int:
-    """Convert a value to an int or 0 if this fails."""
+    """Convert a value to an int.
+
+    Args:
+        x: A value.
+
+    Returns:
+        The int value, or 0 if the conversion fails.
+    """
 
     try:
         return int(x)
@@ -307,7 +456,14 @@ def to_int(x) -> int:
 
 
 def to_rounded_int(x) -> int:
-    """Round and convert a value to an int or 0 if this fails."""
+    """Round a float and convert a value to an int.
+
+    Args:
+        x: A value.
+
+    Returns:
+        The int value, or 0 if the conversion fails.
+    """
 
     try:
         if isinstance(x, float):
@@ -318,7 +474,14 @@ def to_rounded_int(x) -> int:
 
 
 def to_float(x) -> float:
-    """Convert a value to a float or 0.0 if this fails."""
+    """Convert a value to a float.
+
+    Args:
+        x: A value.
+
+    Returns:
+        The float value, or 0.0 if the conversion fails.
+    """
 
     try:
         return float(x)
@@ -329,10 +492,13 @@ def to_float(x) -> float:
 def to_str(x, encodings: list[str] = None) -> str:
     """Convert a value to a string.
 
+    Bytes are decoded, ``None`` becomes an empty string, other values are converted with ``str``.
+
     Args:
-        x: Value.
-        encodings: A list of acceptable encodings. If the value is bytes, try each encoding,
-            and return the first one which passes without errors.
+        x: A value.
+        encodings: A list of acceptable encodings. If the value is bytes, try each encoding
+            and return the first result that decodes without errors. If none succeeds,
+            decode as UTF-8 and ignore errors.
 
     Returns:
         A string.
@@ -354,7 +520,15 @@ def to_str(x, encodings: list[str] = None) -> str:
 
 
 def to_bytes(x, encoding='utf8') -> bytes:
-    """Convert a value to bytes by converting it to string and encoding."""
+    """Convert a value to bytes by converting it to a string and encoding it.
+
+    Args:
+        x: A value. Bytes are returned as is, ``None`` becomes empty bytes.
+        encoding: The encoding.
+
+    Returns:
+        Bytes.
+    """
 
     if is_bytes(x):
         return bytes(x)
@@ -369,11 +543,12 @@ def to_list(x, delimiter: str = ',') -> list:
     """Convert a value to a list.
 
     Args:
-        x: A value. Is it's a string, split it by the delimiter
-        delimiter:
+        x: A value. A string (or bytes) is split by the delimiter, the parts are stripped and empty parts removed.
+            A number or a bool becomes a one-element list, other iterables are converted to a list.
+        delimiter: The delimiter. If empty, a string becomes a one-element list.
 
     Returns:
-        A list.
+        A list. Empty values and values that cannot be converted give an empty list.
     """
 
     if isinstance(x, list):
@@ -396,7 +571,17 @@ def to_list(x, delimiter: str = ',') -> list:
 
 
 def to_dict(x) -> dict:
-    """Convert a value to a dict. If the argument is an object, return its `dict`."""
+    """Convert a value to a dict.
+
+    Args:
+        x: A dict, ``None``, a named tuple or an object.
+
+    Returns:
+        The dict itself, an empty dict for ``None``, the fields of a named tuple, or the object's ``vars``.
+
+    Raises:
+        ValueError: If the value cannot be converted.
+    """
 
     if is_dict(x):
         return x
@@ -412,7 +597,14 @@ def to_dict(x) -> dict:
 
 
 def to_json_value(x) -> Union[dict, list, str, int, float, bool, None]:
-    """Recursively convert a value to a JSON serializable type."""
+    """Recursively convert a value to a JSON serializable type.
+
+    Args:
+        x: A value. Dicts, lists and ``Data`` objects are converted recursively, other non-scalar values are converted with ``str``.
+
+    Returns:
+        A JSON serializable value.
+    """
 
     if is_atom(x):
         return x
@@ -426,11 +618,27 @@ def to_json_value(x) -> Union[dict, list, str, int, float, bool, None]:
 
 
 def to_upper_dict(x) -> dict:
+    """Convert a value to a dict with upper-case keys.
+
+    Args:
+        x: A value accepted by ``to_dict``.
+
+    Returns:
+        A new dict.
+    """
     x = to_dict(x)
     return {k.upper(): v for k, v in x.items()}
 
 
 def to_lower_dict(x) -> dict:
+    """Convert a value to a dict with lower-case keys.
+
+    Args:
+        x: A value accepted by ``to_dict``.
+
+    Returns:
+        A new dict.
+    """
     x = to_dict(x)
     return {k.lower(): v for k, v in x.items()}
 
@@ -446,7 +654,17 @@ _UID_DE_TRANS = {
 
 
 def to_uid(x) -> str:
-    """Convert a value to an uid (alphanumeric string)."""
+    """Convert a value to a uid.
+
+    The value is converted to a lower-case string, German umlauts are transliterated,
+    and runs of other characters are replaced with underscores.
+
+    Args:
+        x: A value.
+
+    Returns:
+        A string of ``a-z``, ``0-9`` and ``_``, or an empty string for an empty value.
+    """
 
     if not x:
         return ''
@@ -458,7 +676,12 @@ def to_uid(x) -> str:
 def to_lines(txt: str, comment: str = None) -> list[str]:
     """Convert a multiline string into a list of strings.
 
-    Strip each line, skip empty lines, if `comment` is given, also remove lines starting with it.
+    Args:
+        txt: A string.
+        comment: Comment marker. If given, everything from the marker to the end of the line is removed.
+
+    Returns:
+        A list of stripped, non-empty lines.
     """
 
     ls = []
@@ -480,13 +703,16 @@ def parse_acl(acl):
     """Parse an ACL config into an ACL.
 
     Args:
-        acl: an ACL config. Can be given as a string ``allow X, allow Y, deny Z``,
+        acl: An ACL config. Can be given as a string ``allow X, allow Y, deny Z``,
             or as a list of dicts ``{ role X type allow }, { role Y type deny }``,
             or it can already be an ACL ``[1 X], [0 Y]``,
-            or it can be None.
+            or it can be ``None``.
 
     Returns:
-        Access list.
+        Access list, empty for an empty value.
+
+    Raises:
+        ValueError: If the ACL config is invalid.
     """
 
     if not acl:
@@ -546,12 +772,31 @@ UID_DELIMITER = '::'
 
 
 def join_uid(parent_uid, object_uid):
+    """Join a parent uid and an object uid with ``UID_DELIMITER``.
+
+    If either uid is already joined, only its last part is used.
+
+    Args:
+        parent_uid: Parent uid.
+        object_uid: Object uid.
+
+    Returns:
+        The joined uid.
+    """
     p = parent_uid.split(UID_DELIMITER)
     u = object_uid.split(UID_DELIMITER)
     return p[-1] + UID_DELIMITER + u[-1]
 
 
 def split_uid(joined_uid: str) -> tuple[str, str]:
+    """Split a joined uid at the first ``UID_DELIMITER``.
+
+    Args:
+        joined_uid: Joined uid.
+
+    Returns:
+        A tuple of the parent uid and the object uid. If there is no delimiter, the object uid is empty.
+    """
     p, _, u = joined_uid.partition(UID_DELIMITER)
     return p, u
 
@@ -560,14 +805,41 @@ def split_uid(joined_uid: str) -> tuple[str, str]:
 
 
 def is_file(path):
+    """Check if the path is an existing file.
+
+    Args:
+        path: File path.
+
+    Returns:
+        ``True`` if the file exists.
+    """
     return os.path.isfile(path)
 
 
 def is_dir(path):
+    """Check if the path is an existing directory.
+
+    Args:
+        path: Directory path.
+
+    Returns:
+        ``True`` if the directory exists.
+    """
     return os.path.isdir(path)
 
 
 def read_file(path: str) -> str:
+    """Read a UTF-8 text file.
+
+    Args:
+        path: File path.
+
+    Returns:
+        The file content.
+
+    Raises:
+        Exception: Errors from opening or reading the file are logged and raised again.
+    """
     try:
         with open(path, 'rt', encoding='utf8') as fp:
             return fp.read()
@@ -577,6 +849,17 @@ def read_file(path: str) -> str:
 
 
 def read_file_b(path: str) -> bytes:
+    """Read a binary file.
+
+    Args:
+        path: File path.
+
+    Returns:
+        The file content.
+
+    Raises:
+        Exception: Errors from opening or reading the file are logged and raised again.
+    """
     try:
         with open(path, 'rb') as fp:
             return fp.read()
@@ -586,13 +869,39 @@ def read_file_b(path: str) -> bytes:
 
 
 def write_file(path: str, s: str, user: int = None, group: int = None):
-    """Write a text file atomically (via a temporary file in the same directory)."""
+    """Write a text file atomically, via a temporary file in the same directory.
+
+    Args:
+        path: File path.
+        s: Text content, encoded as UTF-8.
+        user: File owner, defaults to ``const.UID``.
+        group: File group, defaults to ``const.GID``.
+
+    Returns:
+        The file path.
+
+    Raises:
+        Exception: Write errors are logged and raised again.
+    """
 
     return write_file_b(path, s.encode('utf8'), user, group)
 
 
 def write_file_b(path: str, s: str | bytes, user: int = None, group: int = None):
-    """Write a binary file atomically (via a temporary file in the same directory)."""
+    """Write a binary file atomically, via a temporary file in the same directory.
+
+    Args:
+        path: File path.
+        s: Content. A string is encoded as UTF-8.
+        user: File owner, defaults to ``const.UID``.
+        group: File group, defaults to ``const.GID``.
+
+    Returns:
+        The file path.
+
+    Raises:
+        Exception: Write errors are logged and raised again.
+    """
 
     if isinstance(s, str):
         s = s.encode('utf8')
@@ -613,7 +922,14 @@ def write_file_b(path: str, s: str | bytes, user: int = None, group: int = None)
 
 
 def write_debug_file(path: str, s: str | bytes):
-    """Write a debug file with the given content."""
+    """Write a file to the debug directory ``<VAR_DIR>/debug``.
+
+    Errors are logged and ignored.
+
+    Args:
+        path: File path, relative to the debug directory.
+        s: Content. A string is encoded as UTF-8.
+    """
 
     if isinstance(s, str):
         s = s.encode('utf8')
@@ -626,21 +942,32 @@ def write_debug_file(path: str, s: str | bytes):
 
 
 def dirname(path):
+    """Return the directory part of a path.
+
+    Args:
+        path: A path.
+
+    Returns:
+        The directory name.
+    """
     return os.path.dirname(path)
 
 
 def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int = None, group: int = None) -> str:
-    """Check if a (possibly nested) directory exists and create if it does not.
+    """Check if a (possibly nested) directory exists and create it if it does not.
 
     Args:
-        dir_path: Path to a directory.
+        dir_path: Path to a directory. Must be absolute without ``base_dir`` and relative with it.
         base_dir: Base directory.
         mode: Directory creation mode.
-        user: Directory user (defaults to gws.c.UID)
-        group: Directory group (defaults to gws.c.GID)
+        user: Directory owner, defaults to ``const.UID``.
+        group: Directory group, defaults to ``const.GID``.
 
     Returns:
-        The absolute path to the directory.
+        The path to the directory.
+
+    Raises:
+        ValueError: If the path is absolute with ``base_dir``, or relative without it.
     """
 
     if base_dir:
@@ -671,11 +998,19 @@ def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int
 
 
 def ensure_system_dirs():
+    """Create all system directories listed in ``const.ALL_DIRS``."""
     for d in const.ALL_DIRS:
         ensure_dir(d)
 
 
 def chown_default(path, user=None, group=None):
+    """Change the owner of a path, ignoring errors.
+
+    Args:
+        path: A path.
+        user: Owner, defaults to ``const.UID``.
+        group: Group, defaults to ``const.GID``.
+    """
     try:
         os.chown(path, user or const.UID, group or const.GID)
     except OSError:
@@ -690,7 +1025,16 @@ _ephemeral_state = dict(
 
 
 def ephemeral_path(name: str) -> str:
-    """Return a new ephemeral path name."""
+    """Return a new unique path in the ephemeral directory.
+
+    The path is not created. Ephemeral paths are removed by ``ephemeral_cleanup`` after two hours.
+
+    Args:
+        name: Base name, appended to a unique prefix.
+
+    Returns:
+        The path.
+    """
 
     ephemeral_cleanup()
     name = str(os.getpid()) + '_' + random_string(64) + '_' + name
@@ -698,17 +1042,29 @@ def ephemeral_path(name: str) -> str:
 
 
 def ephemeral_dir(name: str) -> str:
-    """Create and return an ephemeral directory."""
+    """Create a directory in the ephemeral directory, if it does not exist yet.
+
+    Args:
+        name: Directory name.
+
+    Returns:
+        The directory path.
+    """
 
     ephemeral_cleanup()
     return ensure_dir(const.EPHEMERAL_DIR + '/' + name)
 
 
 def ephemeral_cleanup(force=False):
-    """Remove ephemeral paths older than max age.
+    """Remove ephemeral files and empty directories older than two hours.
 
-    Throttled to once per check interval unless ``force`` is set.
-    Runs ``find`` detached and returns the process, or ``None`` if throttled.
+    Throttled to once per two hours in each process, unless ``force`` is set.
+
+    Args:
+        force: Run even if the last run was recent.
+
+    Returns:
+        The detached ``find`` process, or ``None`` if throttled.
     """
 
     ts = stime()
@@ -728,7 +1084,14 @@ def ephemeral_cleanup(force=False):
 
 
 def random_string(size: int) -> str:
-    """Generate a random string of length `size`."""
+    """Generate a random alphanumeric string.
+
+    Args:
+        size: String length.
+
+    Returns:
+        The string.
+    """
 
     a = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     r = random.SystemRandom()
@@ -736,6 +1099,7 @@ def random_string(size: int) -> str:
 
 
 class _FormatMapDefault:
+    """Mapping for ``str.format_map`` that returns a default for missing or ``None`` values."""
     def __init__(self, d, default):
         self.d = d
         self.default = default
@@ -746,10 +1110,31 @@ class _FormatMapDefault:
 
 
 def format_map(fmt: str, x: Union[dict, 'Data'], default: str = '') -> str:
+    """Format a string with values from a dict or a ``Data`` object.
+
+    Args:
+        fmt: Format string with ``{name}`` placeholders.
+        x: A dict or ``Data`` object with the values.
+        default: Replacement for missing or ``None`` values.
+
+    Returns:
+        The formatted string.
+    """
     return fmt.format_map(_FormatMapDefault(x, default))
 
 
 def sha256(x) -> str:
+    """Compute the SHA-256 hash of a value.
+
+    Bytes, strings and numbers are hashed directly, other values are converted to JSON first,
+    with sorted keys and ``Data`` objects as dicts.
+
+    Args:
+        x: A value.
+
+    Returns:
+        The hex digest.
+    """
     def _bytes(x):
         if is_bytes(x):
             return bytes(x)
@@ -772,13 +1157,22 @@ def sha256(x) -> str:
 
 
 class cached_property:
-    """Decorator for a cached property."""
+    """Decorator for a cached property.
+
+    The value is computed on first access and stored as an instance attribute with the same name.
+    """
 
     def __init__(self, fn):
+        """Create the descriptor.
+
+        Args:
+            fn: The getter function.
+        """
         self._fn = fn
         self.__doc__ = getattr(fn, '__doc__')
 
     def __get__(self, obj, objtype=None):
+        """Compute the value and store it on the instance."""
         value = self._fn(obj)
         setattr(obj, self._fn.__name__, value)
         return value
@@ -794,6 +1188,16 @@ _app_master_lock = threading.Lock()
 
 
 def app_lock(name=''):
+    """Return a reentrant lock, local to this process.
+
+    Locks with the same name are shared.
+
+    Args:
+        name: Lock name.
+
+    Returns:
+        A ``threading.RLock``.
+    """
     with _app_master_lock:
         lock = _app_locks.get(name)
         if lock is None:
@@ -805,6 +1209,15 @@ _app_globals: dict = {}
 
 
 def get_app_global(name, init_fn):
+    """Get a process-wide global value, creating it if needed.
+
+    Args:
+        name: Value name.
+        init_fn: Function without arguments that creates the value. It is called once, under an app lock.
+
+    Returns:
+        The value.
+    """
     if name in _app_globals:
         return _app_globals[name]
 
@@ -816,12 +1229,26 @@ def get_app_global(name, init_fn):
 
 
 def set_app_global(name, value):
+    """Set a process-wide global value.
+
+    Args:
+        name: Value name.
+        value: The value.
+
+    Returns:
+        The value.
+    """
     with app_lock(name):
         _app_globals[name] = value
     return _app_globals[name]
 
 
 def delete_app_global(name):
+    """Delete a process-wide global value.
+
+    Args:
+        name: Value name.
+    """
     with app_lock(name):
         _app_globals.pop(name, None)
 
@@ -830,6 +1257,15 @@ def delete_app_global(name):
 
 
 def serialize_to_path(obj, path):
+    """Pickle an object to a file atomically.
+
+    Args:
+        obj: An object.
+        path: File path.
+
+    Returns:
+        The file path.
+    """
     tmp = path + random_string(64)
     with open(tmp, 'wb') as fp:
         pickle.dump(obj, fp)
@@ -839,6 +1275,14 @@ def serialize_to_path(obj, path):
 
 
 def unserialize_from_path(path):
+    """Load a pickled object from a file.
+
+    Args:
+        path: File path.
+
+    Returns:
+        The object.
+    """
     with open(path, 'rb') as fp:
         return pickle.load(fp)
 
@@ -847,6 +1291,18 @@ _server_globals = {}
 
 
 def get_ephemeral_content(name: str, init_fn) -> bytes:
+    """Get bytes from the ephemeral content cache, creating them if needed.
+
+    The content is stored in the ephemeral directory and created under a server lock,
+    so it is shared between processes until the ephemeral cleanup removes it.
+
+    Args:
+        name: Content name.
+        init_fn: Function without arguments that returns the content.
+
+    Returns:
+        The content.
+    """
     uid = to_uid(name)
     path = ephemeral_dir('content') + '/' + uid
 
@@ -872,6 +1328,20 @@ def get_ephemeral_content(name: str, init_fn) -> bytes:
         return b
 
 def get_cached_object(name: str, life_time: int, init_fn):
+    """Get an object from the object cache, creating it if needed.
+
+    The object is pickled in ``const.OBJECT_CACHE_DIR`` and created under a server lock.
+    A cached object older than ``life_time``, or a falsy one, is created again.
+    Load and store errors are logged and ignored.
+
+    Args:
+        name: Object name.
+        life_time: Life time in seconds.
+        init_fn: Function without arguments that creates the object.
+
+    Returns:
+        The object.
+    """
     uid = to_uid(name)
     path = const.OBJECT_CACHE_DIR + '/' + uid
 
@@ -910,6 +1380,19 @@ def get_cached_object(name: str, life_time: int, init_fn):
 
 
 def get_server_global(name: str, init_fn):
+    """Get a server-wide global value, creating it if needed.
+
+    The value is kept in memory and pickled in ``const.GLOBALS_DIR``, so other processes load it
+    instead of creating it again. It is created under a server lock.
+    Load and store errors are logged and ignored.
+
+    Args:
+        name: Value name.
+        init_fn: Function without arguments that creates the value.
+
+    Returns:
+        The value.
+    """
     uid = to_uid(name)
     path = const.GLOBALS_DIR + '/' + uid
 
@@ -951,9 +1434,16 @@ class LockBusyError(Exception):
 
 
 class _FileLock:
+    """Inter-process lock based on ``flock`` on a file in ``const.LOCKS_DIR``."""
     _PAUSE = 0.05
 
     def __init__(self, uid, timeout):
+        """Create the lock.
+
+        Args:
+            uid: Lock identifier.
+            timeout: Seconds to wait for the lock.
+        """
         self.uid = to_uid(uid)
         self.path = const.LOCKS_DIR + '/' + self.uid
         self.timeout = timeout
@@ -966,6 +1456,11 @@ class _FileLock:
         self.release()
 
     def acquire(self):
+        """Acquire the lock and write the process id into the lock file.
+
+        Raises:
+            LockBusyError: If the lock is not acquired within the timeout.
+        """
         ts = time.time()
         self.fp = os.open(self.path, os.O_CREAT | os.O_RDWR)
 
@@ -992,6 +1487,7 @@ class _FileLock:
             time.sleep(self._PAUSE)
 
     def release(self):
+        """Release the lock. Errors are logged and ignored."""
         if self.fp is None:
             return
         try:
@@ -1003,6 +1499,7 @@ class _FileLock:
         self.fp = None
 
     def _holder_pid(self):
+        """Return the process id stored in the lock file, or ``?``."""
         if self.fp is None:
             return '?'
         try:
@@ -1013,14 +1510,24 @@ class _FileLock:
 
 
 def server_lock(uid, timeout: float = 60):
-    """Acquire an inter-process lock.
+    """Create an inter-process lock, to be used as a context manager.
+
+    The lock is acquired when the ``with`` block is entered.
+
+    Example::
+
+        with gws.u.server_lock('my_task', timeout=5):
+            ...
 
     Args:
         uid: Lock identifier.
         timeout: Seconds to wait for the lock. ``0`` means a single attempt.
 
+    Returns:
+        The lock object.
+
     Raises:
-        LockBusyError: if the lock is not acquired within ``timeout``.
+        LockBusyError: If the lock is not acquired within ``timeout``.
     """
     return _FileLock(uid, timeout)
 
@@ -1029,6 +1536,19 @@ def server_lock(uid, timeout: float = 60):
 
 
 def action_url_path(name: str, **kwargs) -> str:
+    """Build a server URL path for an action.
+
+    Example::
+
+        action_url_path('owsService', serviceUid='wms', projectUid='')  # '/_/owsService/serviceUid/wms'
+
+    Args:
+        name: Action command name.
+        **kwargs: Parameters, appended as ``/key/value`` path segments. Empty values are skipped.
+
+    Returns:
+        The URL path.
+    """
     ls = []
 
     for k, v in kwargs.items():
@@ -1046,25 +1566,45 @@ def action_url_path(name: str, **kwargs) -> str:
 
 
 def utime() -> float:
-    """Unix time as a float number."""
+    """Return the Unix time as a float number.
+
+    Returns:
+        Seconds since the epoch.
+    """
     return time.time()
 
 
 def stime() -> int:
-    """Unix time as an integer number of seconds."""
+    """Return the Unix time as an integer number of seconds.
+
+    Returns:
+        Seconds since the epoch.
+    """
     return int(time.time())
 
 
 def sleep(n: float):
-    """Sleep for n seconds."""
+    """Sleep for a number of seconds.
+
+    Args:
+        n: Seconds.
+    """
     time.sleep(n)
 
 
 def mstime() -> int:
-    """Unix time as an integer number of milliseconds."""
+    """Return the Unix time as an integer number of milliseconds.
+
+    Returns:
+        Milliseconds since the epoch.
+    """
     return int(time.time() * 1000)
 
 
 def microtime() -> int:
-    """Unix time as an integer number of microseconds."""
+    """Return the Unix time as an integer number of microseconds.
+
+    Returns:
+        Microseconds since the epoch.
+    """
     return int(time.time() * 1000000)

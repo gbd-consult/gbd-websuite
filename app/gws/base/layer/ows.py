@@ -27,6 +27,8 @@ class Config(gws.Config):
 
 
 class Object(gws.LayerOwsBinding):
+    """Binding of a layer to OWS services."""
+
     def configure(self):
         self.allowedServiceUids = self.cfg('allowedServices', default=[])
         self.deniedServiceUids = self.cfg('deniedServices', default=[])
@@ -44,6 +46,7 @@ class Object(gws.LayerOwsBinding):
         gws.config.util.configure_models_for(self)
 
     def _configure_name(self, key):
+        """Read a name from the config and set the XML namespace from its prefix, if any."""
         p = self.cfg(key)
         if not p:
             return
@@ -53,6 +56,7 @@ class Object(gws.LayerOwsBinding):
         return pname
 
     def _namespace(self, prefix):
+        """Find a known XML namespace by its prefix or raise a configuration error."""
         ns = gws.lib.xmlx.namespace.find_by_prefix(prefix)
         if not ns:
             raise gws.ConfigurationError(f'unknown XML namespace {prefix!r}')

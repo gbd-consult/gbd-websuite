@@ -1,4 +1,16 @@
-"""Float input widget."""
+"""Float input widget.
+
+Input for decimal numbers, with up/down buttons and an optional placeholder
+text. This is the default widget of ``float`` fields.
+
+Example::
+
+    fields+ {
+        name "area"
+        type "float"
+        widget { type "float" step 10 placeholder "Area in m2" }
+    }
+"""
 
 import gws
 import gws.base.model.widget
@@ -22,6 +34,8 @@ class Props(gws.base.model.widget.Props):
 
 @gws.ext.object.modelWidget('float')
 class Object(gws.base.model.widget.Object):
+    """Float input widget object."""
+
     def props(self, user):
         return gws.u.merge(
             super().props(user),

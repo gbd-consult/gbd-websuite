@@ -1,3 +1,5 @@
+"""Base exporter."""
+
 from typing import Optional
 
 import gws
@@ -36,7 +38,14 @@ class Props(gws.Props):
 
 
 class Object(gws.Exporter):
-    """Exporter object."""
+    """Base exporter.
+
+    Writes features to files in one format. Provides subclasses with the
+    common export options, the client props and event notification.
+
+    Subclasses set ``supportsVector``, ``supportsRaster`` and
+    ``supportsMultiLayer`` and implement ``run``.
+    """
 
     def configure(self):
         self.title = self.cfg('title')
@@ -50,7 +59,6 @@ class Object(gws.Exporter):
         self.supportedAttributeTypes = []
 
     def props(self, user) -> Props:
-        """Return exporter properties."""
         return Props(
             uid=self.uid,
             title=self.title,
@@ -59,6 +67,11 @@ class Object(gws.Exporter):
         )
 
     def notify(self, ea: 'ExportArgs', event: str):
-        """Notify exporter of export events."""
+        """Pass an export event to the notification callback of the export arguments.
+
+        Args:
+            ea: Export arguments.
+            event: Event name.
+        """
         if ea.notify:
             ea.notify(event)

@@ -25,46 +25,113 @@ class Grabber:
         """Return a single tile as an encoded image, composing and storing it if needed.
 
         A tile outside the layer's range is a transparent image.
-        With ``params``, the request is dynamic: the store is bypassed.
-        Raises on source failure.
+
+        Args:
+            mt: Tile.
+            params: Dynamic request parameters. With ``params``, the persistent store is bypassed.
+
+        Returns:
+            The encoded tile.
+
+        Raises:
+            ``Exception``: Errors of the source request are passed through.
         """
 
     def get_tile_as_image(self, mt: MapTile, params: Optional[dict] = None) -> 'Image':
         """Return a single tile as an image, composing and storing it if needed.
 
         Same contract as ``get_tile_as_bytes``, decoded pixels instead of bytes.
+
+        Args:
+            mt: Tile.
+            params: Dynamic request parameters. With ``params``, the persistent store is bypassed.
+
+        Returns:
+            The tile image.
+
+        Raises:
+            ``Exception``: Errors of the source request are passed through.
         """
 
     def get_tiles_as_bytes_dict(self, mtr: MapTileRange, params: Optional[dict] = None) -> dict[MapTile, bytes]:
         """Return a rectangular block of tiles as encoded images.
 
-        Sparse: contains entries only for tiles present in the grid.
-        With ``params``, the request is dynamic: the store is bypassed.
-        Raises on source failure.
+        Args:
+            mtr: Tile range.
+            params: Dynamic request parameters. With ``params``, the persistent store is bypassed.
+
+        Returns:
+            Encoded tiles, keyed by tile. Sparse: contains entries only for tiles present in the grid.
+
+        Raises:
+            ``Exception``: Errors of the source request are passed through.
         """
 
     def get_tiles_as_image_dict(self, mtr: MapTileRange, params: Optional[dict] = None) -> dict[MapTile, 'Image']:
         """Return a rectangular block of tiles as images.
 
         Same contract as ``get_tiles_as_bytes_dict``, decoded pixels instead of bytes.
+
+        Args:
+            mtr: Tile range.
+            params: Dynamic request parameters. With ``params``, the persistent store is bypassed.
+
+        Returns:
+            Tile images, keyed by tile.
+
+        Raises:
+            ``Exception``: Errors of the source request are passed through.
         """
 
     def get_box_as_bytes(self, extent: Extent, w: int, h: int, params: Optional[dict] = None) -> bytes:
         """Return an encoded image for arbitrary extent and pixel size.
 
         A box overlapping no data is a transparent image.
-        With ``params``, the request is dynamic: the store is bypassed.
-        Raises on source failure.
+
+        Args:
+            extent: Extent in the target CRS.
+            w: Width in pixels.
+            h: Height in pixels.
+            params: Dynamic request parameters. With ``params``, the persistent store is bypassed.
+
+        Returns:
+            The encoded image.
+
+        Raises:
+            ``Exception``: Errors of the source request are passed through.
         """
 
     def get_box_as_image(self, extent: Extent, w: int, h: int, params: Optional[dict] = None) -> 'Image':
         """Return an image for arbitrary extent and pixel size.
 
         Same contract as ``get_box_as_bytes``, decoded pixels instead of bytes.
+
+        Args:
+            extent: Extent in the target CRS.
+            w: Width in pixels.
+            h: Height in pixels.
+            params: Dynamic request parameters. With ``params``, the persistent store is bypassed.
+
+        Returns:
+            The image.
+
+        Raises:
+            ``Exception``: Errors of the source request are passed through.
         """
 
     def levels(self) -> list[int]:
-        """Return a list of levels this grabber supports."""
+        """Return the levels this grabber supports.
+
+        Returns:
+            A list of levels.
+        """
 
     def tile_range_for_level(self, z: int) -> MapTileRange:
-        """Return the tile range for a level, in the grabber's grid."""
+        """Return the tile range covered by the grabber's extent at a level.
+
+        Args:
+            z: Level.
+
+        Returns:
+            The tile range in the grabber's grid.
+        """

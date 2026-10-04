@@ -1,4 +1,4 @@
-"""Generic scalar field."""
+"""Base class for scalar fields."""
 
 from typing import Optional, Callable, cast
 
@@ -18,7 +18,15 @@ class Props(gws.base.model.field.Props):
 
 
 class Object(gws.base.model.field.Object):
+    """Base scalar field.
+
+    Maps the field to the source column with the same name. Provides reading the column
+    and writing it to the record, and the transfer of the value between record, feature
+    and props, applying value objects and field permissions.
+    """
+
     isVirtual: bool
+    """The field is not read from or written to the database."""
 
     def configure(self):
         self.isVirtual = self.cfg('isVirtual', default=False)
@@ -110,6 +118,22 @@ class Object(gws.base.model.field.Object):
         convert_fn: Callable,
         mc: gws.ModelContext,
     ):
+        """Compute the field value for the current operation.
+
+        A value object that is not a default value provides the value. Otherwise the value
+        is taken from ``source`` and converted, if the user has access and the value is not
+        None. Otherwise a default value object provides the value.
+
+        Args:
+            feature: The feature.
+            source: A dict of attributes to read the value from.
+            has_access: Whether the user may access the field.
+            convert_fn: Function ``(feature, value, mc)`` that converts the source value.
+            mc: The model context.
+
+        Returns:
+            The value, or None if there is none.
+        """
         mv = self.model_value(mc)
 
         if mv and not mv.isDefault:
@@ -124,6 +148,14 @@ class Object(gws.base.model.field.Object):
             return mv.compute(self, feature, mc)
 
     def model_value(self, mc: gws.ModelContext):
+        """Return the first value object for the current operation that the user can use.
+
+        Args:
+            mc: The model context.
+
+        Returns:
+            The value object, or None if there is none.
+        """
         for mv in self.values:
             if mc.op in mv.ops and mc.user.can_use(mv):
                 return mv

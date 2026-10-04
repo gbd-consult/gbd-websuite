@@ -1,14 +1,4 @@
-"""XML namespace helpers.
-
-Provides a table of namespaces and name utilities.
-
-The table contains well-known namespaces (``namespace_c.py``, accessible as ``namespace.c.<NAME>``),
-keyed by an uppercase name (``OWS_11``, ``GML``), and custom namespaces registered at configuration time (``register``),
-which have no name.
-A prefix can occur several times (e.g. ``gml`` for GML 2 and GML 3.2). A URI can occur several times
-with different schema locations (``GML_2``, ``GML_3_1``); ``find_by_uri`` returns the first row,
-a document that needs another one declares it explicitly (``XmlElement.namespaces``).
-"""
+"""Namespace table and XML name utilities."""
 
 from typing import Optional
 
@@ -30,19 +20,44 @@ ADHOC = 'adhoc:'
 
 
 def find_well_known(name: str) -> Optional[gws.XmlNamespace]:
-    """Locate a well-known Namespace by its constant name (``OWS_11``, ``GML``)."""
+    """Find a well-known namespace by its constant name.
+
+    Args:
+        name: Constant name in ``namespace_c``, e.g. ``OWS_11`` or ``GML``.
+
+    Returns:
+        The namespace, or ``None`` if there is no such name.
+    """
 
     return _NAME_INDEX.get(name)
 
 
 def find_by_uri(uri: str) -> Optional[gws.XmlNamespace]:
-    """Locate a well-known or registered Namespace by its URI."""
+    """Find a well-known or registered namespace by its URI.
+
+    If several well-known namespaces share the URI, the first one in ``namespace_c`` is returned.
+
+    Args:
+        uri: Namespace URI.
+
+    Returns:
+        The namespace, or ``None`` if the URI is unknown.
+    """
 
     return _URI_INDEX.get(uri)
 
 
 def find_by_prefix(prefix: str) -> Optional[gws.XmlNamespace]:
-    """Locate a well-known or registered Namespace by its prefix, registered ones first."""
+    """Find a well-known or registered namespace by its prefix.
+
+    Registered namespaces are checked first, then the well-known ones in the order of ``namespace_c``.
+
+    Args:
+        prefix: Namespace prefix.
+
+    Returns:
+        The namespace, or ``None`` if the prefix is unknown.
+    """
 
     for ns in _CUSTOM:
         if ns.prefix == prefix:
@@ -56,8 +71,14 @@ def find_by_prefix(prefix: str) -> Optional[gws.XmlNamespace]:
 def register(ns: gws.XmlNamespace):
     """Register a custom namespace.
 
-    Registering the same prefix and URI again is a no-op. A different URI under an existing prefix,
-    or an existing URI under a different prefix, is an error.
+    Registering the same prefix and URI again does nothing.
+
+    Args:
+        ns: The namespace to register.
+
+    Raises:
+        NamespaceError: If the URI is already known under a different prefix,
+            or the prefix is already used for a different URI.
     """
 
     old = _URI_INDEX.get(ns.uri)
@@ -75,7 +96,10 @@ def register(ns: gws.XmlNamespace):
 
 
 def unregister_all():
-    """Remove all custom namespaces (for tests)."""
+    """Remove all registered custom namespaces.
+
+    Used in tests.
+    """
 
     for ns in _CUSTOM:
         del _URI_INDEX[ns.uri]
@@ -83,7 +107,19 @@ def unregister_all():
 
 
 def new(prefix: str, uri: str, schemaLocation: str = '', extendsGml: bool = False) -> gws.XmlNamespace:
-    """Create a Namespace object."""
+    """Create a namespace object.
+
+    The namespace is not registered.
+
+    Args:
+        prefix: Default prefix, empty for a default namespace declaration.
+        uri: Namespace URI.
+        schemaLocation: Schema location URL.
+        extendsGml: Whether the namespace schema extends the GML schema.
+
+    Returns:
+        A new namespace object.
+    """
 
     return gws.XmlNamespace(
         prefix=prefix,
@@ -113,9 +149,16 @@ def parse_name(name: str) -> tuple[str, str, str]:
 
 
 def full_name(name: str, ns: Optional[gws.XmlNamespace | str]) -> str:
-    """Create a Clark name (``{uri}name``) from a name and a namespace or an URI.
+    """Create a Clark name (``{uri}name``) from a name and a namespace or a URI.
 
-    An existing prefix or URI in ``name`` is replaced. Without a namespace, the local name is returned.
+    An existing prefix or URI in ``name`` is replaced.
+
+    Args:
+        name: A local, prefixed or Clark name.
+        ns: A namespace object or a URI.
+
+    Returns:
+        The Clark name, or the local name if ``ns`` is empty.
     """
 
     pname = plain_name(name)
@@ -126,7 +169,14 @@ def full_name(name: str, ns: Optional[gws.XmlNamespace | str]) -> str:
 
 
 def plain_name(name: str) -> str:
-    """Returns the local part of an XML name."""
+    """Get the local part of an XML name.
+
+    Args:
+        name: A local, prefixed or Clark name.
+
+    Returns:
+        The local name.
+    """
 
     return parse_name(name)[2]
 
@@ -136,15 +186,16 @@ def declarations(
     prefixes: Optional[dict[str, str]] = None,
     with_schema_locations: bool = False,
 ) -> dict:
-    """Returns an xmlns declaration block as dictionary of attributes.
+    """Create ``xmlns`` declarations as attributes.
 
     Args:
         namespaces: Namespaces to declare (``prefix == ''`` is the default namespace).
-        prefixes: Mapping from URIs to custom prefixes.
-        with_schema_locations: Add the "schemaLocation" attribute.
+        prefixes: Mapping from URIs to prefixes that replace the default ones.
+        with_schema_locations: Add an ``xsi:schemaLocation`` attribute (and the ``xsi`` declaration)
+            for namespaces that have a schema location.
 
     Returns:
-        A dict of attributes.
+        A dict of attribute names and values, sorted by name.
     """
 
     atts = []

@@ -1,4 +1,6 @@
 class JobTerminated(Exception):
+    """Raised in a worker when its job is no longer running, e.g. because it was cancelled."""
+
     pass
 
 
@@ -23,54 +25,207 @@ class Job(Data):
     """Background job data."""
 
     uid: str
+    """Job uid."""
     user: 'User'
+    """User who created the job."""
     worker: str
+    """Worker class, as ``<module path>:<class name>``."""
     state: JobState
+    """Job state."""
     error: str
+    """Error message, if the job failed."""
     numSteps: int
+    """Total number of steps, for progress reporting."""
     step: int
+    """Current step."""
     stepName: str
+    """Name of the current step."""
     payload: dict
+    """Input data for the worker."""
     result: dict
+    """Result data from the worker."""
     timeCreated: datetime.datetime
+    """Creation time."""
     timeUpdated: datetime.datetime
+    """Time of the last update."""
 
 
 class JobRequest(Request):
+    """Request that refers to a job."""
+
     jobUid: str
+    """Job uid."""
 
 
 class JobStatusResponse(Response):
+    """Job status."""
+
     jobUid: str
+    """Job uid."""
     state: JobState
+    """Job state."""
     progress: int
+    """Progress in percent."""
     stepName: str
+    """Name of the current step."""
     output: dict
+    """Job-specific output, e.g. a download URL when the job is complete."""
 
 
 class JobManager(Node):
-    """Job Manager."""
+    """Job manager."""
 
-    def create_job(self, worker: type, user: User, payload: dict | Data = None) -> Job: ...
+    def create_job(self, worker: type, user: User, payload: dict | Data = None) -> Job:
+        """Create a job in the ``open`` state.
 
-    def get_job(self, job_uid: str, user: User = None, state: JobState = None) -> Optional[Job]: ...
+        Args:
+            worker: Worker class. It must have a ``run(root, job)`` class method.
+            user: User the job runs for.
+            payload: Input data for the worker, must be JSON-serializable.
 
-    def update_job(self, job: Job, **kwargs) -> Optional[Job]: ...
+        Returns:
+            The new job.
+        """
 
-    def run_job(self, job: Job) -> Optional[Job]: ...
+    def get_job(self, job_uid: str, user: User = None, state: JobState = None) -> Optional[Job]:
+        """Read a job.
 
-    def cancel_job(self, job: Job) -> Optional[Job]: ...
+        Args:
+            job_uid: Job uid.
+            user: If given, the job must belong to this user.
+            state: If given, the job must be in this state.
 
-    def remove_job(self, job: Job): ...
+        Returns:
+            The job, or ``None`` if it does not exist or does not match. The reason is logged.
+        """
 
-    def schedule_job(self, job: Job) -> Job: ...
+    def update_job(self, job: Job, **kwargs) -> Optional[Job]:
+        """Update fields of a job.
 
-    def require_job(self, req: 'WebRequester', p: JobRequest) -> Job: ...
-    
-    def require_result(self, req: 'WebRequester', p: JobRequest) -> dict: ...
+        Args:
+            job: The job.
+            **kwargs: Job fields to update.
 
-    def handle_status_request(self, req: 'WebRequester', p: JobRequest) -> JobStatusResponse: ...
+        Returns:
+            The updated job, or ``None`` if the job does not exist.
+        """
 
-    def handle_cancel_request(self, req: 'WebRequester', p: JobRequest) -> JobStatusResponse: ...
+    def run_job(self, job: Job) -> Optional[Job]:
+        """Run an open job in the current process.
 
-    def job_status_response(self, job: Job, **kwargs) -> 'JobStatusResponse': ...
+        Marks the job as running, so that it runs only once, and calls the
+        ``run`` method of its worker. If the worker raises an exception, the
+        job goes into the ``error`` state.
+
+        Args:
+            job: The job.
+
+        Returns:
+            The job after the run.
+
+        Raises:
+            ``gws.Error``: If the job is not open or is already taken by another process.
+        """
+
+    def cancel_job(self, job: Job) -> Optional[Job]:
+        """Set a job to the ``cancel`` state.
+
+        The worker notices the change on its next job update and stops.
+
+        Args:
+            job: The job.
+
+        Returns:
+            The updated job, or ``None`` if the job does not exist.
+        """
+
+    def remove_job(self, job: Job):
+        """Delete a job record.
+
+        Args:
+            job: The job.
+        """
+
+    def schedule_job(self, job: Job) -> Job:
+        """Start an open job.
+
+        The job is passed to the uWSGI spooler if it is available, otherwise it
+        runs at once in the current process.
+
+        Args:
+            job: The job.
+
+        Returns:
+            The job.
+
+        Raises:
+            ``gws.Error``: If the job is not open.
+        """
+
+    def require_job(self, req: 'WebRequester', p: JobRequest) -> Job:
+        """Return the job of a request, if it belongs to the requesting user.
+
+        Args:
+            req: Web request.
+            p: Job request.
+
+        Returns:
+            The job.
+
+        Raises:
+            ``gws.NotFoundError``: If the job does not exist or belongs to another user.
+        """
+
+    def require_result(self, req: 'WebRequester', p: JobRequest) -> dict:
+        """Return the result of a completed job of the requesting user.
+
+        Args:
+            req: Web request.
+            p: Job request.
+
+        Returns:
+            The job result.
+
+        Raises:
+            ``gws.NotFoundError``: If the job does not exist, belongs to another user,
+                is not complete or has no result.
+        """
+
+    def handle_status_request(self, req: 'WebRequester', p: JobRequest) -> JobStatusResponse:
+        """Return the status of a job of the requesting user.
+
+        Args:
+            req: Web request.
+            p: Job request.
+
+        Returns:
+            The job status.
+
+        Raises:
+            ``gws.NotFoundError``: If the job does not exist or belongs to another user.
+        """
+
+    def handle_cancel_request(self, req: 'WebRequester', p: JobRequest) -> JobStatusResponse:
+        """Cancel a job of the requesting user.
+
+        Args:
+            req: Web request.
+            p: Job request.
+
+        Returns:
+            The job status after cancelling.
+
+        Raises:
+            ``gws.NotFoundError``: If the job does not exist or belongs to another user.
+        """
+
+    def job_status_response(self, job: Job, **kwargs) -> 'JobStatusResponse':
+        """Create a status response for a job.
+
+        Args:
+            job: The job.
+            **kwargs: Extra or overriding response fields.
+
+        Returns:
+            The status response.
+        """

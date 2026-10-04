@@ -1,4 +1,19 @@
-"""Feature select widget."""
+"""Feature select widget.
+
+Drop-down list for choosing the related feature of a ``relatedFeature``
+field, optionally with a search field. This is the default widget of
+``relatedFeature`` fields.
+
+Example::
+
+    fields+ {
+        name "category"
+        type "relatedFeature"
+        fromColumn "category_id"
+        toModel "model_category"
+        widget { type "featureSelect" withSearch true }
+    }
+"""
 
 import gws
 import gws.base.model.widget
@@ -19,6 +34,8 @@ class Props(gws.base.model.widget.Props):
 
 @gws.ext.object.modelWidget('featureSelect')
 class Object(gws.base.model.widget.Object):
+    """Feature select widget object."""
+
     def props(self, user):
         return gws.u.merge(
             super().props(user),

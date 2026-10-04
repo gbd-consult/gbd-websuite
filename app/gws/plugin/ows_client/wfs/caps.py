@@ -1,3 +1,5 @@
+"""WFS capabilities parser."""
+
 import gws
 import gws.base.ows.client
 import gws.lib.crs
@@ -9,6 +11,17 @@ import gws.lib.xmlx as xmlx
 # @TODO check support caps (we need at least BBOX)
 
 def parse(xml) -> gws.OwsCapabilities:
+    """Read WFS capabilities from the GetCapabilities XML.
+
+    Each feature type is returned as a queryable source layer. Feature types
+    without a supported CRS or a WGS84 extent get WGS84 defaults.
+
+    Args:
+        xml: GetCapabilities XML.
+
+    Returns:
+        The parsed capabilities.
+    """
     caps_el = xmlx.from_string(xml, gws.XmlOptions(compactWhitespace=True, removeNamespaces=True))
     source_layers = gws.gis.source.check_layers(
         _feature_type(el) for el in caps_el.findall('FeatureTypeList/FeatureType'))
@@ -20,6 +33,7 @@ def parse(xml) -> gws.OwsCapabilities:
 
 
 def _feature_type(type_el):
+    """Create a source layer from a ``FeatureType`` element."""
     sl = gws.SourceLayer()
 
     sl.name = type_el.textof('Name')

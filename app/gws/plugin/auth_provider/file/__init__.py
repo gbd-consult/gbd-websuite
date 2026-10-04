@@ -1,11 +1,36 @@
-"""Provider for the file-based authorization.
+"""Authentication provider for users stored in a JSON file.
 
-This provider works with a local JSON file, which is expected to contain
-a list of user "records" (dicts).
+The file contains a list of user records (dicts). Each record must contain
+``login`` and ``password``, the password hashed with
+``gws.lib.password.encode``. ``name`` is used as the display name. Other
+fields, for example ``roles``, ``email`` or ``mfaUid``, are passed to
+``gws.base.auth.user.from_record`` and become properties of the user.
 
-A record is required to contain fields ``login`` and ``password`` (hashed as per `gws.lib.password.encode`).
+The provider accepts ``username`` and ``password`` credentials. If the login
+is not found, a dummy hash is checked anyway, so that the response time does
+not reveal whether a login exists. The file is read once, at configuration
+time.
 
-Other fields, if given, are converted to respective `gws.User` properties.
+The command ``gws auth password`` asks for a password and prints its hash for
+the file.
+
+Example::
+
+    auth.providers+ {
+        type "file"
+        path "/data/users.json"
+    }
+
+with ``/data/users.json``::
+
+    [
+        {
+            "login": "user_1",
+            "password": "<hash>",
+            "name": "User 1",
+            "roles": ["editor"]
+        }
+    ]
 """
 
 import getpass
@@ -26,9 +51,14 @@ class Config(gws.base.auth.provider.Config):
 
 @gws.ext.object.authProvider('file')
 class Object(gws.base.auth.provider.Object):
+    """File authentication provider."""
+
     path: str
+    """Path to the JSON file."""
     db: list[dict]
+    """User records read from the file."""
     dummyPassword: str
+    """Hash of a random password, checked when a login is not found."""
 
     def configure(self):
         self.path = self.cfg('path')
@@ -63,6 +93,7 @@ class Object(gws.base.auth.provider.Object):
                 return self._make_user(rec)
 
     def _make_user(self, rec: dict):
+        """Create a user from a file record."""
         user_rec = dict(rec)
 
         login = user_rec.pop('login', '')
@@ -74,7 +105,7 @@ class Object(gws.base.auth.provider.Object):
 
     @gws.ext.command.cli('authPassword')
     def passwd(self, p: gws.EmptyRequest):
-        """Encode a password for the authorization file"""
+        """Ask for a password and print its hash for the users file."""
 
         while True:
             p1 = getpass.getpass('Password: ')

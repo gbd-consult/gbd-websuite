@@ -23,7 +23,10 @@ class Config(gws.base.model.Config):
 
 @gws.ext.object.model('wms')
 class Object(gws.base.ows.client.model.Object):
+    """Read-only model for features queried from a WMS service."""
+
     provider: provider.Object
+    """WMS service provider."""
 
     def configure_provider(self):
         return gws.config.util.configure_provider_for(self, provider.Object)

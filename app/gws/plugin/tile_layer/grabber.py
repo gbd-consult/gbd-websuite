@@ -8,9 +8,18 @@ from . import provider
 
 
 class Object(gws.base.grabber.tile.Object):
+    """Grabber for XYZ tile services."""
+
     provider: provider.Object
+    """Tile provider."""
 
     def __init__(self, opts: gws.base.grabber.Options, provider: provider.Object):
+        """Create the grabber.
+
+        Args:
+            opts: Grabber options.
+            provider: Tile provider.
+        """
         super().__init__(opts)
         self.provider = provider
 

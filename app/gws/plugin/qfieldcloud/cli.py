@@ -1,4 +1,4 @@
-"""CLI"""
+"""Command-line interface for the QField Cloud plugin."""
 
 from typing import cast, Optional
 import gws
@@ -9,16 +9,27 @@ import gws.base.action
 from . import action
 
 class PackageRequest(gws.Request):
+    """Parameters of the ``qfieldcloudPackage`` command."""
+
     projectUid: Optional[str]
+    """GWS project uid."""
     qfcProjectUid: str
+    """QField project uid."""
     dir: str
+    """Directory to write the package into."""
     actionName: str = ''
+    """Action type or uid, ``qfieldcloud`` by default."""
 
 class Object(gws.Node):
+    """QField Cloud CLI commands.
+
+    Provides the ``qfieldcloudPackage`` command, which creates a QField package
+    into a directory.
+    """
 
     @gws.ext.command.cli('qfieldcloudPackage')
     def invoke(self, p: PackageRequest):
-        """Package a QField Cloud project."""
+        """Package a QField Cloud project into a directory."""
 
         root = gws.config.load()
         project = None

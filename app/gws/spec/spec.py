@@ -1,8 +1,4 @@
-"""Spec generator CLI tool
-
-This tool is supposed to be invoked on the _host_ (developer) system
-to generate developer specs (python stubs, typescript interfaces etc)
-"""
+"""Command line tool that runs the spec generator on the developer system."""
 
 import os
 import sys
@@ -33,6 +29,16 @@ Options:
 
 
 def main(args):
+    """Generate the specs and write them to the output directory.
+
+    Args:
+        args: Parsed command line arguments: the output directory as the first
+            positional argument, and the ``root``, ``manifest`` and ``v`` options.
+
+    Raises:
+        ``generator_main.Error``: If the generator fails; other exceptions are passed through as well.
+    """
+
     out_dir = args.get(1)
     if not out_dir:
         cli.fatal('output directory required')

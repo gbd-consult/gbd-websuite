@@ -1,3 +1,5 @@
+"""Project object."""
+
 from typing import Optional
 
 import gws
@@ -66,8 +68,12 @@ class Props(gws.Props):
 
 @gws.ext.object.project('default')
 class Object(gws.Project):
+    """Default project."""
+
     overviewMap: gws.base.map.Object
+    """Overview map, if configured."""
     title: str
+    """Project title."""
 
     def configure(self):
         gws.log.info(f'configuring project {self.uid!r}')

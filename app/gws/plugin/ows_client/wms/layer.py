@@ -17,7 +17,10 @@ class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
 
 @gws.ext.object.layer('wms')
 class Object(gws.base.layer.group.Object):
+    """Group layer that mirrors the layer tree of a WMS service, with ``wmsflat`` layers as leaves."""
+
     provider: provider.Object
+    """WMS service provider."""
 
     def configure_group(self):
         if super().configure_group():

@@ -1,12 +1,11 @@
-"""Well-known XML namespaces.
-
-Module-level constants with uppercase names (``OWS_11``, ``GML``); use as ``namespace.c.WFS``.
-"""
+"""Well-known XML namespaces."""
 
 import gws
 
 
 def _ns(prefix: str, uri: str, schema: str = '') -> gws.XmlNamespace:
+    """Create a namespace object."""
+
     return gws.XmlNamespace(prefix=prefix, uri=uri, schemaLocation=schema, extendsGml=False)
 
 

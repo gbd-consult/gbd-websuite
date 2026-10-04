@@ -1,4 +1,4 @@
-"""Generic related field."""
+"""Base class for related fields."""
 
 from typing import Optional, Iterable, Any, cast
 
@@ -17,31 +17,60 @@ class Props(field.Props):
 
 
 class Link(gws.Data):
+    """Link table of a many-to-many relationship."""
+
     table: sa.Table
+    """The link table."""
     fromKey: sa.Column
+    """Column in the link table that refers to the source model."""
     toKey: sa.Column
+    """Column in the link table that refers to the related model."""
 
 
 class RelRef(gws.Data):
+    """One side of a relationship."""
+
     model: gws.DatabaseModel
+    """The model."""
     table: sa.Table
+    """The table of the model."""
     key: sa.Column
+    """The column that takes part in the relationship."""
     uid: sa.Column
+    """The uid (primary key) column of the model."""
 
 
 class Relationship(gws.Data):
+    """Relationship between the model of a field and related models."""
+
     src: RelRef
+    """The side of the field's own model."""
     to: RelRef
+    """The related side, for relationships with a single related model."""
     tos: list[RelRef]
+    """The related sides."""
     link: Link
+    """The link table, for many-to-many relationships."""
     deleteCascade: bool = False
+    """When unlinking related features, delete them instead of clearing their key."""
 
 
 class Object(field.Object):
+    """Base related field.
+
+    Links features of the field's model to features of other database models.
+    Provides the relationship description, conversion of related features to and from
+    props, and database helpers to read and update the keys of related features.
+    Subclasses describe the link in `configure_relationship`.
+    """
+
     model: gws.DatabaseModel
+    """The model of this field."""
     rel: Relationship
+    """The relationship of this field."""
 
     def __getstate__(self):
+        """Return the object state without the relationship."""
         return gws.u.omit(vars(self), 'rel')
 
     def post_configure(self):
@@ -51,6 +80,11 @@ class Object(field.Object):
         self.configure_relationship()
 
     def configure_relationship(self):
+        """Set up the relationship ``rel``.
+
+        Called after configuration and again on activation, because the relationship
+        holds SQLAlchemy objects and is not pickled. The base implementation does nothing.
+        """
         pass
 
     def configure_widget(self):
@@ -63,6 +97,17 @@ class Object(field.Object):
                 return True
 
     def get_model(self, uid: str) -> gws.DatabaseModel:
+        """Return a model by uid.
+
+        Args:
+            uid: The model uid.
+
+        Returns:
+            The model.
+
+        Raises:
+            gws.ConfigurationError: If the model is not found.
+        """
         mod = self.root.get(uid)
         if not mod:
             raise gws.ConfigurationError(f'model {uid!r} not found')
@@ -76,6 +121,15 @@ class Object(field.Object):
         ]
 
     def related_field(self, to: RelRef) -> Optional[gws.ModelField]:
+        """Find the field of a related model that describes the reverse relationship.
+
+        Args:
+            to: The related side of the relationship.
+
+        Returns:
+            The field of ``to.model`` whose relationship starts at ``to.model`` and ``to.key``,
+            or None if there is no such field.
+        """
         for fld in to.model.fields:
             rel2 = cast(Relationship, getattr(fld, 'rel', None))
             if not rel2:
@@ -164,6 +218,17 @@ class Object(field.Object):
             uid: gws.FeatureUid,
             mc: gws.ModelContext
     ):
+        """Return the key value of the feature with the given uid.
+
+        Args:
+            model: The model to query.
+            key_column: The key column.
+            uid: The feature uid.
+            mc: The model context.
+
+        Returns:
+            The key value, or None if the feature is not found.
+        """
         sql = sa.select(key_column).where(model.uid_column().__eq__(uid))
         with model.db.connect() as conn:
             rs = list(conn.execute(sql))
@@ -177,6 +242,15 @@ class Object(field.Object):
             key: Any,
             mc: gws.ModelContext
     ):
+        """Set the key column to a value for the features with the given uids.
+
+        Args:
+            model: The model to update.
+            key_column: The key column.
+            uids: The feature uids.
+            key: The new key value.
+            mc: The model context.
+        """
 
         sql = sa.update(
             model.table()
@@ -196,6 +270,21 @@ class Object(field.Object):
             uids: Optional[Iterable[gws.FeatureUid]] = None,
             keys: Optional[Iterable[Any]] = None,
     ):
+        """Map feature uids to key values.
+
+        Selects the features either by ``uids`` or, if no uids are given, by ``keys``.
+        None values are ignored.
+
+        Args:
+            mc: The model context.
+            model: The model to query.
+            key_column: The key column.
+            uids: Feature uids to look up.
+            keys: Key values to look up.
+
+        Returns:
+            A dict mapping uids (as strings) to key values.
+        """
 
         if uids:
             uids = set(v for v in uids if v is not None)
@@ -214,6 +303,17 @@ class Object(field.Object):
             uids: Iterable[gws.FeatureUid],
             mc: gws.ModelContext
     ) -> set[tuple[gws.FeatureUid, gws.FeatureUid]]:
+        """Return uid and key pairs for the features with the given uids.
+
+        Args:
+            model: The model to query.
+            key_column: The key column.
+            uids: The feature uids. None values are ignored.
+            mc: The model context.
+
+        Returns:
+            A set of ``(uid, key)`` tuples.
+        """
 
         vs = set(v for v in uids if v is not None)
         sql = sa.select(model.uid_column(), key_column).where(model.uid_column().in_(vs))
@@ -227,6 +327,17 @@ class Object(field.Object):
             keys: Iterable[gws.FeatureUid],
             mc: gws.ModelContext
     ) -> set[tuple[gws.FeatureUid, gws.FeatureUid]]:
+        """Return uid and key pairs for the features with the given key values.
+
+        Args:
+            model: The model to query.
+            key_column: The key column.
+            keys: The key values. None values are ignored.
+            mc: The model context.
+
+        Returns:
+            A set of ``(uid, key)`` tuples.
+        """
 
         vs = set(v for v in keys if v is not None)
         sql = sa.select(model.uid_column(), key_column).where(key_column.in_(vs))
@@ -240,6 +351,14 @@ class Object(field.Object):
             uid_and_key: Iterable[tuple[gws.FeatureUid, gws.FeatureUid]],
             mc: gws.ModelContext
     ):
+        """Set the key column for each feature in a list of uid and key pairs.
+
+        Args:
+            model: The model to update.
+            key_column: The key column.
+            uid_and_key: ``(uid, key)`` tuples.
+            mc: The model context.
+        """
 
         with model.db.connect() as conn:
             for uid, key in uid_and_key:
@@ -260,6 +379,15 @@ class Object(field.Object):
             delete: bool,
             mc: gws.ModelContext,
     ):
+        """Delete the features with the given uids, or set their key column to NULL.
+
+        Args:
+            model: The model to update.
+            key_column: The key column.
+            uids: The feature uids. None values are ignored.
+            delete: If True, delete the features, otherwise clear their key.
+            mc: The model context.
+        """
 
         vs = set(v for v in uids if v is not None)
         if not vs:
@@ -289,7 +417,26 @@ class Object(field.Object):
             uids: Iterable[gws.FeatureUid],
             mc: gws.ModelContext
     ) -> list[gws.Feature]:
+        """Load related features by uid.
+
+        Args:
+            model: The related model.
+            uids: The feature uids.
+            mc: The model context, the features are loaded in a secondary context.
+
+        Returns:
+            The features.
+        """
         return model.get_features(uids, gws.base.model.secondary_context(mc))
 
     def column_or_uid(self, model, cfg):
+        """Return a column of a model, or its uid column.
+
+        Args:
+            model: The database model.
+            cfg: The column name, or an empty value for the uid column.
+
+        Returns:
+            The column.
+        """
         return model.column(cfg) if cfg else model.uid_column()

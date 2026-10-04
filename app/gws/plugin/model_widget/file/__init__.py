@@ -1,4 +1,18 @@
-"""File widget."""
+"""File widget.
+
+Upload and download of the file in a ``file`` field. This is the default
+widget of ``file`` fields.
+
+Example::
+
+    fields+ {
+        name "photo"
+        type "file"
+        contentColumn "photo_content"
+        nameColumn "photo_name"
+        widget.type "file"
+    }
+"""
 
 import gws
 import gws.base.model.widget
@@ -18,4 +32,6 @@ class Props(gws.base.model.widget.Props):
 
 @gws.ext.object.modelWidget('file')
 class Object(gws.base.model.widget.Object):
+    """File widget object."""
+
     pass

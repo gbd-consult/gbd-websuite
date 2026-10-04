@@ -1,10 +1,4 @@
-"""XML serializer.
-
-Element and attribute names are local (``Point``) or Clark names (``{uri}Point``); a prefixed name is an error.
-An element in the default namespace (the nearest ``xmlns`` declaration, or ``defaultNamespace``) is written unprefixed.
-Otherwise the prefix comes from the nearest enclosing declaration (``XmlElement.namespaces``), or from the namespace table,
-renamed via ``customNamespacePrefixes``. With ``withNamespaceDeclarations``, all namespaces used in the tree are declared on the root.
-"""
+"""XML serializer."""
 
 from typing import Optional
 
@@ -16,9 +10,19 @@ from . import error, namespace, util
 
 
 class Serializer:
-    """Serializes an element tree to a string, see ``XmlElement.to_string``."""
+    """Serializer of an element tree to a string, used by ``XmlElement.to_string``.
+
+    A serializer object is used for one call of ``to_string``.
+    """
 
     def __init__(self, el: gws.XmlElement, opts: Optional[gws.XmlOptions]):
+        """Create a serializer.
+
+        Args:
+            el: The root element.
+            opts: Serialization options, defaults are used if ``None``.
+        """
+
         self.root = el
         self.buf = []
 
@@ -29,7 +33,15 @@ class Serializer:
         self.ns_stack = []
 
     def to_string(self) -> str:
-        """Returns the XML string."""
+        """Serialize the tree.
+
+        Returns:
+            The XML string.
+
+        Raises:
+            WriteError: If the tree contains an invalid or prefixed name, or an invalid prefix.
+            NamespaceError: If a namespace is unknown, or one prefix is used for different URIs.
+        """
 
         if self.opts.withXmlDeclaration or self.opts.doctype:
             self.buf.append(_XML_DECL)
@@ -47,6 +59,8 @@ class Serializer:
     ##
 
     def _el_to_string(self, el, namespaces, is_root=False):
+        """Write an element, its children and its tail to the buffer."""
+
         self.ns_stack.append(namespaces)
 
         tag = self._element_name(el.tag)
@@ -74,6 +88,8 @@ class Serializer:
         self.ns_stack.pop()
 
     def _process_atts(self, attrib):
+        """Convert attribute names and values, skipping ``None`` values."""
+
         atts = {}
 
         for key, val in attrib.items():
@@ -84,6 +100,8 @@ class Serializer:
         return atts
 
     def _namespace_declarations(self, namespaces, is_root):
+        """Create ``xmlns`` attributes for namespaces declared on an element."""
+
         if not namespaces:
             return {}
         return namespace.declarations(
@@ -93,6 +111,8 @@ class Serializer:
         )
 
     def _element_name(self, name):
+        """Get the output name of an element, unprefixed in the default namespace."""
+
         uri, pname = self._parse_name(name)
 
         if not uri:
@@ -104,6 +124,8 @@ class Serializer:
         return self._prefix(uri, name) + ':' + pname
 
     def _attribute_name(self, name):
+        """Get the output name of an attribute."""
+
         uri, pname = self._parse_name(name)
 
         if not uri:
@@ -112,6 +134,8 @@ class Serializer:
         return self._prefix(uri, name) + ':' + pname
 
     def _parse_name(self, name):
+        """Split a name into URI and local name, rejecting prefixed and invalid names."""
+
         uri, prefix, pname = namespace.parse_name(name)
         if prefix:
             raise error.WriteError(f'prefixed name {name!r}')
@@ -120,6 +144,8 @@ class Serializer:
         return uri, pname
 
     def _default_uri(self):
+        """Get the URI of the default namespace in the current scope."""
+
         for nss in reversed(self.ns_stack):
             for ns in nss:
                 if ns.prefix == '':
@@ -129,6 +155,8 @@ class Serializer:
         return ''
 
     def _prefix(self, uri, name):
+        """Get the output prefix for a namespace URI."""
+
         if uri == namespace.XML_URI:
             return namespace.XML
 
@@ -147,12 +175,16 @@ class Serializer:
         raise error.NamespaceError(f'unknown namespace in {name!r}')
 
     def _final_prefix(self, ns) -> str:
+        """Apply ``customNamespacePrefixes`` to a namespace prefix and validate it."""
+
         pfx = self.ns_renames.get(ns.uri) or ns.prefix
         if not re.fullmatch(_NAME_RE, pfx):
             raise error.WriteError(f'invalid XML prefix {pfx!r}')
         return pfx
 
     def _collect_namespaces(self, root_ns):
+        """Collect the namespaces to be declared on the root element."""
+
         # namespaces to declare on the root: its own, the default one and those used in the tree
         # and not declared on an enclosing element
 
@@ -199,6 +231,8 @@ class Serializer:
         return nss
 
     def _text_to_string(self, arg):
+        """Convert and escape a text value."""
+
         s, ok = util.atom_to_string(arg)
         if not ok:
             s = str(arg)
@@ -207,6 +241,8 @@ class Serializer:
         return util.escape_text(s)
 
     def _value_to_string(self, arg):
+        """Convert and escape an attribute value."""
+
         s, ok = util.atom_to_string(arg)
         if not ok:
             s = str(arg)

@@ -1,13 +1,20 @@
 class ExportArgs(Data):
-    """Exporter arguments."""
+    """Arguments passed to ``Exporter.run``."""
 
     exporter: 'Exporter'
+    """The exporter."""
     features: Optional[list['Feature']]
+    """Features to export."""
     shape: Optional['Shape']
+    """Shape from the export request."""
     project: 'Project'
+    """Project of the export request."""
     user: 'User'
+    """User the export runs for."""
     notify: Callable
+    """Progress callback, called with an event name."""
     maxErrors: int = 100
+    """Maximum number of errors collected in the result."""
 
 
 class ExportTarget(Enum):
@@ -23,11 +30,17 @@ class ExportResult(Data):
     """Export result."""
 
     path: str
+    """Path of the result file, empty if nothing was exported."""
     mimeType: str
+    """Mime type of the result file."""
     numFiles: int
+    """Number of files written."""
     numFeaturesTotal: int
+    """Number of requested features."""
     numFeaturesExported: int
+    """Number of exported features."""
     errors: list[str]
+    """Error messages for features that were not exported."""
 
 
 class FeatureExportStrategy(Enum):
@@ -40,51 +53,130 @@ class FeatureExportStrategy(Enum):
 
 
 class ExportRequestType(Enum):
+    """Kind of data to export."""
+
     vector = 'vector'
+    """Vector features."""
     raster = 'raster'
+    """Raster data."""
 
 
 class ExportRequest(Request):
+    """Export request from the client."""
+
     type: ExportRequestType
+    """Kind of data to export."""
     exporterUid: str
+    """Uid of the exporter."""
     features: Optional[list['FeatureProps']]
+    """Features to export."""
     shape: Optional['ShapeProps']
+    """Shape passed to the exporter."""
 
 
 class ExportResponse(Response):
+    """Export response with the content of the result file."""
+
     content: str | bytes
+    """File content."""
     contentFilename: str
+    """File name."""
     mimeType: str
+    """Mime type."""
 
 
 class ExporterManager(Node):
     """Exporter manager."""
 
-    def start_export_job(self, request: ExportRequest, user: 'User') -> 'JobStatusResponse': ...
+    def start_export_job(self, request: ExportRequest, user: 'User') -> 'JobStatusResponse':
+        """Create and schedule a background export job.
 
-    def exec_export(self, request: ExportRequest, out_path: str): ...
+        Args:
+            request: Export request.
+            user: User the export runs for.
 
-    def list_exporters(self, where: list['Node'], user: 'User') -> list['Exporter']: ...
+        Returns:
+            The status of the new job.
+        """
 
-    def get_exporter(self, where: list['Node'], uid: str, user: 'User') -> Optional['Exporter']: ...
+    def exec_export(self, request: ExportRequest, out_path: str):
+        """Run an export directly, as the system user, and copy the result file.
+
+        Args:
+            request: Export request.
+            out_path: Path to copy the result file to.
+
+        Returns:
+            The export result.
+
+        Raises:
+            ``gws.Error``: If no features were exported.
+        """
+
+    def list_exporters(self, where: list['Node'], user: 'User') -> list['Exporter']:
+        """List the exporters of the given objects that the user can use.
+
+        Of several exporters with the same title, only the first one is listed.
+
+        Args:
+            where: Objects with an ``exporters`` list, e.g. a project and the application.
+                ``None`` entries are ignored.
+            user: User.
+
+        Returns:
+            A list of exporters.
+        """
+
+    def get_exporter(self, where: list['Node'], uid: str, user: 'User') -> Optional['Exporter']:
+        """Find an exporter by uid among the exporters the user can use.
+
+        Args:
+            where: Objects with an ``exporters`` list, e.g. a project and the application.
+            uid: Exporter uid.
+            user: User.
+
+        Returns:
+            The exporter, or ``None`` if it is not found.
+        """
 
 
 class Exporter(Node):
-    """Exporter object."""
+    """Exporter.
+
+    Writes features to files in a specific format.
+    """
 
     title: str
+    """Exporter title, shown in the client."""
     options: dict
-    
+    """Format-specific options, passed to the GDAL driver."""
+
     supportsVector: bool
+    """The exporter can export vector features."""
     supportsRaster: bool
+    """The exporter can export raster data."""
     supportsMultiLayer: bool
+    """The format can hold several layers in one file."""
 
     withNoGeometry: bool
+    """Export features without geometry instead of skipping them."""
     withMixedGeometry: bool
+    """Allow different geometry types in one layer instead of skipping features."""
     withMixedCrs: bool
+    """Allow different CRS in one layer instead of skipping features."""
     withMultiLayer: bool
+    """Write all layers to one file."""
 
     supportedAttributeTypes: Optional[list[gws.AttributeType]]
+    """Attribute types the exporter can write. If empty, the types supported by GDAL are used."""
 
     def run(self, ea: ExportArgs, er: ExportResult):
-        """Perform format-specific export."""
+        """Export the features.
+
+        Writes the result file and sets its path, the mime type, the counts
+        and errors in the export result.
+
+        Args:
+            ea: Export arguments.
+            er: Export result, filled by the exporter.
+        """

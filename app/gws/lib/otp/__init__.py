@@ -1,8 +1,25 @@
-"""Generate HOTP and TOTP tokens.
+"""Generate and check HOTP and TOTP one-time passwords.
+
+This package implements HMAC-based (HOTP, RFC 4226) and time-based (TOTP, RFC 6238)
+one-time passwords, as used by multi-factor authentication. It also creates ``otpauth://``
+key URIs for authenticator apps and random secrets.
+
+All functions accept an optional ``Options`` object. Options that are not set are taken
+from ``DEFAULTS`` (30 second step, 6 digits, SHA-1, tolerance of one step).
+
+Example::
+
+    import time
+    import gws.lib.otp
+
+    secret = gws.lib.otp.random_secret()
+    uri = gws.lib.otp.totp_key_uri(secret, 'GWS', 'user@example.com')
+    ok = gws.lib.otp.check_totp(user_input, secret, int(time.time()))
 
 References:
     https://datatracker.ietf.org/doc/html/rfc4226
     https://datatracker.ietf.org/doc/html/rfc6238
+    https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 """
 
 from typing import Optional, cast
@@ -17,11 +34,18 @@ import gws.lib.net
 
 
 class Options(gws.Data):
+    """OTP generation options."""
+
     start: int
+    """Start time (Unix timestamp) for TOTP counting."""
     step: int
+    """TOTP time step in seconds."""
     length: int
+    """Number of digits in a token."""
     tolerance: int
+    """Number of time steps before and after the current one that are also accepted."""
     algo: str
+    """Hash algorithm name, as in ``hashlib``, e.g. ``sha1``."""
 
 
 DEFAULTS = Options(
@@ -34,14 +58,32 @@ DEFAULTS = Options(
 
 
 def new_hotp(secret: str | bytes, counter: int, options: Optional[Options] = None) -> str:
-    """Generate a new HOTP value as per rfc4226 section 5.3."""
+    """Generate an HOTP token as per RFC 4226 section 5.3.
+
+    Args:
+        secret: Shared secret.
+        counter: Counter value.
+        options: Generation options.
+
+    Returns:
+        The token as a string of digits.
+    """
 
     options = cast(Options, gws.u.merge(DEFAULTS, options))
     return _raw_otp(_to_bytes(secret), counter, options)
 
 
 def new_totp(secret: str | bytes, timestamp: int, options: Optional[Options] = None) -> str:
-    """Generate a new TOTP value as per rfc6238 section 4.2."""
+    """Generate a TOTP token as per RFC 6238 section 4.2.
+
+    Args:
+        secret: Shared secret.
+        timestamp: Unix timestamp.
+        options: Generation options.
+
+    Returns:
+        The token as a string of digits.
+    """
 
     options = cast(Options, gws.u.merge(DEFAULTS, options))
     counter = (timestamp - options.start) // options.step
@@ -49,10 +91,19 @@ def new_totp(secret: str | bytes, timestamp: int, options: Optional[Options] = N
 
 
 def check_totp(input: str, secret: str, timestamp: int, options: Optional[Options] = None) -> bool:
-    """Check if the input TOTP is valid.
+    """Check if a TOTP token is valid.
 
-    Compares the input against several TOTPs within the tolerance window
+    Compares the input against the TOTP tokens within the tolerance window
     ``(timestamp-step*tolerance...timestamp+step*tolerance)``.
+
+    Args:
+        input: Token entered by the user.
+        secret: Shared secret.
+        timestamp: Unix timestamp.
+        options: Generation options.
+
+    Returns:
+        ``True`` if the input matches one of the tokens in the window.
     """
 
     options = cast(Options, gws.u.merge(DEFAULTS, options))
@@ -78,6 +129,17 @@ def totp_key_uri(
         account_name: str,
         options: Optional[Options] = None
 ) -> str:
+    """Create a TOTP key URI for authenticator apps.
+
+    Args:
+        secret: Shared secret, encoded as base32 in the URI.
+        issuer_name: Issuer name, e.g. the application name.
+        account_name: Account name, e.g. the user login.
+        options: Generation options. Only non-default values are included in the URI.
+
+    Returns:
+        An ``otpauth://totp/...`` URI.
+    """
     return _key_uri('totp', secret, issuer_name, account_name, None, options)
 
 
@@ -88,6 +150,18 @@ def hotp_key_uri(
         counter: int,
         options: Optional[Options] = None
 ) -> str:
+    """Create an HOTP key URI for authenticator apps.
+
+    Args:
+        secret: Shared secret, encoded as base32 in the URI.
+        issuer_name: Issuer name, e.g. the application name.
+        account_name: Account name, e.g. the user login.
+        counter: Initial counter value.
+        options: Generation options. Only non-default values are included in the URI.
+
+    Returns:
+        An ``otpauth://hotp/...`` URI.
+    """
     return _key_uri('hotp', secret, issuer_name, account_name, counter, options)
 
 
@@ -99,11 +173,7 @@ def _key_uri(
         counter: Optional[int] = None,
         options: Optional[Options] = None
 ) -> str:
-    """Create a key uri for auth apps.
-
-    Reference:
-        https://github.com/google/google-authenticator/wiki/Key-Uri-Format
-    """
+    """Create a key URI for authenticator apps (Google Authenticator Key Uri Format)."""
 
     params: dict = {
         'secret': base32_encode(secret),
@@ -131,15 +201,43 @@ def _key_uri(
 
 
 def base32_decode(s: str) -> bytes:
+    """Decode a base32 string.
+
+    Args:
+        s: Base32 string.
+
+    Returns:
+        Decoded bytes.
+    """
     return base64.b32decode(s)
 
 
 def base32_encode(s: str | bytes) -> str:
+    """Encode a string or bytes as base32.
+
+    Args:
+        s: Value to encode. Strings are encoded as UTF-8 first.
+
+    Returns:
+        Base32 string.
+    """
     return base64.b32encode(_to_bytes(s)).decode('ascii')
 
 
 def random_secret(base32_length: int = 32) -> str:
-    """Generate a random printable secret that fits into base32_length."""
+    """Generate a random secret of printable ASCII characters.
+
+    The secret length is chosen so that its base32 encoding is exactly ``base32_length`` characters long.
+
+    Args:
+        base32_length: Length of the base32-encoded secret, must be a multiple of 8.
+
+    Returns:
+        The secret.
+
+    Raises:
+        ``ValueError``: If ``base32_length`` is not a multiple of 8.
+    """
 
     if (base32_length & 7) != 0:
         raise ValueError('invalid length')

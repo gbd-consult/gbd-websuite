@@ -22,16 +22,16 @@ class ConfigTestParams(gws.CliParams):
     manifest: Optional[str]
     """Manifest file."""
     dirs: Optional[str]
-    """Directories to watch for changes."""
+    """Directories to watch for changes, ``/data`` by default."""
     watch: Optional[bool]
-    """Watch mode."""
+    """Repeat the test whenever a file in the watched directories changes."""
     parse: Optional[bool]
-    """Only parse the config."""
+    """Only parse the configuration, do not configure the objects."""
 
 
 @gws.ext.object.cli('server')
 class Object(gws.Node):
-    """Server command-line interface object."""
+    """Command-line commands for starting, reloading and configuring the server."""
 
     @gws.ext.command.cli('serverStart')
     def do_start(self, p: Params):
@@ -41,25 +41,25 @@ class Object(gws.Node):
 
     @gws.ext.command.cli('serverReload')
     def do_reload(self, p: Params):
-        """Restart the server."""
+        """Reload the server without reconfiguring."""
 
         control.reload_all()
 
     @gws.ext.command.cli('serverReconfigure')
     def do_reconfigure(self, p: Params):
-        """Reconfigure and restart the server."""
+        """Reconfigure and reload the server."""
 
         control.reconfigure(p.manifest, p.config)
 
     @gws.ext.command.cli('serverConfigure')
     def do_configure(self, p: Params):
-        """Configure the server, but do not restart."""
+        """Configure the server without reloading."""
 
         control.configure_and_store(p.manifest, p.config)
 
     @gws.ext.command.cli('serverConfigtest')
     def do_configtest(self, p: ConfigTestParams):
-        """Test the configuration."""
+        """Test the configuration and report errors, optionally watching for changes."""
 
         control.config_test(
             p.manifest,

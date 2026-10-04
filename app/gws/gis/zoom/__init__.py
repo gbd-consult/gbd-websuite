@@ -1,3 +1,50 @@
+"""Zoom levels of maps and layers.
+
+A map has a list of resolutions (map units per pixel), its zoom levels.
+Layers use a subset of the map resolutions. This package computes these
+lists from the ``zoom`` configuration of maps and layers, from source layer
+scale hints, and converts between scales and resolutions.
+
+Zoom levels can be configured in three ways:
+
+- as levels of the standard tile grid of the map CRS
+  (``gws.lib.grid.for_crs``), bounded by ``minLevel`` / ``maxLevel`` or by
+  ``minScale`` / ``maxScale``. Without explicit bounds, the map gets levels
+  0 to ``DEFAULT_MAX_LEVEL``.
+- as an explicit list of ``scales`` (scale denominators).
+- with the deprecated ``resolutions``, ``initResolution``,
+  ``minResolution`` and ``maxResolution`` options, which still work and
+  produce a configuration warning (``warn_deprecated_options``).
+
+Levels are indices into the resolution list, 0 being the coarsest. Scale
+bounds snap to the nearest available resolution. For a layer, the levels
+are map-wide indices, and its resolutions are always taken from the map
+resolutions. The initial map resolution is given by ``initLevel`` or
+``initScale``, by default it is the middle of the list.
+
+Scales and resolutions are converted with the OGC standard pixel size. For
+geographic CRS, resolutions are in degrees per pixel, converted with
+``gws.lib.crs.METERS_PER_DEGREE``. Scales must be between ``MIN_SCALE``
+and ``MAX_SCALE``, levels between 0 and ``MAX_LEVEL``; otherwise a
+``gws.ConfigurationError`` is raised.
+
+Example::
+
+    map.zoom { minLevel 6 maxLevel 19 initScale 50000 }
+
+    map.layers+ {
+        type "wms"
+        provider.url "https://example.com/wms"
+        zoom { maxScale 100000 }
+    }
+
+Python usage example::
+
+    resolutions = gws.gis.zoom.resolutions_from_config(cfg, crs=gws.lib.crs.WEBMERCATOR)
+    init = gws.gis.zoom.init_resolution(cfg, resolutions, crs=gws.lib.crs.WEBMERCATOR)
+    scale = gws.gis.zoom.res_to_scale(init, gws.lib.crs.WEBMERCATOR)
+"""
+
 from typing import Optional
 
 import math
@@ -56,7 +103,12 @@ _DEPRECATED_OPTIONS = {
 
 
 def warn_deprecated_options(cfg, root: gws.Root):
-    """Register a configuration warning for each deprecated zoom option in use."""
+    """Register a configuration warning for each deprecated zoom option in use.
+
+    Args:
+        cfg: A zoom config.
+        root: Configuration root.
+    """
 
     for k, v in _DEPRECATED_OPTIONS.items():
         if gws.u.get(cfg, k) is not None:
@@ -64,20 +116,23 @@ def warn_deprecated_options(cfg, root: gws.Root):
 
 
 def resolutions_from_config(cfg, crs: gws.Crs = None) -> list[float]:
-    """Computes map resolutions from a config.
+    """Compute map resolutions from a zoom config.
 
     An explicit ``scales`` (or deprecated ``resolutions``) list is taken as is;
-    otherwise the grid ladder for the CRS is used. Level bounds are indices
-    into the list (0 = coarsest); scale bounds snap to the nearest entry.
-    For the ladder default, the bounds drive generation, so a ``minScale``
-    beyond the default range extends the ladder.
+    otherwise the resolutions of the standard grid for the CRS are used. Level bounds
+    are indices into the list (0 = coarsest); scale bounds snap to the nearest entry.
+    For the grid default, the bounds drive generation, so a ``minScale``
+    beyond the default range extends the list.
 
     Args:
-        cfg: A config.
-        crs: CRS for the default resolutions.
+        cfg: A zoom config.
+        crs: CRS of the map, Web Mercator if not given.
 
     Returns:
         A list of resolutions, sorted ascending.
+
+    Raises:
+        gws.ConfigurationError: If a value is out of bounds or the result is empty.
     """
 
     dsc = _explicit_resolutions(cfg, crs)
@@ -94,7 +149,7 @@ def resolutions_from_config(cfg, crs: gws.Crs = None) -> list[float]:
 
 
 def resolutions_for_layer(cfg, parent_resolutions: list[float], crs: gws.Crs = None) -> list[float]:
-    """Computes layer resolutions from a config.
+    """Compute layer resolutions from a zoom config.
 
     The result is always a subset of the parent (map) resolutions:
     ``scales`` entries snap to the nearest parent resolution; deprecated
@@ -102,12 +157,15 @@ def resolutions_for_layer(cfg, parent_resolutions: list[float], crs: gws.Crs = N
     bounds select from the parent list (levels are map-wide indices).
 
     Args:
-        cfg: A config.
+        cfg: A zoom config.
         parent_resolutions: Parent (map) resolutions.
         crs: Map CRS, for scale conversions.
 
     Returns:
         A list of resolutions, sorted ascending.
+
+    Raises:
+        gws.ConfigurationError: If a value is invalid or the bounds select no resolutions.
     """
 
     pdsc = sorted(parent_resolutions, reverse=True)
@@ -131,10 +189,11 @@ def resolutions_for_layer(cfg, parent_resolutions: list[float], crs: gws.Crs = N
 
 
 def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_resolutions: list[float], crs: gws.Crs = None) -> list[float]:
-    """Computes layer resolutions from source layer scale hints.
+    """Compute layer resolutions from source layer scale hints.
 
-    The hints act as scale bounds over the parent resolutions: they snap to
-    the nearest parent entries and select the range between.
+    The union of the scale ranges of all source layers acts as scale bounds over
+    the parent resolutions, see ``resolutions_from_scale_range``. If any source layer
+    has no scale range, the parent resolutions are returned.
 
     Args:
         source_layers: Source layers.
@@ -162,18 +221,18 @@ def resolutions_from_source_layers(source_layers: list[gws.SourceLayer], parent_
 
 
 def resolutions_from_scale_range(smin: float, smax: float, parent_resolutions: list[float], crs: gws.Crs = None) -> list[float]:
-    """Computes layer resolutions from a scale range.
+    """Compute layer resolutions from a scale range.
 
     The range bounds snap to the nearest parent resolutions and select the range between.
 
     Args:
-        smin: Min scale denominator.
-        smax: Max scale denominator.
+        smin: Min. scale denominator.
+        smax: Max. scale denominator.
         parent_resolutions: Parent (map) resolutions.
         crs: Map CRS, for scale conversions.
 
     Returns:
-        A list of resolutions, sorted ascending.
+        A list of resolutions, sorted ascending. Empty if the range lies outside the parent resolutions.
     """
 
     rmin = scale_to_res(smin, crs)
@@ -189,15 +248,21 @@ def resolutions_from_scale_range(smin: float, smax: float, parent_resolutions: l
 
 
 def init_resolution(cfg, resolutions: list, crs: gws.Crs = None) -> float:
-    """Returns the initial resolution.
+    """Compute the initial resolution of a map.
 
     ``initLevel`` (an index, 0 = coarsest) wins over ``initScale``, which
     snaps to the nearest resolution; the default is the middle of the list.
 
     Args:
-        cfg: A config.
-        resolutions: List of resolutions.
+        cfg: A zoom config.
+        resolutions: Map resolutions.
         crs: Map CRS, for scale conversions.
+
+    Returns:
+        One of the given resolutions.
+
+    Raises:
+        gws.ConfigurationError: If a value is out of bounds.
     """
 
     dsc = sorted(resolutions, reverse=True)
@@ -310,13 +375,29 @@ def _checked_res(res, value, crs: gws.Crs = None):
 
 
 def scale_to_res(scale: float, crs: gws.Crs = None) -> float:
-    """Scale denominator to resolution in map units (degrees per pixel for geographic CRS)."""
+    """Convert a scale denominator to a resolution.
+
+    Args:
+        scale: Scale denominator.
+        crs: CRS. For a geographic CRS the result is in degrees per pixel, otherwise in meters per pixel.
+
+    Returns:
+        Resolution in map units per pixel.
+    """
 
     return units.scale_to_res(scale) / _meters_per_unit(crs)
 
 
 def res_to_scale(res: float, crs: gws.Crs = None) -> int:
-    """Resolution in map units to scale denominator (degrees per pixel for geographic CRS)."""
+    """Convert a resolution to a scale denominator.
+
+    Args:
+        res: Resolution in map units per pixel.
+        crs: CRS. For a geographic CRS the resolution is in degrees per pixel, otherwise in meters per pixel.
+
+    Returns:
+        Scale denominator.
+    """
 
     return units.res_to_scale(res * _meters_per_unit(crs))
 

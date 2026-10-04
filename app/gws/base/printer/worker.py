@@ -1,3 +1,5 @@
+"""Print job worker."""
+
 from typing import Optional, cast
 
 import gws
@@ -16,25 +18,57 @@ _PAPER_COLOR = 'white'
 
 
 class Object(gws.base.job.worker.Object):
+    """Print job worker.
+
+    Executes a print request and stores the result in the job.
+    """
+
     project: gws.Project
+    """Project of the request."""
     tri: gws.TemplateRenderInput
+    """Template render input."""
     printer: gws.Printer
+    """Printer, for template requests."""
     template: gws.Template
+    """Template to render."""
     contentPath: str
+    """Path of the rendered output."""
 
     @classmethod
     def run(cls, root: gws.Root, job: gws.Job):
+        """Run a print job, called by the job manager.
+
+        Args:
+            root: Root object.
+            job: Job, with the path of the pickled request in its payload.
+        """
+
         request = gws.u.unserialize_from_path(job.payload.get('requestPath'))
         w = cls(root, job.user, job, request)
         w.work()
 
     def __init__(self, root: gws.Root, user: gws.User, job: Optional[gws.Job], request: gws.PrintRequest):
+        """Create a worker.
+
+        Args:
+            root: Root object.
+            user: User who requested the print.
+            job: Job, or ``None`` to print without a job.
+            request: Print request.
+        """
+
         super().__init__(root, user, job)
         self.request = request
         self.page_number = 0
         self.contentPath = ''
 
     def work(self):
+        """Prepare and render the print, set ``contentPath`` and mark the job complete.
+
+        Raises:
+            ``gws.Error``: If the request is invalid.
+        """
+
         self.prepare()
         res = self.template.render(self.tri)
         self.contentPath = res.contentPath
@@ -47,6 +81,17 @@ class Object(gws.base.job.worker.Object):
         )
 
     def prepare(self):
+        """Prepare the template render input.
+
+        Resolves the project and the template, determines the output format,
+        CRS and DPI, prepares the maps and sets the number of job steps.
+        For template requests, the DPI is limited by the printer quality levels;
+        for map requests, a temporary map template of the requested size is created.
+
+        Raises:
+            ``gws.Error``: If the output format is invalid.
+        """
+
         self.project = cast(gws.Project, self.user.require(self.request.projectUid, gws.ext.object.project))
 
         self.tri = gws.TemplateRenderInput(
@@ -98,6 +143,16 @@ class Object(gws.base.job.worker.Object):
         self.update_job(numSteps=n)
 
     def notify(self, event, details=None):
+        """Handle a render progress event and update the job.
+
+        Args:
+            event: Event name: ``begin_plane``, ``finalize_print`` or ``page_break``.
+            details: Event details.
+
+        Raises:
+            ``gws.JobTerminated``: If the job is no longer running.
+        """
+
         job = self.get_job()
         if not job:
             return
@@ -116,6 +171,19 @@ class Object(gws.base.job.worker.Object):
             return
 
     def prepare_map(self, tri: gws.TemplateRenderInput, mp: gws.PrintMap) -> gws.MapRenderInput:
+        """Convert a print map from the request to a map render input.
+
+        Parses the styles sent by the client (untrusted), converts the planes
+        and resolves the visible layers. Planes that cannot be prepared are skipped.
+
+        Args:
+            tri: Template render input.
+            mp: Print map.
+
+        Returns:
+            The map render input.
+        """
+
         planes = []
 
         style_opts = gws.lib.style.parser.Options(
@@ -156,6 +224,21 @@ class Object(gws.base.job.worker.Object):
         )
 
     def prepare_map_plane(self, n, plane: gws.PrintPlane, style_dct) -> Optional[gws.MapRenderInputPlane]:
+        """Convert a print plane to a render plane.
+
+        Args:
+            n: Plane index, used in log messages.
+            plane: Print plane.
+            style_dct: Styles by CSS selector.
+
+        Returns:
+            The render plane, or ``None`` if the plane is fully transparent or
+            cannot be prepared (layer not found or not renderable, invalid image, no features).
+
+        Raises:
+            ``gws.Error``: If the plane type is invalid.
+        """
+
         opacity = 1
         s = plane.get('opacity')
         if s is not None:

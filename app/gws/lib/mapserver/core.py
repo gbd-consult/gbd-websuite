@@ -1,3 +1,5 @@
+"""MapServer map wrapper."""
+
 import mapscript
 import re
 
@@ -6,12 +8,18 @@ import gws.lib.image
 
 
 def version() -> str:
-    """Returns the MapServer version string."""
+    """Return the MapServer version string.
+
+    Returns:
+        The version string, as returned by ``mapscript.msGetVersion``.
+    """
 
     return mapscript.msGetVersion()
 
 
 class Error(gws.Error):
+    """MapServer error."""
+
     pass
 
 
@@ -25,17 +33,34 @@ _LAYER_TYPE_TO_MS = {
 
 
 def new_map(config: str = '') -> 'Map':
-    """Creates a new Map instance from a Mapfile string."""
+    """Create a new map.
+
+    Args:
+        config: Mapfile content. If empty, an empty map is created.
+
+    Returns:
+        A Map object.
+    """
 
     return Map(config)
 
 
 class Map:
-    """MapServer map object wrapper."""
+    """Wrapper around a ``mapscript.mapObj``.
+
+    MapServer errors are written to stderr.
+    """
 
     mapObj: mapscript.mapObj
+    """The wrapped MapServer map object."""
 
     def __init__(self, config: str = ''):
+        """Create a map.
+
+        Args:
+            config: Mapfile content. It is written to a temporary file in the ephemeral directory
+                and loaded from there. If empty, an empty map is created.
+        """
         if config:
             tmp = gws.c.EPHEMERAL_DIR + '/mapse_' + gws.u.random_string(16) + '.map'
             gws.u.write_file(tmp, config)
@@ -46,14 +71,28 @@ class Map:
         self.mapObj.setConfigOption('MS_ERRORFILE', 'stderr')
 
     def copy(self) -> 'Map':
-        """Creates a copy of the current map object."""
+        """Create a copy of the map.
+
+        Returns:
+            A new Map object with a clone of the MapServer map.
+        """
 
         c = Map()
         c.mapObj = self.mapObj.clone()
         return c
 
     def add_layer_from_config(self, config: str) -> mapscript.layerObj:
-        """Adds a layer to the map using a configuration string."""
+        """Add a layer to the map from a mapfile ``LAYER`` block.
+
+        Args:
+            config: Layer configuration in the mapfile syntax.
+
+        Returns:
+            The new MapServer layer object.
+
+        Raises:
+            ``Error``: If MapServer cannot create the layer.
+        """
 
         try:
             lo = mapscript.layerObj(self.mapObj)
@@ -63,7 +102,19 @@ class Map:
             raise Error(f'ms: add error:: {exc}') from exc
 
     def add_layer(self, opts: gws.MapServerLayerOptions) -> mapscript.layerObj:
-        """Adds a layer to the map."""
+        """Add a layer to the map from layer options.
+
+        The layer is named ``_gws_<n>`` and switched on.
+
+        Args:
+            opts: Layer options. ``crs`` is required.
+
+        Returns:
+            The new MapServer layer object.
+
+        Raises:
+            ``Error``: If the CRS is missing, the connection type is not supported, or MapServer cannot create the layer.
+        """
 
         try:
             lo = self._make_layer(opts)
@@ -72,6 +123,7 @@ class Map:
             raise Error(f'ms: add error:: {exc}') from exc
 
     def _make_layer(self, opts: gws.MapServerLayerOptions) -> mapscript.layerObj:
+        """Create a MapServer layer from layer options."""
         lo = mapscript.layerObj(self.mapObj)
         lc = self.mapObj.numlayers
         lo.name = f'_gws_{lc}'
@@ -137,14 +189,17 @@ class Map:
         return lo
 
     def draw(self, bounds: gws.Bounds, size: gws.Size) -> gws.Image:
-        """Renders the map within the given bounds and size.
+        """Render the map as a transparent PNG.
 
         Args:
-            bounds: The spatial extent to render.
-            size: The output image size.
+            bounds: Extent and CRS to render.
+            size: Image size ``(width, height)`` in pixels.
 
         Returns:
-            The rendered map image.
+            The rendered image.
+
+        Raises:
+            ``Error``: If MapServer cannot render the map.
         """
 
         # @TODO: options for image format, transparency, etc.
@@ -173,7 +228,14 @@ class Map:
             raise Error(f'ms: draw error: {exc}') from exc
 
     def to_string(self) -> str:
-        """Converts the map object to a configuration string."""
+        """Convert the map to a mapfile string.
+
+        Returns:
+            Mapfile content.
+
+        Raises:
+            ``Error``: If MapServer cannot convert the map.
+        """
 
         try:
             return self.mapObj.convertToString()
@@ -181,6 +243,7 @@ class Map:
             raise Error(f'ms: convert error: {exc}') from exc
 
     def _create_style_obj(self, style: gws.StyleValues) -> mapscript.styleObj:
+        """Create a MapServer geometry style from style values."""
         so = mapscript.styleObj()
         if style.fill:
             so.color.setRGB(*_css_color_to_rgb(style.fill))
@@ -206,6 +269,7 @@ class Map:
         return so
 
     def _create_label_obj(self, style: gws.StyleValues) -> mapscript.labelObj:
+        """Create a MapServer label from style values."""
         lo = mapscript.labelObj()
         so = mapscript.styleObj()
         lo.force = mapscript.MS_TRUE
@@ -249,6 +313,17 @@ class Map:
         return lo
 
     def style_symbol(self, style: gws.StyleValues) -> mapscript.styleObj:
+        """Create a MapServer marker style from style values.
+
+        The marker symbol is looked up by name in the symbol set of the map.
+
+        Args:
+            style: Style values with ``marker`` and optional ``marker_*`` values.
+
+        Returns:
+            A MapServer style object.
+        """
+
         mo = self.mapObj
         so = mapscript.styleObj()
         so.setSymbolByName(mo, style.marker)
@@ -275,6 +350,7 @@ class Map:
 
 
 def _css_color_to_rgb(s: str) -> tuple[int, int, int, int]:
+    """Convert a CSS color (basic name, ``#rrggbb``, ``#rrggbbaa``, ``rgb()`` or ``rgba()``) to RGBA values."""
     s = re.sub(r'\s+', '', s).strip().lower()
     if s in _CSS_COLOR_NAMES:
         r, g, b = _CSS_COLOR_NAMES[s]

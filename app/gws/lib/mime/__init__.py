@@ -1,4 +1,20 @@
-"""Mime types."""
+"""MIME types.
+
+Defines constants for the MIME types used in the application (``PNG``, ``JSON``, ``GML3``
+and so on) and functions to normalize MIME types and to map them to and from file extensions.
+
+``get`` accepts a MIME type, a content type with parameters, a known alias (e.g.
+``application/vnd.ogc.gml`` or ``image/jpg``) or a file extension, and returns a normalized
+MIME type. Lookups that are not covered by the built-in tables fall back to the standard
+``mimetypes`` module.
+
+Example::
+
+    gws.lib.mime.get('image/jpg')                   # 'image/jpeg'
+    gws.lib.mime.get('png')                         # 'image/png'
+    gws.lib.mime.for_path('/data/report.pdf')       # 'application/pdf'
+    gws.lib.mime.extension_for(gws.lib.mime.JPEG)   # 'jpeg'
+"""
 
 from typing import Optional
 
@@ -101,13 +117,13 @@ _aliases = {
 
 
 def get(mt: str) -> Optional[str]:
-    """Return the normalized mime type.
+    """Return the normalized MIME type.
 
     Args:
-        mt: Mime type or content type.
+        mt: MIME type, content type, alias or file extension. Case and spaces are ignored.
 
     Returns:
-        The normalized mime type.
+        The normalized MIME type, or ``None`` if it is unknown.
     """
 
     if not mt:
@@ -137,6 +153,7 @@ def get(mt: str) -> Optional[str]:
 
 
 def _get_quick(mt):
+    """Look up a MIME type, an extension or an alias in the built-in tables."""
     if mt in _common:
         return mt
     if mt in _common_extensions:
@@ -146,13 +163,13 @@ def _get_quick(mt):
 
 
 def for_path(path: str) -> str:
-    """Returns the mime type for a given path.
+    """Return the MIME type for a file path, based on its extension.
 
     Args:
-        path: Path to mime type.
+        path: File path or name.
 
     Returns:
-        The mime type or ``BIN`` if type is unknown.
+        The MIME type, or ``BIN`` if it is unknown.
     """
     _, _, e = path.rpartition('.')
     if e in _common_extensions:
@@ -162,14 +179,14 @@ def for_path(path: str) -> str:
 
 
 def extension_for(mt: str, default: str = 'bin') -> str:
-    """Returns the extension of a given mime type.
+    """Return the file extension for a MIME type.
 
     Args:
-        mt: Mime type.
-        default: Default extension to return if mime type is unknown.
+        mt: Normalized MIME type.
+        default: Extension to return if the MIME type is unknown.
 
     Returns:
-        The mime type extension.
+        The extension, without a dot.
     """
 
     for ext, rt in _common_extensions.items():

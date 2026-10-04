@@ -1,3 +1,16 @@
+"""Combined legend.
+
+Renders the legends of several layers, given by ``layerUids``, and combines
+them into one image. Layers that are not found or have no legend are skipped.
+
+Example::
+
+    legend {
+        type "combined"
+        layerUids ["layer_1", "layer_2"]
+    }
+"""
+
 from typing import Optional, cast
 
 import gws
@@ -16,7 +29,10 @@ class Config(gws.base.legend.Config):
 
 @gws.ext.object.legend('combined')
 class Object(gws.base.legend.Object):
+    """Combined legend."""
+
     layerUids: list[str]
+    """UIDs of the layers whose legends are combined."""
 
     def configure(self):
         self.layerUids = self.cfg('layerUids')

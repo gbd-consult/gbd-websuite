@@ -1,3 +1,5 @@
+"""Base template object."""
+
 from typing import Optional
 
 
@@ -35,6 +37,14 @@ DEFAULT_PAGE_SIZE = (210, 297, gws.Uom.mm)
 
 
 class Object(gws.Template):
+    """Base class for templates.
+
+    Reads the common template options: subject, title, output MIME types, page
+    size, map size and page margins. Subclasses implement rendering; they can use
+    ``prepare_args`` to build the template arguments with the locale, formatters
+    and localized strings, and ``notify`` to report progress.
+    """
+
     def configure(self):
         self.title = self.cfg('title', default='')
         self.subject = self.cfg('subject', default='')
@@ -59,12 +69,27 @@ class Object(gws.Template):
         )
 
     def _defaultStrings(self):
+        """Return the default localized strings, by language."""
         def get():
             return gws.lib.inifile.from_paths(f'{gws.c.APP_DIR}/gws/base/application/templates/strings.ini')
 
         return gws.u.get_app_global('gws.base.application.default_strings', get)
 
     def prepare_args(self, tri: gws.TemplateRenderInput) -> gws.TemplateArgs:
+        """Build the template arguments from the render input.
+
+        Adds ``app``, ``subject``, ``locale``, the ``date``, ``time`` and ``number``
+        formatters, the obsolete ``gwsVersion`` and ``gwsBaseUrl``, unless already
+        given in ``tri.args``. The locale is taken from the arguments, the render
+        input, the first application locale or the default locale. ``STRINGS`` is set
+        to the default strings for the locale language, updated with the given ``STRINGS``.
+
+        Args:
+            tri: Template render input.
+
+        Returns:
+            Template arguments.
+        """
         args = gws.u.merge({}, tri.args)
         args.setdefault('app', self.root.app)
         args.setdefault('subject', self.subject)
@@ -96,5 +121,11 @@ class Object(gws.Template):
         return gws.TemplateArgs(args)
 
     def notify(self, tri: gws.TemplateRenderInput, message: str):
+        """Send a progress message to the ``notify`` callback of the render input, if any.
+
+        Args:
+            tri: Template render input.
+            message: Progress message, like ``begin_print``.
+        """
         if tri.notify:
             tri.notify(message)

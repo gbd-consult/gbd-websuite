@@ -25,10 +25,15 @@ class Config(gws.base.model.Config):
 
 @gws.ext.object.model('nominatim')
 class Object(gws.base.model.default_model.Object):
-    """Nominatim model."""
+    """Nominatim model object.
+
+    A read-only model whose features are results of the Nominatim search API.
+    """
 
     country: str
+    """Countries to limit the results to."""
     language: str
+    """Preferred language of the results."""
 
     serviceUrl = 'https://nominatim.openstreetmap.org/search'
 
@@ -88,6 +93,7 @@ class Object(gws.base.model.default_model.Object):
         return sorted(features, key=lambda f: (f.get('name'), f.get('osm_class'), f.get('osm_type')))
 
     def _query(self, params) -> list[dict]:
+        """Send a search request to the service and return the results, or an empty list on error."""
         try:
             res = gws.lib.net.http_request(self.serviceUrl, params=params)
             return gws.lib.jsonx.from_string(res.text)
@@ -96,6 +102,7 @@ class Object(gws.base.model.default_model.Object):
             return []
 
     def _normalize(self, rec):
+        """Flatten the address, add name and OSM class/type attributes, and drop coordinate attributes."""
         # merge the address subrec into the main
 
         if 'address' in rec:

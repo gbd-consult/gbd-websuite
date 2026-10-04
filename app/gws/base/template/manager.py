@@ -1,4 +1,4 @@
-"""Model manager."""
+"""Template manager."""
 
 import gws
 import gws.lib.mime
@@ -14,6 +14,8 @@ TEMPLATE_TYPES = {
 
 
 class Object(gws.TemplateManager):
+    """Template manager."""
+
     def find_templates(self, subjects, where, user=None, mime_type=None):
         return gws.u.compact(self.find_template(s, where, user, mime_type) for s in subjects)
 
@@ -32,6 +34,7 @@ class Object(gws.TemplateManager):
             return p
 
     def _find(self, subject, obj, user, mime_type):
+        """Return the first matching template of an object."""
         for tpl in getattr(obj, 'templates', []):
             if tpl.subject != subject:
                 continue

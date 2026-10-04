@@ -1,3 +1,5 @@
+"""WFS flat layer."""
+
 from typing import Optional
 
 import gws
@@ -30,9 +32,18 @@ class Config(gws.base.layer.Config):
 
 @gws.ext.object.layer('wfsflat')
 class Object(gws.base.layer.vector.Object):
+    """Vector layer that shows the features of a single WFS feature type.
+
+    The features are loaded from the WFS service through a ``wfs`` model and
+    can be searched with a ``wfs`` finder.
+    """
+
     provider: provider.Object
+    """WFS service provider."""
     sourceLayers: list[gws.SourceLayer]
+    """Feature type shown by the layer, always a single source layer."""
     sourceCrs: gws.Crs
+    """Source CRS. Not set by this class."""
 
     def configure(self):
         self.configure_layer()
@@ -52,12 +63,25 @@ class Object(gws.base.layer.vector.Object):
         return True
 
     def configure_source_layers(self):
+        """Select the source layers from the feature types of the provider.
+
+        Returns:
+            Always ``True``.
+        """
         return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers)
 
     def configure_models(self):
         return gws.config.util.configure_models_for(self, with_default=True)
 
     def create_model(self, cfg):
+        """Create a ``wfs`` model bound to the provider and the source layers of the layer.
+
+        Args:
+            cfg: Model configuration, or ``None`` for the default model.
+
+        Returns:
+            The model object.
+        """
         return self.create_child(
             gws.ext.object.model,
             cfg,
@@ -86,6 +110,14 @@ class Object(gws.base.layer.vector.Object):
         return True
 
     def create_finder(self, cfg):
+        """Create a ``wfs`` finder bound to the provider and the source layers of the layer.
+
+        Args:
+            cfg: Finder configuration, or ``None`` for the default finder.
+
+        Returns:
+            The finder object.
+        """
         return self.create_child(
             gws.ext.object.finder,
             cfg,

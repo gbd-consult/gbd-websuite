@@ -1,4 +1,4 @@
-"""web application root"""
+"""WSGI application for the web server."""
 
 import gws
 import gws.base.web
@@ -10,6 +10,15 @@ _STATE = {
 
 
 def application(environ, start_response):
+    """WSGI application, loads the configuration on the first call.
+
+    Args:
+        environ: WSGI environment.
+        start_response: WSGI ``start_response`` function.
+
+    Returns:
+        The WSGI response iterable.
+    """
     if not _STATE['inited']:
         init()
     root = gws.config.get_root()
@@ -18,6 +27,14 @@ def application(environ, start_response):
 
 
 def make_application(root):
+    """Create a WSGI application for a given object tree root, without loading the configuration.
+
+    Args:
+        root: Object tree root.
+
+    Returns:
+        A WSGI application function.
+    """
     def fn(environ, start_response):
         responder = handle_request(root, environ)
         return responder.send_response(environ, start_response)
@@ -26,6 +43,10 @@ def make_application(root):
 
 
 def init():
+    """Load the configuration and set the log level.
+
+    Exits the process if the configuration cannot be loaded.
+    """
     try:
         gws.log.info('initializing WEB application')
         gws.log.set_level('DEBUG')
@@ -38,11 +59,24 @@ def init():
 
 
 def reload():
+    """Reload the configuration."""
     _STATE['inited'] = False
     init()
 
 
 def handle_request(root: gws.Root, environ) -> gws.WebResponder:
+    """Handle a web request.
+
+    Creates a requester for the application web site, parses the request and runs
+    the middleware and the action. Errors are converted to error responses.
+
+    Args:
+        root: Object tree root.
+        environ: WSGI environment.
+
+    Returns:
+        A responder.
+    """
     req = gws.base.web.wsgi.Requester(root, environ, root.app.webMgr.site)
 
     try:
@@ -60,6 +94,20 @@ def handle_request(root: gws.Root, environ) -> gws.WebResponder:
 
 
 def apply_middleware(root: gws.Root, req: gws.WebRequester) -> gws.WebResponder:
+    """Run the middleware and the action for a request.
+
+    The ``enter_middleware`` methods are called in order until one of them returns a
+    response. If none does, GET and POST requests are passed to the action, HEAD and
+    OPTIONS requests get an empty response, other methods are not allowed. Then
+    ``exit_middleware`` is called, in reverse order, for each middleware that was entered.
+
+    Args:
+        root: Object tree root.
+        req: Web requester.
+
+    Returns:
+        A responder.
+    """
     res = None
     done = []
 
@@ -95,6 +143,7 @@ def apply_middleware(root: gws.Root, req: gws.WebRequester) -> gws.WebResponder:
 
 
 def _debug_repr(prefix, s):
+    """Return a prefixed, truncated representation of an object for the debug log."""
     s = repr(gws.u.to_dict(s))
     m = 400
     n = len(s)
@@ -104,12 +153,34 @@ def _debug_repr(prefix, s):
 
 
 def handle_error(req: gws.WebRequester, exc: Exception) -> gws.WebResponder:
+    """Create an error response for an exception.
+
+    Args:
+        req: Web requester.
+        exc: An exception, converted to an HTTP exception.
+
+    Returns:
+        A responder.
+    """
     gws.log.if_debug(_debug_repr, f'REQUEST_ERROR', exc)
     web_exc = gws.base.web.error.from_exception(exc)
     return handle_http_error(req, web_exc)
 
 
 def handle_http_error(req: gws.WebRequester, exc: gws.base.web.error.HTTPException) -> gws.WebResponder:
+    """Create an error response for an HTTP exception.
+
+    API requests get a structured response with the error code. Other requests get
+    the site error page or the ``application.error`` template, rendered with the
+    error code, or a plain error response if there is no template.
+
+    Args:
+        req: Web requester.
+        exc: HTTP exception.
+
+    Returns:
+        A responder.
+    """
     #
     # @TODO: image errors
 
@@ -144,6 +215,23 @@ _relaxed_read_options = {
 
 
 def handle_action(root: gws.Root, req: gws.WebRequester) -> gws.WebResponder:
+    """Run the action command for a request.
+
+    API requests use the structured payload as parameters. GET and POST requests use
+    the GET parameters, which are read in a relaxed mode: case-insensitive, with value
+    conversion and extra parameters ignored.
+
+    Args:
+        root: Object tree root.
+        req: Web requester.
+
+    Returns:
+        A content, redirect or API responder, depending on the type of the command response.
+
+    Raises:
+        ``gws.NotFoundError``: If there is no command, or the command returns nothing.
+        ``gws.base.web.error.MethodNotAllowed``: If the request method is not supported.
+    """
     if not req.command():
         raise gws.NotFoundError('no command provided')
 

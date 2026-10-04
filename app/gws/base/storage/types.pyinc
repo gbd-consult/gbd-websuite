@@ -1,11 +1,31 @@
 class StorageManager(Node):
-    """Storage manager."""
+    """Storage manager, holds the storage providers."""
 
     providers: list['StorageProvider']
+    """Configured storage providers."""
 
-    def create_provider(self, cfg: Config, **kwargs) -> 'StorageProvider': ...
+    def create_provider(self, cfg: Config, **kwargs) -> 'StorageProvider':
+        """Create a storage provider and add it to the manager.
 
-    def find_provider(self, uid: Optional[str] = None) -> Optional['StorageProvider']: ...
+        A provider with the same uid replaces the existing one.
+
+        Args:
+            cfg: Provider configuration.
+            **kwargs: Extra configuration values.
+
+        Returns:
+            The new provider.
+        """
+
+    def find_provider(self, uid: Optional[str] = None) -> Optional['StorageProvider']:
+        """Find a storage provider.
+
+        Args:
+            uid: Provider uid. If not given, the first provider is returned.
+
+        Returns:
+            The provider, or ``None`` if not found.
+        """
 
 
 
@@ -15,7 +35,7 @@ class StorageRecord(Data):
     name: str
     """Record name."""
     userUid: str
-    """User uid."""
+    """Uid of the user who last wrote the record."""
     data: str
     """Serialized record data."""
     created: 'datetime.datetime'
@@ -25,13 +45,44 @@ class StorageRecord(Data):
 
 
 class StorageProvider(Node):
-    """Storage provider."""
+    """Storage provider, stores named records grouped by category."""
 
-    def list_names(self, category: str) -> list[str]: ...
+    def list_names(self, category: str) -> list[str]:
+        """List the record names in a category.
 
-    def read(self, category: str, name: str) -> Optional['StorageRecord']: ...
+        Args:
+            category: Category name.
 
-    def write(self, category: str, name: str, data: str, user_uid: str): ...
+        Returns:
+            Record names.
+        """
 
-    def delete(self, category: str, name: str): ...
+    def read(self, category: str, name: str) -> Optional['StorageRecord']:
+        """Read a record.
+
+        Args:
+            category: Category name.
+            name: Record name.
+
+        Returns:
+            The record, or ``None`` if not found.
+        """
+
+    def write(self, category: str, name: str, data: str, user_uid: str):
+        """Create a record or update an existing one.
+
+        Args:
+            category: Category name.
+            name: Record name.
+            data: Serialized record data.
+            user_uid: Uid of the user who writes the record.
+        """
+
+    def delete(self, category: str, name: str):
+        """Delete a record.
+
+        Args:
+            category: Category name.
+            name: Record name.
+        """
 

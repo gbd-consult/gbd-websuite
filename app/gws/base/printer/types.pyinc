@@ -2,48 +2,75 @@ class PrintPlaneType(Enum):
     """Print plane type."""
 
     bitmap = 'bitmap'
+    """Raw bitmap data."""
     url = 'url'
+    """Image given as a data URL."""
     features = 'features'
+    """Features sent by the client."""
     raster = 'raster'
+    """Raster layer."""
     vector = 'vector'
+    """Vector layer, rendered as SVG."""
     soup = 'soup'
+    """SVG soup: points and SVG tags."""
 
 
 class PrintPlane(Data):
-    """Print plane."""
+    """Print plane, a single map layer in a print request."""
 
     type: PrintPlaneType
+    """Plane type."""
 
     opacity: Optional[float]
+    """Plane opacity, from 0 to 1."""
     cssSelector: Optional[str]
+    """CSS selector of the style for vector layers and features."""
 
     bitmapData: Optional[bytes]
+    """Raw pixel data, for bitmap planes."""
     bitmapMode: Optional[str]
+    """Pixel mode of the bitmap, ``RGBA`` or ``RGB``."""
     bitmapWidth: Optional[int]
+    """Bitmap width in pixels."""
     bitmapHeight: Optional[int]
+    """Bitmap height in pixels."""
 
     url: Optional[str]
+    """Data URL of the image, for url planes."""
 
     features: Optional[list['FeatureProps']]
+    """Features, for features planes."""
 
     layerUid: Optional[str]
+    """Layer uid, for raster and vector planes."""
     compositeLayerUids: Optional[list[str]]
+    """Uids of the sub-layers to render, for composite raster layers."""
 
     soupPoints: Optional[list[Point]]
+    """Points, for soup planes."""
     soupTags: Optional[list[Any]]
+    """SVG tags, for soup planes."""
 
 
 class PrintMap(Data):
     """Map properties for printing."""
 
     backgroundColor: Optional[int]
+    """Background color."""
     bbox: Optional[Extent]
+    """Map extent."""
     center: Optional[Point]
+    """Map center."""
     planes: list[PrintPlane]
+    """Map planes."""
     rotation: Optional[int]
+    """Map rotation in degrees."""
     scale: int
+    """Map scale denominator."""
     styles: Optional[list['StyleProps']]
+    """Styles used by the planes."""
     visibleLayers: Optional[list[str]]
+    """Uids of the visible layers."""
 
 
 class PrintRequestType(Enum):
@@ -57,37 +84,66 @@ class PrintRequest(Request):
     """Print request."""
 
     type: PrintRequestType
+    """Request type."""
 
     args: Optional[dict]
+    """Template arguments."""
     crs: Optional[CrsName]
+    """CRS of the maps, the project CRS by default."""
     outputFormat: Optional[str]
+    """Output format, ``pdf`` (default) or ``png``, or the mime type."""
     maps: Optional[list[PrintMap]]
+    """Maps to print."""
 
     printerUid: Optional[str]
+    """Printer uid, for template requests."""
     dpi: Optional[int]
+    """Output resolution."""
     outputSize: Optional[Size]
+    """Output size in screen pixels, for map requests."""
 
 
 class PrintResult(Data):
     """Print result."""
 
     path: str
+    """Path of the output file."""
     mimeType: str
+    """Mime type of the output file."""
 
 
 class Printer(Node):
-    """Printer object."""
+    """Printer, a print template offered to users."""
 
     title: str
+    """Printer title."""
     template: 'Template'
+    """Template that renders the print output."""
     models: list['Model']
+    """Models whose fields are shown as input fields in the print dialog."""
     qualityLevels: list['TemplateQualityLevel']
+    """Quality levels users can choose from."""
 
 
 class PrinterManager(Node):
-    """Print Manager."""
+    """Print manager."""
 
-    def start_print_job(self, request: PrintRequest, user: 'User') -> 'JobStatusResponse': ...
+    def start_print_job(self, request: PrintRequest, user: 'User') -> 'JobStatusResponse':
+        """Start a background print job.
 
-    def exec_print(self, request: PrintRequest, out_path: str): ...
+        Args:
+            request: Print request.
+            user: User who requested the print.
+
+        Returns:
+            The status of the new job.
+        """
+
+    def exec_print(self, request: PrintRequest, out_path: str):
+        """Execute a print request synchronously, as the system user.
+
+        Args:
+            request: Print request.
+            out_path: Path to copy the output file to.
+        """
 

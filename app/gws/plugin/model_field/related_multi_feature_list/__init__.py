@@ -1,6 +1,6 @@
-"""Related Multi Feature List field
+"""Related multi feature list field.
 
-Represents a 1:M relationship betweens a "parent" and multiple "child" tables ::
+Represents a 1:M relationship between a "parent" and multiple "child" tables::
 
     +---------+         +------------+
     | parent  |         | child 1    |
@@ -20,8 +20,28 @@ Represents a 1:M relationship betweens a "parent" and multiple "child" tables ::
     |         |-------<<| parent_key |
     +---------+         +------------+
 
+The value of the field is the list of child features from all child models.
+``fromColumn`` is the key column in this model's table, by default its primary
+key; each entry in ``related`` names a child model and its foreign key column.
 
+When a feature is written, child features in the list get their foreign key
+set to the parent key. Child features no longer in the list are unlinked by
+clearing their foreign key. When a parent feature is deleted, its children are
+unlinked in the same way. Child models the user may not edit are skipped.
+When a child feature is created together with a parent feature, its foreign
+key is set to the parent key. Without a configured widget, the field uses a
+``featureList`` widget.
 
+Example::
+
+    fields+ {
+        name "documents"
+        type "relatedMultiFeatureList"
+        related [
+            { toModel "model_photo" toColumn "parent_id" }
+            { toModel "model_report" toColumn "parent_id" }
+        ]
+    }
 """
 
 import gws
@@ -56,6 +76,8 @@ class Props(related_field.Props):
 
 @gws.ext.object.modelField('relatedMultiFeatureList')
 class Object(related_field.Object):
+    """Related multi feature list field object."""
+
     attributeType = gws.AttributeType.featurelist
 
     def configure_relationship(self):
@@ -154,6 +176,16 @@ class Object(related_field.Object):
         self.after_write(feature, key, mc)
 
     def after_write(self, feature: gws.Feature, key, mc: gws.ModelContext):
+        """Link the child features in the field value to a written feature and unlink the others.
+
+        Does nothing if the user may not write the field or the maximum relation
+        depth is reached. Child models the user may not edit are skipped.
+
+        Args:
+            feature: The created or updated feature.
+            key: Value of the key column of the feature.
+            mc: The model context.
+        """
         if not mc.user.can_write(self) or mc.relDepth >= mc.maxDepth:
             return
 
@@ -212,11 +244,31 @@ class Object(related_field.Object):
             self.drop_links(to, cur_uids, mc)
 
     def to_uids_for_key(self, to: related_field.RelRef, key, mc):
+        """Find the uids of the child features that refer to a parent key.
+
+        Args:
+            to: The child side of the relationship.
+            key: The parent key value.
+            mc: The model context.
+
+        Returns:
+            A set of child feature uids as strings.
+        """
         sql = sa.select(to.uid).where(to.key.__eq__(key))
         with to.model.db.connect() as conn:
             return set(str(u[0]) for u in conn.execute(sql))
 
     def drop_links(self, to: related_field.RelRef, to_uids, mc):
+        """Unlink child features from their parent.
+
+        Clears the foreign key of the child features, or deletes them if the
+        relationship has ``deleteCascade`` set.
+
+        Args:
+            to: The child side of the relationship.
+            to_uids: Uids of the child features.
+            mc: The model context.
+        """
         if not to_uids:
             return
         if self.rel.deleteCascade:

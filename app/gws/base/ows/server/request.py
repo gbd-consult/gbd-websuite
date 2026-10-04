@@ -1,4 +1,4 @@
-"""Service Request object."""
+"""OWS service request."""
 
 from typing import Optional, Callable, cast
 import re
@@ -24,39 +24,77 @@ class TemplateArgs(gws.TemplateArgs):
     """Arguments for service templates."""
 
     featureCollection: core.FeatureCollection
+    """Search result, for feature requests."""
     metadataCollection: core.MetadataCollection
+    """Search result, for catalog requests."""
     operation: gws.OwsOperation
+    """Requested operation."""
     project: gws.Project
+    """Project."""
     request: 'Object'
+    """Service request."""
     layerCapsList: list[core.LayerCaps]
+    """Layer caps to include in the response."""
     serviceRequest: 'Object'
+    """Service request."""
     service: gws.OwsService
+    """Service object."""
     serviceUrl: str
+    """Canonical service URL."""
     url_for: Callable
+    """Function that converts a URL or path to a canonical URL."""
     gmlVersion: int
+    """GML version for geometries."""
     version: str
+    """Requested service version."""
     intVersion: int
+    """Requested service version as an integer, e.g. ``130`` for ``1.3.0``."""
     tileMatrixSets: list[gws.TileMatrixSet]
+    """Tile matrix sets (WMTS)."""
 
 
 class Object:
+    """OWS service request.
+
+    Holds the request parameters and provides methods to read and validate them.
+    The constructor determines the operation and the version; the service
+    handlers fill in the other attributes (CRS, bounds, sizes) as needed.
+    """
+
     alwaysXY: bool
+    """Use XY axis order for all CRSs."""
     bounds: gws.Bounds
+    """Requested bounds."""
     crs: gws.Crs
+    """Requested CRS."""
     params: dict
+    """Request parameters, with upper-cased names."""
     pxSize: gws.Size
+    """Requested image size in pixels."""
     resolution: float
+    """Requested resolution."""
     resX: float
+    """Requested horizontal resolution."""
     resY: float
+    """Requested vertical resolution."""
     isSoap: bool = False
+    """The request was sent as a SOAP envelope."""
     layerCapsList: list[core.LayerCaps]
+    """Caps of all layers available to the user in this service and project."""
     operation: gws.OwsOperation
+    """Requested operation."""
     project: gws.Project
+    """Project."""
     req: gws.WebRequester
+    """Web request."""
     service: gws.OwsService
+    """Service object."""
     targetCrs: gws.Crs
+    """CRS of the output."""
     version: str
+    """Negotiated service version."""
     xmlElement: Optional[gws.XmlElement]
+    """Request body for XML POST requests."""
     customNamespacePrefixes: dict
     """Custom namespace prefixes (uri -> prefix) requested with the ``NAMESPACES`` parameter."""
 
@@ -68,6 +106,21 @@ class Object:
         xml_element: gws.XmlElement = None,
         is_soap=False,
     ) -> None:
+        """Create a service request.
+
+        Args:
+            service: Service object.
+            req: Web request.
+            params: Request parameters.
+            xml_element: Request body for XML POST requests.
+            is_soap: The request was sent as a SOAP envelope.
+
+        Raises:
+            ``error.OperationNotSupported``: If the operation is not supported.
+            ``error.VersionNegotiationFailed``: If none of the requested versions is supported.
+            ``error.CurrentUpdateSequence``: If the requested update sequence equals the current one.
+            ``error.InvalidUpdateSequence``: If the requested update sequence is greater than the current one.
+        """
         self.service = service
         self.req = req
         self.project = cast(gws.Project, None)
@@ -95,9 +148,30 @@ class Object:
         self.customNamespacePrefixes = self.requested_xmlns_replacements()
 
     def require_project(self):
+        """Load the project and the layer caps, the project is required.
+
+        Raises:
+            ``gws.NotFoundError``: If the project is not found.
+            ``gws.ForbiddenError``: If the user cannot access the project.
+        """
+
         return self.load_project(required=True)
 
     def load_project(self, required=False):
+        """Load the project and the layer caps.
+
+        The project is the one given by the ``projectUid`` parameter or the
+        project the service is configured for. Sets ``project`` and
+        ``layerCapsList``. The layer caps are cached per service, project and user roles.
+
+        Args:
+            required: Raise an error if there is no project.
+
+        Raises:
+            ``gws.NotFoundError``: If the project is required and not found, or does not match the service project.
+            ``gws.ForbiddenError``: If the user cannot access the project.
+        """
+
         # services can be configured globally (in which case, service.project == None)
         # and applied to multiple projects with the projectUid param
         # or, configured just for a single project (service.project != None)
@@ -123,12 +197,22 @@ class Object:
         self.layerCapsList = gws.u.get_app_global(cache_key, self.enum_layer_caps)
 
     def enum_layer_caps(self):
+        """Create the layer caps for the service root layer or the project root layer.
+
+        Only layers the user can read and which are enabled for this service are
+        included. Empty groups are skipped. Groups are listed before their children.
+
+        Returns:
+            A flat list of layer caps.
+        """
+
         lcs = []
         root_layer = self.service.rootLayer or self.project.map.rootLayer
         self._enum_layer_caps(root_layer, lcs, [])
         return lcs
 
     def _enum_layer_caps(self, layer: gws.Layer, lcs: list[core.LayerCaps], stack: list[core.LayerCaps]):
+        """Add caps for a layer and its sub-layers to ``lcs``, linking them to the groups in ``stack``."""
         if not self.req.user.can_read(layer) or not layer.isEnabledForOws:
             return
         
@@ -169,6 +253,19 @@ class Object:
     ##
 
     def requested_version(self, param_names: str) -> str:
+        """Negotiate the service version.
+
+        Args:
+            param_names: Comma-separated parameter names to look for.
+
+        Returns:
+            The first supported version that starts with a requested version,
+            or the first supported version if no version is requested.
+
+        Raises:
+            ``error.VersionNegotiationFailed``: If none of the requested versions is supported.
+        """
+
         p, val = self._get_param(param_names, '')
         if not val:
             # the first supported version is the default
@@ -206,6 +303,18 @@ class Object:
     }
 
     def requested_operation(self, param_names: str) -> gws.OwsOperation:
+        """Return the requested operation.
+
+        Args:
+            param_names: Comma-separated parameter names to look for.
+
+        Returns:
+            The operation.
+
+        Raises:
+            ``error.OperationNotSupported``: If the operation is not supported by the service.
+        """
+
         _, val = self._get_param(param_names, '')
         op = self.find_operation(val)
         if op:
@@ -213,6 +322,15 @@ class Object:
         raise error.OperationNotSupported(val)
 
     def find_operation(self, param: str) -> Optional[gws.OwsOperation]:
+        """Find a supported operation by its name.
+
+        Args:
+            param: Operation name, case-insensitive.
+
+        Returns:
+            The operation, or ``None`` if the service does not support it.
+        """
+
         verb = self._param2verb.get(param.lower())
         if not verb:
             return
@@ -222,6 +340,18 @@ class Object:
                 return op
 
     def requested_crs(self, param_names: str) -> Optional[gws.Crs]:
+        """Return the requested CRS.
+
+        Args:
+            param_names: Comma-separated parameter names to look for.
+
+        Returns:
+            The CRS, or ``None`` if not requested.
+
+        Raises:
+            ``error.InvalidCRS``: If the CRS is unknown or not supported by the service.
+        """
+
         _, val = self._get_param(param_names, '')
         if not val:
             return
@@ -237,6 +367,20 @@ class Object:
         raise error.InvalidCRS()
 
     def requested_bounds(self, param_names: str) -> Optional[gws.Bounds]:
+        """Return the requested bounding box, transformed to ``crs``.
+
+        Uses ``crs`` as the default CRS and ``alwaysXY`` for the axis order.
+
+        Args:
+            param_names: Comma-separated parameter names to look for.
+
+        Returns:
+            The bounds, or ``None`` if not requested.
+
+        Raises:
+            ``error.InvalidParameterValue``: If the bounding box is invalid.
+        """
+
         # OGC 06-042, 7.2.3.5
         # OGC 00-028, 6.2.8.2.3
 
@@ -251,6 +395,15 @@ class Object:
         raise error.InvalidParameterValue(p)
 
     def requested_format(self, param_names: str) -> str:
+        """Return the requested format with whitespace removed.
+
+        Args:
+            param_names: Comma-separated parameter names to look for.
+
+        Returns:
+            The format, or an empty string if not requested.
+        """
+
         _, val = self._get_param(param_names, '')
         if val:
             # NB our mime types do not contain spaces
@@ -258,12 +411,30 @@ class Object:
         return ''
 
     def requested_feature_count(self, param_names: str) -> int:
+        """Return the requested feature count, limited by the service maximum.
+
+        Args:
+            param_names: Comma-separated parameter names to look for.
+
+        Returns:
+            The feature count, or the service default if not requested or not positive.
+
+        Raises:
+            ``error.InvalidParameterValue``: If the value is not an integer.
+        """
+
         s = self.int_param(param_names, default=0)
         if s <= 0:
             return self.service.defaultFeatureCount
         return min(self.service.maxFeatureCount, s)
 
     def requested_xmlns_replacements(self):
+        """Read custom namespace prefixes from the ``NAMESPACES`` parameter.
+
+        Returns:
+            A dict mapping namespace uris to prefixes.
+        """
+
         s = self.string_param('NAMESPACES', default='')
         if not s:
             return {}
@@ -281,6 +452,7 @@ class Object:
     ##
 
     def _get_param(self, param_names, default):
+        """Return the first present parameter as ``(name, value)``; raise ``MissingParameterValue`` if absent and ``default`` is ``None``."""
         names = gws.u.to_list(param_names.upper())
 
         for p in names:
@@ -295,6 +467,21 @@ class Object:
         raise error.MissingParameterValue(names[0])
 
     def string_param(self, param_names: str, values: Optional[set[str]] = None, default: Optional[str] = None) -> str:
+        """Return a string parameter.
+
+        Args:
+            param_names: Comma-separated parameter names to look for.
+            values: Allowed values, in lower case. If given, the value is lower-cased and checked.
+            default: Default value. If ``None``, the parameter is required.
+
+        Returns:
+            The parameter value.
+
+        Raises:
+            ``error.MissingParameterValue``: If the parameter is required and missing.
+            ``error.InvalidParameterValue``: If the value is not allowed.
+        """
+
         p, val = self._get_param(param_names, default)
         if values:
             val = val.lower()
@@ -303,10 +490,33 @@ class Object:
         return val
 
     def list_param(self, param_names: str) -> list[str]:
+        """Return a comma-separated parameter as a list.
+
+        Args:
+            param_names: Comma-separated parameter names to look for.
+
+        Returns:
+            The list of values, empty if the parameter is missing.
+        """
+
         _, val = self._get_param(param_names, '')
         return gws.u.to_list(val)
 
     def int_param(self, param_names: str, default: Optional[int] = None) -> int:
+        """Return an integer parameter.
+
+        Args:
+            param_names: Comma-separated parameter names to look for.
+            default: Default value. If ``None``, the parameter is required.
+
+        Returns:
+            The parameter value.
+
+        Raises:
+            ``error.MissingParameterValue``: If the parameter is required and missing.
+            ``error.InvalidParameterValue``: If the value is not an integer.
+        """
+
         p, val = self._get_param(param_names, default)
         try:
             return int(val)

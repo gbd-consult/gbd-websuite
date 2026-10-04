@@ -72,7 +72,7 @@ Url: TypeAlias = str
 """URL."""
 
 ClassRef: TypeAlias = type | str
-"""Class reference, a type, and 'ext' object or a class name."""
+"""Class reference: a type, an ``ext`` class or name like ``gws.ext.object.layer``, or a full class name."""
 
 
 class Config(Data):
@@ -128,7 +128,7 @@ class ContentResponse(Response):
     content: bytes | str
     """Response content."""
     contentFilename: str
-    """Name for the attachment, if provided, content will be served as an attachment."""
+    """File name for the attachment. If provided, the content is served as an attachment."""
     contentPath: str
     """Local path with the content."""
     mimeType: str
@@ -187,40 +187,59 @@ class GeometryType(Enum):
     OGC and SQL/MM geometry types.
 
     References:
-
-        - OGC 06-103r4 (https://www.ogc.org/standards/sfa), 
+        - OGC 06-103r4 (https://www.ogc.org/standards/sfa)
         - https://postgis.net/docs/manual-3.3/using_postgis_dbmanagement.html
     """
 
     geometry = 'geometry'
+    """Any geometry."""
 
     point = 'point'
+    """Point."""
     curve = 'curve'
+    """Curve."""
     surface = 'surface'
+    """Surface."""
 
     geometrycollection = 'geometrycollection'
+    """Collection of geometries."""
 
     linestring = 'linestring'
+    """Line string."""
     line = 'line'
+    """Line."""
     linearring = 'linearring'
+    """Linear ring."""
 
     polygon = 'polygon'
+    """Polygon."""
     triangle = 'triangle'
+    """Triangle."""
 
     polyhedralsurface = 'polyhedralsurface'
+    """Polyhedral surface."""
     tin = 'tin'
+    """Triangulated irregular network."""
 
     multipoint = 'multipoint'
+    """Collection of points."""
     multicurve = 'multicurve'
+    """Collection of curves."""
     multilinestring = 'multilinestring'
+    """Collection of line strings."""
     multipolygon = 'multipolygon'
+    """Collection of polygons."""
     multisurface = 'multisurface'
+    """Collection of surfaces."""
 
     circularstring = 'circularstring'
+    """Circular arc string."""
     compoundcurve = 'compoundcurve'
+    """Curve composed of line strings and circular strings."""
     curvepolygon = 'curvepolygon'
+    """Polygon with curved rings."""
 
 
 class CliParams(Data):
-    """CLI params"""
+    """Parameters of a command line command."""
     pass

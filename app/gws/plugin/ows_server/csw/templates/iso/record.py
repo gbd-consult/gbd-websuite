@@ -1,4 +1,4 @@
-""" "CSW Record template (gmd:MD_Metadata, ISO)."""
+"""CSW record builder for the ISO profile (``gmd:MD_Metadata``)."""
 
 import gws
 import gws.base.ows.server as server
@@ -9,6 +9,15 @@ ML_GMX_CODELISTS = 'http://standards.iso.org/iso/19139/resources/gmxCodelists.xm
 
 
 def record(ta: server.TemplateArgs, md: gws.Metadata):
+    """Create a ``gmd:MD_Metadata`` element for a metadata object.
+
+    Args:
+        ta: Template arguments.
+        md: Metadata of the catalog record.
+
+    Returns:
+        The XML element.
+    """
     def w_code(wrap, lst, value, text=None):
         return tag(
             f'GMD:{wrap}/GMD:{lst}',

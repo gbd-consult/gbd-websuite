@@ -1,6 +1,23 @@
 """OWS services.
 
-Base for ``WMS``, ``WMTS`` and ``WFS`` services.
+Base for the OWS services (``WMS``, ``WMTS``, ``WFS``, ``CSW``) implemented in ``gws.plugin.ows_server``.
+
+Submodules
+----------
+
+- ``service``: base class for services (:obj:`gws.base.ows.server.service.Object`) and its configuration.
+  Configures supported CRSs and bounds, image formats, templates and metadata, parses
+  incoming requests, dispatches them to the operation handlers and provides helpers
+  to create template, XML, image and legend responses.
+- ``request``: the service request (:obj:`gws.base.ows.server.request.Object`), which reads and validates
+  OWS parameters, resolves the project and collects the layer caps, and ``TemplateArgs``,
+  the arguments passed to service templates.
+- ``core``: data structures: ``LayerCaps``, ``FeatureCollection``, ``FeatureCollectionMember``, ``MetadataCollection``.
+- ``layer_caps``: creates ``LayerCaps`` for layers, matches layer and feature names and creates XML schemas.
+- ``error``: OWS exception classes and their XML and image responses. Each class corresponds to an
+  OWS exception code, as defined in OGC standards; the class name is the code.
+- ``templatelib``: helper functions used by service templates to generate common XML fragments.
+- ``action``: the ``ows`` action that serves the configured services over HTTP.
 
 Configuration
 -------------
@@ -13,6 +30,18 @@ and collects all suitable layers from the project.
 Layers can control their presence in OWS services using ``withOws`` and ``ows`` configs.
 
 The ``ows`` action is required to serve OWS services over http.
+
+Example::
+
+    actions+ { type "ows" }
+
+    owsServices+ {
+        type "wms"
+        uid "my_wms"
+        supportedCrs [ 3857 25832 ]
+    }
+
+The service is then available at ``/_/owsService/serviceUid/my_wms``.
 
 XML Namespaces
 --------------
@@ -27,13 +56,28 @@ and the ``ows`` action must be enabled globally.
 Workflow
 --------
 
-- the ``ows`` action receives a request and locates the Service object and the corresponding Project
-- the service initializes the ``Request`` (:obj:`gws.base.ows.server.request.Object`)
-- a tree of ``LayerCaps`` (:obj:`gws.base.ows.server.core.LayerCaps`) is created (or loaded from the cache)
-- the service filters the caps tree according to the parameters like ``LAYERS`` or ``TYPENAMES`` and creates a list of suitable leaf layers
+- the ``ows`` action receives a request and locates the Service object
+- the service initializes the ``Request`` (:obj:`gws.base.ows.server.request.Object`), which determines the operation and version
+- the request locates the Project and creates a list of ``LayerCaps`` (:obj:`gws.base.ows.server.core.LayerCaps`)
+  for the layers the user can read; groups have ``children`` and ``leaves``. The list is cached per service, project and user roles
+- the service dispatches the request to the handler method of the operation (``OwsOperation.handlerName``)
+- the handler filters the caps according to parameters like ``LAYERS`` or ``TYPENAMES`` and creates a list of suitable leaf layers
 - for image requests, like ``GetMap``, the leaves are rendered, the result is converted to the requested image format and returned
-- for search requests,  the service searches the leaves and creates `FeatureCollection`` objects
+- for search requests, the service searches the leaves and creates ``FeatureCollection`` objects
 - for search and capabilities requests, a suitable template is located and rendered
+- errors are converted to OWS exception documents (:obj:`gws.base.ows.server.error.Error`)
+
+Example of a service template, using ``templatelib``::
+
+    import gws.base.ows.server as server
+    import gws.base.ows.server.templatelib as tpl
+    from gws.lib.xmlx import tag
+
+    def main(ta: server.TemplateArgs):
+        return tpl.to_xml_response(
+            ta,
+            tag('Capabilities', tpl.ows_service_identification(ta), tpl.ows_service_provider(ta)),
+        )
 
 
 Formats
@@ -67,7 +111,7 @@ OGC Standards:
 - OpenGIS Web Feature Service (WFS) Implementation Specification 1.1.0 04-094
     https://portal.ogc.org/files/?artifact_id=8339
 
-- OGC® Web Coverage Service (WCS) Interface Standard – Core, version 2.1 17-089r1
+- OGC Web Coverage Service (WCS) Interface Standard - Core, version 2.1 17-089r1
     https://portal.opengeospatial.org/files/17-089r1
 
 - OGC Web Service Common Implementation Specification 2.0.0 06-121r9

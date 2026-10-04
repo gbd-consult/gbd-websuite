@@ -1,4 +1,4 @@
-"""Core database utilities."""
+"""Database manager."""
 
 from typing import cast
 
@@ -14,6 +14,8 @@ class Config(gws.Config):
 
 
 class Object(gws.DatabaseManager):
+    """Database manager."""
+
     def configure(self):
         self.providers = []
 

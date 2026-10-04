@@ -1,4 +1,4 @@
-"""CLI utility for qgis"""
+"""Command-line commands for QGIS projects."""
 
 import re
 
@@ -16,24 +16,26 @@ class CapsParams(gws.CliParams):
     """Parameters for the caps command."""
 
     src: str
-    """Source path or postgres address `postgres:<dbUid>/<schema>/<projectName>`"""
+    """Project file path or Postgres address ``postgres:<dbUid>/<schema>/<projectName>``."""
     out: str = ''
-    """Output filename"""
+    """Output file name. If empty, the result is printed."""
 
 
 class CopyParams(gws.CliParams):
     """Parameters for the copy command."""
 
     src: str
-    """Source path or postgres address `postgres:<dbUid>/<schema>/<projectName>`"""
+    """Source project file path or Postgres address ``postgres:<dbUid>/<schema>/<projectName>``."""
     dst: str
-    """Source path or postgres address `postgres:<dbUid>/<schema>/<projectName>`"""
+    """Destination project file path or Postgres address ``postgres:<dbUid>/<schema>/<projectName>``."""
 
 
 class Object(gws.Node):
+    """CLI commands for QGIS projects."""
+
     @gws.ext.command.cli('qgisCopy')
     def do_copy(self, p: CopyParams):
-        """Copy a qgis project."""
+        """Copy a QGIS project between files and databases."""
 
         root = gws.config.load()
         src_prj = project.from_store(root, _addr_to_store(p.src))
@@ -41,7 +43,7 @@ class Object(gws.Node):
 
     @gws.ext.command.cli('qgisCaps')
     def do_caps(self, p: CapsParams):
-        """Print the capabilities of a document in JSON format"""
+        """Print the parsed capabilities of a QGIS project as JSON."""
 
         root = gws.config.load()
         src_prj = project.from_store(root, _addr_to_store(p.src))

@@ -1,3 +1,5 @@
+"""Web site."""
+
 from typing import Optional
 
 import re
@@ -100,10 +102,16 @@ DEFAULT_REWRITE_RULES = [
 
 
 class Object(gws.WebSite):
+    """Web site."""
+
     ssl: bool
+    """The site is served over https."""
     contentSecurityPolicy: str
+    """Content-Security-Policy header value."""
     permissionsPolicy: str
+    """Permissions-Policy header value."""
     xFrameOptions: str
+    """X-Frame-Options header value."""
 
     def configure(self):
         self.hostnames = self.cfg('hostnames') or []
@@ -197,6 +205,7 @@ class Object(gws.WebSite):
         return gws.lib.net.make_url(u)
 
     def _apply_reverse_rewrite_rules(self, path):
+        """Rewrite a path with the first matching reversed rule."""
         for r in self.rewriteRules:
             if not r.reversed:
                 continue

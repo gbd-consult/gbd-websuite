@@ -1,4 +1,4 @@
-"""Base model."""
+"""Base model class."""
 
 from typing import Optional, cast
 
@@ -78,6 +78,15 @@ class Props(gws.Props):
 
 
 class Object(gws.Model):
+    """Base model.
+
+    Provides the model configuration, with fields, uid, geometry, sort order and
+    templates, and the props, table view columns, validation and conversion between
+    features and props, delegated to the fields. Subclasses call `configure_model` from
+    their ``configure``, override the ``configure_*`` steps they need and implement
+    access to the source.
+    """
+
     def configure(self):
         self.isEditable = self.cfg('isEditable', default=False)
         self.withTableView = self.cfg('withTableView', default=True)
@@ -96,7 +105,11 @@ class Object(gws.Model):
             raise gws.ConfigurationError(f'no primary key found for editable model {self}')
 
     def configure_model(self):
-        """Model configuration protocol."""
+        """Run the model configuration steps.
+
+        Calls the provider, sources, fields, uid, geometry, sort and templates
+        configuration methods in this order.
+        """
 
         self.configure_provider()
         self.configure_sources()
@@ -107,12 +120,34 @@ class Object(gws.Model):
         self.configure_templates()
 
     def configure_provider(self):
+        """Configure the data provider of the model.
+
+        The base implementation does nothing.
+
+        Returns:
+            True if a provider was configured.
+        """
         return False
 
     def configure_sources(self):
+        """Configure the data sources of the model.
+
+        The base implementation does nothing.
+
+        Returns:
+            True if sources were configured.
+        """
         return False
 
     def configure_fields(self):
+        """Create the model fields.
+
+        Creates the configured ``fields``. If there are none, or ``withAutoFields`` is set,
+        also creates fields for the source columns with `configure_auto_fields`.
+
+        Returns:
+            True if any fields were created.
+        """
         has_conf = False
         has_auto = False
 
@@ -126,6 +161,15 @@ class Object(gws.Model):
         return has_conf or has_auto
 
     def configure_auto_fields(self):
+        """Create fields for the source columns.
+
+        Creates a field for each column returned by ``describe``, except columns listed in
+        ``excludeColumns``, columns that already have a field, and columns of a type
+        without a default field type.
+
+        Returns:
+            True if the source could be described, False otherwise.
+        """
         desc = self.describe()
         if not desc:
             return False
@@ -156,6 +200,14 @@ class Object(gws.Model):
         return True
 
     def configure_uid(self):
+        """Set ``uidName`` to the name of the primary key field.
+
+        Keeps an already set ``uidName``. Otherwise a name is set only if exactly one field
+        is a primary key.
+
+        Returns:
+            True if ``uidName`` is set, None otherwise.
+        """
         if self.uidName:
             return True
         uids = []
@@ -167,6 +219,11 @@ class Object(gws.Model):
             return True
 
     def configure_geometry(self):
+        """Set the geometry name, type and CRS from the first geometry field.
+
+        Returns:
+            True if a geometry field was found, None otherwise.
+        """
         for fld in self.fields:
             if getattr(fld, 'geometryType', None):
                 self.geometryName = fld.name
@@ -175,6 +232,13 @@ class Object(gws.Model):
                 return True
 
     def configure_sort(self):
+        """Set the default sort order.
+
+        Uses the configured ``sort``, otherwise sorts by the uid field, if any.
+
+        Returns:
+            True if a sort order was configured, False otherwise.
+        """
         p = self.cfg('sort')
         if p:
             self.defaultSort = [gws.SearchSort(c) for c in p]
@@ -186,6 +250,11 @@ class Object(gws.Model):
         return False
 
     def configure_templates(self):
+        """Create the configured templates.
+
+        Returns:
+            True if any templates were created.
+        """
         return gws.config.util.configure_templates_for(self)
 
     ##
@@ -217,6 +286,17 @@ class Object(gws.Model):
     ##
 
     def table_view_columns(self, user):
+        """Return the columns of the table view for a user.
+
+        Uses the configured ``tableViewColumns``, or all fields otherwise. Fields the user
+        cannot use and fields without a widget that supports the table view are skipped.
+
+        Args:
+            user: The user.
+
+        Returns:
+            A list of columns, empty if the table view is disabled.
+        """
         if not self.withTableView:
             return []
 

@@ -1,4 +1,4 @@
-"""GBD Geoservices finder."""
+"""The ``gbd_geoservices`` finder."""
 
 import os
 
@@ -36,6 +36,8 @@ class Config(gws.base.search.finder.Config):
 
 @gws.ext.object.finder('gbd_geoservices')
 class Object(gws.base.search.finder.Object):
+    """GBD Geoservices finder."""
+
     supportsKeywordSearch = True
     supportsGeometrySearch = True
 
@@ -50,6 +52,14 @@ class Object(gws.base.search.finder.Object):
         return gws.config.util.configure_models_for(self, with_default=True)
 
     def create_model(self, cfg):
+        """Create a GBD Geoservices model with the API key of the finder.
+
+        Args:
+            cfg: Model configuration, or ``None`` for the default model.
+
+        Returns:
+            The model.
+        """
         return self.create_child(
             gws.ext.object.model,
             cfg,

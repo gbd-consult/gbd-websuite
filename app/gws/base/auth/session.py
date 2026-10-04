@@ -1,3 +1,5 @@
+"""Authentication session object."""
+
 from typing import Optional
 
 import datetime
@@ -7,6 +9,8 @@ import gws
 
 
 class Object(gws.AuthSession):
+    """Authentication session."""
+
     def __init__(
             self,
             uid: str,
@@ -18,6 +22,18 @@ class Object(gws.AuthSession):
             is_changed=True,
             is_transient=False,
     ):
+        """Create a session.
+
+        Args:
+            uid: Session uid.
+            user: The session user.
+            method: The method that created the session, ``None`` for the guest session.
+            data: Session data.
+            created: Creation time, defaults to now.
+            updated: Last update time, defaults to now.
+            is_changed: Whether the session has unsaved changes.
+            is_transient: Whether the session lives only for the duration of the request.
+        """
         self.uid = uid
         self.method = method
         self.user = user

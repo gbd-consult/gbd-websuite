@@ -1,5 +1,5 @@
 class DatabaseModel(Model):
-    """Database-based data model."""
+    """Data model for a database table."""
 
     db: 'DatabaseProvider'
     """Database provider."""
@@ -9,19 +9,62 @@ class DatabaseModel(Model):
     """Table name associated with this model."""
 
     def table(self) -> 'sqlalchemy.Table':
-        """Return the SQLAlchemy Table object for this database model."""
+        """Return the SQLAlchemy ``Table`` object of the model table.
+
+        Returns:
+            The table object.
+
+        Raises:
+            ``sqlalchemy.exc.SQLAlchemyError``: If the table does not exist.
+        """
 
     def column(self, column_name: str) -> 'sqlalchemy.Column':
-        """Retrieve the SQLAlchemy Column object for the given column name."""
+        """Return the SQLAlchemy ``Column`` object of a column in the model table.
+
+        Args:
+            column_name: Column name.
+
+        Returns:
+            The column object.
+
+        Raises:
+            ``sqlalchemy.exc.SQLAlchemyError``: If the table or the column does not exist.
+        """
 
     def uid_column(self) -> 'sqlalchemy.Column':
-        """Return the SQLAlchemy Column object representing the unique identifier column."""
+        """Return the SQLAlchemy ``Column`` object of the primary key column.
+
+        Returns:
+            The column object for ``uidName``.
+
+        Raises:
+            ``gws.Error``: If the model has no primary key or the key column does not exist.
+        """
 
     def fetch_features(self, select: 'sqlalchemy.Select') -> list['Feature']:
-        """Fetch features from the database based on the provided SQLAlchemy Select statement."""
+        """Run a SELECT statement and create a feature for each row.
+
+        The row values become the attributes of the feature record.
+
+        Args:
+            select: SELECT statement.
+
+        Returns:
+            A list of features.
+        """
 
     def build_select(self, mc: 'ModelContext') -> Optional['sqlalchemy.Select']:
-        """Build a SQLAlchemy Select statement based on the provided ModelContext."""
+        """Build a SELECT statement for a search.
+
+        Combines the search query in ``mc.search``, the columns and conditions
+        collected by the fields in ``mc.dbSelect`` and ``sqlFilter``.
+
+        Args:
+            mc: Model context with ``search`` and ``dbSelect`` set.
+
+        Returns:
+            The SELECT statement, or ``None`` if the search cannot match anything.
+        """
 
 
 class ColumnDescription(Data):
@@ -87,25 +130,32 @@ class DatabaseManager(Node):
     """A list of database providers managed by this DatabaseManager."""
 
     def create_provider(self, cfg: Config, **kwargs) -> 'DatabaseProvider':
-        """Create and return a DatabaseProvider instance based on the given configuration.
+        """Create a database provider and add it to ``providers``.
+
+        The provider is created as a shared object. A provider with the same uid
+        that is already in ``providers`` is replaced.
 
         Args:
-            cfg: The configuration object for the database provider.
-            **kwargs: Additional keyword arguments to customize the provider creation.
+            cfg: Provider configuration.
+            **kwargs: Extra configuration values.
 
         Returns:
-            DatabaseProvider: A new database provider instance.
+            The provider.
         """
 
     def find_provider(self, uid: Optional[str] = None, ext_type: Optional[str] = None) -> Optional['DatabaseProvider']:
-        """Find and return a DatabaseProvider that matches the given UID and/or extension type.
+        """Find a database provider by uid or type.
+
+        With ``uid``, returns the provider with this uid (and of type ``ext_type``,
+        if given). With ``ext_type`` only, returns the first provider of this type.
+        Without arguments, returns the first provider.
 
         Args:
-            uid: The unique identifier of the database provider to find.
-            ext_type: The type of the database provider to find.
+            uid: Provider uid.
+            ext_type: Provider type, e.g. ``postgres``.
 
         Returns:
-            The matching database provider if found, otherwise None.
+            The provider, or ``None`` if none matches.
         """
 
 
@@ -120,44 +170,175 @@ DatabaseStmt: TypeAlias = Union['sqlalchemy.Executable', str]
 class DatabaseConnection:
     """Database connection.
 
-    Extends ``sqlalchemy.Connection`` and provides some convenience methods.
+    Wraps an SQLAlchemy ``Connection`` and provides some convenience methods.
+    Returned by ``DatabaseProvider.connect`` and used as a context manager,
+    which closes the connection on exit.
+
+    Statements can be SQLAlchemy objects or SQL strings with ``:name`` bind
+    parameters. The ``fetch_*`` methods roll back the transaction after reading.
     """
 
     saConn: 'sqlalchemy.Connection'
+    """The underlying SQLAlchemy connection."""
 
     def __enter__(self) -> 'DatabaseConnection': ...
 
     def __exit__(self, exc_type, exc_value, traceback): ...
 
-    def execute(self, stmt: 'sqlalchemy.Executable', params=None, execution_options: dict=None) -> 'sqlalchemy.CursorResult': ...
+    def execute(self, stmt: 'sqlalchemy.Executable', params=None, execution_options: dict=None) -> 'sqlalchemy.CursorResult':
+        """Execute an SQLAlchemy statement.
 
-    def commit(self): ...
+        Args:
+            stmt: Statement.
+            params: Bind parameters, a dict or a list of dicts.
+            execution_options: SQLAlchemy execution options.
 
-    def rollback(self): ...
+        Returns:
+            The result.
+        """
 
-    def close(self): ...
+    def commit(self):
+        """Commit the current transaction."""
 
-    def exec(self, stmt: 'DatabaseStmt', **params) -> 'sqlalchemy.CursorResult': ...
-    
-    def exec_commit(self, stmt: 'DatabaseStmt', **params) -> 'sqlalchemy.CursorResult': ...
-    
-    def exec_rollback(self, stmt: 'DatabaseStmt', **params) -> 'sqlalchemy.CursorResult': ...
+    def rollback(self):
+        """Roll back the current transaction."""
 
-    def fetch_all(self, stmt: 'DatabaseStmt', **params) -> list[dict]: ...
+    def close(self):
+        """Close the connection.
 
-    def fetch_first(self, stmt: 'DatabaseStmt', **params) -> dict | None: ...
+        The connection is shared by nested ``connect`` calls, and only the
+        outermost ``close`` closes the SQLAlchemy connection.
+        """
 
-    def fetch_scalars(self, stmt: 'DatabaseStmt', **params) -> list: ...
+    def exec(self, stmt: 'DatabaseStmt', **params) -> 'sqlalchemy.CursorResult':
+        """Execute a statement.
 
-    def fetch_strings(self, stmt: 'DatabaseStmt', **params) -> list[str]: ...
+        Args:
+            stmt: Statement or SQL string.
+            **params: Bind parameters.
 
-    def fetch_ints(self, stmt: 'DatabaseStmt', **params) -> list[int]: ...
+        Returns:
+            The result.
+        """
 
-    def fetch_scalar(self, stmt: 'DatabaseStmt', **params) -> Any: ...
+    def exec_commit(self, stmt: 'DatabaseStmt', **params) -> 'sqlalchemy.CursorResult':
+        """Execute a statement and commit, or roll back on error.
 
-    def fetch_string(self, stmt: 'DatabaseStmt', **params) -> str | None: ...
+        Args:
+            stmt: Statement or SQL string.
+            **params: Bind parameters.
 
-    def fetch_int(self, stmt: 'DatabaseStmt', **params) -> int | None: ...
+        Returns:
+            The result.
+
+        Raises:
+            ``Exception``: Any error from the execution is re-raised after the rollback.
+        """
+
+    def exec_rollback(self, stmt: 'DatabaseStmt', **params) -> 'sqlalchemy.CursorResult':
+        """Execute a statement and roll back afterwards.
+
+        Args:
+            stmt: Statement or SQL string.
+            **params: Bind parameters.
+
+        Returns:
+            The result.
+        """
+
+    def fetch_all(self, stmt: 'DatabaseStmt', **params) -> list[dict]:
+        """Execute a statement and return all rows.
+
+        Args:
+            stmt: Statement or SQL string.
+            **params: Bind parameters.
+
+        Returns:
+            A list of rows as dicts.
+        """
+
+    def fetch_first(self, stmt: 'DatabaseStmt', **params) -> dict | None:
+        """Execute a statement and return the first row.
+
+        Args:
+            stmt: Statement or SQL string.
+            **params: Bind parameters.
+
+        Returns:
+            The first row as a dict, or ``None`` if there are no rows.
+        """
+
+    def fetch_scalars(self, stmt: 'DatabaseStmt', **params) -> list:
+        """Execute a statement and return the first column of all rows.
+
+        Args:
+            stmt: Statement or SQL string.
+            **params: Bind parameters.
+
+        Returns:
+            A list of values.
+        """
+
+    def fetch_strings(self, stmt: 'DatabaseStmt', **params) -> list[str]:
+        """Execute a statement and return the first column of all rows as strings.
+
+        Args:
+            stmt: Statement or SQL string.
+            **params: Bind parameters.
+
+        Returns:
+            A list of strings, with ``NULL`` values as empty strings.
+        """
+
+    def fetch_ints(self, stmt: 'DatabaseStmt', **params) -> list[int]:
+        """Execute a statement and return the first column of all rows as integers.
+
+        Args:
+            stmt: Statement or SQL string.
+            **params: Bind parameters.
+
+        Returns:
+            A list of integers.
+
+        Raises:
+            ``ValueError``: If a value is not an integer.
+        """
+
+    def fetch_scalar(self, stmt: 'DatabaseStmt', **params) -> Any:
+        """Execute a statement and return the first column of the first row.
+
+        Args:
+            stmt: Statement or SQL string.
+            **params: Bind parameters.
+
+        Returns:
+            The value, or ``None`` if there are no rows.
+        """
+
+    def fetch_string(self, stmt: 'DatabaseStmt', **params) -> str | None:
+        """Execute a statement and return the first column of the first row as a string.
+
+        Args:
+            stmt: Statement or SQL string.
+            **params: Bind parameters.
+
+        Returns:
+            The string, or ``None`` if there are no rows or the value is ``NULL``.
+        """
+
+    def fetch_int(self, stmt: 'DatabaseStmt', **params) -> int | None:
+        """Execute a statement and return the first column of the first row as an integer.
+
+        Args:
+            stmt: Statement or SQL string.
+            **params: Bind parameters.
+
+        Returns:
+            The integer, or ``None`` if there are no rows or the value is ``NULL``.
+
+        Raises:
+            ``ValueError``: If the value is not an integer.
+        """
 
 class DatabaseInspectOptions(Data):
     """Options for database inspection."""
@@ -169,17 +350,18 @@ class DatabaseInspectOptions(Data):
 
 
 class DatabaseProvider(Node):
-    """Database Provider.
+    """Database provider.
 
-    A database Provider wraps SQLAlchemy ``Engine`` and ``Connection`` objects
-    and provides common db functionality.
+    Wraps an SQLAlchemy ``Engine`` and hands out connections. Also reflects
+    table structures and describes tables and columns.
     """
 
     def connect(self) -> 'DatabaseConnection':
-        """Context manager for SQLAlchemy ``Connection``.
+        """Open a connection, to be used as a context manager.
 
-        Context calls to this method can be nested. An inner call is a no-op, as no new connection is created.
-        Only the outermost connection is closed upon exit::
+        Calls can be nested. An inner call does not open a new connection, but
+        returns a wrapper around the open one. Only the outermost connection is
+        closed upon exit::
 
             with db.connect():
                 ...
@@ -188,61 +370,216 @@ class DatabaseProvider(Node):
                 # connection remains open
                 ...
             # connection closed
+
+        Returns:
+            The connection.
         """
 
     def engine_options(self, **kwargs):
-        """Add defaults to the SA engine options."""
+        """Add defaults to the SQLAlchemy engine options.
+
+        Args:
+            **kwargs: Engine options. Options passed here take precedence over the defaults.
+
+        Returns:
+            The options dict.
+        """
 
     def url(self) -> str:
-        """Return the connection URL."""
+        """Return the connection URL.
+
+        Returns:
+            An SQLAlchemy connection URL.
+        """
 
     def engine(self) -> 'sqlalchemy.Engine':
-        """Get SQLAlchemy ``Engine`` object for this provider."""
+        """Return the SQLAlchemy ``Engine`` object for this provider, creating it if needed.
+
+        Returns:
+            The engine.
+        """
 
     def create_engine(self, **kwargs) -> 'sqlalchemy.Engine':
-        """CreateSQLAlchemy ``Engine`` object for this provider."""
+        """Create a new SQLAlchemy ``Engine`` object for this provider.
+
+        Args:
+            **kwargs: Engine options, see ``engine_options``.
+
+        Returns:
+            The engine.
+        """
 
     def describe(self, table: DatabaseTableAlike) -> 'DataSetDescription':
-        """Describe a table."""
+        """Describe a table.
+
+        Args:
+            table: Table object or table name.
+
+        Returns:
+            The table description. The first geometry column becomes the primary geometry.
+
+        Raises:
+            ``sqlalchemy.exc.SQLAlchemyError``: If the table does not exist.
+        """
 
     def describe_column(self, table: DatabaseTableAlike, column_name: str) -> ColumnDescription:
-        """Describe a specific column in a table."""
+        """Describe a column in a table.
+
+        Args:
+            table: Table object or table name.
+            column_name: Column name.
+
+        Returns:
+            The column description.
+
+        Raises:
+            ``sqlalchemy.exc.SQLAlchemyError``: If the table or the column does not exist.
+        """
 
     def table(self, table: 'DatabaseTableAlike', **kwargs) -> 'sqlalchemy.Table':
-        """SQLAlchemy ``Table`` object for a specific table."""
+        """Return the SQLAlchemy ``Table`` object for a table.
+
+        Args:
+            table: Table object or table name.
+            **kwargs: Not used by the base provider.
+
+        Returns:
+            The table object.
+
+        Raises:
+            ``sqlalchemy.exc.SQLAlchemyError``: If the table does not exist.
+        """
 
     def column(self, table: DatabaseTableAlike, column_name: str) -> 'sqlalchemy.Column':
-        """SQLAlchemy ``Column`` object for a specific column."""
+        """Return the SQLAlchemy ``Column`` object for a column.
+
+        Args:
+            table: Table object or table name.
+            column_name: Column name.
+
+        Returns:
+            The column object.
+
+        Raises:
+            ``sqlalchemy.exc.SQLAlchemyError``: If the table or the column does not exist.
+        """
 
     def count(self, table: DatabaseTableAlike) -> int:
-        """Return table record count or 0 if the table does not exist."""
+        """Return the number of rows in a table.
+
+        Args:
+            table: Table object or table name.
+
+        Returns:
+            The row count, or 0 if the table does not exist.
+        """
 
     def has_schema(self, schema_name: str) -> bool:
-        """Check if a specific schema exists."""
+        """Check if a schema exists.
+
+        Args:
+            schema_name: Schema name.
+
+        Returns:
+            ``True`` if the schema exists.
+        """
 
     def has_table(self, table_name: str) -> bool:
-        """Check if a specific table exists."""
+        """Check if a table exists.
+
+        Args:
+            table_name: Table name, optionally schema-qualified.
+
+        Returns:
+            ``True`` if the table exists.
+        """
 
     def has_column(self, table: DatabaseTableAlike, column_name: str) -> bool:
-        """Check if a specific column exists."""
+        """Check if a column exists.
+
+        Args:
+            table: Table object or table name.
+            column_name: Column name.
+
+        Returns:
+            ``True`` if the table and the column exist.
+        """
 
     def join_table_name(self, schema: str, name: str) -> str:
-        """Create a full table name from the schema and table names."""
+        """Create a full table name from the schema and table names.
+
+        Args:
+            schema: Schema name. If empty, the default schema is used.
+            name: Table name.
+
+        Returns:
+            The schema-qualified table name.
+        """
 
     def split_table_name(self, table_name: str) -> tuple[str, str]:
-        """Split a full table name into the schema and table names."""
+        """Split a full table name into the schema and table names.
+
+        Args:
+            table_name: Table name, optionally schema-qualified.
+
+        Returns:
+            A tuple of the schema name (the default schema if none is given) and the table name.
+        """
 
     def table_bounds(self, table: DatabaseTableAlike) -> Optional[Bounds]:
-        """Compute a bounding box for the table primary geometry."""
+        """Compute the bounding box of the primary geometry of a table.
+
+        Args:
+            table: Table object or table name.
+
+        Returns:
+            The bounds, or ``None`` if the table has no geometry or no data.
+        """
 
     def select_text(self, sql: str, **kwargs) -> list[dict]:
-        """Execute a textual SELECT stmt and return a list of record dicts."""
+        """Execute a textual SELECT statement.
+
+        Args:
+            sql: SQL statement with ``:name`` bind parameters.
+            **kwargs: Bind parameters.
+
+        Returns:
+            A list of rows as dicts.
+
+        Raises:
+            ``sqlalchemy.exc.SQLAlchemyError``: On database errors, after a rollback.
+        """
 
     def execute_text(self, sql: str, **kwargs) -> 'sqlalchemy.CursorResult':
-        """Execute a textual DML stmt and return a result."""
+        """Execute a textual statement and commit.
+
+        Args:
+            sql: SQL statement with ``:name`` bind parameters.
+            **kwargs: Bind parameters.
+
+        Returns:
+            The result.
+
+        Raises:
+            ``sqlalchemy.exc.SQLAlchemyError``: On database errors, after a rollback.
+        """
 
     def schema_names(self) -> list[str]:
-        """Return a list of schema names in the database."""
+        """Return the names of the schemas in the database.
+
+        Returns:
+            A list of schema names.
+        """
 
     def inspect_schema(self, schema: str, options: Optional[DatabaseInspectOptions] = None):
-        """Inspect the database schema and cache the results based on the provided options."""
+        """Reflect the tables of a schema and keep the result.
+
+        A schema that has already been reflected is not reflected again, unless
+        ``options.refresh`` is set. The reflected metadata is cached for the
+        configured schema cache lifetime. If ``options`` are given, their
+        ``cacheLifeTime`` is used instead; 0 means no caching.
+
+        Args:
+            schema: Schema name.
+            options: Inspection options.
+        """

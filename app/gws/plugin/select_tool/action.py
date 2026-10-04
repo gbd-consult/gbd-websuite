@@ -1,4 +1,4 @@
-"""Select action."""
+"""The ``select`` action."""
 
 from typing import Optional
 
@@ -27,8 +27,12 @@ class Props(gws.base.action.Props):
 
 @gws.ext.object.action('select')
 class Object(gws.base.action.Object):
+    """Action for the feature selection tool."""
+
     storage: Optional[gws.base.storage.Object]
+    """Storage for saved selections, if configured."""
     tolerance: Optional[gws.UomValue]
+    """Click tolerance for feature selection."""
 
     def configure(self):
         self.storage = self.create_child_if_configured(
@@ -44,6 +48,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.api('selectStorage')
     def handle_storage(self, req: gws.WebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:
+        """Read or write saved selections."""
         if not self.storage:
             raise gws.NotFoundError('no storage configured')
         return self.storage.handle_request(req, p)

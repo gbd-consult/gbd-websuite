@@ -1,4 +1,4 @@
-"""Various inspire-related data."""
+"""INSPIRE code lists and data themes."""
 
 from enum import Enum
 from typing import Optional
@@ -76,7 +76,18 @@ TAGS = {
 
 
 def theme_name(theme: str, lang: str) -> str | None:
-    """Retrieves the name of a theme in the specified language."""
+    """Return the name of an INSPIRE theme in a language.
+
+    Args:
+        theme: Theme code, for example ``tn``.
+        lang: Two-letter language code; ``en`` and ``de`` are available.
+
+    Returns:
+        The theme name, or ``None`` if there is none in this language.
+
+    Raises:
+        ``ValueError``: If the theme is unknown.
+    """
 
     t = _THEMES.get(theme)
     if not t:
@@ -85,7 +96,18 @@ def theme_name(theme: str, lang: str) -> str | None:
 
 
 def theme_definition(theme: str, lang: str) -> str | None:
-    """Retrieves the definition of a theme in the specified language."""
+    """Return the definition of an INSPIRE theme in a language.
+
+    Args:
+        theme: Theme code, for example ``tn``.
+        lang: Two-letter language code; ``en`` and ``de`` are available.
+
+    Returns:
+        The theme definition, or ``None`` if there is none in this language.
+
+    Raises:
+        ``ValueError``: If the theme is unknown.
+    """
 
     t = _THEMES.get(theme)
     if not t:

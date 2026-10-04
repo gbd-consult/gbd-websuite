@@ -1,4 +1,4 @@
-"""Tile layer."""
+"""The ``tile`` layer."""
 
 from typing import Optional
 
@@ -22,7 +22,10 @@ class Config(gws.base.layer.Config):
 
 @gws.ext.object.layer('tile')
 class Object(gws.base.layer.image.Object):
+    """Image layer that shows tiles from an XYZ tile service."""
+
     provider: provider.Object
+    """Tile provider."""
 
     canRenderInClient = True
 

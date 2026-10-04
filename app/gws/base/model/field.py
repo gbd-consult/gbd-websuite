@@ -1,3 +1,5 @@
+"""Base model field."""
+
 from typing import Optional, cast
 
 import gws
@@ -46,8 +48,17 @@ class Config(gws.ConfigWithAccess):
 
 
 class Object(gws.ModelField):
+    """Base model field.
+
+    Provides the field flags, value objects, validators, widget, props and validation.
+    Subclasses implement reading and writing the field value and the conversion between
+    record, feature and props values.
+    """
+
     notEmptyValidator: gws.ModelValidator
+    """Validator that checks that the value is not empty."""
     formatValidator: gws.ModelValidator
+    """Validator that checks the format of the value."""
 
     def configure(self):
         self.model = self.cfg('_defaultModel')
@@ -64,6 +75,11 @@ class Object(gws.ModelField):
         self.configure_widget()
 
     def configure_flags(self):
+        """Set the field flags from the configuration or the source column.
+
+        ``isPrimaryKey``, ``isRequired`` and ``isAuto`` default to the properties of the
+        source column with the field name. ``isUnique`` and ``isHidden`` default to False.
+        """
         col = self.describe()
 
         p = self.cfg('isPrimaryKey')
@@ -93,12 +109,25 @@ class Object(gws.ModelField):
         self.isHidden = self.cfg('isHidden', default=False)
 
     def configure_values(self):
+        """Create the configured value objects.
+
+        Returns:
+            True if values are configured, None otherwise.
+        """
         p = self.cfg('values')
         if p:
             self.values = self.create_children(gws.ext.object.modelValue, p)
             return True
 
     def configure_validators(self):
+        """Create the configured validators.
+
+        Configured ``notEmpty`` and ``format`` validators replace the shared default ones,
+        which apply to ``create`` and ``update``.
+
+        Returns:
+            Always True.
+        """
         vd_not_empty = None
         vd_format = None
 
@@ -130,9 +159,22 @@ class Object(gws.ModelField):
         return True
 
     def create_validator(self, cfg):
+        """Create a validator as a child of this field.
+
+        Args:
+            cfg: The validator configuration.
+
+        Returns:
+            The validator object.
+        """
         return self.create_child(gws.ext.object.modelValidator, cfg)
 
     def configure_widget(self):
+        """Create the configured widget.
+
+        Returns:
+            True if a widget is configured, None otherwise.
+        """
         p = self.cfg('widget')
         if p:
             self.widget = self.create_child(gws.ext.object.modelWidget, p)

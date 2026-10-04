@@ -1,9 +1,4 @@
-"""Nominatim finder.
-
-http://wiki.openstreetmap.org/wiki/Nominatim
-https://nominatim.org/release-docs/develop/api/Search/
-
-"""
+"""Nominatim finder."""
 
 from typing import Optional
 
@@ -50,6 +45,12 @@ class Config(gws.base.search.finder.Config):
 
 @gws.ext.object.finder('nominatim')
 class Object(gws.base.search.finder.Object):
+    """Nominatim finder object.
+
+    Searches places and addresses in OpenStreetMap by keyword through a
+    ``nominatim`` model.
+    """
+
     supportsKeywordSearch = True
 
     def configure(self):
@@ -63,6 +64,14 @@ class Object(gws.base.search.finder.Object):
         return gws.config.util.configure_models_for(self, with_default=True)
 
     def create_model(self, cfg):
+        """Create a ``nominatim`` model with the country and language of the finder.
+
+        Args:
+            cfg: Model configuration, or None for the default model.
+
+        Returns:
+            The model object.
+        """
         return self.create_child(
             gws.ext.object.model,
             cfg,

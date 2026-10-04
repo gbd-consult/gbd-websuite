@@ -1,4 +1,16 @@
-"""Simple input widget."""
+"""Integer input widget.
+
+Input for whole numbers, with up/down buttons and an optional placeholder
+text. This is the default widget of ``integer`` fields.
+
+Example::
+
+    fields+ {
+        name "floors"
+        type "integer"
+        widget { type "integer" step 1 placeholder "Number of floors" }
+    }
+"""
 
 import gws
 import gws.base.model.widget
@@ -22,6 +34,8 @@ class Props(gws.base.model.widget.Props):
 
 @gws.ext.object.modelWidget('integer')
 class Object(gws.base.model.widget.Object):
+    """Integer input widget object."""
+
     def props(self, user):
         return gws.u.merge(
             super().props(user),

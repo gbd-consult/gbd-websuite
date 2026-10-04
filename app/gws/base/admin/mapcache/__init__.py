@@ -1,4 +1,23 @@
-"""Cache viewer: an html page to inspect cached tiles."""
+"""Cache viewer: an html page to inspect cached tiles.
+
+The page lists all tile caches from the cache inventory (``gws.gis.cache.core``)
+with per-level statistics, and shows the cached tiles of a selected cache and
+level on an OpenLayers map. It is served by the ``adminMapCache`` command of the
+``admin`` action.
+
+Paths:
+
+- empty: the overview page.
+- ``<cache>``, ``<cache>/<z>``: the page with a cache and level selected (level 0 by default).
+- ``<cache>/<z>/<x>/<y>.<ext>``: a single cached tile as PNG, or an empty 204 response if
+  the tile is not cached.
+- ``ol.js``, ``ol.css``, ``proj4.js``, ``page.js``, ``page.css``: page assets.
+
+Example::
+
+    /_/adminMapCache?path=
+    /_/adminMapCache?path=<cache name>/12
+"""
 
 import os
 import re
@@ -24,6 +43,18 @@ _DECOR_COLOR = (200, 0, 0, 255)
 
 
 def get_content(root: gws.Root, path: str) -> gws.ContentResponse:
+    """Render the cache viewer page, a cached tile or a page asset.
+
+    Args:
+        root: The configuration root.
+        path: Page, tile or asset path.
+
+    Returns:
+        The rendered page, the tile image or the asset.
+
+    Raises:
+        gws.NotFoundError: If the path is invalid or the cache or level is not found.
+    """
     path = (path or '').strip('/')
 
     if not path:
@@ -53,6 +84,7 @@ def get_content(root: gws.Root, path: str) -> gws.ContentResponse:
 
 
 def _page(root: gws.Root, name: str, z: int) -> gws.ContentResponse:
+    """Render the page, with a cache and level selected if ``name`` is given."""
     inv = core.inventory(root)
     core.add_stats(inv)
     selected = None
@@ -83,6 +115,7 @@ def _page(root: gws.Root, name: str, z: int) -> gws.ContentResponse:
 
 
 def _find(inv: core.Inventory, name: str) -> core.Cache:
+    """Find a cache in the inventory by name, raise ``NotFoundError`` if not found."""
     for c in inv.caches:
         if c.name == name:
             return c
@@ -90,6 +123,7 @@ def _find(inv: core.Inventory, name: str) -> core.Cache:
 
 
 def _tile(root: gws.Root, name: str, z: int, x: int, y: int) -> gws.ContentResponse:
+    """Return a cached tile as PNG, or an empty 204 response if it is not in the store."""
     c = _find(core.inventory(root), name)
     store = c.grabber.store
     p = store.path((x, y, z))
@@ -110,6 +144,7 @@ def _tile(root: gws.Root, name: str, z: int, x: int, y: int) -> gws.ContentRespo
 
 
 def _cache_config(c: core.Cache) -> dict:
+    """Return the client-side configuration of a cache: CRS, grid, extent and per-level statistics."""
     gr = c.grabber
     crs = gr.targetCrs
     return {
@@ -131,6 +166,7 @@ def _cache_config(c: core.Cache) -> dict:
 
 
 def _grid_config(mg: gws.MapGrid) -> dict:
+    """Return the client-side configuration of a grid."""
     return {
         'extent': list(mg.extent),
         'baseResolution': mg.baseResolution,

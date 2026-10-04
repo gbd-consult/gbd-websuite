@@ -16,38 +16,86 @@ import gws.lib.xmlx
 
 
 class PrintTemplateElement(gws.Data):
+    """An item of a QGIS print layout."""
+
     type: str
+    """Item type, e.g. ``map``, ``label`` or ``page``."""
     uuid: str
+    """Item UUID."""
     attributes: dict
+    """XML attributes of the item element."""
     position: gws.UomPoint
+    """Position of the item on the page."""
     size: gws.UomSize
+    """Size of the item."""
 
 
 class PrintTemplate(gws.Data):
+    """A QGIS print layout."""
+
     title: str
+    """Layout name."""
     index: int
+    """Position of the layout in the project, starting with 0."""
     attributes: dict
+    """XML attributes of the layout element."""
     elements: list[PrintTemplateElement]
+    """Pages and items of the layout."""
 
 
 class Caps(gws.Data):
+    """Capabilities of a QGIS project, as parsed from the project XML."""
+
     metadata: gws.Metadata
+    """Project metadata."""
     printTemplates: list[PrintTemplate]
+    """Print layouts."""
     projectCrs: gws.Crs
+    """Project CRS, EPSG:4326 if the project has none."""
     projectBounds: Optional[gws.Bounds]
+    """Explicit WMS extent of the project, if set."""
     projectCanvasBounds: Optional[gws.Bounds]
+    """Map canvas extent of the project, if set."""
     properties: dict
+    """Project properties."""
     sourceLayers: list[gws.SourceLayer]
+    """Top-level layers and groups of the project layer tree."""
     version: str
+    """QGIS version that wrote the project."""
     visibilityPresets: dict[str, list[str]]
+    """Map themes, mapping a theme name to the IDs of visible layers."""
 
 
 def parse(xml: str) -> Caps:
+    """Parse a QGIS project XML string.
+
+    Args:
+        xml: Project XML.
+
+    Returns:
+        Project capabilities.
+
+    Raises:
+        ``gws.Error``: If the project CRS is invalid.
+    """
     el = gws.lib.xmlx.from_string(xml)
     return parse_element(el)
 
 
 def parse_element(root_el: gws.XmlElement) -> Caps:
+    """Parse a QGIS project XML element.
+
+    Layers listed as restricted in the project WMS settings are skipped.
+
+    Args:
+        root_el: Root element of the project XML.
+
+    Returns:
+        Project capabilities.
+
+    Raises:
+        ``gws.Error``: If the project CRS is invalid.
+    """
     caps = Caps()
 
     caps.version = str(root_el.get('version') or '')
@@ -358,6 +406,19 @@ def _map_layer_datasource(layer_el: gws.XmlElement) -> dict:
 
 
 def qgis_extent(layer_el: gws.XmlElement, layer_crs: gws.Crs):
+    """Compute the WGS extent of a map layer.
+
+    The extent is taken from the first valid source of the following: the
+    explicit extent in the layer metadata, the ``wgs84extent`` element, and
+    the ``extent`` element, which is assumed to be in the layer CRS.
+
+    Args:
+        layer_el: ``maplayer`` element.
+        layer_crs: CRS of the layer.
+
+    Returns:
+        WGS extent, or ``None`` if no valid extent is found.
+    """
     uid = layer_el.textof('id')
 
     # extent explicitly defined in metadata (Layer Props -> Metadata -> Extent)
@@ -438,21 +499,7 @@ def _layer_tree(el: Optional[gws.XmlElement], layers_dct):
 
 
 def _visibility_presets(root_el: gws.XmlElement):
-    """Parse the global ``visibility-presets`` block.
-
-    We're only interested in which layers are visible.
-
-    Overall structure::
-
-        <visibility-presets>
-            <visibility-preset .... name="...">
-                <layer id="..." visible="1" ... />
-                <layer id="..." visible="1" ... />
-            <visibility-preset .... name="...">
-                <layer id="..." visible="1" ... />
-                <layer id="..." visible="1" ... />
-
-    """
+    """Map each visibility preset (map theme) name to the IDs of its visible layers."""
 
     d = {}
 
@@ -470,6 +517,24 @@ def _visibility_presets(root_el: gws.XmlElement):
 
 
 def parse_datasource(prov, text):
+    """Parse a QGIS layer data source string.
+
+    Common formats (ampersand-delimited, space-delimited, plain URL,
+    pipe-delimited path) are parsed into a dict with lower-case keys,
+    anything else is returned as ``{'text': text}``. The ``provider`` key
+    is always set; WMS sources with a tile matrix set are classified as
+    ``wmts``, and WMS sources of type ``xyz`` as ``xyz``.
+
+    Args:
+        prov: Data provider name from the project, e.g. ``postgres``.
+        text: Data source string.
+
+    Returns:
+        Data source properties.
+
+    Raises:
+        ``ValueError``: If a space- or pipe-delimited string is malformed.
+    """
     ds = gws.u.to_lower_dict(_parse_datasource(text) or {})
     ds['provider'] = (ds.get('provider') or prov).lower()
 
@@ -645,32 +710,7 @@ def _datasource_pipe_delimited(text):
 
 
 def _parse_properties(el: Optional[gws.XmlElement]) -> dict:
-    """Parse qgis property blocks.
-
-    There are following forms:
-
-    Scalar property::
-
-        <WMSContactPhone type="QString">...
-
-    Dict::
-
-        <QFieldSync>
-            <dirsToCopy type="QString">...
-            <exportDirectoryProject type="QString">...
-        </QFieldSync>
-
-    Option map::
-
-        <data-defined-properties>
-            <Option type="Map">
-                <Option type="QString" name="..." value="..."/>
-                <Option name="properties"/>
-          </Option>
-        </data-defined-properties>
-
-
-    """
+    """Parse a QGIS property block (scalars, dicts or option maps) into a dict."""
 
     if not el:
         return {}

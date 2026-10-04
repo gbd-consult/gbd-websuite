@@ -1,25 +1,39 @@
+"""Core data structures and constants for the specs."""
+
 from typing import TypeAlias, Any
 import os
 
 
 class Error(Exception):
+    """Base class for spec errors."""
+
     pass
 
 
 class GeneratorError(Error):
+    """Raised when the spec generator fails."""
+
     pass
 
 
 class ReadError(Error):
+    """Raised when a value does not match its spec type.
+
+    The arguments are the message and the offending value. With verbose errors,
+    a ``gws.ConfigErrorInfo`` object is added as the third argument.
+    """
+
     pass
 
 
 class LoadError(Error):
+    """Raised when a class cannot be loaded from its module."""
+
     pass
 
 
 class c:
-    """Type kinds."""
+    """Type kinds, the values of ``Type.c``."""
 
     ATOM = 'ATOM'
     """Atomic, one of the built-in types."""
@@ -71,32 +85,35 @@ class c:
 
 
 TypeKind: TypeAlias = str
-"""Type kind, one of the constants in `c`."""
+"""Type kind, one of the constants in ``c``."""
 TypeUid: TypeAlias = str
 """Type unique identifier, a string that identifies the type."""
 
 
 class Type:
-    """Type data structure, repsents a GWS type."""
+    """Spec type record, describes a single type, property, method or module.
+
+    Which fields are populated depends on the type kind ``c``.
+    """
 
     c: TypeKind
-    """Type class, one of the constants in `c`."""
+    """Type kind, one of the constants in ``c``."""
     uid: TypeUid
     """Type unique identifier, a string that identifies the type."""
 
     extName: str = ''
-    """Name of the extension that defines this, if any."""
+    """``gws.ext`` name of an extension type, variant or command method, if any."""
 
     title: str = ''
-    """Documentation title string for the type."""
+    """Documentation title, filled from the strings by ``get_config_types``."""
     doc: str = ''
     """Documentation string for the type."""
     ident: str = ''
-    """Source code identifier for the type, used in the documentation."""
+    """Source code identifier (class, property or method name), used in the documentation."""
     name: str = ''
-    """Name of the type."""
+    """Qualified name of a named type, e.g. ``gws.base.layer.core.Config``."""
     pos: str = ''
-    """Source code position of the type definition."""
+    """Source code position of the definition, as ``path:line``."""
 
     modName: str = ''
     """Name of the module that defines this type."""
@@ -104,116 +121,141 @@ class Type:
     """Path to the module that defines this type."""
 
     tArg: TypeUid = ''
-    """For c.METHOD types, type uid of its last argument."""
+    """For ``METHOD`` types, type uid of the last (request) argument."""
     tItem: TypeUid = ''
-    """For c.LIST, c.SET and c.DICT types, type uid of its item."""
+    """For ``LIST`` and ``SET`` types, type uid of the item."""
     tKey: TypeUid = ''
-    """For c.DICT types, type uid of its key."""
+    """For ``DICT`` types, type uid of the key."""
     tModule: TypeUid = ''
     """Type uid of the type's module."""
     tOwner: TypeUid = ''
-    """For c.PROPERTY types, type uid of the type that owns this property."""
+    """For ``PROPERTY`` and ``METHOD`` types, type uid of the owning class."""
     tReturn: TypeUid = ''
-    """For c.METHOD types, type uid of its return value."""
+    """For ``METHOD`` types, type uid of the return value."""
     tTarget: TypeUid = ''
-    """For c.TYPE or c.EXT types, type uid of the target type."""
+    """For ``TYPE``, ``EXT`` and ``OPTIONAL`` types, type uid of the target type."""
     tValue: TypeUid = ''
-    """For c.PROPERTY types, type uid of the constant value."""
+    """For ``PROPERTY`` types, type uid of the value; for ``DICT`` types, type uid of the dict values."""
 
     tArgs: list[TypeUid] = []
-    """For c.METHOD types, type uids of its arguments."""
+    """For ``METHOD`` types, type uids of the arguments."""
     tItems: list[TypeUid] = []
-    """For c.UNION or c.TUPLE types, type uids of its items."""
+    """For ``UNION``, ``TUPLE`` and ``CALLABLE`` types, type uids of the items."""
     tSupers: list[TypeUid] = []
-    """For c.CLASS types, type uids of its super types."""
+    """For ``CLASS`` types, type uids of the base classes."""
     tMembers: dict[str, TypeUid] = {}
-    """For c.VARIANT types, type uids of its members."""
+    """For ``VARIANT`` types, member type uids keyed by the ``type`` tag."""
     tProperties: dict[str, TypeUid] = {}
-    """For c.CLASS types, type uids of its properties."""
+    """For ``CLASS`` types, property type uids keyed by property name, including inherited properties."""
 
     defaultValue: Any = None
     """Default value for a property."""
     defaultExpression: Any = None
-    """Default expression for a property."""
+    """Unevaluated default of a property (a constant or enum reference), evaluated by the normalizer."""
     hasDefault: bool = False
     """True if the type has a default value."""
     constValue: Any = None
     """Constant value for a constant type."""
 
     enumDocs: dict = {}
-    """Documentation strings for the enum values."""
+    """For ``ENUM`` types, member docstrings keyed by member name."""
     enumValues: dict = {}
-    """Enum values for the enum type."""
+    """For ``ENUM`` types, member values keyed by member name."""
 
     literalValues: list = []
-    """Literal values for the c.LITERAL type."""
+    """For ``LITERAL`` types, the allowed values."""
 
     isConfig: bool = False
-    """True if this type is a configuration type."""
+    """True if the type is reachable from the application ``Config``."""
 
 
 def make_type(args: dict):
+    """Create a ``Type`` object.
+
+    Args:
+        args: Attribute values for the type.
+
+    Returns:
+        A new ``Type`` object.
+    """
+
     typ = Type()
     vars(typ).update(args)
     return typ
 
 
 class Chunk:
-    """Source code chunk."""
+    """Source code chunk, the core packages or a plugin with their source files."""
 
     name: str
     """Name of the chunk."""
     sourceDir: str
     """Source directory of the chunk."""
     bundleDir: str
-    """Directory to save the compiled chunk bundle."""
+    """Directory where the client bundle of the chunk is stored."""
     paths: dict[str, list[str]]
-    """Source code paths."""
+    """Source file paths, grouped by file kind (``python``, ``ts``, ``css``, ``theme``, ``strings``)."""
     exclude: list[str]
-    """List of patterns to exclude from the chunk."""
+    """Path fragments to exclude from the chunk."""
 
 
 class SpecData:
-    """Specs data structure."""
+    """Specs data, produced by the generator and loaded by the runtime."""
 
     meta: dict
-    """Meta data for the specs."""
+    """Build-time metadata: ``version``, ``manifestPath`` and ``manifest``."""
     chunks: list[Chunk]
-    """List of chunks."""
+    """Source code chunks of the application and its plugins."""
     serverTypes: list[Type]
-    """List of types used by the server (configuration types, request types and commands)."""
+    """Types used by the server: configuration, request and response types, ext objects and command methods."""
     strings: dict[str, dict[str, str]]
-    """Documentation strings, translated to multiple languages."""
+    """Documentation strings keyed by language code and type uid."""
 
 
 class v:
-    """Constants for the Specs generator."""
+    """Constants for the spec generator and runtime."""
 
     APP_NAME = 'gws'
+    """Application package name."""
     EXT_PREFIX = APP_NAME + '.ext'
+    """Prefix of all extension names."""
     EXT_DECL_PREFIX = EXT_PREFIX + '.new.'
+    """Prefix of ``gws.ext.new`` declarations in the sources."""
     EXT_CONFIG_PREFIX = EXT_PREFIX + '.config.'
+    """Prefix of extension config names."""
     EXT_PROPS_PREFIX = EXT_PREFIX + '.props.'
+    """Prefix of extension props names."""
     EXT_OBJECT_PREFIX = EXT_PREFIX + '.object.'
+    """Prefix of extension object names."""
     EXT_COMMAND_PREFIX = EXT_PREFIX + '.command.'
+    """Prefix of command names."""
 
     EXT_COMMAND_API_PREFIX = EXT_COMMAND_PREFIX + 'api.'
+    """Prefix of API command names."""
     EXT_COMMAND_GET_PREFIX = EXT_COMMAND_PREFIX + 'get.'
+    """Prefix of web GET command names."""
     EXT_COMMAND_CLI_PREFIX = EXT_COMMAND_PREFIX + 'cli.'
+    """Prefix of CLI command names."""
 
     EXT_OBJECT_CLASS = 'Object'
+    """Default object class name in a ``gws.ext.new`` declaration."""
     EXT_CONFIG_CLASS = 'Config'
+    """Default config class name in a ``gws.ext.new`` declaration."""
     EXT_PROPS_CLASS = 'Props'
+    """Default props class name in a ``gws.ext.new`` declaration."""
 
     CLIENT_NAME = 'gc'
+    """Name of the client chunk."""
     VARIANT_TAG = 'type'
-    """Tag property name for Variant types."""
+    """Name of the property that selects the member of a variant."""
     DEFAULT_VARIANT_TAG = 'default'
-    """Default variant tag."""
+    """Variant member used when the tag property is missing."""
 
     ATOMS = ['any', 'bool', 'bytes', 'float', 'int', 'str']
+    """Names of atomic types."""
 
     BUILTINS = ATOMS + ['type', 'object', 'Exception', 'dict', 'list', 'set', 'tuple']
+    """Built-in names, registered as ``ATOM`` types."""
 
     BUILTIN_TYPES = [
         'Any',
@@ -239,17 +281,20 @@ class v:
         'gws.lib.vendor',
         'gws.lib.sa',
     ]
+    """Names from ``typing`` and foreign modules that are treated as built-in."""
 
     # those star-imported in gws/__init__.py
     GLOBAL_MODULES = [
         APP_NAME + '.core.const',
         APP_NAME + '.core.util',
     ]
+    """Modules whose names are available directly as ``gws.<Name>``."""
 
     DEFAULT_EXT_SUPERS = {
         'config': APP_NAME + '.core.types.ConfigWithAccess',
         'props': APP_NAME + '.core.types.Props',
     }
+    """Default base classes for synthesized ext config and props classes."""
 
     # prefix for gws.plugin class names
     PLUGIN_PREFIX = APP_NAME + '.plugin'
@@ -264,6 +309,7 @@ class v:
     APP_DIR = os.path.abspath(SELF_DIR + '/../..')
 
     EXCLUDE_PATHS = ['___', '/vendor/', 'test', 'core/ext', '__pycache__']
+    """Path fragments of source files the generator skips."""
 
     FILE_KINDS = [
         ['.py', 'python'],
@@ -273,8 +319,10 @@ class v:
         ['.theme.css.js', 'theme'],
         ['/strings.ini', 'strings'],
     ]
+    """Source file suffixes and the file kinds they map to."""
 
     PLUGIN_DIR = '/gws/plugin'
+    """Directory of the built-in plugins, relative to the app directory."""
 
     SYSTEM_CHUNKS = [
         [CLIENT_NAME, f'/js/src/{CLIENT_NAME}'],
@@ -285,3 +333,4 @@ class v:
         [f'{APP_NAME}.server', '/gws/server'],
         [f'{APP_NAME}.helper', '/gws/helper'],
     ]
+    """Names and source directories of the system chunks."""

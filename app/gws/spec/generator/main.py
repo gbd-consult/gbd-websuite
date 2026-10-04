@@ -1,3 +1,5 @@
+"""Generator entry points and JSON storage of the specs."""
+
 import os
 
 from .. import core
@@ -7,8 +9,21 @@ Error = base.Error
 
 
 def generate_and_write(root_dir='', out_dir='', manifest_path='', debug=False):
-    """Generate the specs and write them to disk."""
-    
+    """Generate the specs and write them to the output directory.
+
+    Writes ``specs.json``, ``gws.generated.ts``, ``configref.en.md`` and
+    ``configref.de.md``.
+
+    Args:
+        root_dir: Application root directory, defaults to the ``app`` directory of this installation.
+        out_dir: Output directory.
+        manifest_path: Path to the application manifest.
+        debug: If True, log debug messages and dump the generator state after each step.
+
+    Raises:
+        ``GeneratorError``: If the specs cannot be generated.
+    """
+
     base.log.set_level('DEBUG' if debug else 'INFO')
 
     gen = _run_generator(root_dir, out_dir, manifest_path, debug)
@@ -22,15 +37,33 @@ def generate_and_write(root_dir='', out_dir='', manifest_path='', debug=False):
 
 
 def generate(manifest_path='') -> core.SpecData:
-    """Generate the specs and return them as a data object."""
-    
+    """Generate the specs.
+
+    Args:
+        manifest_path: Path to the application manifest.
+
+    Returns:
+        The spec data.
+
+    Raises:
+        ``GeneratorError``: If the specs cannot be generated.
+    """
+
     gen = _run_generator(manifest_path=manifest_path)
     return gen.specData
 
 
 def to_path(path: str, specs: core.SpecData):
-    """Write the specs to a JSON file."""
-    
+    """Write the specs to a JSON file.
+
+    Args:
+        path: File path.
+        specs: Spec data.
+
+    Returns:
+        The file path.
+    """
+
     util.write_json(
         path,
         {
@@ -44,8 +77,15 @@ def to_path(path: str, specs: core.SpecData):
 
 
 def from_path(path: str) -> core.SpecData:
-    """Load the specs from a JSON file."""
-    
+    """Load the specs from a JSON file written by ``to_path``.
+
+    Args:
+        path: File path.
+
+    Returns:
+        The spec data.
+    """
+
     d = util.read_json(path)
     s = core.SpecData()
     s.meta = d['meta']

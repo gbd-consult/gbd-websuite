@@ -25,6 +25,18 @@ _ATTR_TO_PY = {
 
 
 def iter_features(features: list[gws.Feature], mc: gws.ModelContext) -> Iterable[gws.Feature]:
+    """Iterate over features and their related features.
+
+    Related features are features stored in attributes, directly or in lists. They are
+    visited depth-first, as long as the relation depth of the context is below its maximum.
+
+    Args:
+        features: The features.
+        mc: The model context.
+
+    Yields:
+        Each feature, followed by its related features.
+    """
     for f in features:
         yield f
 
@@ -45,6 +57,17 @@ def iter_features(features: list[gws.Feature], mc: gws.ModelContext) -> Iterable
 
 
 def describe_from_record(fd: gws.FeatureRecord) -> gws.DataSetDescription:
+    """Create a dataset description from a feature record.
+
+    Column types are derived from the python types of the attribute values. If the record
+    has a shape, a ``geometry`` column is added.
+
+    Args:
+        fd: The feature record.
+
+    Returns:
+        The dataset description.
+    """
     py_to_attr = {str(v): k for k, v in _ATTR_TO_PY.items()}
 
     desc = gws.DataSetDescription(columns=[])
@@ -73,7 +96,25 @@ def describe_from_record(fd: gws.FeatureRecord) -> gws.DataSetDescription:
 
 
 def copy_context(mc: gws.ModelContext, **kwargs) -> gws.ModelContext:
+    """Copy a model context.
+
+    Args:
+        mc: The model context.
+        **kwargs: Properties to set in the copy.
+
+    Returns:
+        A new model context.
+    """
     return gws.ModelContext(gws.u.merge(mc, kwargs))
 
 def secondary_context(mc: gws.ModelContext, **kwargs) -> gws.ModelContext:
+    """Copy a model context for related features, with the relation depth increased by one.
+
+    Args:
+        mc: The model context.
+        **kwargs: Properties to set in the copy.
+
+    Returns:
+        A new model context.
+    """
     return gws.ModelContext(gws.u.merge(mc, kwargs, relDepth=mc.relDepth + 1))

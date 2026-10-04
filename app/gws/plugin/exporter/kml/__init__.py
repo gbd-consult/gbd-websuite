@@ -1,6 +1,17 @@
-"""Exporter for the KML format.
+"""KML exporter.
 
-See https://gdal.org/en/stable/drivers/vector/kml.html#creation-options for supported options.
+Exports vector features with the GDAL ``KML`` driver. With
+``withMultiLayer``, all models are written to one file. GDAL creation
+options can be passed with ``options``, see
+https://gdal.org/en/stable/drivers/vector/kml.html.
+
+Example::
+
+    exporters+ {
+        type "kml"
+        title "KML"
+        target "download"
+    }
 """
 
 import gws
@@ -24,6 +35,8 @@ class Props(gws.base.exporter.Props):
 
 @gws.ext.object.exporter('kml')
 class Object(gws.base.exporter.Object):
+    """KML exporter."""
+
     supportsVector = True
     supportsRaster = False
     supportsMultiLayer = True

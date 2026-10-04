@@ -1,3 +1,5 @@
+"""HTTP server for the live MapServer configuration editor."""
+
 import base64
 import http.server
 import io
@@ -17,6 +19,17 @@ TMP_IMG = '/tmp/mapse.png'
 
 
 def do_render(request_body):
+    """Render a mapfile.
+
+    Errors are rendered as an image with the error message.
+
+    Args:
+        request_body: Mapfile content.
+
+    Returns:
+        The rendered image, as encoded by MapServer, or a PNG with the error message.
+    """
+
     try:
         with open(TMP_MAP, 'wb') as fp:
             fp.write(request_body)
@@ -48,6 +61,11 @@ def do_render(request_body):
 
 
 class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
+    """Request handler of the editor.
+
+    ``GET`` returns the editor page with the default mapfile, any path is accepted.
+    """
+
     def do_GET(self):
         html = _read_file(THIS_DIR + '/live_config.html')
         dm = _read_file(THIS_DIR + '/live_config.map')
@@ -55,6 +73,11 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         return self.end(html, 200, content_type='text/html; charset=utf-8')
 
     def do_POST(self):
+        """Render the mapfile posted in the request body and send the image.
+
+        The image is also saved to ``TMP_IMG``.
+        """
+
         content_length = int(self.headers['Content-Length'])
         request_body = self.rfile.read(content_length)
 
@@ -64,6 +87,14 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.end(content)
 
     def end(self, content, status=200, **headers):
+        """Send a response.
+
+        Args:
+            content: Response content, strings are encoded as UTF-8.
+            status: HTTP status code.
+            **headers: Response headers. Underscores in names are replaced with dashes.
+        """
+
         if isinstance(content, str):
             content = content.encode('utf-8')
 
@@ -81,16 +112,20 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 
 def _writeln(s):
+    """Write a line to stdout."""
     sys.stdout.write(s + '\n')
     sys.stdout.flush()
 
 
 def _read_file(path):
+    """Read a file as bytes."""
     with open(path, 'rb') as fp:
         return fp.read()
 
 
 def main():
+    """Run the editor server on port 80 until SIGTERM."""
+
     host = '0.0.0.0'
     port = 80
 

@@ -1,23 +1,39 @@
+"""JSON utilities.
+
+Thin wrappers around the standard ``json`` module that read and write JSON strings and
+files. Objects that are not JSON serializable are converted to their attribute dicts
+(``vars``) or to strings, so that ``gws.Data`` objects can be serialized directly.
+All errors are raised as ``Error``.
+
+Example::
+
+    s = gws.lib.jsonx.to_pretty_string({'a': 1, 'b': [1, 2]})
+    d = gws.lib.jsonx.from_string(s)
+    gws.lib.jsonx.to_path('/tmp/data.json', d)
+"""
+
 import json
 
 import gws
 
 
 class Error(gws.Error):
+    """JSON error."""
+
     pass
 
 
 def from_path(path: str):
-    """Converts a json file to a python dictionary.
+    """Read a JSON file.
 
     Args:
-        path: Path to json file.
+        path: Path to a UTF-8 encoded JSON file.
 
     Returns:
-        A Python object.
+        The decoded object.
 
     Raises:
-        ``Exception``: If the given json is incorrect.
+        ``Error``: If the file cannot be read or is not valid JSON.
     """
 
     try:
@@ -29,16 +45,16 @@ def from_path(path: str):
 
 
 def from_string(s: str):
-    """Converts a json string to a python dictionary.
+    """Decode a JSON string.
 
     Args:
-        s: Json string.
+        s: JSON string.
 
     Returns:
-        A Python object.
+        The decoded object, or an empty dict if the string is empty or blank.
 
     Raises:
-        ``Error``: If the given json is incorrect.
+        ``Error``: If the string is not valid JSON.
     """
 
     if not s.strip():
@@ -50,15 +66,18 @@ def from_string(s: str):
 
 
 def to_path(path: str, x, pretty: bool = False, ensure_ascii: bool = True, default=None):
-    """Converts a dictionary to a json file.
+    """Write an object to a JSON file, UTF-8 encoded.
 
     Args:
-        path: Destination of the json file.
-        x: The dict to convert.
-        pretty: If true then the json key-value pairs get ordered and correct indentation is used.
-        ensure_ascii: If true non ASCII characters will be escaped. Else those characters will not be escaped.
-        default: A function that should return a serializable version of obj or raise TypeError.
-                The default simply raises TypeError.
+        path: File path.
+        x: Object to write.
+        pretty: If ``True``, sort the keys and indent the output.
+        ensure_ascii: If ``True``, escape non-ASCII characters.
+        default: Function that returns a serializable version of an object that is not serializable otherwise.
+            By default, objects are converted to their ``vars``, or to strings if they have none.
+
+    Raises:
+        ``Error``: If the object cannot be encoded or the file cannot be written.
     """
 
     s = to_string(x, pretty=pretty, ensure_ascii=ensure_ascii, default=default)
@@ -69,14 +88,20 @@ def to_path(path: str, x, pretty: bool = False, ensure_ascii: bool = True, defau
 
 
 def to_string(x, pretty: bool = False, ensure_ascii: bool = True, default=None) -> str:
-    """Converts a dictionary to a json string.
+    """Encode an object as a JSON string.
 
     Args:
-        x: The dict to convert.
-        pretty: If true then the json key-value pairs get ordered and correct indentation is used.
-        ensure_ascii: If true non ASCII characters will be escaped. Else those characters will not be escaped.
-        default: A function that should return a serializable version of obj or raise TypeError.
-                The default simply raises TypeError.
+        x: Object to encode.
+        pretty: If ``True``, sort the keys and indent the output.
+        ensure_ascii: If ``True``, escape non-ASCII characters.
+        default: Function that returns a serializable version of an object that is not serializable otherwise.
+            By default, objects are converted to their ``vars``, or to strings if they have none.
+
+    Returns:
+        The JSON string.
+
+    Raises:
+        ``Error``: If the object cannot be encoded.
     """
 
     try:
@@ -100,19 +125,26 @@ def to_string(x, pretty: bool = False, ensure_ascii: bool = True, default=None) 
 
 
 def to_pretty_string(x, ensure_ascii: bool = True, default=None) -> str:
-    """Converts a dictionary to a pretty json string.
+    """Encode an object as a JSON string with sorted keys and indentation.
 
-        Args:
-            x: The dict to convert.
-            ensure_ascii: If true non ASCII characters will be escaped. Else those characters will not be escaped.
-            default: A function that should return a serializable version of obj or raise TypeError.
-                    The default simply raises TypeError.
-        """
+    Args:
+        x: Object to encode.
+        ensure_ascii: If ``True``, escape non-ASCII characters.
+        default: Function that returns a serializable version of an object that is not serializable otherwise.
+            By default, objects are converted to their ``vars``, or to strings if they have none.
+
+    Returns:
+        The JSON string.
+
+    Raises:
+        ``Error``: If the object cannot be encoded.
+    """
 
     return to_string(x, pretty=True, ensure_ascii=ensure_ascii, default=default)
 
 
 def _json_default(x):
+    """Convert an object to its attribute dict, or to a string if it has none."""
     try:
         return vars(x)
     except TypeError:

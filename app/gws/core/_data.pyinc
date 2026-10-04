@@ -3,23 +3,39 @@
 class Data:
     """Basic data object.
 
-    This object can be instantiated by passing one or or ``dict`` arguments
-    and/or keyword args. All dicts keys and keywords become attributes of the object.
+    This object can be instantiated by passing one or more ``dict`` or ``Data`` arguments
+    and/or keyword args. All keys and keywords become attributes of the object.
 
     Accessing an undefined attribute returns ``None`` and no error is raised,
     unless the attribute name starts with an underscore.
+
+    Example::
+
+        d = gws.Data({'a': 1}, b=2)
+        d.a     # 1
+        d['b']  # 2
+        d.c     # None
     """
 
     def __init__(self, *args, **kwargs):
+        """Create the object from dicts, ``Data`` objects and keyword args.
+
+        Args:
+            *args: Dicts, Mappings or ``Data`` objects. Other values are ignored.
+            **kwargs: Keyword args.
+        """
         self.update(*args, **kwargs)
 
     def __repr__(self):
+        """Return the ``repr`` of the attributes dict."""
         return repr(vars(self))
 
     def __getitem__(self, key):
+        """Return an attribute value or ``None`` if it is undefined."""
         return vars(self).get(key)
 
     def __setitem__(self, key, value):
+        """Set an attribute value."""
         vars(self)[key] = value
 
     # def __getattr__(self, attr):
@@ -34,15 +50,21 @@ class Data:
         Args:
             key: Attribute name.
             default: Default value, returned if the attribute is undefined.
+
+        Returns:
+            The attribute value or the default.
         """
         return vars(self).get(key, default)
 
     def setdefault(self, key, val):
-        """Set an attribute value if not already set.
+        """Set an attribute value if it is not already set.
 
         Args:
             key: Attribute name.
             val: Attribute value.
+
+        Returns:
+            The current attribute value, existing or new.
         """
         return vars(self).setdefault(key, val)
 
@@ -58,9 +80,11 @@ class Data:
     def update(self, *args, **kwargs):
         """Update the object with keys and values from args and keywords.
 
+        Later values override earlier ones, keywords override args.
+
         Args:
-            *args: Dicts or Mappings.
-            kwargs: Keyword args.
+            *args: Dicts, Mappings or ``Data`` objects. Other values are ignored.
+            **kwargs: Keyword args.
         """
 
         d = {}
@@ -76,6 +100,7 @@ class Data:
 # getattr needs to be defined out of class, otherwise the type checker will accept any attribute
 
 def _data_getattr(self, attr):
+    """Return ``None`` for undefined attributes, raise ``AttributeError`` for names starting with an underscore."""
     if attr.startswith('_'):
         # do not use None fallback for special props
         raise AttributeError(attr)
@@ -86,7 +111,14 @@ setattr(Data, '__getattr__', _data_getattr)
 
 
 def is_data_object(x):
-    """True if the argument is a ``Data`` object."""
+    """Check if the argument is a ``Data`` object.
+
+    Args:
+        x: A value.
+
+    Returns:
+        ``True`` if the value is a ``Data`` object.
+    """
     return isinstance(x, Data)
 
 
@@ -97,7 +129,13 @@ def to_data_object(x) -> 'Data':
     If the argument is ``None``, an empty object is returned.
 
     Args:
-        x: A Mapping or ``None``.
+        x: A ``Data`` object, a Mapping or ``None``.
+
+    Returns:
+        A ``Data`` object.
+
+    Raises:
+        ValueError: If the value cannot be converted.
     """
 
     if is_data_object(x):

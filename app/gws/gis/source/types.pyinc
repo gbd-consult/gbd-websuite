@@ -1,47 +1,81 @@
 class SourceStyle(Data):
-    """Generic OGC Style."""
+    """A style of a source layer, as listed in the capabilities of a service."""
 
     isDefault: bool
+    """The style is the default style of the layer."""
     legendUrl: Url
+    """URL of the legend image."""
     metadata: 'Metadata'
+    """Style metadata."""
     name: str
+    """Style name."""
 
 
 class SourceLayer(Data):
-    """Generic OGC Layer."""
+    """A layer of an external source, such as a WMS, WFS or WMTS service or a QGIS project.
+
+    Source layers are read from capabilities and form a tree. The ``a*`` properties
+    are set by ``gws.gis.source.check_layers``.
+    """
 
     aLevel: int
+    """Depth in the layer tree, 1 for top-level layers."""
     aPath: str
+    """Path of uids from the top of the tree, e.g. ``/root/roads``."""
     aUid: str
+    """Uid derived from the name or title."""
 
     dataSource: dict
+    """Parsed data source of a QGIS layer."""
     metadata: 'Metadata'
+    """Layer metadata."""
 
     supportedCrs: list['Crs']
+    """CRS supported by the source for this layer."""
     wgsExtent: Extent
+    """Layer extent in WGS84."""
 
     isExpanded: bool
+    """The layer is expanded in the source layer tree."""
     isGroup: bool
+    """The layer is a group."""
     isImage: bool
+    """The layer can be rendered as an image."""
     isQueryable: bool
+    """The layer can be queried for features."""
     isVisible: bool
+    """The layer is visible by default."""
 
     layers: list['SourceLayer']
+    """Sub-layers."""
 
     name: str
+    """Layer name, used in requests to the source."""
     title: str
+    """Layer title."""
 
     legendUrl: Url
+    """URL of the legend image."""
     opacity: float
+    """Layer opacity from 0 to 1."""
     scaleRange: list[float]
+    """Min. and max. scale denominators at which the layer is visible."""
 
     styles: list[SourceStyle]
+    """Available styles."""
     defaultStyle: Optional[SourceStyle]
+    """Default style."""
 
     tileMatrixIds: list[str]
+    """Ids of the WMTS tile matrix sets the layer links to."""
     tileMatrixSets: list[TileMatrixSet]
+    """WMTS tile matrix sets of the layer."""
     imageFormat: str
+    """Image format for WMTS requests."""
     resourceUrls: dict
+    """WMTS resource URL templates, keyed by resource type."""
 
     sourceId: str
+    """Id of the layer in the source, e.g. the QGIS layer id."""
     properties: dict
+    """Custom properties of a QGIS layer."""

@@ -17,7 +17,13 @@ class Config(gws.Config):
 
 
 class Object(gws.ModelWidget):
+    """Base model widget.
+
+    Provides the ``readOnly`` flag and the props common to all widgets.
+    """
+
     readOnly: bool
+    """The widget displays the value without allowing edits."""
 
     def configure(self):
         self.readOnly = self.cfg('readOnly', default=False)

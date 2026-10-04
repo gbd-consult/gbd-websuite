@@ -1,6 +1,17 @@
-"""Exporter for the GML format.
+"""GML exporter.
 
-See https://gdal.org/en/stable/drivers/vector/gml.html#dataset-creation-options for supported options.
+Exports vector features with the GDAL ``GML`` driver. With
+``withMultiLayer``, all models are written to one file. GDAL creation
+options can be passed with ``options``, see
+https://gdal.org/en/stable/drivers/vector/gml.html.
+
+Example::
+
+    exporters+ {
+        type "gml"
+        title "GML"
+        target "download"
+    }
 """
 
 import gws
@@ -24,6 +35,8 @@ class Props(gws.base.exporter.Props):
 
 @gws.ext.object.exporter('gml')
 class Object(gws.base.exporter.Object):
+    """GML exporter."""
+
     supportsVector = True
     supportsRaster = False
     supportsMultiLayer = True

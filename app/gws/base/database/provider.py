@@ -1,3 +1,5 @@
+"""Base database provider."""
+
 import threading
 from typing import Optional, cast
 
@@ -22,10 +24,22 @@ _thread_local = threading.local()
 
 
 class Object(gws.DatabaseProvider):
+    """Base database provider.
+
+    Manages the SQLAlchemy engine and the per-thread connection, reflects table
+    structures and describes tables and columns, and runs plain SQL text.
+
+    Subclasses provide ``url``, ``split_table_name``, ``join_table_name`` and
+    ``table_bounds``, and extend ``describe_column`` for database-specific types.
+    """
+
     saEngine: sa.Engine
+    """SQLAlchemy engine."""
     saMetaMap: dict[str, sa.MetaData]
+    """Reflected metadata, keyed by schema name."""
 
     def __getstate__(self):
+        """Return the state for pickling, without the engine and the metadata."""
         return gws.u.omit(vars(self), 'saMetaMap', 'saEngine')
 
     def configure(self):
@@ -112,9 +126,11 @@ class Object(gws.DatabaseProvider):
         return connection.Object(self, conn)
 
     def _sa_connection(self) -> sa.Connection | None:
+        """Return the open connection of the current thread, if any."""
         return getattr(_thread_local, '_connection', None)
 
     def _open_connection(self) -> sa.Connection:
+        """Return the connection of the current thread, opening it if needed, and increment the counter."""
         conn = getattr(_thread_local, '_connection', None)
         cc = getattr(_thread_local, '_connectionCount', 0)
 
@@ -130,6 +146,7 @@ class Object(gws.DatabaseProvider):
         return conn
 
     def _close_connection(self):
+        """Decrement the connection counter of the current thread, closing the connection at zero."""
         conn = getattr(_thread_local, '_connection', None)
         cc = getattr(_thread_local, '_connectionCount', 0)
         assert conn is not None
@@ -169,6 +186,7 @@ class Object(gws.DatabaseProvider):
         return tab is not None
 
     def _sa_table(self, tab_or_name) -> sa.Table | None:
+        """Return a reflected table by name, or ``None`` if the table does not exist."""
         if isinstance(tab_or_name, sa.Table):
             return tab_or_name
         schema, name = self.split_table_name(tab_or_name)
@@ -236,6 +254,7 @@ class Object(gws.DatabaseProvider):
         'TIME': gws.AttributeType.time,
         'TIMESTAMP': gws.AttributeType.datetime,
     }
+    """Attribute types for SQLAlchemy type names."""
 
     # @TODO proper support for Z/M geoms
 
@@ -264,9 +283,12 @@ class Object(gws.DatabaseProvider):
         # 'GEOMETRYCOLLECTION': gws.GeometryType.geometrycollection,
         # 'CURVE': gws.GeometryType.curve,
     }
+    """Geometry types for database geometry type names."""
 
     UNKNOWN_TYPE = gws.AttributeType.str
+    """Attribute type for columns of unknown types."""
     UNKNOWN_ARRAY_TYPE = gws.AttributeType.strlist
+    """Attribute type for array columns of unknown item types."""
 
     def describe(self, table):
         tab = self._sa_table(table)

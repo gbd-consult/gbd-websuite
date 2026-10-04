@@ -1,3 +1,5 @@
+"""WMS flat layer."""
+
 from typing import Optional
 
 import gws
@@ -27,12 +29,23 @@ class Config(gws.base.layer.Config):
 
 @gws.ext.object.layer('wmsflat')
 class Object(gws.base.layer.image.Object):
+    """Image layer that renders selected WMS source layers as a single image.
+
+    Map images are fetched with GetMap through a WMS grabber. Queryable source
+    layers can be searched with a ``wms`` finder.
+    """
+
     provider: provider.Object
+    """WMS service provider."""
     sourceLayers: list[gws.SourceLayer]
+    """Source layers selected for this layer."""
     sourceCrs: gws.Crs
+    """CRS of GetMap requests: the forced CRS of the provider, or the source CRS that best matches the map CRS."""
 
     imageLayers: list[gws.SourceLayer]
+    """Source layers that are rendered as images."""
     searchLayers: list[gws.SourceLayer]
+    """Source layers that are queryable."""
 
     def configure(self):
         self.configure_layer()
@@ -71,12 +84,25 @@ class Object(gws.base.layer.image.Object):
             gws.gis.source.combined_crs_list(self.sourceLayers))
 
     def configure_source_layers(self):
+        """Select the source layers from the layers of the provider.
+
+        Returns:
+            Always ``True``.
+        """
         return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers)
 
     def configure_models(self):
         return gws.config.util.configure_models_for(self, with_default=True)
 
     def create_model(self, cfg):
+        """Create a ``wms`` model bound to the provider and the source layers of the layer.
+
+        Args:
+            cfg: Model configuration, or ``None`` for the default model.
+
+        Returns:
+            The model object.
+        """
         return self.create_child(
             gws.ext.object.model,
             cfg,
@@ -123,6 +149,14 @@ class Object(gws.base.layer.image.Object):
             return True
 
     def create_finder(self, cfg):
+        """Create a ``wms`` finder bound to the provider and the queryable source layers of the layer.
+
+        Args:
+            cfg: Finder configuration, or ``None`` for the default finder.
+
+        Returns:
+            The finder object.
+        """
         return self.create_child(
             gws.ext.object.finder,
             cfg,

@@ -1,4 +1,27 @@
-"""Utilities for os/shell scripting"""
+"""Operating system and shell utilities.
+
+This package wraps common operating system tasks used throughout GWS:
+
+- running external commands (``run``, ``run_nowait``),
+- file system operations (``unlink``, ``rename``, ``copy``, ``mkdir``, ``rmdir``, ``touch``, ``chown``),
+- file information (``file_mtime``, ``file_age``, ``file_size``, ``file_checksum``),
+- searching directories (``find_files``, ``find_directories``),
+- path manipulation (``parse_path``, ``abs_path``, ``rel_path``, ``abs_web_path``),
+- processes and users (``kill_pid``, ``running_pids``, ``process_rss_size``, ``user_info``).
+
+Most file functions accept paths as ``str`` or ``bytes``. Functions that query
+files return a sentinel value (``-1`` or an empty string) instead of raising
+when the file cannot be accessed.
+
+Example::
+
+    import gws.lib.osx
+
+    out = gws.lib.osx.run(['gdalinfo', '--version'])
+    gws.lib.osx.mkdir('/tmp/gws/data')
+    for path in gws.lib.osx.find_files('/data/projects', ext='json'):
+        print(path, gws.lib.osx.file_size(path))
+"""
 
 from typing import Optional
 
@@ -19,10 +42,14 @@ import gws
 
 
 class Error(gws.Error):
+    """Generic error raised by OS utilities."""
+
     pass
 
 
 class TimeoutError(Error):
+    """Raised when an external command times out."""
+
     pass
 
 
@@ -30,27 +57,29 @@ _Path = str | bytes
 
 
 def getenv(key: str, default: str = None) -> Optional[str]:
-    """Returns the value for a given environment-variable.
+    """Return the value of an environment variable.
 
     Args:
-        key: An environment-variable.
-        default: The default return.
+        key: Variable name.
+        default: Value to return if the variable is not set.
 
     Returns:
-        ``default`` if no key has been found, if there is such key then the value for the environment-variable is returned.
+        The variable value, or ``default`` if the variable is not set.
     """
     return os.getenv(key, default)
 
 
 def run_nowait(cmd: str | list, **kwargs) -> subprocess.Popen:
-    """Run a process and return immediately.
+    """Start a process and return immediately, without waiting for it to finish.
+
+    By default, the process inherits stdin, stdout and stderr, and the command is not run in a shell.
 
     Args:
-        cmd: A process to run.
-        kwargs:
+        cmd: Command to run, as a string or a list of arguments.
+        kwargs: Arguments to pass to ``subprocess.Popen``.
 
     Returns:
-        The output of the command.
+        The ``subprocess.Popen`` object of the started process.
     """
 
     args = {
@@ -65,18 +94,25 @@ def run_nowait(cmd: str | list, **kwargs) -> subprocess.Popen:
 
 
 def run(cmd: str | list, input: str = None, echo: bool = False, strict: bool = True, timeout: float = None, **kwargs) -> str:
-    """Run an external command.
+    """Run an external command and wait for it to finish.
+
+    A string command is split into arguments with ``shlex.split``. The command is not run in a shell,
+    and stderr is merged into stdout.
 
     Args:
-        cmd: Command to run.
-        input: Input data.
-        echo: Echo the output instead of capturing it.
+        cmd: Command to run, as a string or a list of arguments.
+        input: Data to send to the command's stdin.
+        echo: Let the output go to the console instead of capturing it.
         strict: Raise an error on a non-zero exit code.
-        timeout: Timeout.
+        timeout: Timeout in seconds.
         kwargs: Arguments to pass to ``subprocess.Popen``.
 
     Returns:
-        The command output.
+        The captured command output, or an empty string if the output was not captured.
+
+    Raises:
+        ``TimeoutError``: If the command times out.
+        ``Error``: If the command cannot be run, or exits with a non-zero code and ``strict`` is true.
     """
 
     args = {
@@ -111,10 +147,15 @@ def run(cmd: str | list, input: str = None, echo: bool = False, strict: bool = T
 
 
 def unlink(path: _Path) -> bool:
-    """Deletes a given path.
+    """Delete a file.
+
+    Directories and non-existing paths are ignored.
 
     Args:
-        path: Filepath.
+        path: File path.
+
+    Returns:
+        ``True`` on success or if there was nothing to delete, ``False`` if an OS error occurred.
     """
     try:
         if os.path.isfile(path):
@@ -126,48 +167,50 @@ def unlink(path: _Path) -> bool:
 
 
 def rename(src: _Path, dst: _Path):
-    """Moves and renames the source path according to the given destination.
+    """Move or rename a file or directory.
 
     Args:
-        src: Path to source.
-        dst: Destination.
+        src: Source path.
+        dst: Destination path.
     """
 
     shutil.move(_to_str(src), _to_str(dst))
 
 
 def chown(path: _Path, user: int = None, group: int = None):
-    """Changes the UID or GID for a given path.
+    """Change the owner and group of a path.
 
     Args:
-        path: Filepath.
-        user: UID.
-        group: GID.
+        path: File path.
+        user: User ID, defaults to ``gws.c.UID``.
+        group: Group ID, defaults to ``gws.c.GID``.
     """
     os.chown(path, user or gws.c.UID, group or gws.c.GID)
 
 
 def copy(src: _Path, dst: _Path, user: int = None, group: int = None):
-    """Copy a file.
+    """Copy a file and set the owner of the copy.
 
     Args:
         src: Source path.
         dst: Destination path.
-        user: UID.
-        group: GID.
+        user: User ID of the copy, defaults to ``gws.c.UID``.
+        group: Group ID of the copy, defaults to ``gws.c.GID``.
     """
     shutil.copyfile(src, dst)
     os.chown(dst, user or gws.c.UID, group or gws.c.GID)
 
 
 def mkdir(path: _Path, mode: int = 0o755, user: int = None, group: int = None):
-    """Check a (possibly nested) directory.
+    """Create a directory, including missing parent directories.
+
+    Does nothing if the directory already exists.
 
     Args:
         path: Path to a directory.
         mode: Directory creation mode.
-        user: Directory user (defaults to gws.c.UID)
-        group: Directory group (defaults to gws.c.GID)
+        user: Directory user. Currently not used.
+        group: Directory group. Currently not used.
     """
 
     os.makedirs(path, mode, exist_ok=True)
@@ -177,7 +220,10 @@ def rmdir(path: _Path) -> bool:
     """Remove a directory or a directory tree.
 
     Args:
-        path: Path to a directory. Can be non-empty
+        path: Path to a directory. Can be non-empty.
+
+    Returns:
+        ``True`` if the directory was removed, ``False`` if it does not exist or an OS error occurred.
     """
 
     if not os.path.isdir(path):
@@ -191,24 +237,25 @@ def rmdir(path: _Path) -> bool:
 
 
 def touch(path: _Path):
-    """Update the access and modification times of the file to the current time.
+    """Set the access and modification times of a file to the current time.
+
     If the file does not exist, it is created.
 
     Args:
-        path: Filepath.
+        path: File path.
     """
     with open(path, 'a'):
         os.utime(path, None)
 
 
 def file_mtime(path: _Path) -> float:
-    """Returns the time from epoch when the path was recently changed.
+    """Return the modification time of a path.
 
     Args:
-        path: File-/directory-path.
+        path: File or directory path.
 
     Returns:
-        Time since epoch in seconds until most recent change in file.
+        Modification time in seconds since the epoch, or ``-1`` if the path cannot be accessed.
     """
     try:
         return os.stat(path).st_mtime
@@ -217,13 +264,13 @@ def file_mtime(path: _Path) -> float:
 
 
 def file_age(path: _Path) -> int:
-    """Returns the amount of seconds since the path has been changed.
+    """Return the number of seconds since a path was last modified.
 
     Args:
-        path: Filepath.
+        path: File path.
 
     Returns:
-        Amount of seconds since most recent change in file, if the path is invalid ``-1`` is returned.
+        Age in seconds, or ``-1`` if the path cannot be accessed.
     """
     try:
         return int(time.time() - os.stat(path).st_mtime)
@@ -232,13 +279,13 @@ def file_age(path: _Path) -> int:
 
 
 def file_size(path: _Path) -> int:
-    """Returns the file size.
+    """Return the size of a file.
 
     Args:
-        path: Filepath.
+        path: File path.
 
     Returns:
-        Amount of characters in the file or ``-1`` if the path is invalid.
+        Size in bytes, or ``-1`` if the path cannot be accessed.
     """
     try:
         return os.stat(path).st_size
@@ -247,13 +294,13 @@ def file_size(path: _Path) -> int:
 
 
 def file_checksum(path: _Path) -> str:
-    """Returns the checksum of the file.
+    """Return the SHA-256 checksum of a file.
 
     Args:
-        path: Filepath.
+        path: File path.
 
     Returns:
-        Empty string if the path is invalid, otherwise the file's checksum.
+        Hex digest of the file content, or an empty string if the file cannot be read.
     """
     try:
         with open(path, 'rb') as fp:
@@ -263,14 +310,14 @@ def file_checksum(path: _Path) -> str:
 
 
 def kill_pid(pid: int, sig_name='TERM') -> bool:
-    """Kills a process.
+    """Send a signal to a process.
 
     Args:
         pid: Process ID.
-        sig_name:
+        sig_name: Signal name, with or without the ``SIG`` prefix, e.g. ``TERM`` or ``SIGKILL``.
 
     Returns:
-        ``True`` if the process with the given PID is killed or does not exist.``False `` if the process could not be killed.
+        ``True`` if the signal was sent or the process does not exist, ``False`` if the signal could not be sent.
     """
     sig = getattr(signal, sig_name, None) or getattr(signal, 'SIG' + sig_name)
     try:
@@ -284,7 +331,11 @@ def kill_pid(pid: int, sig_name='TERM') -> bool:
 
 
 def running_pids() -> dict[int, str]:
-    """Returns the current pids and the corresponding process' name."""
+    """Return all running processes.
+
+    Returns:
+        A dict mapping process IDs to process names.
+    """
     d = {}
     for p in psutil.process_iter():
         d[p.pid] = p.name()
@@ -292,13 +343,13 @@ def running_pids() -> dict[int, str]:
 
 
 def process_rss_size(unit: str = 'm') -> float:
-    """Returns the Resident Set Size.
+    """Return the Resident Set Size of the current process.
 
     Args:
-        unit: ``m`` | ``k`` | ``g``
+        unit: ``k`` (kilobytes), ``m`` (megabytes) or ``g`` (gigabytes). Any other value returns bytes.
 
     Returns:
-        The Resident Set Size with the given unit.
+        The Resident Set Size in the given unit.
     """
     n = psutil.Process().memory_info().rss
     if unit == 'k':
@@ -311,15 +362,15 @@ def process_rss_size(unit: str = 'm') -> float:
 
 
 def user_info(uid=None, gid=None) -> dict:
-    """Get user and group information.
+    """Return user and group information.
 
     Args:
-        uid: Optional user ID. Defaults to the current process's user ID.
-        gid: Optional group ID. Defaults to the user's primary group ID.
+        uid: User ID. Defaults to the user ID of the current process.
+        gid: Group ID. Defaults to the user's primary group ID.
 
     Returns:
-        A dictionary containing user and group information
-        (a combination of struct_passwd and struct_group).
+        A dict with the keys ``pw_name``, ``pw_uid``, ``pw_gid``, ``pw_dir``, ``pw_shell``
+        (from ``struct_passwd``) and ``gr_name``, ``gr_gid`` (from ``struct_group``).
     """
 
     uid = uid or os.getuid()
@@ -343,6 +394,15 @@ def user_info(uid=None, gid=None) -> dict:
 
 
 def find_entries(dirname: _Path, deep: bool = True):
+    """Find entries in a directory, skipping hidden ones.
+
+    Args:
+        dirname: Path to a directory.
+        deep: If true, also search subdirectories recursively.
+
+    Yields:
+        ``os.DirEntry`` objects for files and directories whose names do not start with a dot.
+    """
     de: os.DirEntry
     for de in os.scandir(dirname):
         if de.name.startswith('.'):
@@ -353,17 +413,16 @@ def find_entries(dirname: _Path, deep: bool = True):
 
 
 def find_files(dirname: _Path, pattern=None, ext=None, deep: bool = True):
-    """Finds files in a given directory.
+    """Find files in a directory, skipping hidden ones.
 
     Args:
-        dirname: Path to directory.
-        pattern: Pattern to match.
-        ext: extension to match.
-        deep: If true then searches through all subdirectories for files,
-                otherwise it returns the files only in the given directory.
+        dirname: Path to a directory.
+        pattern: Regular expression to search for in the file path.
+        ext: Extension or a list of extensions to match. Used only if ``pattern`` is not given.
+        deep: If true, also search subdirectories recursively.
 
-    Returns:
-        A generator object.
+    Yields:
+        Paths of matching files.
     """
     if not pattern and ext:
         if isinstance(ext, (list, tuple)):
@@ -376,16 +435,15 @@ def find_files(dirname: _Path, pattern=None, ext=None, deep: bool = True):
 
 
 def find_directories(dirname: _Path, pattern=None, deep: bool = True):
-    """Finds all directories in a given directory.
+    """Find directories in a directory, skipping hidden ones.
 
     Args:
-        dirname: Path to directory.
-        pattern: Pattern to match.
-        deep: If true then searches through all subdirectories for directories,
-                otherwise it returns the directories only in the given directory.
+        dirname: Path to a directory.
+        pattern: Regular expression to search for in the directory path.
+        deep: If true, also search subdirectories recursively.
 
-    Returns:
-        A generator object.
+    Yields:
+        Paths of matching directories.
     """
 
     for de in find_entries(dirname, deep=deep):
@@ -394,15 +452,32 @@ def find_directories(dirname: _Path, pattern=None, deep: bool = True):
 
 
 class ParsePathResult(gws.Data):
+    """Components of a file path, as returned by ``parse_path``."""
+
     path: str
+    """The full path."""
     dirname: str
+    """The directory part."""
     filename: str
+    """The file name, including the extension."""
     stem: str
+    """The file name up to the first dot."""
     extension: str
+    """The file name after the first dot, without the dot."""
 
 
 def parse_path(path: _Path) -> ParsePathResult:
-    """Parse a file path into a ParsePathResult object."""
+    """Split a file path into its components.
+
+    The extension is everything after the first dot in the file name, so ``a.tar.gz``
+    has the stem ``a`` and the extension ``tar.gz``. A file name starting with a dot has no extension.
+
+    Args:
+        path: File path.
+
+    Returns:
+        The path components.
+    """
 
     str_path = _to_str(path)
     sp = os.path.split(str_path)
@@ -426,13 +501,13 @@ def parse_path(path: _Path) -> ParsePathResult:
 
 
 def file_name(path: _Path) -> str:
-    """Returns the filename.
+    """Return the file name part of a path.
 
     Args:
-        path: Filepath.
+        path: File path.
 
     Returns:
-        The filename.
+        The last component of the path.
     """
 
     sp = os.path.split(_to_str(path))
@@ -440,21 +515,31 @@ def file_name(path: _Path) -> str:
 
 
 def is_abs_path(path: _Path) -> bool:
+    """Check if a path is absolute.
+
+    Args:
+        path: File path.
+
+    Returns:
+        ``True`` if the path is absolute.
+    """
     return os.path.isabs(path)
 
 
 def abs_path(path: _Path, base: _Path) -> str:
-    """Absolutize a relative path with respect to a base directory or file path.
+    """Make a relative path absolute with respect to a base directory or file path.
+
+    If ``base`` is a file, its directory is used. An absolute ``path`` is only normalized.
 
     Args:
         path: A path.
-        base: A path to the base.
-
-    Raises:
-        ``ValueError``: If base is empty
+        base: Base directory or file path.
 
     Returns:
         The absolute path.
+
+    Raises:
+        ``ValueError``: If ``path`` is relative and ``base`` is empty.
     """
 
     str_path = _to_str(path)
@@ -472,14 +557,17 @@ def abs_path(path: _Path, base: _Path) -> str:
 
 
 def abs_web_path(path: str, basedir: str) -> Optional[str]:
-    """Return an absolute path in a base dir and ensure the path is correct.
+    """Resolve a web path in a base directory.
+
+    The path components must consist of letters, digits, ``_`` and ``-``,
+    the file name can also contain lowercase extensions. This prevents path traversal.
 
     Args:
-        path: Path to absolutize.
-        basedir: Path to base directory.
+        path: Slash-separated path, as received from a web request.
+        basedir: Path to the base directory.
 
     Returns:
-        Absolute path with respect to base directory.
+        The path of an existing file in the base directory, or ``None`` if the path is invalid or the file does not exist.
     """
 
     _dir_re = r'^[A-Za-z0-9_-]+$'
@@ -520,15 +608,16 @@ def abs_web_path(path: str, basedir: str) -> Optional[str]:
 
 
 def rel_path(path: _Path, base: _Path) -> str:
-    """Relativize an absolute path with respect to a base directory or file path.
+    """Make a path relative to a base directory or file path.
+
+    If ``base`` is a file, its directory is used.
 
     Args:
-        path: Path to relativize.
-        base: Path to base directory.
+        path: Path to make relative.
+        base: Base directory or file path.
 
     Returns:
-        Relativized path with respect to base directory.
-
+        The relative path.
     """
 
     if os.path.isfile(base):

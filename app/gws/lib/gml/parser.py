@@ -8,6 +8,8 @@ import gws.lib.extent
 
 
 class Error(gws.Error):
+    """GML parse error."""
+
     pass
 
 
@@ -27,15 +29,18 @@ _GEOMETRY_TAGS = [
 
 
 def parse_envelope(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy: bool = False) -> gws.Bounds:
-    """Parse a gml:Box/gml:Envelope element
+    """Parse a ``gml:Box`` or ``gml:Envelope`` element into bounds.
 
     Args:
-        el: A xml-Element.
-        default_crs: A Crs object.
+        el: A ``Box`` or ``Envelope`` element.
+        default_crs: CRS to use when the element has no ``srsName`` attribute.
         always_xy: If ``True``, coordinates are assumed to be in the XY (lon/lat) order.
 
     Returns:
-          A Bounds object.
+        A Bounds object.
+
+    Raises:
+        ``Error``: If no CRS is given or the element cannot be parsed.
     """
 
     # GML2: <gml:Box><gml:coordinates>1,2 3,4
@@ -72,13 +77,13 @@ def _parse_envelope_extent(el: gws.XmlElement) -> gws.Extent:
 
 
 def is_geometry_element(el: gws.XmlElement) -> bool:
-    """Checks if the current element is a valid geometry type.
+    """Check if an element is a supported GML geometry element.
 
     Args:
-        el: A GML element.
+        el: An XML element.
 
     Returns:
-        ``True`` if the element is a geometry type.
+        ``True`` if the element name is one of the supported geometry tags.
     """
 
     return el.isa(*_GEOMETRY_TAGS)
@@ -88,12 +93,15 @@ def parse_shape(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy: bool
     """Convert a GML geometry element to a Shape.
 
     Args:
-        el: A GML element.
-        default_crs: A Crs object.
+        el: A GML geometry element.
+        default_crs: CRS to use when the element has no ``srsName`` attribute.
         always_xy: If ``True``, coordinates are assumed to be in the XY (lon/lat) order.
 
     Returns:
-        A GWS shape object.
+        A Shape object.
+
+    Raises:
+        ``Error``: If no CRS is given or the element cannot be parsed.
     """
 
     crs = gws.lib.crs.get(el.get('srsName')) or default_crs
@@ -105,13 +113,19 @@ def parse_shape(el: gws.XmlElement, default_crs: gws.Crs = None, always_xy: bool
 
 
 def parse_geometry(el: gws.XmlElement) -> dict:
-    """Convert a GML geometry element to a geometry dict.
+    """Convert a GML geometry element to a GeoJSON-like geometry dict.
+
+    A ``Curve`` is converted to a ``LineString`` from its first segment only.
+    ``MultiCurve`` and ``MultiSurface`` become ``MultiLineString`` and ``MultiPolygon``.
 
     Args:
-        el: A GML element.
+        el: A GML geometry element.
 
     Returns:
-        The GML geometry as a geometry dict.
+        A dict with ``type`` and ``coordinates``.
+
+    Raises:
+        ``Error``: If the element cannot be parsed.
     """
 
     try:

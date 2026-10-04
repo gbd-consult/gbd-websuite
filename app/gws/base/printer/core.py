@@ -1,3 +1,5 @@
+"""Default printer."""
+
 from typing import Optional
 
 import gws
@@ -32,6 +34,7 @@ class Props(gws.Props):
 
 @gws.ext.object.printer('default')
 class Object(gws.Printer):
+    """Default printer."""
 
     def configure(self):
         gws.config.util.configure_models_for(self)

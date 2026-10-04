@@ -1,183 +1,214 @@
 class ImageFormat(Data):
-    """Image format"""
+    """Image format: MIME types and encoding options."""
 
     name: str
     """Name of the format."""
     mimeTypes: list[str]
-    """Mime types for this format."""
+    """MIME types for this format."""
     options: dict
-    """Image options."""
+    """Encoding options, as accepted by ``Image.to_bytes``."""
 
 
 class Image:
-    """Image object."""
+    """Raster image.
+
+    Manipulation methods change the image in place and return the image itself, so that calls can be chained.
+    """
 
     def size(self) -> Size:
         """Get the image size.
 
         Returns:
-            A tuple ``(width, height)``.
+            A tuple ``(width, height)`` in pixels.
         """
 
     def mode(self) -> str:
         """Get the image mode.
 
         Returns:
-            PIL image mode.
+            PIL image mode, e.g. ``RGBA``.
         """
 
     def convert(self, mode: str) -> 'Image':
-        """Converts the image to the specified mode.
+        """Convert the image to a mode.
 
         Args:
-            mode: The desired image mode.
+            mode: PIL image mode.
 
         Returns:
-            The image object converted to the specified mode.
+            The image.
         """
 
     def add_box(self, color=None) -> 'Image':
-        """Creates a 1 pixel wide box on the image's edge.
+        """Draw a 1 pixel wide frame along the image edges.
+
+        The image is converted to RGBA.
 
         Args:
-            color: Color of the box's lines.
+            color: Line color, black by default.
 
         Returns:
-            The image with a box around the edges.
+            The image.
         """
 
     def add_text(self, text: str, x=0, y=0, color=None) -> 'Image':
-        """Adds text to an image object.
+        """Draw text on the image with the default font.
+
+        The image is converted to RGBA.
 
         Args:
-            text: Text to be displayed.
-
-            x: x-coordinate.
-
-            y: y-coordinate.
-
-            color: Color of the text.
+            text: Text, can contain multiple lines.
+            x: X coordinate of the top left corner of the text.
+            y: Y coordinate of the top left corner of the text.
+            color: Text color, black by default.
 
         Returns:
-            The image object with the text displayed.
+            The image.
         """
 
     def compose(self, other: 'Image', opacity=1) -> 'Image':
-        """Places other image on top of the current image.
+        """Place another image on top of this one, using alpha composition.
+
+        The other image is resized to the size of this one if needed.
 
         Args:
             other: Image to place on top.
-            opacity: other image's opacity.
+            opacity: Opacity of the other image, from 0 to 1.
 
         Returns:
-            The image object with the other image on top as an alpha composition.
+            The image.
         """
 
     def crop(self, box) -> 'Image':
-        """Crops the image with respect to the given box.
+        """Crop the image.
 
         Args:
-            box: `(width, height)`
+            box: Crop rectangle ``(left, upper, right, lower)`` in pixels.
 
         Returns:
-            The cropped image object.
+            The image.
         """
 
     def paste(self, other: 'Image', where=None) -> 'Image':
-        """Pastes an image to a specific location.
+        """Paste another image into this one.
 
         Args:
-            other: Image that will be placed.
-
-            where: `(x-coord, y-coord)` indicating where the upper left corer should be pasted.
+            other: Image to paste.
+            where: Position ``(x, y)`` of the upper left corner, or a box ``(left, upper, right, lower)``.
+                By default, the image is pasted at ``(0, 0)``.
 
         Returns:
-            The image object with the other image placed inside.
+            The image.
         """
 
     def resize(self, size: Size, **kwargs) -> 'Image':
-        """Resizes the image and scales it to fit the new size.
+        """Resize the image to a size, without keeping the aspect ratio.
 
         Args:
-            size: `(width, height)`
+            size: New size ``(width, height)``.
+            **kwargs: Options for ``PIL.Image.resize``. The default resampling is bicubic.
 
         Returns:
-            The resized image object.
+            The image.
         """
 
     def resize_to(self, width: int = 0, height: int = 0, **kwargs) -> 'Image':
-        """Resizes the image to the specified width and height, maintaining aspect ratio if only one dimension is provided.
+        """Resize the image to a width, a height or both.
+
+        If only one dimension is given, the other is computed to keep the aspect ratio.
+        If none is given, the image is not changed.
 
         Args:
-            width: The desired width.
-            height: The desired height.
+            width: New width.
+            height: New height.
+            **kwargs: Options for ``PIL.Image.resize``.
 
         Returns:
-            The resized image object.
+            The image.
         """
 
     def rotate(self, angle: int, **kwargs) -> 'Image':
-        """Rotates the image.
+        """Rotate the image counter-clockwise.
 
         Args:
-            angle: Angle to rotate the image.
+            angle: Angle in degrees.
+            **kwargs: Options for ``PIL.Image.rotate``. The default resampling is bicubic.
 
         Returns:
-            The rotated image object.
+            The image.
         """
 
     def to_bytes(self, mime_type: Optional[str] = None, options: Optional[dict] = None) -> bytes:
-        """Converts the image object to bytes.
+        """Encode the image.
 
         The ``options`` dict can contain any PIL save option
         (see https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html).
 
         An additional option ``mode`` is the image mode
         (see https://pillow.readthedocs.io/en/stable/handbook/concepts.html#concept-modes).
-        If provided, the image is converted to that mode before saving.
+        If provided, the image is converted to that mode before saving, with an adaptive palette.
 
         An additional option ``background`` sets the color to replace the alpha channel with
-        when converting from RGBA to RGB (default is white).
+        when an RGBA image is saved as JPEG (default is white).
 
         Args:
-            mime_type: The mime type.
-            options: A dict of options.
+            mime_type: MIME type of the output, PNG by default.
+            options: Encoding options.
 
         Returns:
-            The image as bytes.
+            The encoded image.
         """
 
     def to_base64(self, mime_type: Optional[str] = None, options: Optional[dict] = None) -> str:
-        """Return the image content as a base64 encoded string."""
-
-    def to_data_url(self, mime_type: Optional[str] = None, options: Optional[dict] = None) -> str:
-        """Return the image content as a base64-based data url."""
-
-    def to_path(self, path: str, mime_type: Optional[str] = None, options: Optional[dict] = None) -> str:
-        """Saves the image object at a given path.
+        """Encode the image as a base64 string.
 
         Args:
-            path: Image's path location.
-            mime_type: The mime type.
-            options: A dict of options.
+            mime_type: MIME type of the output, PNG by default.
+            options: Encoding options, as in ``to_bytes``.
 
         Returns:
-            The path to the image.
+            The base64 encoded image.
+        """
+
+    def to_data_url(self, mime_type: Optional[str] = None, options: Optional[dict] = None) -> str:
+        """Encode the image as a base64 data URL.
+
+        Args:
+            mime_type: MIME type of the output, PNG by default.
+            options: Encoding options, as in ``to_bytes``.
+
+        Returns:
+            A ``data:`` URL.
+        """
+
+    def to_path(self, path: str, mime_type: Optional[str] = None, options: Optional[dict] = None) -> str:
+        """Encode the image and save it to a file.
+
+        Args:
+            path: File path.
+            mime_type: MIME type of the output, PNG by default.
+            options: Encoding options, as in ``to_bytes``.
+
+        Returns:
+            The file path.
         """
 
     def to_array(self) -> 'numpy.typing.NDArray':
-        """Converts the image to an array.
+        """Convert the image to a numpy array.
 
         Returns:
-            The image as an array. For each row each entry contains the pixel information.
+            An array of shape ``(height, width)`` or ``(height, width, channels)``.
         """
 
     def compare_to(self, other: 'Image') -> float:
         """Compare this image to another one.
 
-        @TODO describe the alogrithm
+        Computes the mean squared difference of the RGBA channels over all pixels,
+        normalized to the range 0 to 1. Both images must be RGBA and have the same size.
+
+        Args:
+            other: Image to compare to.
 
         Returns:
-            The similarity factor as a float (the more, the different).
-            '0' means images are equal.
+            ``0`` if the images are equal, larger values for larger differences.
         """

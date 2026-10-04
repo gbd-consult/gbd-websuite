@@ -1,4 +1,28 @@
-"""File field."""
+"""File field.
+
+A field for files attached to features of a database model. The file content
+is stored in a database column (``contentColumn``), optionally with the file
+name in another column (``nameColumn``). A ``pathColumn`` can be configured
+and is read, but storing and serving files from the filesystem is not
+implemented yet. The model must have a primary key.
+
+The field value is a ``FileValue``. When features are selected, only the
+content length is read, not the content itself. In the client props, a file
+is described by a ``ServerFileProps`` object with a label, extension, size and
+URLs of the ``webFile`` command for downloading the file and, for raster
+images, for a thumbnail preview. Previews are generated on request and cached
+as ephemeral content. Without a configured widget, the field uses a ``file``
+widget.
+
+Example::
+
+    fields+ {
+        name "photo"
+        type "file"
+        contentColumn "photo_content"
+        nameColumn "photo_name"
+    }
+"""
 
 from typing import Optional, cast
 
@@ -28,28 +52,49 @@ class Props(gws.base.model.field.Props):
 
 
 class FileInputProps(gws.Data):
+    """File uploaded from the client."""
+
     content: bytes
+    """File content."""
     name: str
+    """File name."""
 
 
 class ServerFileProps(gws.Data):
+    """File description sent to the client."""
+
     downloadUrl: str
+    """URL to download the file, empty if there is no project."""
     extension: str
+    """File extension derived from the MIME type."""
     label: str
+    """Label to display, the file name."""
     previewUrl: str
+    """URL of a thumbnail preview, empty if the file cannot be previewed."""
     size: int
+    """File size in bytes."""
 
 
 class ClientFileProps(gws.Data):
+    """File sent from the client."""
+
     name: str
+    """File name."""
     content: bytes
+    """File content."""
 
 
 class FileValue(gws.Data):
+    """Value of a file field."""
+
     content: bytes
+    """File content, if loaded."""
     name: str
+    """File name."""
     path: str
+    """File path in the filesystem."""
     size: int
+    """File size in bytes."""
 
 
 _PREVIEW_SIZE = 120, 120
@@ -60,13 +105,23 @@ _PREVIEW_BIG_FILE_SIZE = 1024 * 1024
 
 @gws.ext.object.modelField('file')
 class Object(gws.base.model.field.Object):
+    """File field object.
+
+    Stores files attached to features in columns of a database model and
+    describes them to the client for download and preview.
+    """
+
     model: gws.DatabaseModel
+    """The model of this field."""
 
     attributeType = gws.AttributeType.file
 
     contentColumn: Optional[sa.Column] = None
+    """Column for the file content."""
     pathColumn: Optional[sa.Column] = None
+    """Column for the file path."""
     nameColumn: Optional[sa.Column] = None
+    """Column for the file name."""
 
     def __getstate__(self):
         return gws.u.omit(vars(self), 'cols')
@@ -78,6 +133,15 @@ class Object(gws.base.model.field.Object):
         self.configure_columns()
 
     def configure_columns(self):
+        """Resolve the configured content, path and name columns of the model.
+
+        The columns are SQLAlchemy objects. They are resolved after configuration
+        and again on activation.
+
+        Raises:
+            ``gws.ConfigurationError``: If neither ``contentColumn`` nor ``pathColumn`` is set,
+                or the model has no primary key.
+        """
         model = cast(gws.base.database.model.Object, self.model)
 
         p = self.cfg('contentColumn')
@@ -153,6 +217,14 @@ class Object(gws.base.model.field.Object):
     ##
 
     def can_preview(self, mime_type) -> bool:
+        """Check if a thumbnail preview can be made for a MIME type.
+
+        Args:
+            mime_type: The MIME type.
+
+        Returns:
+            True for image types except SVG.
+        """
         return mime_type.startswith('image/') and mime_type != gws.lib.mime.SVG
 
     def prop_to_python(self, feature, value, mc) -> FileValue:
@@ -201,6 +273,14 @@ class Object(gws.base.model.field.Object):
     ##
 
     def get_mime_type(self, fv: FileValue) -> str:
+        """Determine the MIME type of a file from its path or name.
+
+        Args:
+            fv: The file value.
+
+        Returns:
+            The MIME type, or the generic binary type if it cannot be determined.
+        """
         if fv.path:
             return gws.lib.mime.for_path(fv.path)
         if fv.name:
@@ -209,6 +289,25 @@ class Object(gws.base.model.field.Object):
         return gws.lib.mime.BIN
 
     def handle_web_file_request(self, feature_uid: str, preview: bool, mc: gws.ModelContext) -> Optional[gws.ContentResponse]:
+        """Serve the file of a feature, or its thumbnail preview.
+
+        Called by the ``webFile`` command. Only files stored in the database are served.
+        Thumbnails are PNG images, generated from the content and cached as ephemeral
+        content keyed by the content checksum.
+
+        Args:
+            feature_uid: Uid of the feature.
+            preview: Return a thumbnail preview instead of the file.
+            mc: The model context.
+
+        Returns:
+            The file content or the preview, or None if the user may not read the field,
+            the feature or the file is not found, or the file cannot be previewed.
+
+        Raises:
+            ``gws.NotFoundError``: If the content for a preview cannot be loaded or the
+                thumbnail cannot be created.
+        """
         if not mc.user.can_read(self):
             return
 
@@ -301,6 +400,16 @@ class Object(gws.base.model.field.Object):
     ##
 
     def select_columns(self, mc):
+        """Return the columns to add to a select statement.
+
+        The content column is not selected; only its length is, labeled ``<name>_length``.
+
+        Args:
+            mc: The model context.
+
+        Returns:
+            A list of column expressions.
+        """
         cs = []
 
         if self.contentColumn is not None:
@@ -313,6 +422,15 @@ class Object(gws.base.model.field.Object):
         return cs
 
     def load_value(self, attributes: dict, mc) -> Optional[FileValue]:
+        """Create a file value from the attributes of a database record.
+
+        Args:
+            attributes: Record attributes.
+            mc: The model context.
+
+        Returns:
+            The file value, or None if no file columns are configured.
+        """
         d = {}
 
         if self.contentColumn is not None:

@@ -11,6 +11,15 @@ from . import types as dt
 
 
 class Object(dt.Reader):
+    """Reader for ALKIS source tables written by the norBIT ALKIS import (GeoInfoDok 6).
+
+    There is one table per object type, named after the class in lower case,
+    with one column per attribute. Struct attributes are stored in columns
+    prefixed with the attribute name, lists are stored as arrays. The reader
+    converts each row into an instance of the ``gid6`` class, using a reader
+    method per attribute, chosen by the attribute type.
+    """
+
     STD_READERS = {
         'Area': 'as_float',
         'Boolean': 'as_bool',
@@ -22,8 +31,16 @@ class Object(dt.Reader):
         'AX_Lagebezeichnung': 'as_ax_lagebezeichnung',
         'AX_Buchung_HistorischesFlurstueck': 'as_ax_buchung_historischesflurstueck',
     }
+    """Reader method names for basic and special attribute types."""
 
     def __init__(self, provider: gws.plugin.postgres.provider.Object, schema='public'):
+        """Create a reader and set up attribute readers for all GeoInfoDok classes.
+
+        Args:
+            provider: Database provider.
+            schema: Schema with the source tables.
+        """
+
         self.db = provider
         self.schema = schema
 
@@ -46,6 +63,15 @@ class Object(dt.Reader):
             self.readers[meta['name']] = d
 
     def get_reader(self, attr):
+        """Return the reader method for an attribute.
+
+        Args:
+            attr: Attribute metadata from the ``gid6`` schema.
+
+        Returns:
+            A bound reader method. Unknown types are read as strings.
+        """
+
         typ = attr['type']
         is_list = attr['list']
 
@@ -96,6 +122,20 @@ class Object(dt.Reader):
     ##
 
     def as_struct(self, cls, prop, r):
+        """Read a struct attribute.
+
+        A column ``<prop>_<attribute>`` is used if present, otherwise the plain
+        attribute column.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name prefix of the struct attributes.
+            r: Table row as a dict.
+
+        Returns:
+            An instance of ``cls``.
+        """
+
         d = {}
 
         for attr_name, attr_low_name, attr_cls, fn in self.readers[cls.__name__].values():
@@ -110,6 +150,17 @@ class Object(dt.Reader):
         return o
 
     def as_struct_list(self, cls, prop, r):
+        """Read a list of structs from parallel array columns.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name prefix of the struct attributes.
+            r: Table row as a dict.
+
+        Returns:
+            A list of ``cls`` instances.
+        """
+
         d = {}
 
         for attr_name, attr_low_name, attr_cls, fn in self.readers[cls.__name__].values():
@@ -131,17 +182,61 @@ class Object(dt.Reader):
         return objs
 
     def as_ref(self, cls, prop, r):
+        """Read a reference to another object.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name.
+            r: Table row as a dict.
+
+        Returns:
+            The identifier of the referenced object.
+        """
+
         return r.get(prop)
 
     def as_ref_list(self, cls, prop, r):
+        """Read a list of references to other objects.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name.
+            r: Table row as a dict.
+
+        Returns:
+            A list of object identifiers.
+        """
+
         return _array(r.get(prop))
 
     def as_enum(self, cls, prop, r):
+        """Read a code list value.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name.
+            r: Table row as a dict.
+
+        Returns:
+            An ``EnumPair``, or ``None`` if the value is not in the code list.
+        """
+
         v = str(r.get(prop))
         if v in cls.VALUES:
             return dt.EnumPair(v, cls.VALUES[v])
 
     def as_enum_list(self, cls, prop, r):
+        """Read a list of code list values.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name.
+            r: Table row as a dict.
+
+        Returns:
+            A list of ``EnumPair`` objects. Values not in the code list are skipped.
+        """
+
         ls = []
 
         for v in _array(r.get(prop)):
@@ -154,11 +249,33 @@ class Object(dt.Reader):
     ##
 
     def as_ax_lagebezeichnung(self, cls, prop, r):
+        """Read an ``AX_Lagebezeichnung`` attribute.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name.
+            r: Table row as a dict.
+
+        Returns:
+            The unencoded location string if present, otherwise an ``AX_VerschluesselteLagebezeichnung``.
+        """
+
         if r.get('unverschluesselt'):
             return r.get('unverschluesselt')
         return self.as_struct(gid.AX_VerschluesselteLagebezeichnung, prop, r)
 
     def as_ax_buchung_historischesflurstueck_list(self, cls, prop, r):
+        """Read a list of ``AX_Buchung_HistorischesFlurstueck`` structs.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name.
+            r: Table row as a dict.
+
+        Returns:
+            A list of ``AX_Buchung_HistorischesFlurstueck`` instances with their ``buchungsblattbezirk`` set.
+        """
+
         # this one is stored as
         #     "blattart": [xxxx],
         #     "buchungsart": ["xxxx"],
@@ -179,37 +296,151 @@ class Object(dt.Reader):
     ##
 
     def as_str(self, cls, prop, r):
+        """Read a string.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name.
+            r: Table row as a dict.
+
+        Returns:
+            A stripped string, or ``None`` if the value is empty.
+        """
+
         return _str(r.get(prop))
 
     def as_str_list(self, cls, prop, r):
+        """Read a list of strings.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name.
+            r: Table row as a dict.
+
+        Returns:
+            A list of stripped strings, empty values become ``None``.
+        """
+
         return [_str(v) for v in _array(r.get(prop))]
 
     def as_bool(self, cls, prop, r):
+        """Read a boolean.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name.
+            r: Table row as a dict.
+
+        Returns:
+            A boolean, or ``None`` if the value is missing.
+        """
+
         return _bool(r.get(prop))
 
     def as_bool_list(self, cls, prop, r):
+        """Read a list of booleans.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name.
+            r: Table row as a dict.
+
+        Returns:
+            A list of booleans.
+        """
+
         return [_bool(v) for v in _array(r.get(prop))]
 
     def as_int(self, cls, prop, r):
+        """Read an integer.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name.
+            r: Table row as a dict.
+
+        Returns:
+            An integer, or ``None`` if the value is missing.
+        """
+
         return _int(r.get(prop))
 
     def as_int_list(self, cls, prop, r):
+        """Read a list of integers.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name.
+            r: Table row as a dict.
+
+        Returns:
+            A list of integers.
+        """
+
         return [_int(v) for v in _array(r.get(prop))]
 
     def as_float(self, cls, prop, r):
+        """Read a float.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name.
+            r: Table row as a dict.
+
+        Returns:
+            A float, or ``None`` if the value is missing.
+        """
+
         return _float(r.get(prop))
 
     def as_float_list(self, cls, prop, r):
+        """Read a list of floats.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name.
+            r: Table row as a dict.
+
+        Returns:
+            A list of floats.
+        """
+
         return [_float(v) for v in _array(r.get(prop))]
 
     def as_date(self, cls, prop, r):
+        """Read a date or a date and time.
+
+        ISO strings are parsed, other values are returned as is.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name.
+            r: Table row as a dict.
+
+        Returns:
+            A date or datetime, or ``None`` if the value is empty.
+        """
+
         return _datetime(r.get(prop))
 
     def as_date_list(self, cls, prop, r):
+        """Read a list of dates.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name.
+            r: Table row as a dict.
+
+        Returns:
+            A list of dates or datetimes.
+        """
+
         return [_datetime(v) for v in _array(r.get(prop))]
 
 
 def _str(v):
+    """Convert to a stripped string, ``None`` if empty."""
+
     if v is not None:
         v = str(v).strip()
         if v:
@@ -229,6 +460,8 @@ def _float(v):
 
 
 def _datetime(v):
+    """Convert an ISO string to a datetime, pass other values through."""
+
     if not v:
         return None
     if isinstance(v, str):
@@ -237,6 +470,8 @@ def _datetime(v):
 
 
 def _array(val):
+    """Wrap a scalar into a list, ``None`` becomes an empty list."""
+
     if isinstance(val, list):
         return val
     if val is None:

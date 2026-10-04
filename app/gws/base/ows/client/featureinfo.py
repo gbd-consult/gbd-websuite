@@ -1,4 +1,4 @@
-"""Parse WMS/WFS FeatureInfo responses."""
+"""Parser for WMS/WFS feature info responses."""
 
 import gws
 import gws.base.shape
@@ -7,10 +7,29 @@ import gws.lib.xmlx as xmlx
 
 
 class Error(gws.Error):
+    """Feature info parse error."""
+
     pass
 
 
 def parse(text: str, default_crs: gws.Crs = None, always_xy=False) -> list[gws.FeatureRecord]:
+    """Parse a GetFeatureInfo or GetFeature response into feature records.
+
+    The format is detected from the name of the XML root element.
+    An empty response yields an empty list.
+
+    Args:
+        text: Response text.
+        default_crs: CRS for geometries that do not specify one.
+        always_xy: If true, coordinates are read in XY order regardless of the CRS axis order.
+
+    Returns:
+        A list of feature records.
+
+    Raises:
+        ``Error``: If the response is not valid XML or the format is not recognized.
+    """
+
     gws.debug.time_start('featureinfo:parse')
     recs = _parse(text.strip(), default_crs, always_xy)
     gws.debug.time_end()
@@ -18,6 +37,7 @@ def parse(text: str, default_crs: gws.Crs = None, always_xy=False) -> list[gws.F
 
 
 def _parse(text, default_crs, always_xy):
+    """Detect the response format and run the matching parser."""
     if not text.strip():
         return []
 
@@ -243,6 +263,8 @@ _DEEP_ATTRIBUTE_DELIMITER = '.'
 
 
 def _record_from_gml(feature_el, default_crs, always_xy) -> gws.FeatureRecord:
+    """Create a record from a GML feature element; nested elements become dotted attribute names."""
+
     # like GDAL does:
     # "When reading a feature, the driver will by default only take into account
     # the last recognized GML geometry found..." (https://gdal.org/drivers/vector/gml.html)
@@ -286,6 +308,7 @@ _UIDS = ['id', 'fid', 'objectid', 'ID', 'FID', 'OBJECTID']
 
 
 def _get_uid(el):
+    """Return the feature id from the first known id attribute, or an empty string."""
     for u in _UIDS:
         if u in el.attrib:
             return el.get(u)

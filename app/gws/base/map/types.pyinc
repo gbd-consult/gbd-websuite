@@ -2,11 +2,19 @@ class Map(Node):
     """Map object."""
 
     rootLayer: 'Layer'
+    """Root group layer that holds the map layers."""
 
     bounds: Bounds
+    """Map extent in the map CRS."""
     center: Point
+    """Initial map center."""
     coordinatePrecision: int
+    """Decimal places for coordinates."""
     initResolution: float
+    """Initial resolution."""
     resolutions: list[float]
+    """Resolutions the map can be displayed at, in map units per pixel."""
     title: str
+    """Map title."""
     wgsExtent: Extent
+    """Map extent in WGS84."""

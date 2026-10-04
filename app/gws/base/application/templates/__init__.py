@@ -1,10 +1,19 @@
 """Standard templates.
 
 All templates are written in the CX template language and live alongside this
-package. 
+package. The package contains no code.
 
-These templates are added to the application template manager by default, and can be overridden with custom templates.
+These templates are added to the application templates by default, after the
+configured ones, and can be overridden with custom templates.
 The ``subject`` property of each template is used to identify it, and is documented below.
+
+Example::
+
+    templates+ {
+        subject "project.home"
+        type html
+        path "/data/templates/my_project_home.cx.html"
+    }
 
 Every template receives the following context variables automatically:
 
@@ -51,7 +60,7 @@ served directly in response to an HTTP request (e.g. the home page).
     current user (available for custom navigation).
 
 ``project_print.cx.html`` (attached to the default printer object)
-    A print-ready A3-landscape layout used when the user exports the current
+    A print-ready A4-landscape layout used when the user exports the current
     map view.  Renders the project title, a full-bleed map area (``@map``),
     and a legend panel (``@legend``).
 
@@ -124,7 +133,7 @@ available to every template as ``app.templateOptions``:
     Additional resource URLs injected into the ``<head>`` of the project home
     page. 
     
-If  resources are not configured and the file ``style.css`` exists 
-in the static root of the first configured web site, 
+If resources are not configured and the file ``style.css`` exists
+in the static root of the web site,
 ``/style.css`` is used as the default resource.
 """

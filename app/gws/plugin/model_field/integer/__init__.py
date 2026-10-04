@@ -1,4 +1,13 @@
-"""Integer field."""
+"""Integer field.
+
+A scalar field for integer numbers. Values from the client are converted
+with ``int()``. Without a configured widget, the field uses an ``integer``
+widget.
+
+Example::
+
+    fields+ { name "id" type "integer" isPrimaryKey true }
+"""
 
 import gws
 import gws.base.model.scalar_field
@@ -19,6 +28,8 @@ class Props(gws.base.model.scalar_field.Props):
 
 @gws.ext.object.modelField('integer')
 class Object(gws.base.model.scalar_field.Object):
+    """Integer field object."""
+
     attributeType = gws.AttributeType.int
 
     def configure_widget(self):

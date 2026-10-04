@@ -1,4 +1,25 @@
-"""Select widget."""
+"""Select widget.
+
+Drop-down list with a fixed set of items, optionally with a search field.
+Each item has a value, which is stored in the field, and a text to display,
+which defaults to the value. The ``extraText`` and ``level`` options of an
+item are not passed to the client.
+
+Example::
+
+    fields+ {
+        name "kind"
+        type "text"
+        widget {
+            type "select"
+            withSearch true
+            items [
+                { value "a" text "Type A" }
+                { value "b" text "Type B" }
+            ]
+        }
+    }
+"""
 
 from typing import Optional, Any
 
@@ -51,6 +72,8 @@ class Props(gws.base.model.widget.Props):
 
 @gws.ext.object.modelWidget('select')
 class Object(gws.base.model.widget.Object):
+    """Select widget object."""
+
     def props(self, user):
         # fmt: off
         items = [

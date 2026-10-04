@@ -7,7 +7,16 @@ import gws.lib.osx as osx
 
 
 class Object(gws.TileStore):
+    """Filesystem tile store."""
+
     def __init__(self, base_dir: str, max_age: int, extension: str):
+        """Create a store.
+
+        Args:
+            base_dir: Base directory.
+            max_age: Max. age of stored tiles in seconds.
+            extension: File extension of tile files, without a dot.
+        """
         self.baseDir = base_dir
         self.maxAge = max_age
         self.extension = extension

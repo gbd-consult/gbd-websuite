@@ -31,6 +31,22 @@ pyramids: each matrix has its own origin, size and resolution, and the
 resolutions need not form a ladder. ``matrix_set_for_grid`` expresses a grid
 as a matrix set, the ``matrix_*`` functions are the matrix counterparts of
 the grid functions.
+
+Example::
+
+    mg = gws.lib.grid.for_crs(gws.lib.crs.get(3857))
+    z = gws.lib.grid.level_for_resolution(mg, 10.0)
+    tr = gws.lib.grid.range_for_extent(mg, (1000000, 6000000, 1010000, 6010000), z)
+    for mt in gws.lib.grid.enum_tiles(tr):
+        extent = gws.lib.grid.extent_for_tile(mg, mt)
+
+A custom grid from a ``Config``-like set of options::
+
+    mg = gws.lib.grid.new(gws.lib.grid.Options(
+        crs=gws.lib.crs.get(25832),
+        extent=(280000, 5200000, 920000, 6100000),
+        tileSize=512,
+    ))
 """
 
 import math
@@ -47,6 +63,7 @@ a level's must still map to that level rather than to the next finer one.
 """
 
 DEFAULT_TILE_SIZE = 256
+"""Default tile size in pixels."""
 
 
 class Props(gws.Props):
@@ -74,20 +91,46 @@ class Config(gws.Config):
 
 
 class Options(gws.Data):
-    """Map grid options."""
+    """Options for creating a grid with ``new``."""
 
     crs: gws.Crs
+    """Grid CRS."""
     extent: Optional[gws.Extent]
+    """Frame extent. The default depends on the CRS."""
     baseResolution: Optional[float]
+    """Resolution at level 0. By default, one tile spans the frame height."""
     tileSize: Optional[int]
+    """Tile size in pixels, ``DEFAULT_TILE_SIZE`` by default."""
     withSnap: Optional[bool]
+    """Snap a custom extent or base resolution to the default grid of the CRS, ``True`` by default."""
 
 
 def for_crs(crs: gws.Crs) -> gws.MapGrid:
+    """Create the default grid for a CRS.
+
+    Args:
+        crs: Grid CRS.
+
+    Returns:
+        A grid with the default frame, base resolution and tile size.
+    """
+
     return new(Options(crs=crs))
 
 
 def new(opts: Options) -> gws.MapGrid:
+    """Create a grid.
+
+    Missing options are filled with the defaults for the CRS. If a custom extent or base resolution
+    is given and snapping is not disabled, the grid is snapped to the default grid of the CRS.
+
+    Args:
+        opts: Grid options.
+
+    Returns:
+        A new grid.
+    """
+
     mg = gws.MapGrid()
     mg.crs = opts.crs
     mg.extent = opts.extent or (gws.lib.crs.WGS84.extent if mg.crs.isGeographic else gws.lib.crs.WEBMERCATOR_SQUARE)
@@ -100,6 +143,8 @@ def new(opts: Options) -> gws.MapGrid:
 
 
 def _snap(mg: gws.MapGrid, has_base_resolution: bool):
+    """Snap the base resolution and the extent of a grid to the default grid of its CRS, in place."""
+
     ref = for_crs(mg.crs)
 
     if has_base_resolution:
@@ -125,11 +170,34 @@ def _snap(mg: gws.MapGrid, has_base_resolution: bool):
 
 
 def resolution_for_level(mg: gws.MapGrid, z: int) -> float:
+    """Return the resolution of a level.
+
+    Args:
+        mg: A grid.
+        z: Level.
+
+    Returns:
+        ``baseResolution / 2**z``.
+    """
+
     return mg.baseResolution / (1 << z)
 
 
 def level_for_resolution(mg: gws.MapGrid, resolution: float) -> int:
-    """Return the coarsest level whose resolution does not exceed the given one."""
+    """Return the coarsest level whose resolution does not exceed the given one.
+
+    A level whose resolution is within ``RESOLUTION_TOLERANCE`` of the given one also matches.
+
+    Args:
+        mg: A grid.
+        resolution: Resolution in CRS units per pixel.
+
+    Returns:
+        Level number.
+
+    Raises:
+        ``ValueError``: If the resolution is not positive or no level up to 99 matches.
+    """
 
     if resolution <= 0:
         raise ValueError(f'invalid resolution {resolution!r}')
@@ -141,6 +209,16 @@ def level_for_resolution(mg: gws.MapGrid, resolution: float) -> int:
 
 
 def props_for_resolutions(mg: gws.MapGrid, resolutions: list[float]) -> Props:
+    """Create client props for a grid.
+
+    Args:
+        mg: A grid.
+        resolutions: Resolutions the client uses. The finest one determines the finest level.
+
+    Returns:
+        Grid props with the resolutions of levels ``0`` up to the finest level needed.
+    """
+
     zmax = level_for_resolution(mg, min(resolutions))
     return Props(
         origin=gws.Origin.nw,
@@ -151,6 +229,16 @@ def props_for_resolutions(mg: gws.MapGrid, resolutions: list[float]) -> Props:
 
 
 def tile_count_for_level(mg: gws.MapGrid, z: int) -> tuple[int, int]:
+    """Return the number of tiles a level has across the frame.
+
+    Args:
+        mg: A grid.
+        z: Level.
+
+    Returns:
+        Number of columns and rows, at least 1 each.
+    """
+
     span = resolution_for_level(mg, z) * mg.tileSize
     return (
         max(1, math.ceil((mg.extent[2] - mg.extent[0]) / span - 1e-6)),
@@ -159,6 +247,19 @@ def tile_count_for_level(mg: gws.MapGrid, z: int) -> tuple[int, int]:
 
 
 def range_for_extent(mg: gws.MapGrid, extent: gws.Extent, z: int) -> gws.MapTileRange | None:
+    """Return the range of tiles covering an extent at a level.
+
+    The range is clipped to the grid frame.
+
+    Args:
+        mg: A grid.
+        extent: Extent in the grid CRS.
+        z: Level.
+
+    Returns:
+        A tile range, or ``None`` if the extent does not intersect the frame.
+    """
+
     span = resolution_for_level(mg, z) * mg.tileSize
     nx, ny = tile_count_for_level(mg, z)
     eps = span * 1e-6
@@ -174,7 +275,18 @@ def range_for_extent(mg: gws.MapGrid, extent: gws.Extent, z: int) -> gws.MapTile
 
 
 def intersect_ranges(a: gws.MapTileRange, b: gws.MapTileRange) -> gws.MapTileRange | None:
-    """Return the intersection of two tile ranges of the same level, or ``None`` if they do not intersect."""
+    """Return the intersection of two tile ranges of the same level.
+
+    Args:
+        a: First tile range.
+        b: Second tile range.
+
+    Returns:
+        The intersection, or ``None`` if the ranges do not intersect.
+
+    Raises:
+        ``ValueError``: If the ranges are at different levels.
+    """
 
     if a[4] != b[4]:
         raise ValueError(f'cannot intersect ranges of different levels: {a!r}, {b!r}')
@@ -185,6 +297,16 @@ def intersect_ranges(a: gws.MapTileRange, b: gws.MapTileRange) -> gws.MapTileRan
 
 
 def extent_for_range(mg: gws.MapGrid, tr: gws.MapTileRange) -> gws.Extent:
+    """Return the extent of a tile range.
+
+    Args:
+        mg: A grid.
+        tr: Tile range.
+
+    Returns:
+        Extent in the grid CRS.
+    """
+
     x0, y0, x1, y1, z = tr
     span = resolution_for_level(mg, z) * mg.tileSize
     return (
@@ -196,12 +318,33 @@ def extent_for_range(mg: gws.MapGrid, tr: gws.MapTileRange) -> gws.Extent:
 
 
 def extent_for_tile(mg: gws.MapGrid, tile: gws.MapTile) -> gws.Extent:
+    """Return the extent of a tile.
+
+    Args:
+        mg: A grid.
+        tile: Tile.
+
+    Returns:
+        Extent in the grid CRS.
+    """
+
     x, y, z = tile
     return extent_for_range(mg, (x, y, x, y, z))
 
 
 def matrix_set_for_grid(mg: gws.MapGrid, max_level: int, identifier: str = '') -> gws.TileMatrixSet:
-    """Express the levels ``0..max_level`` of a grid as a tile matrix set (matrix identifiers are the levels)."""
+    """Express the levels ``0..max_level`` of a grid as a tile matrix set.
+
+    Matrix identifiers are the level numbers as strings. ``scale`` is not set.
+
+    Args:
+        mg: A grid.
+        max_level: Finest level to include.
+        identifier: Identifier of the matrix set.
+
+    Returns:
+        A tile matrix set.
+    """
 
     tms = gws.TileMatrixSet(identifier=identifier, crs=mg.crs, matrices=[])
     for z in range(max_level + 1):
@@ -223,7 +366,17 @@ def matrix_set_for_grid(mg: gws.MapGrid, max_level: int, identifier: str = '') -
 
 
 def matrix_for_resolution(tms: gws.TileMatrixSet, resolution: float) -> gws.TileMatrix:
-    """Return the coarsest matrix that does not need upscaling, the finest one if all are coarser."""
+    """Return the coarsest matrix that does not need upscaling.
+
+    A matrix whose resolution is within ``RESOLUTION_TOLERANCE`` of the given one also matches.
+
+    Args:
+        tms: Tile matrix set.
+        resolution: Wanted resolution in CRS units per pixel.
+
+    Returns:
+        The matching matrix, or the finest one if all are coarser.
+    """
 
     # Coarsest matrix with tm.resolution <= resolution, i.e. never upscale (downscale up to 2x).
     # Cross-CRS the wanted resolution rarely hits the source ladder, e.g. 3857 -> 25832
@@ -238,7 +391,17 @@ def matrix_for_resolution(tms: gws.TileMatrixSet, resolution: float) -> gws.Tile
 
 
 def matrix_range_for_extent(tm: gws.TileMatrix, extent: gws.Extent) -> gws.MapTileRange | None:
-    """Return the range of matrix tiles covering an extent (``z`` is 0), or ``None`` outside the matrix."""
+    """Return the range of matrix tiles covering an extent.
+
+    The range is clipped to the matrix.
+
+    Args:
+        tm: Tile matrix.
+        extent: Extent in the matrix CRS.
+
+    Returns:
+        A tile range with ``z`` set to 0, or ``None`` if the extent does not intersect the matrix.
+    """
 
     tile_w = tm.resolution * tm.tileWidth
     tile_h = tm.resolution * tm.tileHeight
@@ -258,7 +421,15 @@ def matrix_range_for_extent(tm: gws.TileMatrix, extent: gws.Extent) -> gws.MapTi
 
 
 def matrix_extent_for_range(tm: gws.TileMatrix, tr: gws.MapTileRange) -> gws.Extent:
-    """Return the extent of a range of matrix tiles."""
+    """Return the extent of a range of matrix tiles.
+
+    Args:
+        tm: Tile matrix.
+        tr: Tile range; ``z`` is ignored.
+
+    Returns:
+        Extent in the matrix CRS.
+    """
 
     tile_w = tm.resolution * tm.tileWidth
     tile_h = tm.resolution * tm.tileHeight
@@ -272,7 +443,14 @@ def matrix_extent_for_range(tm: gws.TileMatrix, tr: gws.MapTileRange) -> gws.Ext
 
 
 def enum_tiles(tr: gws.MapTileRange) -> Iterator[gws.MapTile]:
-    """Enumerate the tiles of a range, row by row."""
+    """Enumerate the tiles of a range, row by row.
+
+    Args:
+        tr: Tile range.
+
+    Yields:
+        Tiles ``(x, y, z)``.
+    """
 
     x0, y0, x1, y1, z = tr
     for y in range(y0, y1 + 1):
@@ -281,7 +459,15 @@ def enum_tiles(tr: gws.MapTileRange) -> Iterator[gws.MapTile]:
 
 
 def in_range(mt: gws.MapTile, tr: gws.MapTileRange) -> bool:
-    """True if the tile lies within the range."""
+    """Check if a tile lies within a range.
+
+    Args:
+        mt: Tile.
+        tr: Tile range.
+
+    Returns:
+        ``True`` if the tile is at the level of the range and inside it.
+    """
 
     x, y, z = mt
     return z == tr[4] and tr[0] <= x <= tr[2] and tr[1] <= y <= tr[3]

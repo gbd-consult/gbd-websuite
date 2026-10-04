@@ -1,91 +1,150 @@
-"""Specs for the GWS app.
+"""Specs: type metadata for configuration, requests and commands.
 
-Specs are a set of metadata that describe GWS configuration and runtime objects.
-Specs are generated from the source code before the app is run or a build step is performed.
+Specs are metadata that describe the GWS configuration types, request and
+response types, extension objects and the command methods of actions. They are
+generated from the Python sources (classes, annotations and docstrings) and
+used at run time to read and validate configuration and request data, to look
+up extension classes and to dispatch commands. The client build and the
+documentation generators use the generated specs as well.
 
-The Specs support module consists of two main components:
+The package has two parts: the generator, which creates specs from the
+sources, and the runtime, which loads them and works with them.
 
-- Generator (`gws.spec.generator.main`) that creates Specs from sources
-- Runtime (`gws.spec.runtime`) that loads Specs and provides methods to validate configuration or request objects
+Modules:
 
-Generated Specs are also used by the Client builder and documentation generators.
+- ``core``: shared data structures: the ``Type`` record, the type kinds ``c``,
+  the generator constants ``v``, ``Chunk``, ``SpecData`` and the error classes.
+- ``runtime``: creates the ``gws.SpecRuntime`` object (``runtime.create``),
+  which generates or loads the specs and provides reading, object and command
+  lookups and class loading.
+- ``reader``: reads and validates raw values (config dicts, request payloads)
+  against spec types. Used by ``runtime.Object.read``.
+- ``generator``: the spec generator, see the ``gws.spec.generator`` package.
+- ``spec``: command line tool that runs the generator on the developer system
+  and writes the specs, the TypeScript API and the configuration references
+  to an output directory.
+- ``types.pyinc``: the interfaces ``gws.SpecRuntime``,
+  ``gws.ApplicationManifest``, ``gws.ExtObjectDescriptor``,
+  ``gws.ExtCommandDescriptor``, ``gws.SpecReadOption`` and
+  ``gws.CommandCategory``, included into ``gws/__init__.py``.
+
+Design
+======
+
+The generator parses the Python sources of the application and its plugins
+into a dictionary of ``core.Type`` records keyed by uid. It then resolves
+aliases, evaluates defaults, synthesizes variant types for ``gws.ext`` objects
+and extracts the types the server needs at run time. The result is a
+``core.SpecData`` object, which can be cached as JSON and loaded again
+(``generator.main.to_path``, ``generator.main.from_path``).
+
+The runtime wraps a ``SpecData`` object. ``read`` validates a value against a
+type using a ``reader.Reader`` and returns the parsed value. ``get_class``
+resolves a class reference (a class, a class name or a ``gws.ext`` name) and
+imports the defining module on demand. ``command_descriptor`` maps a command
+category and name to the action method that handles it. Commands registered
+in the ``raw`` category are found under any category. Object and command
+descriptors are cached in the runtime object.
 
 Spec Data
 =========
 
-`gws.spec.core.SpecData` is the central data object produced by the Generator and consumed by the Runtime.
+``core.SpecData`` is the central data object produced by the generator and
+consumed by the runtime. Its fields are:
 
-It contains the following fields:
+- ``meta``: build-time metadata: the application version, the manifest path
+  and the parsed manifest.
+- ``chunks``: source code chunks (the core packages and each plugin) with
+  their source files grouped by kind.
+- ``serverTypes``: all types the server needs at run time: configuration
+  types, request and response types, ext objects and command methods.
+- ``strings``: documentation strings keyed by language code (e.g. ``'en'``,
+  ``'de'``) and then by type uid.
 
-- `meta`: Build-time metadata. Includes the application manifest, manifest path, and generator version.
+Types
+=====
 
-- `chunks`: Source-code "chunks" (collections of related files) that make up the application.
+Each entry in ``serverTypes`` is a ``core.Type`` instance. The ``c`` field
+(a ``core.TypeKind`` string) determines the kind of the type and which other
+fields are populated. The fields are:
 
-- `serverTypes`: All types the server needs at runtime — configuration types, request/response types, and command descriptors.
+- ``c``: type kind, see below.
+- ``uid``: unique identifier, used as the key throughout the spec.
+- ``name``: qualified name of named types, e.g. classes and properties.
+- ``ident``: source code identifier, used in docs.
+- ``constValue``: value of a ``CONSTANT``.
+- ``defaultExpression``: unevaluated default (a constant or enum reference),
+  evaluated by the normalizer.
+- ``defaultValue``: literal default value.
+- ``doc``: docstring from the source.
+- ``title``: documentation title.
+- ``enumDocs``: for ``ENUM``, a ``{member name: docstring}`` dict.
+- ``enumValues``: for ``ENUM``, a ``{member name: value}`` dict.
+- ``extName``: ``gws.ext`` name, set for extension types and commands.
+- ``hasDefault``: ``True`` when a default exists.
+- ``isConfig``: ``True`` for types reachable from the application ``Config``.
+- ``literalValues``: for ``LITERAL``, the list of allowed values.
+- ``modName``, ``modPath``: module that defines the type.
+- ``pos``: source position (``path:line``).
+- ``tArg``: for ``METHOD``, uid of the last (request) argument.
+- ``tArgs``: for ``METHOD``, uids of the arguments in order.
+- ``tItem``: for ``LIST`` and ``SET``, uid of the element type.
+- ``tItems``: for ``UNION``, ``TUPLE`` and ``CALLABLE``, uids of the member types.
+- ``tKey``, ``tValue``: for ``DICT``, uids of the key and value types.
+- ``tMembers``: for ``VARIANT``, a ``{tag: uid}`` dict of members.
+- ``tModule``: uid of the module type that contains this type.
+- ``tOwner``: for ``PROPERTY`` and ``METHOD``, uid of the owning class.
+- ``tProperties``: for ``CLASS``, a ``{name: uid}`` dict of properties,
+  including inherited ones.
+- ``tReturn``: for ``METHOD``, uid of the return type.
+- ``tSupers``: for ``CLASS``, uids of the base classes.
+- ``tTarget``: for ``TYPE``, ``EXT`` and ``OPTIONAL``, uid of the target type.
+- ``tValue``: for ``PROPERTY``, uid of the value type.
 
-- `strings`: Localised documentation strings keyed first by language code (e.g. ``'en'``, ``'de'``) and then by type uid.
+Type kinds, defined in ``core.c``:
 
-Server Types
-------------
+- ``ATOM``: built-in type: ``any``, ``bool``, ``bytes``, ``float``, ``int``,
+  ``str`` and a few other builtins.
+- ``CALLABLE``: callable. Uses ``tItems``.
+- ``CLASS``: class, e.g. config, props, request and response objects. Uses
+  ``tProperties``, ``tSupers``.
+- ``CONSTANT``: module-level constant. Uses ``constValue``.
+- ``DICT``: ``dict[K, V]``. Uses ``tKey``, ``tValue``.
+- ``ENUM``: ``Enum`` subclass. Uses ``enumValues``, ``enumDocs``.
+- ``EXT``: a ``gws.ext`` name pointing to a class. Uses ``tTarget``, ``extName``.
+- ``LIST``: ``list[T]``. Uses ``tItem``.
+- ``LITERAL``: ``Literal[v1, v2, ...]``. Uses ``literalValues``.
+- ``METHOD``: a method. Command methods have ``extName`` set to
+  ``gws.ext.command.<category>.<name>``. Uses ``tArg``, ``tArgs``,
+  ``tReturn``, ``tOwner``.
+- ``MODULE``: Python module.
+- ``NONE``: the ``None`` type.
+- ``OPTIONAL``: ``Optional[T]``. Uses ``tTarget``.
+- ``PROPERTY``: a property of a ``CLASS``. Uses ``tOwner``, ``tValue``.
+- ``SET``: ``set[T]``. Uses ``tItem``.
+- ``TUPLE``: ``tuple[T, ...]``. Uses ``tItems``.
+- ``TYPE``: type alias (``TypeAlias``). Uses ``tTarget``.
+- ``UNDEFINED``: a type name that could not be resolved.
+- ``UNION``: ``Union[T1, T2, ...]`` or ``T1 | T2``. Uses ``tItems``.
+- ``VARIANT``: union of the ``gws.ext`` classes of one category, discriminated
+  by the ``type`` property. Uses ``tMembers``.
 
-Each entry in `serverTypes` is a `gws.spec.core.Type` instance. The `c` field (a `gws.spec.core.TypeKind` string)
-determines what kind of type it represents and which other fields are populated.
+``EXPR`` marks unevaluated default expressions in the generator. ``COMMAND``
+and ``FUNCTION`` are declared, but the generator does not produce them.
 
-It contains the following fields (not all are populated for every type; see `c`):
+Example::
 
-- `c`: Type kind (see below).
-- `uid`: Unique string identifier, used as key throughout the spec.
-- `name`: Short name (e.g. class name, property name).
-- `ident`: Fully qualified source-code identifier, used in docs.
-- `constValue`: Value for ``CONSTANT`` types.
-- `defaultExpression`: Source-expression string for computed defaults.
-- `defaultValue`: Literal default value.
-- `doc`: Inline docstring from the source.
-- `enumDocs`: For ``ENUM`` — ``{member_name → docstring}`` dict.
-- `enumValues`: For ``ENUM`` — ``{member_name → value}`` dict.
-- `extName`: ``gws.ext`` name, set only for extension types and commands.
-- `hasDefault`: ``True`` when a default exists.
-- `literalValues`: For ``LITERAL`` — list of allowed literal values.
-- `modName` / `modPath`: Module that defines this type.
-- `pos`: Source file position (``file:line``).
-- `tArg`: For ``METHOD`` — uid of the last (request) argument.
-- `tArgs`: For ``METHOD`` — uids of all arguments in order.
-- `tItem`: For ``LIST``, ``SET``, ``DICT`` — uid of the element type.
-- `tItems`: For ``UNION``, ``TUPLE`` — uids of member types.
-- `tKey`: For ``DICT`` — uid of the key type.
-- `tMembers`: For ``VARIANT`` — ``{tag → uid}`` map of discriminated members.
-- `tModule`: uid of the module type that contains this type.
-- `tOwner`: For ``PROPERTY`` — uid of the owning class.
-- `tProperties`: For ``CLASS`` — ``{name → uid}`` map of property types.
-- `tReturn`: For ``METHOD`` — uid of the return type.
-- `tSupers`: For ``CLASS`` — uids of base classes.
-- `tTarget`: For ``TYPE``, ``EXT`` — uid of the aliased/target type.
-- `tValue`: For ``PROPERTY`` — uid of the property's value type.
+    import gws.spec.runtime
 
-The `gws.spec.core.TypeKind` (``c``) field can be one of the following values defined in `gws.spec.core.c`:
+    specs = gws.spec.runtime.create('/data/MANIFEST.json', read_cache=True, write_cache=True)
 
-- ``ATOM``: Built-in primitive: ``any``, ``bool``, ``bytes``, ``float``, ``int``, ``str``.
-- ``CALLABLE``: Untyped callable argument.
-- ``CLASS``: User-defined data class (config, props, request, response objects). Uses ``tProperties``, ``tSupers``.
-- ``COMMAND``: A ``gws.ext.command.*`` endpoint. Uses ``tArg``, ``tOwner``, ``extName``.
-- ``CONSTANT``: Named constant; value stored in ``constValue``.
-- ``DICT``: Generic ``dict[K, V]``. Uses ``tKey``, ``tItem``.
-- ``ENUM``: Python ``Enum`` subclass. Uses ``enumValues``, ``enumDocs``.
-- ``EXPR``: Compile-time expression; not validated at runtime.
-- ``EXT``: A ``gws.ext.*`` alias pointing to an extension type. Uses ``tTarget``, ``extName``.
-- ``FUNCTION``: Stand-alone callable. Uses ``tArgs``, ``tReturn``.
-- ``LIST``: Generic ``list[T]``. Uses ``tItem``.
-- ``LITERAL``: ``Literal[v1, v2, …]``. Uses ``literalValues``.
-- ``METHOD``: Class method / command handler. Uses ``tArg``, ``tArgs``, ``tReturn``, ``tOwner``.
-- ``MODULE``: Python module node; groups types by source file.
-- ``NONE``: The ``None`` / ``NoneType`` singleton.
-- ``OPTIONAL``: ``Optional[T]`` (i.e. ``T | None``). Uses ``tItem``.
-- ``PROPERTY``: A single property slot inside a ``CLASS``. Uses ``tOwner``, ``tValue``.
-- ``SET``: Generic ``set[T]``. Uses ``tItem``.
-- ``TUPLE``: Generic ``tuple[T, …]``. Uses ``tItems``.
-- ``TYPE``: Type alias (``TypeAlias``). Uses ``tTarget``.
-- ``UNDEFINED``: Placeholder for a type that could not be resolved.
-- ``UNION``: ``Union[T1, T2, …]`` (untagged). Uses ``tItems``.
-- ``VARIANT``: Tagged union discriminated by a ``type`` property. Uses ``tMembers``.
+    cfg = specs.read(
+        {'type': 'wms', 'provider': {'url': 'https://example.com/wms'}},
+        'gws.ext.config.layer',
+        path='/data/config.json',
+        options={gws.SpecReadOption.verboseErrors},
+    )
 
+    cls = specs.get_class('gws.ext.object.layer', 'wms')
+    desc = specs.command_descriptor(gws.CommandCategory.api, 'mapGetBox')
 """

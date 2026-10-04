@@ -1,4 +1,21 @@
-"""Intl and localization tools."""
+"""Locales and locale-aware formatting.
+
+Builds ``gws.Locale`` objects from ``babel`` and ``pycountry`` data and provides
+locale-aware formatters for dates, times and numbers.
+
+``locale`` finds a locale by a language or locale name (``de`` or ``de_DE``), optionally
+restricted to a list of allowed locale uids, and falls back to the first allowed locale
+or to the default locale ``en_CA`` (English with metric units). ``formatters`` returns a
+``DateFormatter``, ``TimeFormatter`` and ``NumberFormatter`` for a locale. Locales and
+formatters are cached per application.
+
+Example::
+
+    loc = gws.lib.intl.locale('de', allowed=['de_DE', 'en_US'])
+    date_fmt, time_fmt, num_fmt = gws.lib.intl.formatters(loc)
+    date_fmt.long('2013-12-11')        # '11. Dezember 2013'
+    num_fmt.grouped(1234567.5)         # '1.234.567,5'
+"""
 
 import babel
 import babel.dates
@@ -15,21 +32,32 @@ _DEFAULT_UID = 'en_CA'  # English with metric units
 
 
 def default_locale():
-    """Returns the default locale object (``en_CA``)."""
+    """Return the default locale ``en_CA``.
+
+    Returns:
+        A Locale object.
+    """
 
     return locale(_DEFAULT_UID, fallback=False)
 
 
 def locale(name: str | None, allowed: list[str] = None, fallback: bool = True) -> gws.Locale:
-    """Locates a Locale object by locale name.
+    """Find a locale by a language or locale name.
 
-    If the name is invalid, and ``fallback`` is ``True``, return the first ``allowed`` locale,
-    or the default locale. Otherwise, raise an exception.
+    A language name selects the first allowed locale for that language or, if there is none,
+    the most likely locale for the language (``de`` becomes ``de_DE``). A locale name must be allowed. If no locale is found and ``fallback`` is ``True``,
+    the first ``allowed`` locale or the default locale is returned.
 
     Args:
-        name: Language or locale name like ``de`` or ``de_DE``.
-        allowed: A list of allowed locale uids.
-        fallback: Fall back to the default locale.
+        name: Language or locale name like ``de``, ``de_DE`` or ``de-DE``.
+        allowed: Allowed locale uids.
+        fallback: If ``True``, fall back to a default instead of raising an error.
+
+    Returns:
+        A Locale object.
+
+    Raises:
+        ``gws.Error``: If no locale is found and ``fallback`` is ``False``.
     """
 
     lo = _locale_by_name(name, allowed)
@@ -48,6 +76,7 @@ def locale(name: str | None, allowed: list[str] = None, fallback: bool = True) -
 
 
 def _locale_by_name(name, allowed):
+    """Find a locale by a language or locale name, or return ``None``."""
     if not name:
         return
 
@@ -70,6 +99,7 @@ def _locale_by_name(name, allowed):
 
 
 def _locale_by_uid(uid):
+    """Create a cached locale for a uid, or return ``None`` if the uid is unknown."""
     def _get():
         p = babel.Locale.parse(uid, resolve_likely_subtags=True)
 
@@ -144,7 +174,17 @@ class _FnStr:
 
 
 class DateFormatter(gws.DateFormatter):
+    """Date formatter, based on ``babel.dates``."""
+
     def __init__(self, loc: gws.Locale):
+        """Create a date formatter.
+
+        ``short``, ``medium``, ``long`` and ``iso`` can be called with a date, or used as strings,
+        which format the current date.
+
+        Args:
+            loc: Locale to format for.
+        """
         self.locale = loc
         self.short = _FnStr(self.format, gws.DateTimeFormat.short)
         self.medium = _FnStr(self.format, gws.DateTimeFormat.medium)
@@ -162,7 +202,17 @@ class DateFormatter(gws.DateFormatter):
 
 
 class TimeFormatter(gws.TimeFormatter):
+    """Time formatter, based on ``babel.dates``."""
+
     def __init__(self, loc: gws.Locale):
+        """Create a time formatter.
+
+        ``short``, ``medium``, ``long`` and ``iso`` can be called with a time, or used as strings,
+        which format the current time.
+
+        Args:
+            loc: Locale to format for.
+        """
         self.locale = loc
         self.short = _FnStr(self.format, gws.DateTimeFormat.short)
         self.medium = _FnStr(self.format, gws.DateTimeFormat.medium)
@@ -183,7 +233,14 @@ class TimeFormatter(gws.TimeFormatter):
 
 
 class NumberFormatter(gws.NumberFormatter):
+    """Number formatter, based on ``babel.numbers``."""
+
     def __init__(self, loc: gws.Locale):
+        """Create a number formatter.
+
+        Args:
+            loc: Locale to format for.
+        """
         self.locale = loc
         self.fns = {
             gws.NumberFormat.decimal: self.decimal,
@@ -215,7 +272,16 @@ class NumberFormatter(gws.NumberFormatter):
 
 
 def formatters(loc: gws.Locale) -> tuple[DateFormatter, TimeFormatter, NumberFormatter]:
-    """Return a tuple of locale-aware formatters."""
+    """Return the formatters for a locale.
+
+    Formatters are cached per locale.
+
+    Args:
+        loc: A Locale object.
+
+    Returns:
+        A date, a time and a number formatter.
+    """
 
     def _get():
         return (

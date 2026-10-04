@@ -1,11 +1,21 @@
+"""Built-in provider of the guest and system users."""
+
 import gws
 
 from . import user as user_module
 
 
 class Object(gws.AuthProvider):
+    """System authentication provider.
+
+    Provides the ``guest`` user (roles ``guest`` and ``all``) and the ``system``
+    user, which is allowed everything. Neither of them can log in.
+    """
+
     users: dict
+    """The guest and system users, keyed by ``guest`` and ``system``."""
     type = 'system'
+    """Provider type."""
 
     def configure(self):
         self.uid = 'gws.base.auth.provider.system'

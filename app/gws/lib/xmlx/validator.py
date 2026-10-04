@@ -1,8 +1,4 @@
-"""Schema validator (tests only).
-
-Validates a document against the schemas listed in its ``xsi:schemaLocation`` using lxml.
-Schemas are downloaded and cached under ``gws.c.CACHE_DIR``.
-"""
+"""XML schema validator for tests."""
 
 import re
 import os
@@ -18,13 +14,28 @@ class Error(gws.Error):
     """Validation or schema error, with ``message`` and ``lineno``."""
 
     def __init__(self, *args, **kwargs):
+        """Create the error from a message and a line number."""
+
         super().__init__(*args, **kwargs)
         self.message = args[0]
         self.lineno = args[1]
 
 
 def validate(xml: str | bytes) -> bool:
-    """Validate a document against its ``xsi:schemaLocation`` schemas, raise ``Error`` if invalid."""
+    """Validate a document against the schemas listed in its ``xsi:schemaLocation``.
+
+    Remote schemas are downloaded and cached under ``gws.c.CACHE_DIR``; URLs containing ``.loc`` or ``local``
+    are downloaded without caching.
+
+    Args:
+        xml: The document as a string or bytes.
+
+    Returns:
+        ``True`` if the document is valid.
+
+    Raises:
+        Error: If the document or a schema cannot be parsed, or the document is invalid.
+    """
 
     try:
         parser = lxml.etree.XMLParser(resolve_entities=False, no_network=True)
@@ -47,6 +58,8 @@ def validate(xml: str | bytes) -> bool:
 
 
 def _extract_schema_locations(xml: str | bytes) -> dict:
+    """Read the ``schemaLocation`` of the root element as a dict URI -> location."""
+
     tree = _etree(xml, None)
     root = tree.getroot()
 
@@ -69,6 +82,8 @@ def _extract_schema_locations(xml: str | bytes) -> dict:
 
 
 def _create_combined_xsd(schema_locations: dict) -> str:
+    """Create a schema that imports all given schemas."""
+
     xml = []
     xml.append('<?xml version="1.0" encoding="UTF-8"?>')
     xml.append('<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">')
@@ -82,12 +97,16 @@ def _create_combined_xsd(schema_locations: dict) -> str:
 
 
 def _etree(xml: str | bytes, parser: lxml.etree.XMLParser | None) -> lxml.etree.ElementTree:
+    """Parse a document with lxml."""
+
     if isinstance(xml, str):
         xml = xml.encode('utf-8')
     return lxml.etree.ElementTree(lxml.etree.fromstring(xml, parser))
 
 
 def _error(exc):
+    """Convert an lxml exception to an ``Error``."""
+
     # exc is either {'message': ..., 'lineno': ...}
     # or {'error_log': '<string>:17:0:ERROR:...}
 
@@ -106,6 +125,8 @@ def _error(exc):
 
 
 class _CachingResolver(lxml.etree.Resolver):
+    """lxml resolver that downloads remote schemas, with a file cache."""
+
     def resolve(self, url, id, context):
         if url.startswith(('http://', 'https://')):
             if '.loc' in url or 'local' in url:
@@ -118,6 +139,8 @@ class _CachingResolver(lxml.etree.Resolver):
 
 
 def _download_url(url: str, with_cache: bool) -> bytes:
+    """Download a URL, optionally using the file cache."""
+
     if not with_cache:
         return _raw_download_url(url)
 
@@ -133,6 +156,8 @@ def _download_url(url: str, with_cache: bool) -> bytes:
 
 
 def _raw_download_url(url: str) -> bytes:
+    """Download a URL, raise ``ValueError`` unless the status is 200."""
+
     gws.log.debug(f'xmlx.validator: downloading {url!r}')
     response = requests.get(url, timeout=10)
     if response.status_code != 200:
@@ -141,6 +166,8 @@ def _raw_download_url(url: str) -> bytes:
 
 
 def _cache_path(cache_dir: str, url: str) -> str:
+    """Get the cache file path for a URL, creating its directory."""
+
     u = url.strip().split('//')[-1]
     if '?' in u:
         u = u.split('?', 1)[0]
@@ -163,6 +190,8 @@ def _cache_path(cache_dir: str, url: str) -> str:
 
 
 def _to_dirname(s: str) -> str:
+    """Convert a URL path component to a safe directory name."""
+
     s = s.lower().strip().lstrip('.')
     s = re.sub(r'[^a-zA-Z0-9.]+', '_', s).strip('_')
     return s

@@ -1,3 +1,5 @@
+"""PostgreSQL layer."""
+
 import gws
 import gws.base.database.layer
 
@@ -12,4 +14,7 @@ class Config(gws.base.database.layer.Config):
 
 @gws.ext.object.layer('postgres')
 class Object(gws.base.database.layer.Object):
+    """Vector layer that shows features from a PostgreSQL table."""
+
     db: provider.Object
+    """PostgreSQL database provider."""

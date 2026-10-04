@@ -1,13 +1,14 @@
-"""App Error object"""
-
 class Error(Exception):
-    """Generic GWS error."""
+    """Generic GWS error.
+
+    Its ``repr`` is the first line of ``log.exception_backtrace``: the class name, the message and the location.
+    """
     def __repr__(self):
         return log.exception_backtrace(self)[0]
 
 
 class ConfigurationError(Error):
-    """GWS Configuration error."""
+    """GWS configuration error."""
     pass
 
 

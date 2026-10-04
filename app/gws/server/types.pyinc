@@ -1,22 +1,37 @@
 class ServerManager(Node):
-    """Server configuration manager."""
+    """Server configuration manager.
+
+    Holds the ``server`` configuration and creates the configuration files for
+    the embedded servers and the server start script.
+    """
 
     templates: list['Template']
+    """Templates for the server configuration files and the start script."""
 
     def create_server_configs(self, target_dir: str, script_path: str, pid_paths: dict):
-        """Create server configuration files."""
+        """Create the server configuration files and the start script.
+
+        Args:
+            target_dir: Directory for the configuration files.
+            script_path: Path of the start script.
+            pid_paths: Paths of the pid files, keyed by server name (``web``, ``spool``, ``nginx``).
+        """
 
 
 class ServerMonitor(Node):
-    """File Monitor facility."""
+    """Server monitor.
+
+    Watches configuration files and directories and reconfigures the server
+    when they change, and runs periodic tasks of registered objects.
+    """
 
     def watch_directory(self, path: str, pattern: 'Regex', recursive=False):
         """Add a directory to watch.
 
         Args:
             path: Directory path.
-            pattern: Regex pattern for files to watch.
-            recursive: Watch subdirectories.
+            pattern: Regex pattern for file names to watch.
+            recursive: Also watch subdirectories.
         """
 
     def watch_file(self, path: str):
@@ -31,15 +46,23 @@ class ServerMonitor(Node):
 
         Args:
             obj: A node with a ``periodic_task`` method.
-            frequency: Task frequency in seconds.
+            frequency: Interval between runs in seconds, the monitor default if 0.
+
+        Raises:
+            ``gws.Error``: If the object has no ``periodic_task`` method.
         """
 
     def schedule_reload(self, with_reconfigure: bool = False):
-        """Schedule a system reload.
+        """Schedule a reload of the web and spool backends.
+
+        The reload is performed by the monitor on its next tick.
 
         Args:
             with_reconfigure: Reconfigure the server before reloading.
         """
 
     def start(self):
-        """Start the monitor."""
+        """Start watching files and register the timer that drives the monitor.
+
+        Must be called in a uWSGI process.
+        """

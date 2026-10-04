@@ -8,6 +8,7 @@ from . import worker
 
 
 class Object(gws.PrinterManager):
+    """Printer manager."""
 
     def start_print_job(self, request, user):
         mgr = self.root.app.jobMgr

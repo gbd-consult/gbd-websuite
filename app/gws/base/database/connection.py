@@ -1,12 +1,24 @@
+"""Database connection wrapper."""
+
 import gws
 import gws.lib.sa as sa
 
 
 class Object(gws.DatabaseConnection):
+    """Database connection."""
+
     db: gws.DatabaseProvider
+    """Provider this connection belongs to."""
     saConn: sa.Connection
+    """The underlying SQLAlchemy connection."""
 
     def __init__(self, db: gws.DatabaseProvider, conn: sa.Connection):
+        """Create a connection wrapper.
+
+        Args:
+            db: Provider this connection belongs to.
+            conn: The SQLAlchemy connection.
+        """
         self.db = db
         self.saConn = conn
 
@@ -91,12 +103,14 @@ class Object(gws.DatabaseConnection):
 
 
 def _to_int(s) -> int:
+    """Return the value if it is an int, raise ``ValueError`` otherwise."""
     if isinstance(s, int):
         return s
     raise ValueError(f'db: expected int, got {s=}')
 
 
 def _to_str(s) -> str:
+    """Convert a value to a string, ``None`` to an empty string."""
     if s is None:
         return ''
     return str(s)

@@ -1,3 +1,5 @@
+"""Creates QField packages from QGIS projects."""
+
 from typing import cast, Optional
 
 import gws
@@ -13,33 +15,69 @@ import gws.lib.grid
 from . import core, caps as caps_mod
 
 PATH_MAP_FILE = 'path_map.json'
+"""Name of the file that maps package file names to paths on disk."""
 COMPLETE_FILE = 'package_complete'
+"""Name of the marker file written when a package is complete."""
 
 
 class Args(gws.Data):
+    """Arguments for the packager."""
+
     uid: str
+    """Package uid, used in log messages."""
     qfcProject: core.QfcProject
+    """QField project."""
     caps: caps_mod.Caps
+    """Capabilities of the QField project."""
     project: Optional[gws.Project]
+    """GWS project context."""
     user: gws.User
+    """User the package is created for."""
     packageDir: str
+    """Directory to write the package into."""
     mapCacheDir: str
+    """Directory for cached base map images."""
     withBaseMap: bool
+    """Render base maps."""
     withData: bool
+    """Write the data of offline layers."""
     withMedia: bool
+    """Add media files."""
     withQgis: bool
+    """Write the modified QGIS project."""
 
 
 class Object:
+    """Packager, writes a QField package into a directory.
+
+    Data files and the QGIS project are written into the package directory.
+    Base maps and media files are not copied; the package path map refers to
+    them where they are. The path map is written into ``PATH_MAP_FILE``, and
+    ``COMPLETE_FILE`` marks the package as complete.
+    """
+
     uid: str
+    """Package uid."""
     root: gws.Root
+    """Root object."""
     qfcProject: core.QfcProject
+    """QField project."""
     project: Optional[gws.Project]
+    """GWS project context."""
     user: gws.User
+    """User the package is created for."""
     args: Args
+    """Packager arguments."""
     caps: caps_mod.Caps
+    """Capabilities of the QField project."""
 
     def create_package(self, root: gws.Root, args: Args):
+        """Create a package.
+
+        Args:
+            root: Root object.
+            args: Packager arguments.
+        """
         self.root = root
         self.uid = args.uid
         self.pathMap = {}
@@ -73,6 +111,7 @@ class Object:
         )
 
     def write_data(self):
+        """Write the features of each ``edit`` layer into a GeoPackage file."""
         for le in self.caps.layerMap.values():
             if le.action != caps_mod.LayerAction.edit:
                 continue
@@ -84,12 +123,17 @@ class Object:
                 self.write_features(le, ds)
 
     def write_base_map(self):
+        """Render all ``baseMap`` layers."""
         # @TODO options for flattened base maps
         for le in self.caps.layerMap.values():
             if le.action == caps_mod.LayerAction.baseMap:
                 self.write_base_map_layer(le)
 
     def write_media(self):
+        """Add the files from the directories to copy to the path map.
+
+        Paths in the package are relative to the QGIS project file. If the project is not stored in a file, the last directory name is used.
+        """
         for d in self.caps.copyDirs:
             if not gws.u.is_dir(d):
                 gws.log.warning(f'{self.uid}: media dir not found: {d!r}')
@@ -105,6 +149,16 @@ class Object:
     #
 
     def get_features_for_layer(self, le: caps_mod.LayerEntry) -> list[gws.Feature]:
+        """Read the features of an ``edit`` layer.
+
+        If only the area of interest is copied, features are limited to the area of interest, or the project bounds.
+
+        Args:
+            le: Layer entry.
+
+        Returns:
+            Features.
+        """
         me = le.modelEntry
         q = gws.SearchQuery()
         if self.caps.copyOnlyAreaOfInterest:
@@ -123,6 +177,14 @@ class Object:
     }
 
     def write_features(self, le: caps_mod.LayerEntry, ds: gws.lib.gdalx.VectorDataSet):
+        """Write the features of a layer into a GeoPackage layer.
+
+        Only fields of simple types are written. A field named ``fid`` is written as ``fid_gws``, because GDAL uses ``fid`` internally.
+
+        Args:
+            le: Layer entry.
+            ds: GeoPackage data set.
+        """
         features = self.get_features_for_layer(le)
 
         me = le.modelEntry
@@ -165,6 +227,16 @@ class Object:
     ##
 
     def write_base_map_layer(self, le: caps_mod.LayerEntry):
+        """Render a base map layer into a raster file.
+
+        The layer is rendered as a single image covering the area of interest
+        (or the project bounds), at the resolution of the maximum zoom level
+        (clamped to 3..20) in the grid of the target CRS. The file is stored in the
+        map cache directory and reused while it is younger than ``mapCacheLifeTime``.
+
+        Args:
+            le: Layer entry.
+        """
         max_zoom = max(
             self.caps.projectProps.baseMapTilesMinZoomLevel or 0,
             self.caps.projectProps.baseMapTilesMaxZoomLevel or 0,
@@ -233,6 +305,10 @@ class Object:
         self.pathMap[le.dataSourceFileName] = cache_path
 
     def write_qgis_project(self):
+        """Write the modified QGIS project into the package.
+
+        The original project is also written next to it, with the extension ``.source.qgs``.
+        """
         fname = f'{self.qfcProject.uid}.qgs'
         path = f'{self.args.packageDir}/{fname}'
 
@@ -247,6 +323,16 @@ class Object:
         self.pathMap[fname] = path
 
     def replace_vars(self, s: str) -> str:
+        """Replace user variables in a string.
+
+        Supported variables are ``{user.authToken}``, ``{user.loginName}`` and ``{user.displayName}``.
+
+        Args:
+            s: Source string.
+
+        Returns:
+            String with the variables replaced.
+        """
         # @TODO render attributes as templates
         s = s.replace('{user.authToken}', self.user.authToken)
         s = s.replace('{user.loginName}', self.user.loginName)
@@ -255,11 +341,26 @@ class Object:
 
 
 class QgisXmlTransformer:
+    """Modifies the QGIS project XML for the package.
+
+    Points layers and references to the packaged data sources, removes layers
+    with the ``remove`` action and empty layer groups, and makes paths relative.
+    """
+
     po: Object
+    """Packager."""
     root: gws.XmlElement
+    """Root element of the project."""
     toRemove: list[gws.XmlElement]
+    """Elements to remove."""
 
     def run(self, po: Object, root_el: gws.XmlElement):
+        """Transform the project XML in place.
+
+        Args:
+            po: Packager.
+            root_el: Root element of the project.
+        """
         self.po = po
         self.root = root_el
         self.toRemove = []
@@ -275,6 +376,7 @@ class QgisXmlTransformer:
         self.remove_elements(root_el, None)
 
     def change_global_props(self):
+        """Set the project to use relative paths."""
         # change global properties
 
         properties = self.root.find('properties') or self.root.add('properties')
@@ -290,6 +392,7 @@ class QgisXmlTransformer:
         p.text = 'false'
 
     def update_layer_tree(self):
+        """Update the data source of layer tree entries, or mark them for removal."""
         for el in self.root.findall('.//layer-tree-layer'):
             le = self.po.caps.layerMap.get(el.get('id'))
             if not le:
@@ -303,6 +406,7 @@ class QgisXmlTransformer:
             el.set('providerKey', le.dataProvider)
 
     def update_map_layers(self):
+        """Update the data source of map layers, or mark them for removal."""
         for el in self.root.findall('.//maplayer'):
             le = self.po.caps.layerMap.get(el.textof('id'))
             if not le:
@@ -335,6 +439,7 @@ class QgisXmlTransformer:
             #             opt.add('Option', type='bool', name='isOfflineEditable', value='true')
 
     def update_referenced_layers(self):
+        """Update the data source in relations that reference ``edit`` layers."""
         for el in self.root.findall('.//referencedLayers/relation'):
             """
                 <referencedLayers>
@@ -362,6 +467,7 @@ class QgisXmlTransformer:
                 el.set('providerKey', le.dataProvider)
 
     def update_edit_widgets(self):
+        """Update the data source in relation reference widgets that reference ``edit`` layers."""
         for el in self.root.findall('.//editWidget'):
             """
               <editWidget type="RelationReference">
@@ -398,6 +504,14 @@ class QgisXmlTransformer:
                     opt.set('value', le.dataProvider)
 
     def cleanup_layer_group(self, group_el):
+        """Mark empty layer groups for removal, recursively.
+
+        Args:
+            group_el: Layer tree group element.
+
+        Returns:
+            ``True`` if the group contains layers that are kept.
+        """
         is_empty = True
 
         for sub in group_el.children():
@@ -413,6 +527,12 @@ class QgisXmlTransformer:
         return not is_empty
 
     def remove_elements(self, el, parent_el):
+        """Remove the elements marked for removal, recursively.
+
+        Args:
+            el: Element to check.
+            parent_el: Parent element.
+        """
         if el in self.toRemove:
             parent_el.remove(el)
             return

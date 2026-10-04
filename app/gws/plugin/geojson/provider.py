@@ -1,4 +1,4 @@
-"""GeoJSON provder."""
+"""GeoJSON provider."""
 
 from typing import Optional
 import gws
@@ -16,24 +16,57 @@ class Config(gws.Config):
 
 
 class Object(gws.Node):
+    """GeoJSON file provider.
+
+    Reads the features of a GeoJSON file into feature records and selects
+    the records that match a search.
+    """
+
     path: str
+    """Path to the GeoJSON file."""
     _records: list[gws.FeatureRecord]
 
     def __getstate__(self):
+        """Omit the loaded records when pickling."""
         return gws.u.omit(vars(self), '_records')
 
     def configure(self):
         self.path = self.cfg('path')
 
     def cache_hash(self):
+        """Return a hash that identifies the data of the provider.
+
+        Returns:
+            A hash of the file path.
+        """
         return gws.u.sha256([self.path])
 
     def load_records(self):
+        """Return all records of the file.
+
+        The file is read on the first call.
+
+        Returns:
+            The feature records.
+        """
         if getattr(self, '_records', None) is None:
             self._records = self._load()
         return self._records
 
     def get_records(self, search: gws.SearchQuery) -> list[gws.FeatureRecord]:
+        """Return the records that match a search.
+
+        A record matches if its shape intersects the search shape, extended by
+        the tolerance, or, without a shape, the search bounds; if one of its
+        attribute values contains the keyword, ignoring case; and if its uid
+        is one of the search uids. Criteria not set in the search are ignored.
+
+        Args:
+            search: The search query.
+
+        Returns:
+            The matching records.
+        """
         shape = None
         
         if search.shape:
@@ -49,6 +82,7 @@ class Object(gws.Node):
         return [rec for rec in self.load_records() if self._record_matches(rec, search, shape)]
 
     def _record_matches(self, rec: gws.FeatureRecord, search: gws.SearchQuery, shape: Optional[gws.Shape]) -> bool:
+        """Check if a record matches the search criteria."""
         if shape:
             if not rec.shape or not rec.shape.intersects(shape):
                 return False
@@ -63,6 +97,7 @@ class Object(gws.Node):
         return True
 
     def _load(self):
+        """Read the GeoJSON file into feature records."""
         js = gws.lib.jsonx.from_path(self.path)
 
         crs = gws.lib.crs.WGS84

@@ -1,4 +1,4 @@
-"""Command-line GEKOS commands."""
+"""Command line commands for GekoS."""
 
 from typing import Optional, cast
 
@@ -18,10 +18,11 @@ class CreateIndexParams(gws.CliParams):
 
 @gws.ext.object.cli('gekos')
 class Object(gws.Node):
+    """GekoS command line interface."""
 
     @gws.ext.command.cli('gekosIndex')
     def do_index(self, p: CreateIndexParams):
-        """Create the GEKOS index."""
+        """Create the GekoS index."""
 
         root = gws.config.load()
         act = cast(action.Object, gws.base.action.get_action_for_cli(root, 'gekos', p.projectUid))

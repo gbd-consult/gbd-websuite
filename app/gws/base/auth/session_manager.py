@@ -16,7 +16,10 @@ class Config(gws.Config):
 
 
 class Object(gws.AuthSessionManager):
-    """Base session manager."""
+    """Base session manager.
+
+    Reads the session life times. Subclasses implement the storage of sessions.
+    """
 
     def configure(self):
         self.lifeTime = self.cfg('lifeTime', default=gws.lib.datetimex.parse_duration(Config.lifeTime))

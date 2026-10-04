@@ -1,3 +1,5 @@
+"""Base authentication provider."""
+
 from typing import Optional
 
 import gws
@@ -14,6 +16,13 @@ class Config(gws.Config):
 
 
 class Object(gws.AuthProvider):
+    """Base authentication provider.
+
+    Reads the ``allowedMethods`` option and serializes users as JSON of all their
+    fields, roles, attributes and data. Subclasses implement authentication and
+    user lookup; the default ``authenticate`` returns no user.
+    """
+
     def configure(self):
         self.allowedMethods = self.cfg('allowedMethods', default=[])
 

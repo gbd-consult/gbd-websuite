@@ -1,4 +1,4 @@
-"""Debuggging tools"""
+"""Debugging and profiling tools."""
 
 import re
 import socket
@@ -10,13 +10,30 @@ from . import log
 
 
 def inspect(arg, max_depth=1, all_props=False):
-    """Inspect the argument upto the given depth"""
+    """Inspect a value up to the given depth.
+
+    Args:
+        arg: The value.
+        max_depth: Maximum nesting depth.
+        all_props: If ``True``, list all attributes including callables, and expand dates.
+
+    Yields:
+        Description lines.
+    """
 
     yield from _dump(arg, None, 0, max_depth or 1, all_props, [])
 
 
 def p(*args, lines=False, stack=False, d=3, all=False):
-    """Log an inspection of the arguments"""
+    """Log an inspection of the arguments at the debug level.
+
+    Args:
+        *args: Values to inspect.
+        lines: If ``True``, log the string value of each argument line by line, with line numbers.
+        stack: If ``True``, log the current call stack instead.
+        d: Maximum nesting depth.
+        all: If ``True``, list all attributes including callables.
+    """
 
     sep = '-' * 60
 
@@ -42,10 +59,18 @@ _TIME_STACK = []
 
 
 def time_start(label=None):
+    """Start a timer.
+
+    Timers are nested; ``time_end`` stops the most recently started one.
+
+    Args:
+        label: Timer label for the log message.
+    """
     _TIME_STACK.append((time.time(), label or 'default'))
 
 
 def time_end():
+    """Stop the most recently started timer and log the elapsed time at the debug level."""
     if _TIME_STACK:
         t2 = time.time()
         t1, label = _TIME_STACK.pop()
@@ -53,10 +78,19 @@ def time_end():
 
 
 def pycharm_debugger_check(path_to_pycharm_debug_egg, host, port, suspend=False):
-    """Check for pycharm debugger listeniing.
+    """Connect to a PyCharm debugger if it is listening.
 
     Attempt to open the debugger socket first and return that socket when pydevd asks for it.
     If there is no socket, then IDEA is not listening, return quickly.
+
+    Args:
+        path_to_pycharm_debug_egg: Path to the pydevd egg file or to the directory containing it.
+        host: Debugger host.
+        port: Debugger port.
+        suspend: If ``True``, suspend execution after connecting.
+
+    Returns:
+        ``True`` if the debugger was connected, ``False`` otherwise.
     """
 
     sock = None

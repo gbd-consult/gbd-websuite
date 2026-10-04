@@ -1,4 +1,4 @@
-"""ISO 19115 metadata."""
+"""ISO 19115 code lists."""
 
 import gws
 

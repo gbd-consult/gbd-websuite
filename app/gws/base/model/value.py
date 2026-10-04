@@ -1,3 +1,5 @@
+"""Base model value."""
+
 import gws
 
 
@@ -15,6 +17,12 @@ class Config(gws.Config):
 
 
 class Object(gws.ModelValue):
+    """Base model value.
+
+    Provides the ``isDefault`` flag and the set of operations the value applies to.
+    Subclasses implement ``compute``.
+    """
+
     def configure(self):
         self.isDefault = self.cfg('isDefault', default=False)
 

@@ -1,24 +1,50 @@
-"""LDAP authorization provider.
+"""LDAP authentication provider.
 
-Accepts an LDAP URL in the following form::
+Authenticates users against an LDAP or Active Directory server. The server is
+given as an LDAP URL, a subset of the RFC 2255 form::
 
     ldap://host:port/baseDN?searchAttribute
 
-which is a subset of the rfc2255 schema.
+``searchAttribute`` is the attribute that holds the login name. If ``ssl`` is
+configured, the connection uses ``ldaps``. A bind DN and a password can be
+given; this DN must be allowed to search the directory. Without a bind DN,
+the provider binds anonymously. The connection is tested at configuration
+time.
 
-Optionally, a bind DN and a password can be provided. This DN must have search permissions for the directory.
+Authentication with ``username`` and ``password`` credentials works as
+follows:
 
-The authorization workflow with the (login, password) credentials is as follows:
+- connect to the server, binding as the bind DN if configured,
+- search below the base DN for the entry with ``searchAttribute = username``;
+  more than one entry is an error,
+- reject Active Directory accounts with the ``ACCOUNTDISABLE`` flag in
+  ``userAccountControl``,
+- bind as the found DN with the password,
+- connect again and assign roles from the ``users`` rules.
 
-- connect to the LDAP server, using the bind DN if provided
-- search for the DN matching ``searchAttribute = credentials.login``
-- attempt to login with that DN and ``credentials.password``
-- iterate the ``users`` configs to determine roles for the user
+A ``users`` rule assigns its ``roles`` if the account is one of the entries
+found by the ``matches`` filter, or if the account is listed in the
+``member``, ``members`` or ``uniqueMember`` attribute of a group found by the
+``memberOf`` filter. The attributes of the entry are passed to the user
+record. If the entry has no ``displayName``, ``displayNameFormat`` creates
+one from the attributes.
 
+Example::
+
+    auth.providers+ {
+        type "ldap"
+        url "ldap://ldap.example.com:389/dc=example,dc=com?uid"
+        bindDN "cn=admin,dc=example,dc=com"
+        bindPassword "secret"
+        activeDirectory false
+        users [
+            { matches "(uid=admin)" roles ["admin"] }
+            { memberOf "(cn=editors)" roles ["editor"] }
+        ]
+    }
 
 References:
     https://datatracker.ietf.org/doc/html/rfc2255
-
 """
 
 from typing import Optional
@@ -79,16 +105,28 @@ class Config(gws.base.auth.provider.Config):
 
 @gws.ext.object.authProvider('ldap')
 class Object(gws.base.auth.provider.Object):
+    """LDAP authentication provider."""
+
     serverUrl: str
+    """Server URL without path and query, with the ``ldap`` or ``ldaps`` scheme."""
     baseDN: str
+    """Base DN for searches."""
     loginAttribute: str
+    """Attribute that holds the login name."""
     timeout: int
+    """Network timeout in seconds."""
     ssl: Optional[SSLConfig]
+    """SSL settings, or ``None``."""
     activeDirectory: bool
+    """The server is an Active Directory."""
     bindDN: str
+    """DN to bind as, empty for an anonymous bind."""
     bindPassword: str
+    """Password for the bind DN."""
     displayNameFormat: str
+    """Format string for the display name, empty if none."""
     users: list[UserSpec]
+    """Rules that assign roles to accounts."""
 
     def configure(self):
         self.timeout = self.cfg('timeout', default=30)
@@ -137,6 +175,7 @@ class Object(gws.base.auth.provider.Object):
     ##
 
     def _get_user_record(self, conn, username, password):
+        """Find the entry for a login name and bind as it with the password."""
         users = self._find(conn, _make_filter({self.loginAttribute: username}))
 
         if len(users) == 0:
@@ -162,6 +201,7 @@ class Object(gws.base.auth.provider.Object):
             raise gws.ForbiddenError(f'LDAP error {exc.__class__.__name__}') from exc
 
     def _make_user(self, conn, rec):
+        """Create a user from an LDAP entry."""
         user_rec = dict(rec)
         user_rec['roles'] = self._roles_for_user(conn, rec)
 
@@ -174,6 +214,7 @@ class Object(gws.base.auth.provider.Object):
         return gws.base.auth.user.from_record(self, user_rec)
 
     def _roles_for_user(self, conn, rec):
+        """Return the roles of all ``users`` rules that match the entry."""
         user_dn = rec['dn']
         roles = set()
 
@@ -191,6 +232,7 @@ class Object(gws.base.auth.provider.Object):
         return sorted(roles)
 
     def _find(self, conn, flt):
+        """Search below the base DN and return the entries as dicts."""
         try:
             res = conn.search_s(self.baseDN, ldap.SCOPE_SUBTREE, flt)
         except ldap.NO_SUCH_OBJECT:
@@ -208,6 +250,7 @@ class Object(gws.base.auth.provider.Object):
 
     @contextlib.contextmanager
     def _connection(self):
+        """Open a connection, bound as the bind DN if configured."""
         conn = ldap.initialize(self.serverUrl)
         conn.set_option(ldap.OPT_NETWORK_TIMEOUT, self.timeout)
 
@@ -237,6 +280,7 @@ class Object(gws.base.auth.provider.Object):
 
 
 def _as_dict(data):
+    """Convert attribute values to strings, unwrapping single values."""
     d = {}
 
     for k, v in data.items():
@@ -251,6 +295,7 @@ def _as_dict(data):
 
 
 def _make_filter(filter_dict):
+    """Create an AND filter that matches the given attribute values."""
     conds = ''.join(
         '({}={})'.format(
             ldap.filter.escape_filter_chars(k, 1),
@@ -262,6 +307,7 @@ def _make_filter(filter_dict):
 
 
 def _is_member_of(group_dict, user_dn):
+    """Check if a DN is listed as a member of a group entry."""
     for key in 'member', 'members', 'uniqueMember':
         if key in group_dict and user_dn in group_dict[key]:
             return True

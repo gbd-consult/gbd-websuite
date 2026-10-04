@@ -1,4 +1,40 @@
-"""Email sending helper."""
+"""Email helper.
+
+The ``email`` helper sends email messages over SMTP. A ``Message`` has a
+subject, recipients, an optional sender and Bcc addresses, a plain text part
+and an optional HTML part. Both parts are encoded as quoted-printable. If the
+message has no sender, the configured ``mailFrom`` is used.
+
+The SMTP connection mode is ``ssl`` (SMTP over SSL, default port 465),
+``tls`` (STARTTLS, default port 587) or ``plain`` (no encryption, default
+port 25). If ``login`` is set, the helper logs in before sending.
+
+The helper is used, for example, by the email multi-factor adapter
+(``gws.plugin.auth_mfa.email``) and the account plugin. It must be configured
+with an SMTP server.
+
+Example::
+
+    helpers+ {
+        type "email"
+        mailFrom "gws@example.com"
+        smtp {
+            host "smtp.example.com"
+            mode "tls"
+            login "gws"
+            password "secret"
+        }
+    }
+
+Usage in Python::
+
+    helper = cast(gws.plugin.email_helper.Object, root.app.helper('email'))
+    helper.send_mail(gws.plugin.email_helper.Message(
+        subject='Hello',
+        mailTo='user_1@example.com',
+        text='Hello, world.',
+    ))
+"""
 
 import email.message
 import email.policy
@@ -64,6 +100,8 @@ class Message(gws.Data):
 
 
 class Error(gws.Error):
+    """Raised when an email cannot be sent."""
+
     pass
 
 
@@ -85,18 +123,30 @@ _DEFAULT_PORT = {
 
 
 class _SmtpServer(gws.Data):
+    """SMTP server settings."""
+
     mode: SmtpMode
+    """Connection mode."""
     host: str
+    """Host name."""
     port: int
+    """Port."""
     login: str
+    """Login name, empty for no login."""
     password: str
+    """Password."""
     timeout: int
+    """Connection timeout in seconds."""
 
 
 @gws.ext.object.helper('email')
 class Object(gws.Node):
+    """Email helper."""
+
     smtp: _SmtpServer
+    """SMTP server settings."""
     mailFrom: str
+    """Default sender address."""
 
     def configure(self):
         self.mailFrom = self.cfg('mailFrom')
@@ -113,6 +163,14 @@ class Object(gws.Node):
         self.smtp.port = p.port or _DEFAULT_PORT.get(self.smtp.mode)
 
     def send_mail(self, m: Message):
+        """Send an email message.
+
+        Args:
+            m: The message.
+
+        Raises:
+            ``Error``: If the connection to the SMTP server or the sending fails.
+        """
         msg = email.message.EmailMessage(email.policy.EmailPolicy(**_DEFAULT_POLICY))
 
         msg['Subject'] = m.subject
@@ -130,6 +188,7 @@ class Object(gws.Node):
         self._send(msg)
 
     def _send(self, msg):
+        """Send a message with the SMTP server."""
         if self.smtp:
             try:
                 with self._smtp_connection() as conn:
@@ -138,6 +197,7 @@ class Object(gws.Node):
                 raise Error('SMTP error') from exc
 
     def _smtp_connection(self):
+        """Open an SMTP connection and log in, if configured."""
         if self.smtp.mode == SmtpMode.ssl:
             conn = smtplib.SMTP_SSL(
                 host=self.smtp.host,

@@ -12,11 +12,17 @@ from . import core, layer_caps, error
 
 
 class GetServiceRequest(gws.Request):
+    """Request to an OWS service."""
+
     serviceUid: str
+    """Service uid."""
 
 
 class GetSchemaRequest(gws.Request):
+    """Request for an XML schema."""
+
     namespace: str
+    """Namespace prefix, optionally with the ``.xsd`` extension."""
 
 
 @gws.ext.config.action('ows')
@@ -26,15 +32,26 @@ class Config(gws.base.action.Config):
 
 @gws.ext.object.action('ows')
 class Object(gws.base.action.Object):
+    """OWS action.
+
+    Dispatches requests to the configured OWS services and serves XML schemas
+    generated for layer namespaces.
+    """
+
     @gws.ext.command.get('owsService')
     def get_service(self, req: gws.WebRequester, p: GetServiceRequest) -> gws.ContentResponse:
+        """Handle an OWS service request."""
+
         return self._handle_service(req, p)
 
     @gws.ext.command.post('owsService')
     def post_service(self, req: gws.WebRequester, p: GetServiceRequest) -> gws.ContentResponse:
+        """Handle an OWS service request."""
+
         return self._handle_service(req, p)
 
     def _handle_service(self, req: gws.WebRequester, p: GetServiceRequest) -> gws.ContentResponse:
+        """Locate the service, check access and pass the request to it."""
         srv = cast(gws.OwsService, self.root.get(p.serviceUid, gws.ext.object.owsService))
         if not srv:
             raise gws.NotFoundError(f'{p.serviceUid=} not found')
@@ -44,6 +61,8 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.get('owsXml')
     def get_schema(self, req: gws.WebRequester, p: GetSchemaRequest) -> gws.ContentResponse:
+        """Return an XML schema for the layers with the given namespace prefix."""
+
         try:
             content = self._make_schema(req, p)
         except Exception as exc:
@@ -51,6 +70,7 @@ class Object(gws.base.action.Object):
         return gws.ContentResponse(mimeType=gws.lib.mime.XML, content=content)
 
     def _make_schema(self, req, p) -> str:
+        """Create the XML schema document for a namespace."""
         s = p.namespace
         if s.endswith('.xsd'):
             s = s[:-4]

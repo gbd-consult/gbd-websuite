@@ -1,4 +1,16 @@
-"""Simple input widget."""
+"""Simple input widget.
+
+Single-line text input with an optional placeholder text. This is the default
+widget of ``text``, ``datetime`` and ``time`` fields.
+
+Example::
+
+    fields+ {
+        name "name"
+        type "text"
+        widget { type "input" placeholder "Name" }
+    }
+"""
 
 import gws
 import gws.base.model.widget
@@ -19,6 +31,8 @@ class Props(gws.base.model.widget.Props):
 
 @gws.ext.object.modelWidget('input')
 class Object(gws.base.model.widget.Object):
+    """Simple input widget object."""
+
     def props(self, user):
         return gws.u.merge(
             super().props(user),

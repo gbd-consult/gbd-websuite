@@ -1,10 +1,40 @@
-"""WMTS Service.
+"""WMTS service.
 
-Implements WMTS 1.0.0.
-This implementation only supports ``GET`` requests with ``KVP`` encoding.
+Implements WMTS 1.0.0 with the operations GetCapabilities, GetTile and
+GetLegendGraphic. Only ``GET`` requests with ``KVP`` encoding are supported.
+
+The service publishes the project layers that are not groups and can render
+a box. For each supported CRS of the service, it offers one tile matrix set
+named ``TMS_<srid>``, with levels 0 to ``MAX_LEVEL``; the matrix identifiers
+are the zero-padded level numbers (``00``, ``01``, ...). The tile matrix sets
+are based on map grids: the grid configured in ``grids`` for the CRS, or the
+default grid for the CRS. All layers share the same tile matrix sets.
+
+GetTile renders the requested layer into a tile of the grid size. With the
+developer option ``ows.annotate_wmts``, the tile is annotated with its
+matrix, row, column and extent.
+
+Templates:
+
+- ``templates/getCapabilities.cx.py``: ``ows.GetCapabilities``.
 
 References:
-    - OGC 07-057r7 (https://portal.ogc.org/files/?artifact_id=35326)
+
+- OGC 07-057r7 (https://portal.ogc.org/files/?artifact_id=35326)
+
+Example::
+
+    projects+ {
+        owsServices+ {
+            type "wmts"
+            uid "my_wmts"
+            supportedCrs [3857 25832]
+            grids+ {
+                crs 25832
+                extent [280000 5200000 920000 6100000]
+            }
+        }
+    }
 """
 
 from typing import Optional
@@ -53,12 +83,15 @@ _DEFAULT_METADATA = gws.Metadata(
 
 @gws.ext.object.owsService('wmts')
 class Object(server.service.Object):
+    """WMTS service that renders the project layers as tiles."""
+
     protocol = gws.OwsProtocol.WMTS
     supportedVersions = ['1.0.0']
     isRasterService = True
     isOwsCommon = True
 
     tileMatrixSets: list[gws.TileMatrixSet]
+    """Tile matrix sets, one for each supported CRS."""
     grids: dict[str, gws.MapGrid]
     """Grids by tile matrix set identifier."""
 
@@ -123,6 +156,16 @@ class Object(server.service.Object):
         ]
 
     def make_tile_matrices(self, mg: gws.MapGrid, min_zoom, max_zoom):
+        """Create the tile matrices for a range of grid levels.
+
+        Args:
+            mg: Map grid.
+            min_zoom: First level.
+            max_zoom: Last level, inclusive.
+
+        Returns:
+            A list of tile matrices, one for each level.
+        """
         ms = []
 
         for z in range(min_zoom, max_zoom + 1):
@@ -158,6 +201,14 @@ class Object(server.service.Object):
     ##
 
     def handle_get_capabilities(self, sr: server.request.Object):
+        """Handle the GetCapabilities operation.
+
+        Args:
+            sr: Service request.
+
+        Returns:
+            The capabilities document.
+        """
         return self.template_response(
             sr,
             sr.requested_format('FORMAT'),
@@ -166,6 +217,18 @@ class Object(server.service.Object):
         )
 
     def handle_get_tile(self, sr: server.request.Object):
+        """Handle the GetTile operation.
+
+        Args:
+            sr: Service request.
+
+        Returns:
+            The tile image.
+
+        Raises:
+            ``server.error.InvalidParameterValue``: If not exactly one layer is requested.
+            ``server.error.TileOutOfRange``: If the tile matrix set or the tile matrix is unknown.
+        """
         lcs = self.requested_layer_caps(sr)
         if len(lcs) != 1:
             raise server.error.InvalidParameterValue('LAYER')
@@ -207,12 +270,31 @@ class Object(server.service.Object):
         return self.image_response(sr, mro.planes[0].image, mime_type)
 
     def handle_get_legend_graphic(self, sr: server.request.Object):
+        """Handle the GetLegendGraphic operation.
+
+        Args:
+            sr: Service request.
+
+        Returns:
+            The legend image of the requested layers.
+        """
         lcs = self.requested_layer_caps(sr)
         return self.render_legend(sr, lcs, sr.requested_format('FORMAT'))
 
     ##
 
     def requested_layer_caps(self, sr: server.request.Object):
+        """Find the layer caps for the layer names in the ``LAYER`` parameter.
+
+        Args:
+            sr: Service request.
+
+        Returns:
+            The matching layer caps without duplicates.
+
+        Raises:
+            ``server.error.LayerNotDefined``: If no layer is found.
+        """
         lcs = []
 
         for name in sr.list_param('LAYER'):
@@ -227,6 +309,17 @@ class Object(server.service.Object):
         return gws.u.uniq(lcs)
 
     def bounds_for_tile(self, tms_uid, tm_uid, row, col):
+        """Compute the bounds of a tile.
+
+        Args:
+            tms_uid: Tile matrix set identifier.
+            tm_uid: Tile matrix identifier.
+            row: Tile row.
+            col: Tile column.
+
+        Returns:
+            The tile bounds, or ``None`` if the tile matrix set or the tile matrix is unknown.
+        """
         tms = self.get_matrix_set(tms_uid)
         if not tms:
             return
@@ -239,11 +332,28 @@ class Object(server.service.Object):
         return gws.Bounds(crs=tms.crs, extent=gws.lib.grid.extent_for_tile(mg, (col, row, z)))
 
     def get_matrix_set(self, tms_uid):
+        """Find a tile matrix set by its identifier.
+
+        Args:
+            tms_uid: Tile matrix set identifier.
+
+        Returns:
+            The tile matrix set, or ``None`` if not found.
+        """
         for tms in self.tileMatrixSets:
             if tms.identifier == tms_uid:
                 return tms
 
     def get_matrix(self, tms: gws.TileMatrixSet, tm_uid):
+        """Find a tile matrix in a tile matrix set by its identifier.
+
+        Args:
+            tms: Tile matrix set.
+            tm_uid: Tile matrix identifier.
+
+        Returns:
+            The tile matrix, or ``None`` if not found.
+        """
         for tm in tms.matrices:
             if tm.identifier == tm_uid:
                 return tm

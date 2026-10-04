@@ -1,10 +1,17 @@
+"""Middleware manager."""
+
 import gws
 
 
 class Object(gws.MiddlewareManager):
+    """Middleware manager."""
+
     objectMap: dict[str, gws.Node]
+    """Registered objects by name."""
     deps: dict[str, list[str]]
+    """Dependency names by object name."""
     names: list[str]
+    """Object names in dependency order."""
 
     def __init__(self):
         self.objectMap = {}
@@ -24,12 +31,14 @@ class Object(gws.MiddlewareManager):
         return [self.objectMap[name] for name in self.names]
 
     def _sort(self):
+        """Sort the object names in dependency order."""
         self.names = []
         colors = {}
         for name in self.objectMap:
             self._sort_visit(name, colors, [])
 
     def _sort_visit(self, name, colors, stack):
+        """Visit a name and its dependencies depth first, raise on cycles and unknown names."""
         stack = stack + [name]
 
         if colors.get(name) == 2:

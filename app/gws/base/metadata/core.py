@@ -1,3 +1,5 @@
+"""Metadata objects: creation, merging and conversion."""
+
 from typing import Optional
 import gws
 import gws.lib.intl
@@ -185,6 +187,8 @@ _KEYWORD_CODE_SPACES = {
 
 
 class KeywordGroup(gws.Data):
+    """Keywords from one vocabulary, as written to OWS keyword lists."""
+
     codeSpace: str
     """Code space for the keyword group, e.g. 'iso', 'gemet', 'inspire', 'gcmd'."""
     typeName: str
@@ -194,6 +198,19 @@ class KeywordGroup(gws.Data):
 
 
 def keyword_groups(md: gws.Metadata) -> list[KeywordGroup]:
+    """Group the keywords of a metadata object by code space and type name.
+
+    Keywords without a vocabulary prefix go to a group with an empty code
+    space and type name; keywords with a prefix (``vocabulary:keyword``) are
+    currently not included. The INSPIRE theme, the ISO topic categories and
+    the INSPIRE mandatory keyword get groups of their own.
+
+    Args:
+        md: Metadata object.
+
+    Returns:
+        Keyword groups.
+    """
     d = {}
 
     def add(kw):
@@ -236,56 +253,104 @@ class Props(gws.Props):
 
 
 def new() -> gws.Metadata:
-    """Create a new Metadata object with default values."""
+    """Create an empty metadata object.
+
+    The list values ``keywords``, ``isoTopicCategories`` and ``metaLinks``
+    are empty lists, all other values are unset.
+
+    Returns:
+        A new metadata object.
+    """
 
     return _new()
 
 
 def from_dict(d: dict) -> gws.Metadata:
-    """Create a Metadata object from a dictionary.
+    """Create a metadata object from a dictionary.
 
     Args:
-        d: Dictionary containing metadata information.
+        d: Metadata values by key.
+
+    Returns:
+        A new metadata object.
     """
 
     return _update(_new(), d)
 
 
 def from_args(*args, **kwargs) -> gws.Metadata:
-    """Create a Metadata object from arguments (dicts or other Metadata objects)."""
+    """Create a metadata object by merging several sources.
+
+    Args:
+        *args: Dicts or data objects (configs, props, metadata objects),
+            merged in order; ``None`` values are skipped.
+        **kwargs: Values merged last.
+
+    Returns:
+        A new metadata object.
+    """
 
     return _update(_new(), *args, **kwargs)
 
 
 def from_config(c: gws.Config) -> gws.Metadata:
-    """Create a Metadata object from a configuration.
+    """Create a metadata object from a metadata configuration.
 
     Args:
-        c: Configuration object.
+        c: Metadata configuration.
+
+    Returns:
+        A new metadata object.
     """
 
     return _update(_new(), c)
 
 
 def from_props(p: gws.Props) -> gws.Metadata:
-    """Create a Metadata object from properties.
+    """Create a metadata object from metadata props.
 
     Args:
-        p: Properties object.
+        p: Metadata props.
+
+    Returns:
+        A new metadata object.
     """
 
     return _update(_new(), p)
 
 
 def update(md: gws.Metadata, *args, **kwargs) -> gws.Metadata:
-    """Update a Metadata object from arguments (dicts or other Metadata objects)."""
+    """Merge values into a metadata object in place.
+
+    ``keywords`` and ``isoTopicCategories`` are added to the existing values,
+    other keys replace them. ``None`` values do not override existing ones.
+
+    Args:
+        md: Metadata object to update.
+        *args: Dicts or data objects, merged in order.
+        **kwargs: Values merged last.
+
+    Returns:
+        The updated metadata object.
+    """
 
     _update(md, *args, **kwargs)
     return md
 
 
 def normalize(md: gws.Metadata) -> gws.Metadata:
-    """Normalize a Metadata object (e.g. fix dates and language codes)."""
+    """Return a normalized copy of a metadata object.
+
+    Dates are parsed to ``datetime`` objects, keyword lists are deduplicated
+    and sorted, and the derived language codes and INSPIRE theme names are
+    filled in.
+
+    Args:
+        md: Metadata object.
+
+    Returns:
+        A new metadata object.
+    """
 
     nor = _new()
     _update(nor, md)
@@ -293,7 +358,15 @@ def normalize(md: gws.Metadata) -> gws.Metadata:
 
 
 def props(md: gws.Metadata) -> gws.Props:
-    """Properties of a Metadata object."""
+    """Convert a metadata object to client props.
+
+    Args:
+        md: Metadata object.
+
+    Returns:
+        Props with the abstract, attribution, dates as ISO date strings,
+        sorted keywords, language and title. Missing values are empty strings.
+    """
 
     dc = dtx.parse(md.dateCreated)
     du = dtx.parse(md.dateUpdated)
@@ -313,6 +386,7 @@ def props(md: gws.Metadata) -> gws.Props:
 
 
 def _new() -> gws.Metadata:
+    """Create a metadata object with the list values initialized."""
     md = gws.Metadata()
     for key, fn in _UPDATE_FNS.items():
         fn(md, key, None)
@@ -320,6 +394,7 @@ def _new() -> gws.Metadata:
 
 
 def _update(md: gws.Metadata, *args, **kwargs):
+    """Merge dicts or data objects into a metadata object and fix the language fields."""
     def add(a):
         for key, val in a.items():
             fn = _UPDATE_FNS.get(key)
@@ -342,16 +417,19 @@ def _update(md: gws.Metadata, *args, **kwargs):
 
 
 def _update_set(md: gws.Metadata, key, val):
+    """Add values to a list attribute, deduplicated and sorted."""
     s = set(getattr(md, key, None) or [])
     s.update(val or [])
     setattr(md, key, sorted(s))
 
 
 def _update_list(md: gws.Metadata, key, val):
+    """Replace a list attribute."""
     setattr(md, key, val or [])
 
 
 def _update_datetime(md: gws.Metadata, key, val):
+    """Set a date attribute from a parseable value; invalid values are ignored."""
     if val:
         dt = dtx.parse(val)
         if dt:
@@ -359,6 +437,7 @@ def _update_datetime(md: gws.Metadata, key, val):
 
 
 def _fix_language(md: gws.Metadata):
+    """Set the three-letter language codes and the INSPIRE theme names."""
     lang = md.language or 'en'
 
     md.language3 = gws.lib.intl.locale(lang).language3

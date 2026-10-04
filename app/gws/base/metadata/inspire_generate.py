@@ -1,3 +1,5 @@
+"""Script that regenerates the INSPIRE theme part of ``inspire.py`` from the INSPIRE theme register."""
+
 import requests
 import json
 import os

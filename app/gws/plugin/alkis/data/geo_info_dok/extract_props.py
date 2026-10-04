@@ -1,4 +1,4 @@
-"""Extract PROPS for types.py"""
+"""Print the property classes and the ``PROPS`` dict for ``types.py`` from the ``gid6`` schema."""
 
 import gid6 as gid
 
@@ -18,6 +18,19 @@ md = gid.METADATA
 all_titles = {}
 
 def get_props(topics):
+    """Collect property declarations from the object types of the given categories.
+
+    Only attributes with a basic or code list type, and with the same type
+    and title in all object types, are kept. Their titles are added to
+    ``all_titles``.
+
+    Args:
+        topics: Category key parts. Object types whose key contains any of them are used.
+
+    Returns:
+        A sorted list of declaration lines, e.g. ``    name: str``.
+    """
+
     ptypes = {}
     titles = {}
 

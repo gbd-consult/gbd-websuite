@@ -1,4 +1,22 @@
-"""HTTP Basic authorisation method."""
+"""HTTP Basic authentication method.
+
+The client sends the credentials with every request in an
+``Authorization: Basic ...`` header. The method decodes the header into
+``username`` and ``password`` credentials, passes them to the authentication
+providers and opens a transient session for the authenticated user. No cookie
+is set.
+
+The method is registered as a middleware after ``auth``. If a GET request is
+denied with status ``403``, the response is changed to ``401`` with a
+``WWW-Authenticate`` header, so that browsers show a login dialog.
+
+Example::
+
+    auth.methods+ {
+        type "basic"
+        realm "My Application"
+    }
+"""
 
 from typing import Optional
 
@@ -19,7 +37,10 @@ class Config(gws.base.auth.method.Config):
 
 @gws.ext.object.authMethod('basic')
 class Object(gws.base.auth.method.Object):
+    """HTTP Basic authentication method."""
+
     realm: str
+    """Authentication realm sent in the ``WWW-Authenticate`` header."""
 
     def configure(self):
         self.uid = 'gws.plugin.auth_method.basic'
@@ -45,6 +66,7 @@ class Object(gws.base.auth.method.Object):
             return am.create_transient_session(self, user)
 
     def _parse_header(self, req: gws.WebRequester):
+        """Extract the username and password from the ``Authorization`` header."""
         h = req.header('Authorization')
         if not h:
             return

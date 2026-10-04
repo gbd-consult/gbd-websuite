@@ -1,4 +1,27 @@
-"""Text field."""
+"""Text field.
+
+A scalar field for strings. Without a configured widget, the field uses an
+``input`` widget.
+
+With ``textSearch``, the field takes part in keyword searches of database
+models. The keyword is compared with the column value cast to a string:
+
+- ``exact``: the value equals the keyword,
+- ``any``, ``begin``, ``end``: the keyword occurs anywhere, at the start or at
+  the end of the value; ``%`` and ``_`` in the keyword are matched literally,
+- ``like``: the keyword is used as an SQL ``LIKE`` pattern as is.
+
+The pattern match is case-insensitive (``ILIKE``) unless ``caseSensitive`` is set.
+Keywords shorter than ``minLength`` are ignored.
+
+Example::
+
+    fields+ {
+        name "name"
+        type "text"
+        textSearch { type "begin" minLength 2 }
+    }
+"""
 
 from typing import Optional, cast
 
@@ -23,8 +46,11 @@ class Props(gws.base.model.scalar_field.Props):
 
 @gws.ext.object.modelField('text')
 class Object(gws.base.model.scalar_field.Object):
+    """Text field object."""
+
     attributeType = gws.AttributeType.str
     textSearch: Optional[gws.TextSearchOptions]
+    """Keyword search options, or None if the field is not searchable."""
 
     def configure(self):
         self.textSearch = self.cfg('textSearch')
@@ -70,4 +96,5 @@ class Object(gws.base.model.scalar_field.Object):
 
 
 def _escape_like(s, escape='\\'):
+    """Escape the ``LIKE`` wildcards and the escape character in a string."""
     return s.replace(escape, escape + escape).replace('%', escape + '%').replace('_', escape + '_')

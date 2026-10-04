@@ -1,4 +1,4 @@
-"""Database-based models."""
+"""Base database model."""
 
 from typing import Optional
 
@@ -25,6 +25,14 @@ class Props(gws.base.model.Props):
 
 
 class Object(gws.base.model.Object, gws.DatabaseModel):
+    """Base model for a database table.
+
+    Reads features from one table with SELECT queries built from the model
+    fields, and creates, updates and deletes table rows. Provides subclasses
+    with the database provider, access to the table and its columns, and the
+    SELECT builder.
+    """
+
     def configure(self):
         self.tableName = self.cfg('tableName') or self.cfg('_defaultTableName')
         if not self.tableName:

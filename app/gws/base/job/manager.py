@@ -12,7 +12,10 @@ import gws.server.spool
 
 
 class Object(gws.JobManager):
+    """Job manager."""
+
     TABLE = 'jobs'
+    """Name of the jobs table."""
     DDL = f"""
         CREATE TABLE IF NOT EXISTS {TABLE} (
             uid           TEXT NOT NULL PRIMARY KEY,
@@ -30,8 +33,10 @@ class Object(gws.JobManager):
             updated       INTEGER DEFAULT 0
         )
     """
+    """DDL statement for the jobs table."""
 
     dbPath: str
+    """Path of the SQLite database."""
 
     def configure(self):
         ver = self.root.specs.version.rpartition('.')[0]
@@ -67,12 +72,14 @@ class Object(gws.JobManager):
         return job
 
     def _get_job_or_fail(self, job_uid: str, user=None, state=None):
+        """Return a job like ``get_job``, but raise ``gws.Error`` if it is not found."""
         job, msg = self._get_job(job_uid, user, state)
         if not job:
             raise gws.Error(msg)
         return job
 
     def _get_job(self, job_uid: str, user=None, state=None):
+        """Read a job, checking the user and state; return the job and an error message."""
         rs = self._db().select(f'SELECT * FROM {self.TABLE} WHERE uid=:uid', uid=job_uid)
         if not rs:
             return None, f'JOB {job_uid}: not found'
@@ -116,6 +123,7 @@ class Object(gws.JobManager):
         return self._get_job_or_fail(job.uid)
 
     def _write(self, job_uid, rec):
+        """Update a job record, serializing the payload and the result."""
         rec['updated'] = gws.u.stime()
         if 'payload' in rec:
             rec['payload'] = gws.lib.jsonx.to_string(rec['payload'] or {})
@@ -212,6 +220,7 @@ class Object(gws.JobManager):
         return gws.JobStatusResponse(d)
 
     def _get_progress(self, job):
+        """Return the progress of a job in percent."""
         if job.state == gws.JobState.complete:
             return 100
         if job.state != gws.JobState.running:
@@ -223,8 +232,10 @@ class Object(gws.JobManager):
     ##
 
     _sqlitex: gws.lib.sqlitex.Object
+    """Database object, created on first use."""
 
     def _db(self):
+        """Return the database object, creating it if needed."""
         if getattr(self, '_sqlitex', None) is None:
             self._sqlitex = gws.lib.sqlitex.Object(self.dbPath, self.DDL)
         return self._sqlitex

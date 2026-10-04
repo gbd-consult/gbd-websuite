@@ -1,4 +1,24 @@
-"""File list widget."""
+"""File list widget.
+
+A feature list widget for related features that hold files. ``toFileField``
+names the ``file`` field of the related model that holds the file. The
+button options are the same as for the ``featureList`` widget.
+
+Example::
+
+    fields+ {
+        name "docs"
+        type "relatedFeatureList"
+        toModel "model_document"
+        toColumn "poi_id"
+        widget {
+            type "fileList"
+            toFileField "documentFile"
+            withNewButton true
+            withUnlinkButton true
+        }
+    }
+"""
 
 import gws
 import gws.base.model.widget
@@ -25,6 +45,8 @@ class Props(gws.base.model.widget.Props):
 
 @gws.ext.object.modelWidget('fileList')
 class Object(feature_list.Object):
+    """File list widget object."""
+
     def props(self, user):
         return gws.u.merge(
             super().props(user),

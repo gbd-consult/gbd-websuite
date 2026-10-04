@@ -1,6 +1,17 @@
-"""Exporter for the GeoJSON format.
+"""GeoJSON exporter.
 
-See https://gdal.org/en/stable/drivers/vector/geojson.html#layer-creation-options for supported options.
+Exports vector features with the GDAL ``GeoJSON`` driver. Each model is
+written to its own file. GDAL creation options can be passed with
+``options``, see
+https://gdal.org/en/stable/drivers/vector/geojson.html.
+
+Example::
+
+    exporters+ {
+        type "geojson"
+        title "GeoJSON"
+        target "download"
+    }
 """
 
 import gws
@@ -24,6 +35,8 @@ class Props(gws.base.exporter.Props):
 
 @gws.ext.object.exporter('geojson')
 class Object(gws.base.exporter.Object):
+    """GeoJSON exporter."""
+
     supportsVector = True
     supportsRaster = False
     supportsMultiLayer = False

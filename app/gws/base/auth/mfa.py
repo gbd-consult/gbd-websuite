@@ -1,16 +1,4 @@
-"""Generic multi-factor authentication adapter.
-
-Multi-factor authentication (handled in ``gws.plugin.auth_method.web.core`)
-is used for ``User`` object that provide the attribute ``mfaUid``,
-which is supposed to be an ID of a configured MFA Adapter.
-
-Specific MFA Adapters can require other attributes.
-
-Multi-factor authentication starts by creating a `gws.AuthMultiFactorTransaction` object,
-kept in a session until it is verified or expires.
-
-Some Adapters can be restarted (e.g. by resending a verification email).
-"""
+"""Base multi-factor authentication adapter."""
 
 from typing import Optional
 
@@ -49,7 +37,15 @@ class Config(gws.Config):
 
 
 class Object(gws.AuthMultiFactorAdapter):
+    """Base multi-factor authentication adapter.
+
+    Implements the transaction life cycle (start, state checks, restarts,
+    counting of verification attempts) and provides TOTP code generation and
+    checking. Subclasses implement ``verify`` and usually extend ``start``.
+    """
+
     otpOptions: gws.lib.otp.Options
+    """Options for one-time password generation."""
 
     def configure(self):
         self.message = self.cfg('message', default='')
@@ -101,6 +97,18 @@ class Object(gws.AuthMultiFactorAdapter):
     ##
 
     def verify_attempt(self, mfa, payload_valid: bool):
+        """Count a verification attempt and update the transaction state.
+
+        The state becomes ``ok`` if the payload is valid, ``failed`` if the transaction
+        is no longer valid or the attempts are used up, and ``retry`` otherwise.
+
+        Args:
+            mfa: The transaction.
+            payload_valid: Whether the submitted payload was valid.
+
+        Returns:
+            The same transaction, updated.
+        """
         mfa.verifyCount += 1
 
         if not self.check_state(mfa):
@@ -118,6 +126,16 @@ class Object(gws.AuthMultiFactorAdapter):
         return mfa
 
     def generate_totp(self, mfa: gws.AuthMultiFactorTransaction) -> str:
+        """Generate a TOTP code from the transaction secret for the current time.
+
+        Also records the generation time in the transaction.
+
+        Args:
+            mfa: The transaction.
+
+        Returns:
+            The code.
+        """
         ts = self.current_timestamp()
         totp = gws.lib.otp.new_totp(mfa.secret, ts, self.otpOptions)
         mfa.generateTime = ts
@@ -125,6 +143,15 @@ class Object(gws.AuthMultiFactorAdapter):
         return totp
 
     def check_totp(self, mfa: gws.AuthMultiFactorTransaction, input: str) -> bool:
+        """Check a TOTP code against the transaction secret for the current time.
+
+        Args:
+            mfa: The transaction.
+            input: The code entered by the user.
+
+        Returns:
+            ``True`` if the code is valid.
+        """
         return gws.lib.otp.check_totp(
             str(input or ''),
             mfa.secret,
@@ -133,4 +160,9 @@ class Object(gws.AuthMultiFactorAdapter):
         )
 
     def current_timestamp(self):
+        """Return the current time.
+
+        Returns:
+            The current time as a Unix timestamp in seconds.
+        """
         return gws.u.stime()

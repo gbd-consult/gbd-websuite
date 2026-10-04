@@ -14,6 +14,21 @@ PROGRESS_INTERVAL = 5
 
 
 def seed(root: gws.Root, opts: core.SeedOptions) -> core.SeedResult:
+    """Fill the selected caches with missing tiles.
+
+    Tiles are requested from the grabbers in blocks by ``opts.concurrency`` worker threads,
+    round-robin over the caches, until all blocks are done, the time limit is reached
+    or the run is interrupted. Only one seeding run can be active on the server;
+    if another one is running, nothing is done and the status is ``locked``.
+
+    Args:
+        root: Configuration root.
+        opts: Seeding options. Missing values default to 600 seconds and one thread.
+
+    Returns:
+        The seeding result with per-level statistics.
+    """
+
     defaults = core.SeedOptions(filter=None, maxTime=600, concurrency=1)
     opts = cast(core.SeedOptions, gws.u.merge(defaults, opts))
     try:
@@ -62,7 +77,7 @@ def _run(root: gws.Root, opts: core.SeedOptions) -> core.SeedResult:
 
 
 class _BlockGenerator:
-    """Blocks of one cache, level by level."""
+    """Generates the blocks of one cache, level by level."""
 
     def __init__(self, cache: core.Cache, levels: list[core.Level]):
         self.cache = cache
@@ -72,6 +87,7 @@ class _BlockGenerator:
         self.startTime: dict[int, float] = {}
 
     def iter_blocks(self):
+        """Yield tile ranges of block size, aligned to multiples of the block size."""
         for z in sorted(self.levels):
             x0, y0, x1, y1, _ = self.levels[z].gridRange
             n = self.size
@@ -96,6 +112,7 @@ class _BlockQueue:
                 self.generators.append(_BlockGenerator(c, c.levels))
 
     def next_block(self) -> tuple[_BlockGenerator, gws.MapTileRange] | None:
+        """Return the next block and its generator, or ``None`` if all blocks are done."""
         with self.lock:
             while self.generators:
                 bg = self.generators.pop(0)
@@ -110,6 +127,7 @@ class _BlockQueue:
                 return bg, block
 
     def block_complete(self, bg: _BlockGenerator, block: gws.MapTileRange, present: int, fetched: int, failed: int):
+        """Add the counts of a completed block to its level and report progress periodically."""
         with self.lock:
             z = block[4]
             lv = bg.levels[z]
@@ -121,6 +139,7 @@ class _BlockQueue:
                 self.report()
 
     def stop(self, status: str):
+        """Stop seeding and set the status of the run and of the unfinished caches."""
         with self.lock:
             self.seedStatus = status
             self.stopped = True
@@ -128,6 +147,7 @@ class _BlockQueue:
                 bg.cache.seedStatus = status
 
     def report(self):
+        """Log the cached percentages of all caches."""
         self.lastReport = gws.u.stime()
         percents = {c.name: core.percentage_by_level(c) for c in self.caches}
         for name, ps in sorted(percents.items()):

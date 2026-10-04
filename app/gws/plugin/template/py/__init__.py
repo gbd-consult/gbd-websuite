@@ -1,7 +1,25 @@
-"""Pure python templates.
+"""Python templates.
 
-A template is a python module. This module must provide a function called ``main``,
-which receives the arguments object and returns a :obj:`gws.Response` object.
+A ``py`` template is a Python module. The module must provide a function
+called ``main``, which receives the template arguments object and returns
+a :obj:`gws.Response` object. The module is loaded when the template is
+configured and loaded again on each render, so changes to the file take
+effect immediately.
+
+Example::
+
+    templates+ {
+        subject "feature.description"
+        type "py"
+        path "/data/templates/description.py"
+    }
+
+with ``description.py``::
+
+    import gws
+
+    def main(args):
+        return gws.ContentResponse(mimeType='text/plain', content=f'Subject: {args.subject}')
 """
 
 from typing import Optional
@@ -28,7 +46,10 @@ _ENTRYPOINT_NAME = 'main'
 
 @gws.ext.object.template('py')
 class Object(gws.base.template.Object):
+    """Template implemented as a Python module with a ``main`` function."""
+
     path: str
+    """Python module file path."""
 
     def configure(self):
         self.path = self.cfg('path')
@@ -50,6 +71,14 @@ class Object(gws.base.template.Object):
         return res
 
     def compile(self):
+        """Load the module and return its ``main`` function.
+
+        Returns:
+            The ``main`` function.
+
+        Raises:
+            ``gws.Error``: If the module cannot be executed or has no ``main`` function.
+        """
         text = gws.u.read_file(self.path)
         try:
             g = {}

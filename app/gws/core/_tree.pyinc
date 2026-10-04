@@ -1,5 +1,8 @@
 class Object:
-    """Basic GWS object."""
+    """Basic GWS object.
+
+    An object has permissions and can provide properties for the client.
+    """
 
     permissions: dict[Access, Acl]
     """Mapping from an access mode to a list of ACL tuples."""
@@ -7,8 +10,13 @@ class Object:
     def props(self, user: 'User') -> Props:
         """Generate a ``Props`` struct for this object.
 
+        Do not call this method directly, use ``gws.props_of`` instead, which also checks permissions.
+
         Args:
             user: The user for which the props should be generated.
+
+        Returns:
+            A ``Props`` object or a dict. Nested objects are converted to props as well.
         """
 
     def __init__(self):
@@ -27,7 +35,12 @@ Object.__repr__ = tree_impl.object_repr
 
 
 class Node(Object):
-    """GWS object tree node."""
+    """GWS object tree node.
+
+    Nodes are created by the ``Root`` or by their parent node. Configuration hooks
+    (``pre_configure``, ``configure``, ``post_configure``) are invoked for every class in the MRO
+    that defines them, base classes first, so they do not need to call ``super()``.
+    """
 
     extName: str
     """Full extension name like ``gws.ext.object.layer.wms``."""
@@ -46,19 +59,38 @@ class Node(Object):
     """Unique ID."""
 
     def initialize(self, config):
+        """Initialize the node.
+
+        Store the configuration, set up the permissions, then run ``pre_configure`` and ``configure``.
+
+        Args:
+            config: Configuration.
+        """
         return tree_impl.node_initialize(self, config)
 
     def pre_configure(self):
-        """Pre-configuration hook."""
+        """Pre-configuration hook.
+
+        Called before ``configure``, when the node is initialized.
+        """
 
     def configure(self):
-        """Configuration hook."""
+        """Configuration hook.
+
+        Called when the node is initialized. Raising an exception here aborts the creation of the node.
+        """
 
     def post_configure(self):
-        """Post-configuration hook."""
+        """Post-configuration hook.
+
+        Called after the whole object tree has been created.
+        """
 
     def activate(self):
-        """Activation hook."""
+        """Activation hook.
+
+        Called by ``Root.activate`` after the configuration has been loaded.
+        """
 
     def create_child(self, classref: ClassRef, config: Config = None, **kwargs) -> Optional['Node']:
         """Create a child object.
@@ -112,21 +144,21 @@ class Node(Object):
         return tree_impl.node_cfg(self, key, default)
 
     def is_a(self, classref: ClassRef) -> bool:
-        """Check if a the node matches the class reference.
+        """Check if the node matches the class reference.
 
         Args:
             classref: Class reference.
 
         Returns:
-            A boolean.
+            ``True`` if the node matches.
         """
         return tree_impl.is_a(self.root, self, classref)
 
     def find_all(self, classref: Optional[ClassRef] = None) -> list['Node']:
-        """Find all children that match a specific class.
+        """Find all direct children that match a specific class.
 
         Args:
-            classref: Class reference.
+            classref: Class reference. If omitted, all children are returned.
 
         Returns:
             A list of objects.
@@ -134,10 +166,10 @@ class Node(Object):
         return tree_impl.node_find_all(self, classref)
 
     def find_first(self, classref: Optional[ClassRef] = None) -> Optional['Node']:
-        """Find the first child that matches a specific class.
+        """Find the first direct child that matches a specific class.
 
         Args:
-            classref: Class reference.
+            classref: Class reference. If omitted, the first child is returned.
 
         Returns:
             An object or ``None``.
@@ -148,7 +180,7 @@ class Node(Object):
         """Find the closest node ancestor that matches a specific class.
 
         Args:
-            classref: Class reference.
+            classref: Class reference. If omitted, the parent is returned.
 
         Returns:
             An object or ``None``.
@@ -160,10 +192,10 @@ class Node(Object):
         """Find node ancestors that match a specific class.
 
         Args:
-            classref: Class reference.
+            classref: Class reference. If omitted, all ancestors are returned.
 
         Returns:
-            A list of objects.
+            A list of objects, from the parent upwards.
         """
         return tree_impl.node_find_ancestors(self, classref)
 
@@ -171,7 +203,7 @@ class Node(Object):
         """Find node descendants that match a specific class.
 
         Args:
-            classref: Class reference.
+            classref: Class reference. If omitted, all descendants are returned.
 
         Returns:
             A list of objects in the depth-first order.
@@ -186,7 +218,7 @@ class Node(Object):
             req: Requester object.
 
         Returns:
-            A Responder object or ``None``.
+            A Responder object to end the request processing, or ``None`` to continue.
         """
 
     def exit_middleware(self, req: 'WebRequester', res: 'WebResponder'):
@@ -198,7 +230,10 @@ class Node(Object):
         """
 
     def periodic_task(self):
-        """Periodic task hook."""
+        """Periodic task hook.
+
+        Called by the server monitor for nodes registered with ``register_periodic_task``.
+        """
 
 
 class Root:
@@ -214,22 +249,45 @@ class Root:
     """List of configuration warnings."""
 
     nodes: list['Node']
+    """All nodes in the tree, in the order of creation."""
     uidMap: dict[str, 'Node']
+    """Mapping from uids to nodes."""
     uidCount: int
+    """Counter for generated uids."""
     configStack: list['Node']
+    """Nodes being configured, from the outermost to the current one."""
     configPaths: list[str]
+    """Paths of the configuration files."""
 
     def __init__(self, specs: 'SpecRuntime'):
+        """Create an empty root.
+
+        Args:
+            specs: Specs runtime.
+        """
         tree_impl.root_init(self, specs)
 
     def initialize(self, obj, config):
+        """Initialize a node and record configuration errors.
+
+        Args:
+            obj: The node.
+            config: Configuration.
+
+        Returns:
+            ``True`` if the node was initialized, ``False`` if it failed.
+        """
         return tree_impl.root_initialize(self, obj, config)
 
     def post_initialize(self):
-        """Post-initialization hook."""
+        """Run ``post_configure`` on all nodes, in the reverse order of creation.
+
+        Errors are logged and recorded in ``configErrors``.
+        """
         return tree_impl.root_post_initialize(self)
 
     def activate(self):
+        """Run ``activate`` on all nodes."""
         return tree_impl.root_activate(self)
 
     def config_warning(self, message: str):
@@ -237,6 +295,9 @@ class Root:
 
         The warning is logged immediately and reported again after the configuration is complete.
         The object stack is only available when called from ``configure`` or ``post_configure``.
+
+        Args:
+            message: Warning message.
         """
         return tree_impl.root_config_warning(self, message)
 
@@ -252,7 +313,7 @@ class Root:
         return tree_impl.root_find_all(self, classref)
 
     def find_first(self, classref: Optional[ClassRef] = None) -> Optional['Node']:
-        """Find the first object that match a specific class.
+        """Find the first object that matches a specific class.
 
         Args:
             classref: Class reference.
@@ -275,7 +336,11 @@ class Root:
         return tree_impl.root_get(self, uid, classref)
 
     def object_count(self) -> int:
-        """Return the number of objects in the tree."""
+        """Return the number of objects in the tree.
+
+        Returns:
+            The number of objects.
+        """
         return tree_impl.root_object_count(self)
 
     def create(
@@ -300,6 +365,9 @@ class Root:
 
     def create_shared(self, classref: ClassRef, config: Config = None, **kwargs) -> Optional['Node']:
         """Create a shared object, attached directly to the root.
+
+        If the config has no uid, it is computed from the class reference and the configuration.
+        If an object with this uid already exists, it is returned instead of creating a new one.
 
         Args:
             classref: Class reference.
@@ -338,8 +406,31 @@ class Root:
 
 
 def create_root(specs: 'SpecRuntime') -> Root:
+    """Create a new root object.
+
+    Args:
+        specs: Specs runtime.
+
+    Returns:
+        The root object.
+    """
     return Root(specs)
 
 
 def props_of(obj: Object, user: 'User', *context) -> Optional['Props']:
+    """Generate props for an object, if the user is allowed to use it.
+
+    Nested objects the user cannot read are removed from the result.
+
+    Args:
+        obj: The object.
+        user: The user.
+        *context: Context objects for the permission check.
+
+    Returns:
+        A ``Props`` object, or ``None`` if the user cannot use the object.
+
+    Raises:
+        Error: If the object's ``props`` returns an invalid type.
+    """
     return tree_impl.props_of(obj, user, *context)

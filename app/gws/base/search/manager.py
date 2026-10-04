@@ -6,6 +6,8 @@ import gws
 
 
 class Object(gws.SearchManager):
+    """Search manager."""
+
     def run_search(self, search, user):
         results: list[gws.SearchResult] = []
 
@@ -37,6 +39,7 @@ class Object(gws.SearchManager):
         layer: Optional[gws.Layer],
         results,
     ):
+        """Run a single finder and append its features to the results."""
         gws.log.debug(f'SEARCH_BEGIN: {finder=} {layer=}')
 
         if not user.can_use(finder):

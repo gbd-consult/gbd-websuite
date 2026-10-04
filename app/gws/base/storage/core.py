@@ -35,14 +35,23 @@ class State(gws.Data):
 
 
 class Request(gws.Request):
+    """Storage request."""
+
     verb: Verb
+    """Action to perform."""
     entryName: Optional[str]
+    """Entry name, required for read, write and delete."""
     entryData: Optional[dict]
+    """Entry data to write."""
 
 
 class Response(gws.Response):
+    """Storage response."""
+
     data: Optional[dict]
+    """Entry data for a read request."""
     state: State
+    """Storage state after the request."""
 
 
 class Config(gws.ConfigWithAccess):
@@ -59,14 +68,26 @@ class Props(gws.Props):
 
 
 class Object(gws.Node):
+    """Storage object, gives users access to entries of one category in a storage provider."""
+
     storageProvider: gws.StorageProvider
+    """Storage provider."""
     categoryName: str
+    """Category under which entries are stored."""
 
     def configure(self):
         self.configure_provider()
         self.categoryName = self.cfg('categoryName')
 
     def configure_provider(self):
+        """Find the storage provider by ``providerUid``, or use the first provider.
+
+        Returns:
+            ``True``.
+
+        Raises:
+            ``gws.Error``: If no provider is found.
+        """
         self.storageProvider = self.root.app.storageMgr.find_provider(self.cfg('providerUid'))
         if not self.storageProvider:
             raise gws.Error(f'storage provider not found')
@@ -78,6 +99,14 @@ class Object(gws.Node):
         )
 
     def get_state_for(self, user):
+        """Return the storage state for a user.
+
+        Args:
+            user: The user.
+
+        Returns:
+            The entry names, if the user can read them, and the user's permissions.
+        """
         return State(
             names=self.storageProvider.list_names(self.categoryName) if user.can_read(self) else [],
             canRead=user.can_read(self),
@@ -87,6 +116,21 @@ class Object(gws.Node):
         )
 
     def handle_request(self, req: gws.WebRequester, p: Request) -> Response:
+        """Handle a storage request from the client.
+
+        Writing an existing entry requires the ``write`` permission, writing a new
+        one requires ``create``. Entry data is stored as JSON.
+
+        Args:
+            req: Web requester.
+            p: Storage request.
+
+        Returns:
+            The entry data for a read request, and the new storage state.
+
+        Raises:
+            ``gws.ForbiddenError``: If the user lacks the permission or the entry name or data is missing.
+        """
         state = self.get_state_for(req.user)
         data = None
 

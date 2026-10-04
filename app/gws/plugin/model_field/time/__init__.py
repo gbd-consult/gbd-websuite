@@ -1,8 +1,14 @@
 """Time field.
 
-Internally, ``time`` values are ``time`` objects.
-They are always transferred in the ISO format,
-specific locale conversions are left to the client.
+A scalar field for time values. Values from the client are parsed with
+``gws.lib.datetimex.parse_time`` and stored as ``datetime.time`` objects.
+They are always sent to the client as ISO strings; locale-specific
+formatting is left to the client. Without a configured widget, the field
+uses an ``input`` widget.
+
+Example::
+
+    fields+ { name "opens_at" type "time" title "Opening time" }
 """
 
 import gws
@@ -24,6 +30,8 @@ class Props(gws.base.model.scalar_field.Props):
 
 @gws.ext.object.modelField('time')
 class Object(gws.base.model.scalar_field.Object):
+    """Time field object."""
+
     attributeType = gws.AttributeType.datetime
 
     def configure_widget(self):

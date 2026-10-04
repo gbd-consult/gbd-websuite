@@ -1,4 +1,4 @@
-"""Generate typescript API files from the server spec"""
+"""Generate the TypeScript API for the client."""
 
 import json
 import re
@@ -7,6 +7,20 @@ from . import base
 
 
 def create(gen: base.Generator):
+    """Create the TypeScript API.
+
+    The API contains interfaces for ``gws.Request``, ``gws.Response`` and
+    ``gws.Props`` and all their subclasses, the types they use, grouped in
+    namespaces by module, and the ``Server`` interface with a typed ``call``
+    method for each API command.
+
+    Args:
+        gen: Generator state.
+
+    Returns:
+        The TypeScript source.
+    """
+
     return _Creator(gen).run()
 
 
@@ -14,6 +28,8 @@ def create(gen: base.Generator):
 
 
 class _Creator:
+    """Builds the TypeScript declarations."""
+
     def __init__(self, gen: base.Generator):
         self.gen = gen
         self.commands = {}
@@ -25,6 +41,12 @@ class _Creator:
         self.object_names = {}
 
     def run(self):
+        """Create the TypeScript API.
+
+        Returns:
+            The TypeScript source.
+        """
+
         self.make_client_classes()
         self.make_client_commands()
         return self.write()
@@ -40,6 +62,8 @@ class _Creator:
     }
 
     def make_client_classes(self):
+        """Declare ``gws.Request``, ``gws.Response``, ``gws.Props`` and all their subclasses."""
+
         queue = ['gws.Request', 'gws.Response', 'gws.Props']
         while queue:
             uid = queue.pop(0)
@@ -49,6 +73,8 @@ class _Creator:
                     queue.append(typ.uid)
 
     def make_client_commands(self):
+        """Collect the API commands with their argument and return types."""
+
         for typ in self.gen.typeDict.values():
             if typ.extName.startswith(base.v.EXT_COMMAND_API_PREFIX):
                 self.commands[typ.extName] = base.Data(
@@ -59,6 +85,18 @@ class _Creator:
                 )
 
     def make(self, uid):
+        """Declare a type and get its TypeScript name.
+
+        A temporary name is used while the type is being declared, so that
+        recursive types can refer to it; it is replaced in ``write``.
+
+        Args:
+            uid: Type uid.
+
+        Returns:
+            The TypeScript type name or expression.
+        """
+
         if uid in self._builtins_map:
             return self._builtins_map[uid]
         if uid in self.done:
@@ -77,6 +115,18 @@ class _Creator:
         return type_name
 
     def make2(self, typ):
+        """Create the TypeScript type expression or declaration for a type.
+
+        Args:
+            typ: Type.
+
+        Returns:
+            The TypeScript type name or expression.
+
+        Raises:
+            ``Error``: If the type kind is not supported.
+        """
+
         if typ.c == base.c.LITERAL:
             return _pipe(_val(v) for v in typ.literalValues)
 
@@ -132,8 +182,20 @@ class _Creator:
         raise base.Error(f'unhandled type {typ.name!r}, stack: {self.stack!r}')
 
     CORE_NAME = 'core'
+    """Namespace for top-level names; this part is also removed from qualified names."""
 
     def namespace_entry(self, typ, template, **kwargs):
+        """Add a declaration to the namespace of a type.
+
+        Args:
+            typ: Type.
+            template: Declaration template with ``$name`` placeholders.
+            **kwargs: Template values.
+
+        Returns:
+            The qualified TypeScript name of the type.
+        """
+
         ps = typ.name.split(DOT)
         if len(ps) == 1:
             ns, name, qname = self.CORE_NAME, ps[-1], self.CORE_NAME + DOT + ps[0]
@@ -145,6 +207,15 @@ class _Creator:
         return qname
 
     def make_props(self, typ):
+        """Create the property declarations of a class, without inherited properties.
+
+        Args:
+            typ: Class type.
+
+        Returns:
+            The property declarations.
+        """
+
         tpl = '/// $doc \n $name$opt: $type'
         props = []
 
@@ -160,12 +231,24 @@ class _Creator:
     ##
 
     def write(self):
+        """Write the API and replace the temporary names.
+
+        Returns:
+            The indented TypeScript source.
+        """
+
         text = _indent(self.write_api())
         for tmp, name in self.tmp_names.items():
             text = text.replace(tmp, name)
         return text
 
     def write_api(self):
+        """Fill the API template with the namespaces and commands.
+
+        Returns:
+            The TypeScript source.
+        """
+
         api_tpl = """
             /**
              * Gws Server API.
@@ -240,6 +323,19 @@ class _Creator:
         )
 
     def format(self, template, **kwargs):
+        """Fill a template.
+
+        ``$VERSION`` is set to the application version; of the ``doc`` value
+        only the first line is used.
+
+        Args:
+            template: Template with ``$name`` placeholders.
+            **kwargs: Template values.
+
+        Returns:
+            The filled template, stripped.
+        """
+
         kwargs['VERSION'] = self.gen.meta['version']
         if 'doc' in kwargs:
             kwargs['doc'] = kwargs['doc'].split('\n')[0]

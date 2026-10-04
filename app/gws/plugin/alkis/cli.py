@@ -1,4 +1,4 @@
-"""Command-line ALKIS commands."""
+"""Command line commands for the ALKIS index and export."""
 
 from typing import Optional, cast
 
@@ -15,24 +15,30 @@ from . import action
 
 
 class CreateIndexParams(gws.CliParams):
+    """Parameters for the ``alkisIndex`` command."""
+
     projectUid: Optional[str]
     """Project uid."""
     force: bool = False
-    """Force indexing."""
+    """Drop and rebuild the index even if it is complete."""
     cache: bool = False
     """Use object cache."""
 
 
 class StatusParams(gws.CliParams):
+    """Parameters for the ``alkisStatus`` command."""
+
     projectUid: Optional[str]
     """Project uid."""
 
 
 class DumpParams(gws.CliParams):
+    """Parameters for the ``alkisDump`` command."""
+
     projectUid: Optional[str]
     """Project uid."""
     fs: str
-    """Flurstueck UIDs"""
+    """Flurstueck uids."""
     path: str
     """Path to save the dump."""
 
@@ -41,21 +47,28 @@ class DumpParams(gws.CliParams):
 
 
 class ExportParams(gws.CliParams):
+    """Parameters for the ``alkisExport`` command."""
+
     projectUid: Optional[str]
     """Project uid."""
     exporterUid: Optional[str]
-    """Export uid."""
+    """Exporter uid, the first usable exporter if empty."""
     modelUids: Optional[str]
-    """List of model uids."""
+    """Uids of the export models, all usable models if empty."""
     path: str
     """Path to save the export."""
 
 
 @gws.ext.object.cli('alkis')
 class Object(gws.Node):
+    """ALKIS command line commands."""
+
     act: action.Object
+    """The ``alkis`` action the commands work with."""
 
     def _prepare(self, project_uid):
+        """Load the configuration and find the ``alkis`` action, exit if there is none."""
+
         root = gws.config.load()
         self.act = cast(action.Object, gws.base.action.get_action_for_cli(root, 'alkis', project_uid))
         if not self.act:
@@ -93,7 +106,7 @@ class Object(gws.Node):
 
     @gws.ext.command.cli('alkisExport')
     def do_export(self, p: ExportParams):
-        """Export ALKIS data."""
+        """Export all parcels in the ALKIS index."""
 
         self._prepare(p.projectUid)
 
@@ -146,7 +159,7 @@ class Object(gws.Node):
 
     @gws.ext.command.cli('alkisKeys')
     def do_keys(self, p: gws.CliParams):
-        """Print ALKIS export keys."""
+        """Print the keys available for ALKIS exports."""
 
         d = index.all_flat_keys()
         for key, typ in d.items():
@@ -154,7 +167,7 @@ class Object(gws.Node):
 
     @gws.ext.command.cli('alkisDump')
     def do_dump(self, p: DumpParams):
-        """Dump internal representations of ALKIS objects."""
+        """Write the internal representation of parcels to a JSON file."""
 
         self._prepare(p.projectUid)
 

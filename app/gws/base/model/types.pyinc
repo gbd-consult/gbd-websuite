@@ -1,23 +1,32 @@
 class ModelClientOptions(Data):
-    """Client options for a model"""
+    """Client options for a model."""
 
     keepFormOpen: Optional[bool]
+    """Keep the edit form open after saving."""
+
 
 class ModelValidationError(Data):
-    """Validation error."""
+    """Validation error of a feature field."""
 
     fieldName: str
+    """Name of the field that failed validation."""
     message: str
+    """Error message, or a message key for the client."""
 
 
 class ModelOperation(Enum):
     """Model operation."""
 
     read = 'read'
+    """Read features."""
     create = 'create'
+    """Create new features."""
     update = 'update'
+    """Update existing features."""
     delete = 'delete'
+    """Delete features."""
     export = 'export'
+    """Export features."""
 
 
 class ModelReadTarget(Enum):
@@ -32,30 +41,43 @@ class ModelReadTarget(Enum):
     editList = 'editList'
     """The feature is to be displayed in an editable list view."""
     editForm = 'editForm'
-    """The feature is to be displayed in an edit form ."""
+    """The feature is to be displayed in an edit form."""
 
 
 class ModelSelectBuild(Data):
-    """Database select statement."""
+    """Parts of a database select statement, collected from the model fields."""
 
     columns: list['sqlalchemy.Column']
+    """Columns to select."""
     geometryWhere: list
+    """Conditions for the geometry search, combined with OR."""
     keywordWhere: list
+    """Conditions for the keyword search, combined with OR."""
     where: list
+    """Other conditions, combined with AND."""
     order: list
+    """Sort expressions."""
 
 
 class ModelContext(Data):
-    """Model context."""
+    """Context of a model operation."""
 
     op: ModelOperation
+    """The operation."""
     target: ModelReadTarget
+    """Where the features are to be displayed, for read operations."""
     user: 'User'
+    """The user performing the operation."""
     project: Optional['Project']
+    """The current project."""
     relDepth: int = 0
+    """Current depth of related features."""
     maxDepth: int = 0
+    """Maximum depth of related features to process."""
     search: 'SearchQuery'
+    """The search query, for read operations."""
     dbSelect: ModelSelectBuild
+    """The select statement being built, for database read operations."""
 
 
 EmptyValue = object()
@@ -66,155 +88,550 @@ ErrorValue = object()
 
 
 class ModelWidget(Node):
-    """Model widget."""
+    """Model widget.
+
+    Describes how the client displays and edits a field value.
+    """
 
     supportsTableView: bool = True
+    """The widget can be used in the table view."""
 
 
 class ModelValidator(Node):
-    """Model Validator."""
+    """Model validator.
+
+    Checks the value of a field.
+    """
 
     message: str
+    """Error message, or a message key for the client."""
     ops: set[ModelOperation]
+    """Operations the validator applies to."""
 
-    def validate(self, field: 'ModelField', feature: 'Feature', mc: ModelContext) -> bool: ...
+    def validate(self, field: 'ModelField', feature: 'Feature', mc: ModelContext) -> bool:
+        """Check the value of a field in a feature.
+
+        Args:
+            field: The field.
+            feature: The feature.
+            mc: The model context.
+
+        Returns:
+            True if the value is valid.
+        """
 
 
 class ModelValue(Node):
-    """Model value."""
+    """Model value.
+
+    Computes a value for a field.
+    """
 
     isDefault: bool
+    """The value is used only when the source provides no value."""
     ops: set[ModelOperation]
+    """Operations the value applies to."""
 
-    def compute(self, field: 'ModelField', feature: 'Feature', mc: 'ModelContext'): ...
+    def compute(self, field: 'ModelField', feature: 'Feature', mc: 'ModelContext'):
+        """Compute the value of a field.
+
+        Args:
+            field: The field.
+            feature: The feature.
+            mc: The model context.
+
+        Returns:
+            The computed value.
+        """
 
 
 class ModelField(Node):
-    """Model field."""
+    """Model field.
+
+    Handles a subset of feature data. The model calls the field methods when it performs
+    an operation; the methods read and write ``feature.attributes``, ``feature.record``
+    and ``feature.props``.
+    """
 
     name: str
+    """Field name."""
     title: str
+    """Field title."""
 
     attributeType: AttributeType
+    """Type of the field value."""
 
     widget: Optional['ModelWidget'] = None
+    """Widget for the client."""
 
     values: list['ModelValue']
+    """Value objects."""
     validators: list['ModelValidator']
+    """Validators."""
 
     isPrimaryKey: bool
+    """The field is a primary key."""
     isRequired: bool
+    """The field must not be empty."""
     isUnique: bool
+    """The field is unique."""
     isAuto: bool
+    """The value is set by the database and never written."""
     isHidden: bool
+    """The field is not automatically displayed in the client."""
 
     supportsFilterSearch: bool = False
+    """The field supports filter search."""
     supportsGeometrySearch: bool = False
+    """The field supports geometry search."""
     supportsKeywordSearch: bool = False
+    """The field supports keyword search."""
 
     model: 'Model'
+    """The model of the field."""
 
-    def before_select(self, mc: ModelContext): ...
+    def before_select(self, mc: ModelContext):
+        """Called before features are selected, adds columns and conditions to ``mc.dbSelect``.
 
-    def after_select(self, features: list['Feature'], mc: ModelContext): ...
+        Args:
+            mc: The model context.
+        """
 
-    def before_create(self, feature: 'Feature', mc: ModelContext): ...
+    def after_select(self, features: list['Feature'], mc: ModelContext):
+        """Called after features are selected, sets the field value in the features.
 
-    def after_create(self, feature: 'Feature', mc: ModelContext): ...
+        Args:
+            features: The selected features.
+            mc: The model context.
+        """
 
-    def before_create_related(self, to_feature: 'Feature', mc: ModelContext): ...
+    def before_create(self, feature: 'Feature', mc: ModelContext):
+        """Called before a feature is inserted, writes the field value to ``feature.record``.
 
-    def after_create_related(self, to_feature: 'Feature', mc: ModelContext): ...
+        Args:
+            feature: The feature.
+            mc: The model context.
+        """
 
-    def before_update(self, feature: 'Feature', mc: ModelContext): ...
+    def after_create(self, feature: 'Feature', mc: ModelContext):
+        """Called after a feature is inserted.
 
-    def after_update(self, feature: 'Feature', mc: ModelContext): ...
+        Args:
+            feature: The feature.
+            mc: The model context.
+        """
 
-    def before_delete(self, feature: 'Feature', mc: ModelContext): ...
+    def before_create_related(self, to_feature: 'Feature', mc: ModelContext):
+        """Called before a feature of another model, created together with features of this model, is inserted.
 
-    def after_delete(self, feature: 'Feature', mc: ModelContext): ...
+        Args:
+            to_feature: The feature being created.
+            mc: The model context.
+        """
 
-    def do_init(self, feature: 'Feature', mc: ModelContext): ...
+    def after_create_related(self, to_feature: 'Feature', mc: ModelContext):
+        """Called after a feature of another model, created together with features of this model, is inserted.
 
-    def do_init_related(self, to_feature: 'Feature', mc: ModelContext): ...
+        Args:
+            to_feature: The created feature.
+            mc: The model context.
+        """
 
-    def do_validate(self, feature: 'Feature', mc: ModelContext): ...
+    def before_update(self, feature: 'Feature', mc: ModelContext):
+        """Called before a feature is updated, writes the field value to ``feature.record``.
 
-    def from_props(self, feature: 'Feature', mc: ModelContext): ...
+        Args:
+            feature: The feature.
+            mc: The model context.
+        """
 
-    def to_props(self, feature: 'Feature', mc: ModelContext): ...
+    def after_update(self, feature: 'Feature', mc: ModelContext):
+        """Called after a feature is updated.
 
-    def from_record(self, feature: 'Feature', mc: ModelContext): ...
+        Args:
+            feature: The feature.
+            mc: The model context.
+        """
 
-    def to_record(self, feature: 'Feature', mc: ModelContext): ...
+    def before_delete(self, feature: 'Feature', mc: ModelContext):
+        """Called before a feature is deleted.
 
-    def related_models(self) -> list['Model']: ...
+        Args:
+            feature: The feature.
+            mc: The model context.
+        """
 
-    def find_relatable_features(self, search: 'SearchQuery', mc: ModelContext) -> list['Feature']: ...
+    def after_delete(self, feature: 'Feature', mc: ModelContext):
+        """Called after a feature is deleted.
 
-    def raw_to_python(self, feature: 'Feature', value, mc: ModelContext): ...
+        Args:
+            feature: The feature.
+            mc: The model context.
+        """
 
-    def prop_to_python(self, feature: 'Feature', value, mc: ModelContext): ...
+    def do_init(self, feature: 'Feature', mc: ModelContext):
+        """Set the initial field value of a new feature.
 
-    def python_to_raw(self, feature: 'Feature', value, mc: ModelContext): ...
+        Args:
+            feature: The feature.
+            mc: The model context.
+        """
 
-    def python_to_prop(self, feature: 'Feature', value, mc: ModelContext): ...
+    def do_init_related(self, to_feature: 'Feature', mc: ModelContext):
+        """Initialize a new feature of another model that is created together with features of this model.
 
-    def describe(self) -> Optional['ColumnDescription']: ...
+        Args:
+            to_feature: The new feature.
+            mc: The model context.
+        """
+
+    def do_validate(self, feature: 'Feature', mc: ModelContext):
+        """Validate the field value and append errors to ``feature.errors``.
+
+        Args:
+            feature: The feature.
+            mc: The model context.
+        """
+
+    def from_props(self, feature: 'Feature', mc: ModelContext):
+        """Set the field value from ``feature.props``.
+
+        Args:
+            feature: The feature.
+            mc: The model context.
+        """
+
+    def to_props(self, feature: 'Feature', mc: ModelContext):
+        """Write the field value to ``feature.props``.
+
+        Args:
+            feature: The feature.
+            mc: The model context.
+        """
+
+    def from_record(self, feature: 'Feature', mc: ModelContext):
+        """Set the field value from ``feature.record``.
+
+        Args:
+            feature: The feature.
+            mc: The model context.
+        """
+
+    def to_record(self, feature: 'Feature', mc: ModelContext):
+        """Write the field value to ``feature.record``.
+
+        Args:
+            feature: The feature.
+            mc: The model context.
+        """
+
+    def related_models(self) -> list['Model']:
+        """Return the models related to this field.
+
+        Returns:
+            A list of models, empty for fields that are not related fields.
+        """
+
+    def find_relatable_features(self, search: 'SearchQuery', mc: ModelContext) -> list['Feature']:
+        """Find features that can be linked by this field.
+
+        Args:
+            search: The search query.
+            mc: The model context.
+
+        Returns:
+            The features found in the related models.
+        """
+
+    def raw_to_python(self, feature: 'Feature', value, mc: ModelContext):
+        """Convert a raw source value to a python value.
+
+        Args:
+            feature: The feature.
+            value: The value to convert.
+            mc: The model context.
+
+        Returns:
+            The converted value.
+        """
+
+    def prop_to_python(self, feature: 'Feature', value, mc: ModelContext):
+        """Convert a client props value to a python value.
+
+        Args:
+            feature: The feature.
+            value: The value to convert.
+            mc: The model context.
+
+        Returns:
+            The converted value.
+        """
+
+    def python_to_raw(self, feature: 'Feature', value, mc: ModelContext):
+        """Convert a python value to a raw source value.
+
+        Args:
+            feature: The feature.
+            value: The value to convert.
+            mc: The model context.
+
+        Returns:
+            The converted value.
+        """
+
+    def python_to_prop(self, feature: 'Feature', value, mc: ModelContext):
+        """Convert a python value to a client props value.
+
+        Args:
+            feature: The feature.
+            value: The value to convert.
+            mc: The model context.
+
+        Returns:
+            The converted value.
+        """
+
+    def describe(self) -> Optional['ColumnDescription']:
+        """Return the description of the source column of this field.
+
+        Returns:
+            The column description, or None if the source has no such column.
+        """
 
 
 class Model(Node):
-    """Data Model."""
+    """Data model.
+
+    Reads features from a source, converts them to and from client props and,
+    if editable, writes them back.
+    """
 
     clientOptions: ModelClientOptions
+    """Client options."""
     defaultSort: list['SearchSort']
+    """Default sort order of features."""
     fields: list['ModelField']
+    """Model fields."""
     geometryCrs: Optional['Crs']
+    """CRS of the geometry field."""
     geometryName: str
+    """Name of the geometry field."""
     geometryType: Optional[GeometryType]
+    """Type of the geometry field."""
     isEditable: bool
+    """Features of this model can be edited."""
     loadingStrategy: 'FeatureLoadingStrategy'
+    """How the client loads features."""
     exportStrategy: 'FeatureExportStrategy'
+    """How features are obtained for export."""
     title: str
+    """Model title."""
     uidName: str
+    """Name of the uid (primary key) field."""
     withTableView: bool
+    """The table view of features is enabled in the client."""
 
-    def find_features(self, search: 'SearchQuery', mc: ModelContext) -> list['Feature']: ...
+    def find_features(self, search: 'SearchQuery', mc: ModelContext) -> list['Feature']:
+        """Find features matching a search query.
 
-    def get_features(self, uids: Iterable[str | int], mc: ModelContext) -> list['Feature']: ...
-    
-    def get_feature(self, uid: str | int, mc: ModelContext) -> Optional['Feature']: ...
+        Args:
+            search: The search query.
+            mc: The model context.
 
-    def init_feature(self, feature: 'Feature', mc: ModelContext): ...
+        Returns:
+            The features found.
+        """
 
-    def create_feature(self, feature: 'Feature', mc: ModelContext) -> FeatureUid: ...
+    def get_features(self, uids: Iterable[str | int], mc: ModelContext) -> list['Feature']:
+        """Return features by uid.
 
-    def update_feature(self, feature: 'Feature', mc: ModelContext) -> FeatureUid: ...
+        Args:
+            uids: Feature uids.
+            mc: The model context.
 
-    def delete_feature(self, feature: 'Feature', mc: ModelContext) -> FeatureUid: ...
+        Returns:
+            The features found, empty if no uids are given.
+        """
 
-    def validate_feature(self, feature: 'Feature', mc: ModelContext) -> bool: ...
+    def get_feature(self, uid: str | int, mc: ModelContext) -> Optional['Feature']:
+        """Return a feature by uid.
 
-    def feature_from_props(self, props: 'FeatureProps', mc: ModelContext) -> 'Feature': ...
+        Args:
+            uid: The feature uid.
+            mc: The model context.
 
-    def feature_to_props(self, feature: 'Feature', mc: ModelContext) -> 'FeatureProps': ...
+        Returns:
+            The feature, or None if it is not found.
+        """
 
-    def feature_to_view_props(self, feature: 'Feature', mc: ModelContext) -> 'FeatureProps': ...
+    def init_feature(self, feature: 'Feature', mc: ModelContext):
+        """Initialize a new feature with initial field values.
 
-    def describe(self) -> Optional['DataSetDescription']: ...
+        Args:
+            feature: The new feature.
+            mc: The model context.
 
-    def field(self, name: str) -> Optional['ModelField']: ...
+        Raises:
+            gws.ForbiddenError: If the user cannot create features of this model.
+        """
 
-    def related_models(self) -> list['Model']: ...
+    def create_feature(self, feature: 'Feature', mc: ModelContext) -> FeatureUid:
+        """Insert a new feature into the source.
+
+        Args:
+            feature: The feature.
+            mc: The model context.
+
+        Returns:
+            The primary key of the inserted feature.
+
+        Raises:
+            gws.ForbiddenError: If the user cannot create features of this model.
+        """
+
+    def update_feature(self, feature: 'Feature', mc: ModelContext) -> FeatureUid:
+        """Update an existing feature in the source.
+
+        Args:
+            feature: The feature.
+            mc: The model context.
+
+        Returns:
+            The uid of the feature.
+
+        Raises:
+            gws.ForbiddenError: If the user cannot write to this model.
+        """
+
+    def delete_feature(self, feature: 'Feature', mc: ModelContext) -> FeatureUid:
+        """Delete a feature from the source.
+
+        Args:
+            feature: The feature.
+            mc: The model context.
+
+        Returns:
+            The uid of the feature.
+
+        Raises:
+            gws.ForbiddenError: If the user cannot delete features of this model.
+        """
+
+    def validate_feature(self, feature: 'Feature', mc: ModelContext) -> bool:
+        """Validate a feature and store validation errors in ``feature.errors``.
+
+        Args:
+            feature: The feature.
+            mc: The model context.
+
+        Returns:
+            True if the feature has no errors.
+        """
+
+    def feature_from_props(self, props: 'FeatureProps', mc: ModelContext) -> 'Feature':
+        """Create a feature from client props.
+
+        Args:
+            props: The feature props.
+            mc: The model context.
+
+        Returns:
+            A new feature.
+        """
+
+    def feature_to_props(self, feature: 'Feature', mc: ModelContext) -> 'FeatureProps':
+        """Convert a feature to client props and store them in ``feature.props``.
+
+        Args:
+            feature: The feature.
+            mc: The model context.
+
+        Returns:
+            The feature props.
+        """
+
+    def feature_to_view_props(self, feature: 'Feature', mc: ModelContext) -> 'FeatureProps':
+        """Convert a feature to client props for viewing, with a reduced set of attributes.
+
+        Args:
+            feature: The feature.
+            mc: The model context.
+
+        Returns:
+            The feature props.
+        """
+
+    def describe(self) -> Optional['DataSetDescription']:
+        """Return the description of the model source.
+
+        Returns:
+            The dataset description, or None if the source cannot be described.
+        """
+
+    def field(self, name: str) -> Optional['ModelField']:
+        """Return a field by name.
+
+        Args:
+            name: The field name.
+
+        Returns:
+            The field, or None if it is not found.
+        """
+
+    def related_models(self) -> list['Model']:
+        """Return the models related to the fields of this model.
+
+        Returns:
+            A list of models without duplicates.
+        """
 
 
 class ModelManager(Node):
-    """Model manager."""
+    """Model manager.
 
-    def get_model(self, uid: str, user: 'User' = None, access: Access = None) -> Optional['Model']: ...
+    Looks up models and provides the default model.
+    """
 
-    def find_model(self, *objects, user: 'User' = None, access: Access = None) -> Optional['Model']: ...
+    def get_model(self, uid: str, user: 'User' = None, access: Access = None) -> Optional['Model']:
+        """Return a model by uid.
 
-    def editable_models(self, project: 'Project', user: 'User') -> list['Model']: ...
+        Args:
+            uid: The model uid.
+            user: If given together with ``access``, the user must have this access to the model.
+            access: The required access.
 
-    def default_model(self) -> 'Model': ...
+        Returns:
+            The model, or None if it is not found or not accessible.
+        """
+
+    def find_model(self, *objects, user: 'User' = None, access: Access = None) -> Optional['Model']:
+        """Return the first model of the given objects.
+
+        Looks in the ``models`` attribute of each object in turn.
+
+        Args:
+            *objects: Objects with models, e.g. layers. None values are skipped.
+            user: If given together with ``access``, the user must have this access to the model.
+            access: The required access.
+
+        Returns:
+            The model, or None if none is found.
+        """
+
+    def editable_models(self, project: 'Project', user: 'User') -> list['Model']:
+        """Return the models a user can edit in a project, together with their related models.
+
+        Args:
+            project: The project.
+            user: The user.
+
+        Returns:
+            The models, sorted by title.
+        """
+
+    def default_model(self) -> 'Model':
+        """Return the shared default model.
+
+        Returns:
+            The default model.
+        """

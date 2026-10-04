@@ -1,4 +1,4 @@
-"""Structures and utilities for tree layers."""
+"""Child layer configurations built from a hierarchy of source layers."""
 
 from typing import Optional, cast
 from collections.abc import Callable
@@ -33,17 +33,45 @@ class Config(gws.Config):
 
 
 class _TreeConfigArgs(gws.Data):
+    """Arguments for building a layer config tree."""
+
     root: gws.Root
+    """Root object, provides the specs for parsing the generated configs."""
     source_layers: list[gws.SourceLayer]
+    """Source layers to build the tree from."""
     roots_slf: gws.gis.source.LayerFilter
+    """Filter for the source layers to use as roots."""
     exclude_slf: gws.gis.source.LayerFilter
+    """Filter for the source layers to exclude."""
     flatten_config: FlattenConfig
+    """Flattening options."""
     auto_layers: list[core.AutoLayersConfig]
+    """Extra configurations merged into matching layers."""
     create_leaf_layer_config: Callable
+    """Function that creates a leaf layer config from a list of source layers."""
 
 
 def configure_group_layers_for(layer: core.Object, source_layers: list[gws.SourceLayer], create_leaf_layer_config: Callable) -> bool:
-    """Create child layers of a group layer from a list of source layers."""
+    """Create child layers of a layer from a list of source layers.
+
+    The layer's ``rootLayers``, ``excludeLayers``, ``flattenLayers`` and
+    ``autoLayers`` options control which source layers are used and how. Source
+    groups become ``group`` layers, other source layers are passed to
+    ``create_leaf_layer_config``.
+
+    Args:
+        layer: The layer to create children for.
+        source_layers: Source layer hierarchy.
+        create_leaf_layer_config: Function that takes a list of source layers
+            and returns a config for a leaf layer that shows them.
+
+    Returns:
+        ``True``.
+
+    Raises:
+        ``gws.ConfigurationError``: If a generated config is invalid.
+        ``gws.Error``: If no child layers could be created.
+    """
 
     configs = _layer_configs_from_layer(layer, source_layers, create_leaf_layer_config)
     create_group_layers(layer, configs)
@@ -51,7 +79,18 @@ def configure_group_layers_for(layer: core.Object, source_layers: list[gws.Sourc
 
 
 def create_group_layers(layer: core.Object, layer_configs: list):
-    """Create child layers of a group layer from their configs."""
+    """Create child layers of a layer from their configs.
+
+    Each config gets the parent's WGS extent, resolutions and map CRS. The
+    created layers replace ``layer.layers``.
+
+    Args:
+        layer: The layer to create children for.
+        layer_configs: Child layer configs.
+
+    Raises:
+        ``gws.Error``: If no child layers could be created.
+    """
 
     layer.layers = []
 
@@ -120,6 +159,7 @@ def _layer_configs_from_args(tca: _TreeConfigArgs) -> list[gws.Config]:
 
 
 def _config(tca: _TreeConfigArgs, sl: gws.SourceLayer, depth: int):
+    """Build the config for a source layer, with title, visibility, opacity and auto layer configs."""
     cfg = _base_config(tca, sl, depth)
     if not cfg:
         return None
@@ -144,6 +184,7 @@ def _config(tca: _TreeConfigArgs, sl: gws.SourceLayer, depth: int):
 
 
 def _base_config(tca: _TreeConfigArgs, sl: gws.SourceLayer, depth: int):
+    """Build a leaf, flattened or group config for a source layer, or None if it is excluded or empty."""
     # source layer excluded by the filter
     if tca.exclude_slf and gws.gis.source.layer_matches(sl, tca.exclude_slf):
         return None
@@ -175,6 +216,7 @@ def _base_config(tca: _TreeConfigArgs, sl: gws.SourceLayer, depth: int):
 
 
 def _deep_merge(x, y):
+    """Merge two values recursively: dicts by key, lists by concatenation, otherwise y unless it is None."""
     if (gws.u.is_dict(x) or gws.u.is_data_object(x)) and (gws.u.is_dict(y) or gws.u.is_data_object(y)):
         xd = gws.u.to_dict(x)
         yd = gws.u.to_dict(y)

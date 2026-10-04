@@ -17,7 +17,10 @@ class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
 
 @gws.ext.object.layer('wfs')
 class Object(gws.base.layer.group.Object):
+    """Group layer with a ``wfsflat`` child layer for each feature type of a WFS service."""
+
     provider: provider.Object
+    """WFS service provider."""
 
     def configure_group(self):
         if super().configure_group():

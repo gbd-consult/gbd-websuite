@@ -1,3 +1,5 @@
+"""Server monitor, which watches files and runs periodic tasks."""
+
 import os
 
 import gws
@@ -15,18 +17,31 @@ DEFAULT_FREQUENCY = 30
 
 
 class _Task(gws.Data):
+    """A registered periodic task."""
+
     obj: gws.Node
+    """Object with a ``periodic_task`` method."""
     frequency: int
+    """Interval between runs in seconds."""
     lastTime: int
+    """Time of the last run, as a Unix timestamp."""
 
 
 class Object(gws.ServerMonitor):
+    """Server monitor."""
+
     enabled: bool
+    """Not used."""
     frequency: int
+    """Default interval of periodic tasks in seconds."""
     watcher: gws.lib.watcher.Watcher
+    """File watcher, created on start unless ``disableWatch`` is set."""
     dirs: list
+    """Watched directories, as tuples of directory, file pattern and recursive flag."""
     files: list
+    """Watched files."""
     tasks: list[_Task]
+    """Registered periodic tasks."""
 
     def configure(self):
         self.frequency = self.cfg('frequency', default=DEFAULT_FREQUENCY)
@@ -84,6 +99,11 @@ class Object(gws.ServerMonitor):
         gws.log.info(f'MONITOR: started')
 
     def _tick(self, signo):
+        """Handle the timer signal: reconfigure, reload or run the periodic tasks that are due.
+
+        Reconfigure and reload requests are signalled through marker files in ``/tmp``,
+        so that they reach the monitor from any process. A lock file prevents overlapping runs.
+        """
         do_reconfigure = self._check_unlink(_RECONFIGURE_FILE)
         do_reload = self._check_unlink(_RELOAD_FILE)
 
@@ -112,6 +132,10 @@ class Object(gws.ServerMonitor):
             self._check_unlink(_LOCK_FILE)
 
     def _reload(self, with_reconfigure):
+        """Reload the web backend, then the spool backend, which restarts the monitor.
+
+        If the configuration fails, nothing is reloaded.
+        """
         gws.log.info(f'MONITOR: reloading...')
 
         if not self._reload2(with_reconfigure):
@@ -122,6 +146,7 @@ class Object(gws.ServerMonitor):
         control.reload_app('spool')
 
     def _reload2(self, with_reconfigure):
+        """Optionally reconfigure, then reload the web backend, return False on failure."""
         if with_reconfigure:
             try:
                 control.configure_and_store()
@@ -137,6 +162,7 @@ class Object(gws.ServerMonitor):
             return False
 
     def _run_periodic_tasks(self, tasks):
+        """Run the given tasks, logging and skipping failed ones."""
         for t in tasks:
             try:
                 t.obj.periodic_task()
@@ -145,12 +171,14 @@ class Object(gws.ServerMonitor):
                 gws.log.exception(f'MONITOR: periodic task failed {t.obj}: {exc!r}')
 
     def _touch(self, path, excl=False):
+        """Create an empty file, fail if it exists and ``excl`` is set."""
         flags = os.O_CREAT | os.O_WRONLY
         if excl:
             flags |= os.O_EXCL
         os.close(os.open(path, flags))
 
     def _check_unlink(self, path):
+        """Delete a file, return True if it existed."""
         try:
             os.unlink(path)
             return True

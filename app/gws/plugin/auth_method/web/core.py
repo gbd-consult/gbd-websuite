@@ -1,4 +1,4 @@
-"""Web authorisation method."""
+"""The ``web`` authentication method and its API types."""
 
 import re
 from typing import Optional, cast
@@ -35,30 +35,51 @@ class Config(gws.base.auth.method.Config):
 
 
 class UserResponse(gws.Response):
+    """Response with the current user."""
+
     user: Optional[gws.base.auth.user.Props]
+    """Properties of the user, ``None`` for guests."""
 
 
 class LogoutResponse(gws.Response):
+    """Response to a logout request."""
+
     pass
 
 
 class LoginRequest(gws.Request):
+    """Login request."""
+
     username: str
+    """Login name."""
     password: str
+    """Password."""
     to: Optional[str]
+    """URL path to return to after the login."""
 
 
 class LoginResponse(gws.Response):
+    """Response to a login or multi-factor request."""
+
     user: Optional[gws.base.auth.user.Props]
+    """Properties of the logged-in user, set when the login is completed without a second step."""
     mfaState: Optional[gws.AuthMultiFactorState]
+    """State of the multi-factor transaction, if there is one."""
     mfaMessage: str = ''
+    """Message for the user in the multi-factor step."""
     mfaCanRestart: bool = False
+    """The multi-factor transaction can be restarted."""
     redirectTo: str = ''
+    """URL path to go to after a completed login, empty if none."""
 
 
 class MfaVerifyRequest(gws.Request):
+    """Request to verify a multi-factor code."""
+
     payload: dict
+    """Data entered by the user, for example ``{"code": "123456"}``."""
     to: Optional[str]
+    """URL path to return to after the login."""
 
 
 ##
@@ -68,12 +89,24 @@ _DELETED_SESSION = 'web:deleted'
 
 @gws.ext.object.authMethod('web')
 class Object(gws.base.auth.method.Object):
+    """Web authentication method.
+
+    Authenticates users with a login form and keeps their sessions in the
+    session manager, identified by a session cookie. Handles logins, logouts
+    and multi-factor verification for the ``auth`` action.
+    """
+
     cookieName: str
+    """Name of the session cookie."""
     cookiePath: str
+    """Path attribute of the session cookie."""
     cookieSameSite: str
+    """SameSite attribute of the session cookie."""
     loginRedirect: Optional[LoginRedirectRule]
+    """Redirect rule for denied page requests, or ``None``."""
 
     deletedSession: gws.base.auth.session.Object
+    """Placeholder session for requests with an invalid session cookie."""
 
     def configure(self):
         self.uid = 'gws.plugin.auth.method.web'
@@ -90,6 +123,7 @@ class Object(gws.base.auth.method.Object):
             self._check_login_redirect(req, res)
 
     def _check_login_redirect(self, req: gws.WebRequester, res: gws.WebResponder):
+        """Redirect a denied page request to the login page, if configured."""
         lr = self.loginRedirect
         if not lr:
             return
@@ -155,6 +189,24 @@ class Object(gws.base.auth.method.Object):
             am.sessionMgr.touch(sess)
 
     def handle_login(self, req: gws.WebRequester, p: LoginRequest) -> LoginResponse:
+        """Log in with a username and a password.
+
+        The credentials are checked by the authentication providers. If the
+        user has an ``mfaUid``, a multi-factor transaction is started and kept
+        in a new guest session; ``handle_mfa_verify`` completes the login.
+        Otherwise the current session is replaced by a new session for the user.
+
+        Args:
+            req: Web requester.
+            p: Login request.
+
+        Returns:
+            The user and the redirect target, or the multi-factor state.
+
+        Raises:
+            ``gws.ForbiddenError``: If the user is already logged in, the method is secure and the request is not, or the multi-factor transaction cannot be started.
+            ``gws.AuthenticationError``: If the credentials are not accepted.
+        """
         if not req.user.isGuest:
             raise gws.ForbiddenError(f'login: already logged-in {req.user.uid=}')
 
@@ -174,6 +226,23 @@ class Object(gws.base.auth.method.Object):
         return LoginResponse(user=gws.props_of(user, user), redirectTo=self._redirect_target(p.to))
 
     def handle_mfa_verify(self, req: gws.WebRequester, p: MfaVerifyRequest) -> LoginResponse:
+        """Verify a multi-factor payload.
+
+        On success, the session is replaced by a new session for the user. If
+        the adapter allows another attempt, the transaction is kept. Otherwise
+        the session is deleted.
+
+        Args:
+            req: Web requester.
+            p: Verification request.
+
+        Returns:
+            The multi-factor state, with the redirect target on success.
+
+        Raises:
+            ``gws.ForbiddenError``: If the session has no valid multi-factor transaction.
+            ``gws.AuthenticationError``: If the verification failed.
+        """
         try:
             mfa = self._mfa_verify(req, p.payload)
         except gws.ForbiddenError:
@@ -191,6 +260,18 @@ class Object(gws.base.auth.method.Object):
         raise gws.AuthenticationError(f'MFA: verify failed {mfa.state=}')
 
     def handle_mfa_restart(self, req: gws.WebRequester, p: gws.Request) -> LoginResponse:
+        """Restart the multi-factor transaction of the current session.
+
+        Args:
+            req: Web requester.
+            p: Request parameters.
+
+        Returns:
+            The state of the new transaction.
+
+        Raises:
+            ``gws.ForbiddenError``: If the session has no valid transaction or it cannot be restarted. The session is deleted in this case.
+        """
         try:
             mfa = self._mfa_restart(req)
         except gws.ForbiddenError:
@@ -200,6 +281,17 @@ class Object(gws.base.auth.method.Object):
         return self._mfa_response(mfa)
 
     def handle_logout(self, req: gws.WebRequester) -> LogoutResponse:
+        """Log out the current user and delete the session.
+
+        Args:
+            req: Web requester.
+
+        Returns:
+            An empty response.
+
+        Raises:
+            ``gws.ForbiddenError``: If the session was opened by a different method.
+        """
         if req.user.isGuest:
             self._delete_session(req)
             return LogoutResponse()
@@ -215,18 +307,20 @@ class Object(gws.base.auth.method.Object):
     ##
 
     def _delete_session(self, req: gws.WebRequester):
+        """Delete the current session and replace it with the placeholder session."""
         am = self.root.app.authMgr
         am.sessionMgr.delete(req.session)
         req.set_session(self.deletedSession)
 
     def _finalize_login(self, req: gws.WebRequester, user: gws.User):
+        """Replace the current session with a new session for the user."""
         self._delete_session(req)
         am = self.root.app.authMgr
         req.set_session(am.sessionMgr.create(self, user))
         gws.log.info(f'LOGGED_IN: {user.uid=} {user.roles=}')
 
     def _redirect_target(self, s: str | None) -> str:
-        """Convert a client-provided redirect target to a local url path."""
+        """Convert a redirect target sent by the client to a local URL path."""
 
         s = (s or '').strip()
         if not s:
@@ -238,6 +332,7 @@ class Object(gws.base.auth.method.Object):
     ##
 
     def _mfa_start(self, req: gws.WebRequester, user: gws.User) -> gws.AuthMultiFactorTransaction:
+        """Start a multi-factor transaction and keep it in a new guest session."""
         am = self.root.app.authMgr
 
         adapter = am.get_multi_factor_adapter(user.mfaUid)
@@ -254,6 +349,7 @@ class Object(gws.base.auth.method.Object):
         return mfa
 
     def _mfa_verify(self, req: gws.WebRequester, payload: dict) -> gws.AuthMultiFactorTransaction:
+        """Verify a payload against the transaction stored in the session."""
         mfa = self._mfa_load(req)
         mfa = mfa.adapter.verify(mfa, payload)
 
@@ -261,6 +357,7 @@ class Object(gws.base.auth.method.Object):
         return mfa
 
     def _mfa_restart(self, req: gws.WebRequester) -> gws.AuthMultiFactorTransaction:
+        """Restart the transaction stored in the session."""
         mfa = self._mfa_load(req)
         mfa = mfa.adapter.restart(mfa)
         if not mfa:
@@ -270,6 +367,7 @@ class Object(gws.base.auth.method.Object):
         return mfa
 
     def _mfa_store(self, req: gws.WebRequester, mfa: gws.AuthMultiFactorTransaction):
+        """Store the transaction in the session."""
         am = self.root.app.authMgr
 
         sess_mfa = gws.u.merge({}, mfa)
@@ -278,6 +376,7 @@ class Object(gws.base.auth.method.Object):
         req.session.set('AuthMultiFactorTransaction', sess_mfa)
 
     def _mfa_load(self, req: gws.WebRequester) -> gws.AuthMultiFactorTransaction:
+        """Load the transaction from the session and check its state."""
         am = self.root.app.authMgr
 
         sess_mfa = req.session.get('AuthMultiFactorTransaction')
@@ -294,6 +393,7 @@ class Object(gws.base.auth.method.Object):
         return mfa
 
     def _mfa_response(self, mfa: gws.AuthMultiFactorTransaction, redirect_to: str = '') -> LoginResponse:
+        """Create a login response from a multi-factor transaction."""
         return LoginResponse(
             mfaState=mfa.state,
             mfaMessage=mfa.message,

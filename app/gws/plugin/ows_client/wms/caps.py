@@ -1,4 +1,4 @@
-"""WMS Capabilities parser."""
+"""WMS capabilities parser."""
 
 from typing import Optional
 
@@ -14,12 +14,17 @@ import gws.base.ows.client.parseutil as u
 def parse(xml: str, bottom_first: bool=False) -> gws.OwsCapabilities:
     """Read WMS capabilities from the GetCapabilities XML.
 
+    Child layers inherit styles, CRSs, the extent, the attribution and the scale
+    range from their parents, as described in OGC 06-042, 7.2.4.8. Layers without
+    a name are neither queryable nor rendered as images.
+
     Args:
-        xml: GetCapabilities XML
-        bottom_first: True if layers are listed bottom-first
+        xml: GetCapabilities XML.
+        bottom_first: ``True`` if the service lists layers bottom-first; the
+            layer lists are then reversed to be top-first.
 
     Returns:
-        The Capabilities object.
+        The parsed capabilities.
     """
 
     caps_el = xmlx.from_string(xml, gws.XmlOptions(compactWhitespace=True, removeNamespaces=True))
@@ -35,6 +40,7 @@ def parse(xml: str, bottom_first: bool=False) -> gws.OwsCapabilities:
 
 
 def _layer(layer_el: gws.XmlElement, parent: Optional[gws.SourceLayer] = None) -> gws.SourceLayer:
+    """Create a source layer and its children from a ``Layer`` element."""
     sl = gws.SourceLayer()
 
     sl.isQueryable = layer_el.get('queryable') == '1'

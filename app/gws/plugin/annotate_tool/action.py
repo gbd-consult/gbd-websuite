@@ -1,4 +1,4 @@
-"""Annotate action."""
+"""The ``annotate`` action."""
 
 from typing import Optional
 
@@ -26,8 +26,12 @@ class Props(gws.base.action.Props):
 
 @gws.ext.object.action('annotate')
 class Object(gws.base.action.Object):
+    """Annotate action."""
+
     storage: Optional[gws.base.storage.Object]
+    """Storage for saved annotations, or ``None`` if not configured."""
     labels: Optional[dict]
+    """Label templates per shape type, passed to the client."""
 
     def configure(self):
         self.storage = self.create_child_if_configured(
@@ -46,6 +50,7 @@ class Object(gws.base.action.Object):
 
     @gws.ext.command.api('annotateStorage')
     def handle_storage(self, req: gws.WebRequester, p: gws.base.storage.Request) -> gws.base.storage.Response:
+        """Read or write saved annotations."""
         if not self.storage:
             raise gws.NotFoundError('no storage configured')
         return self.storage.handle_request(req, p)

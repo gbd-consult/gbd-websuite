@@ -5,6 +5,23 @@ aligns them to a tile grid, reprojects them into the target CRS, stores tiles
 and reads them back. It runs in-process; there is no separate tile server,
 no generated configuration and no HTTP between GWS and the tile machinery.
 
+Submodules
+----------
+
+- ``core`` - the base grabber (`core.Object`) and its construction options
+  (`core.Options`). It implements the public ``get_*`` API: tile and box
+  lookup in the stores, block locking, mosaicking from stored tiles, and the
+  shared helpers for encoding, decoding, warping and empty images.
+- ``box`` - the base grabber for sources that render arbitrary boxes. It
+  meta-tiles blocks, splits large requests into chunks and requests boxes in
+  the source CRS.
+- ``tile`` - the base grabber for sources addressed as tile pyramids. It
+  mosaics source tiles of the best matching matrix and warps them onto the
+  requested box.
+
+The interface is `gws.Grabber`; the tile stores are in ``gws.gis.cache.store``
+and the grid functions in ``gws.lib.grid``.
+
 Grids
 -----
 
@@ -63,7 +80,9 @@ reuse them. There is no meta-tiling for tile sources.
 
 Reprojection is done by the base: source images are fetched in the source
 CRS, clipped to the source CRS area of use, and warped into the target grid
-with GDAL. A box outside the source area is transparent.
+with GDAL. A box outside the source area is transparent. For box sources, a
+cross-CRS source request is capped at ``box.MAX_SOURCE_PIXEL_RATIO`` source
+pixels per target pixel per side.
 
 Boxes at a stored level are mosaicked from stored tiles; otherwise (uncached
 layers, levels beyond ``cache.maxLevel``, dynamic requests) they are composed
@@ -119,6 +138,33 @@ use 9000.
 
 Cache management is ``gws cache status | seed | drop`` (``gws.gis.cache``),
 which works on the layers' grabbers and stores.
+
+Example
+-------
+
+A box grabber for a source that renders images on request::
+
+    class Object(gws.base.grabber.box.Object):
+        def __init__(self, opts: gws.base.grabber.Options, provider, sourceCrs: gws.Crs):
+            super().__init__(opts)
+            self.provider = provider
+            self.sourceCrs = sourceCrs
+            self.maxRequestPixels = provider.maxRequestPixels
+
+        def fetch_box_as_bytes(self, bounds, w, h, params=None):
+            return self.provider.get_map(bounds, w, h, self.mimeType)
+
+        def fetch_box_as_image(self, bounds, w, h, params=None):
+            return self.to_image(self.fetch_box_as_bytes(bounds, w, h, params))
+
+The layer creates it in ``create_grabber`` and reads images from it::
+
+    def create_grabber(self, opts):
+        return my_grabber.Object(opts, provider=self.provider, sourceCrs=self.sourceCrs)
+
+    grabber = layer.grabbers[crs.srid]
+    tile = grabber.get_tile_as_bytes((x, y, z))
+    img = grabber.get_box_as_image(extent, 800, 600)
 
 Notes and open issues
 ---------------------

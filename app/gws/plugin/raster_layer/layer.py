@@ -1,4 +1,4 @@
-"""Raster image layer."""
+"""The ``raster`` layer."""
 
 from typing import Optional
 
@@ -30,9 +30,14 @@ class Config(gws.base.layer.Config):
 
 @gws.ext.object.layer('raster')
 class Object(gws.base.layer.image.Object):
+    """Image layer that shows georeferenced image files, rendered with MapServer."""
+
     provider: provider.Object
+    """Image set provider."""
     msOptions: gws.MapServerLayerOptions
+    """MapServer layer options."""
     entries: list[provider.ImageEntry]
+    """Images of the layer."""
 
     def configure(self):
         self.msOptions = gws.MapServerLayerOptions(

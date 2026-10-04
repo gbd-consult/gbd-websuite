@@ -23,29 +23,39 @@ class ConfigErrorInfo(Data):
     value: str
     """Value that caused the error."""
     stack: list[ConfigLocation]
-    """Stack trace of the error."""
+    """Locations of the objects being configured when the error occurred, innermost first."""
     contextLines: list[str]
-    """Lines of context around the error."""
+    """Source lines around the error, with line numbers, the error line is marked with ``>>>``."""
     cause: str
-    """Cause of the error."""
+    """Representation of the exception that caused the error."""
 
 
 class ConfigContext(Data):
-    """Configuration context for parsing and validation."""
+    """Shared state for parsing and validating a configuration."""
 
     specs: SpecRuntime
+    """Specs used to validate the configuration."""
     readOptions: set[SpecReadOption]
+    """Options passed to the spec reader."""
     errors: list[ConfigErrorInfo]
+    """Errors collected so far."""
     warnings: list[ConfigErrorInfo]
+    """Warnings collected so far."""
     paths: set[str]
+    """Paths of all configuration files that were read, including included files."""
 
 
 
 class ConfigResult(Data):
-    """Configuration result."""
+    """Result of a configuration run."""
 
     root: Optional['Root']
+    """Configured root object, or ``None`` if configuration failed or was not requested."""
     config: Optional['Config']
+    """Parsed application configuration."""
     errors: list[ConfigErrorInfo]
+    """Configuration errors."""
     warnings: list[ConfigErrorInfo]
+    """Configuration warnings."""
     info: str
+    """Summary with the number of objects, time and memory used."""

@@ -1,3 +1,5 @@
+"""Configuration types for the GekoS index."""
+
 from typing import Optional
 
 

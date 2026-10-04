@@ -1,4 +1,24 @@
-"""Geometry field."""
+"""Geometry field.
+
+A scalar field for geometries, stored as ``gws.Shape`` objects. The geometry
+type and the CRS are taken from the config or, if not configured, from the
+database column. A field without a known CRS is a configuration error.
+
+The field supports geometry searches: when a model is searched with a shape
+(optionally widened by a tolerance) or with bounds, the field adds an
+``ST_Intersects`` condition on its column. Shapes from the client are
+transformed to the field CRS. Without a configured widget, the field uses a
+``geometry`` widget.
+
+Example::
+
+    fields+ {
+        name "geom"
+        type "geometry"
+        geometryType "polygon"
+        crs "EPSG:25832"
+    }
+"""
 
 from typing import Optional, cast
 
@@ -27,11 +47,15 @@ class Props(gws.base.model.scalar_field.Props):
 
 @gws.ext.object.modelField('geometry')
 class Object(gws.base.model.scalar_field.Object):
+    """Geometry field object."""
+
     attributeType = gws.AttributeType.geometry
     supportsGeometrySearch = True
 
     geometryType: gws.GeometryType
+    """Geometry type of the field."""
     geometryCrs: gws.Crs
+    """CRS of the stored geometries."""
 
     def configure(self):
         setattr(self, 'geometryType', None)
@@ -43,6 +67,11 @@ class Object(gws.base.model.scalar_field.Object):
             raise gws.ConfigurationError(f'unknown CRS for {tab!r}.{self.name!r}')
 
     def configure_geometry_type(self):
+        """Set the geometry type from the config or from the database column.
+
+        Returns:
+            True if the geometry type was set, None otherwise.
+        """
         s = self.cfg('geometryType')
         if s:
             self.geometryType = s
@@ -54,6 +83,11 @@ class Object(gws.base.model.scalar_field.Object):
             return True
 
     def configure_geometry_crs(self):
+        """Set the CRS from the config or from the SRID of the database column.
+
+        Returns:
+            True if the CRS was set, None otherwise.
+        """
         s = self.cfg('crs')
         if s:
             self.geometryCrs = gws.lib.crs.get(s)
@@ -118,6 +152,7 @@ class Object(gws.base.model.scalar_field.Object):
         return cast(gws.Shape, value).to_props()
 
     def _prop_to_shape(self, value):
+        """Convert a shape, shape props or a dict to a shape, or return None."""
         if isinstance(value, gws.base.shape.Shape):
             return value
         if gws.u.is_data_object(value):

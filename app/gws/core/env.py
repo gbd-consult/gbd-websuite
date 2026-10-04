@@ -1,7 +1,4 @@
-"""Environment variables.
-
-These variables, if set, override corresponding configuration values.
-"""
+"""Environment variables that override configuration values."""
 
 import os
 

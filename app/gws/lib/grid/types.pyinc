@@ -5,34 +5,54 @@ MapTileRange: TypeAlias = tuple[int, int, int, int, int]
 """Rectangle of tiles at one level: ``(min_x, min_y, max_x, max_y, z)``."""
 
 class MapGrid(Data):
-    """Fixed tile grid over a CRS, origin north-west."""
+    """Fixed tile grid over a CRS, origin north-west.
+
+    Level ``z`` has the resolution ``baseResolution / 2**z``. See ``gws.lib.grid``.
+    """
 
     crs: Crs
+    """Grid CRS."""
     extent: Extent
+    """Frame extent; the origin is its north-west corner."""
     baseResolution: float
+    """Resolution at level 0, in CRS units per pixel."""
     tileSize: int
+    """Tile width and height in pixels."""
 
 
 class TileMatrix(Data):
-    """TileMatrix object."""
+    """Tile matrix, one level of a tile matrix set, as in WMTS."""
 
     identifier: str
+    """Matrix identifier."""
     scale: float
+    """Scale denominator."""
     resolution: float
+    """Resolution in CRS units per pixel."""
     x: float
+    """X coordinate of the top left corner."""
     y: float
+    """Y coordinate of the top left corner."""
     width: float
+    """Matrix width in tiles."""
     height: float
+    """Matrix height in tiles."""
     tileWidth: float
+    """Tile width in pixels."""
     tileHeight: float
+    """Tile height in pixels."""
     extent: Extent
+    """Matrix extent."""
 
 
 class TileMatrixSet(Data):
-    """TileMatrixSet object."""
+    """Tile matrix set, a pyramid of tile matrices, as in WMTS."""
 
     identifier: str
+    """Matrix set identifier."""
     crs: 'Crs'
+    """CRS of the matrices."""
     matrices: list[TileMatrix]
+    """Matrices of the set."""
 
 

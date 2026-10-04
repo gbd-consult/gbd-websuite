@@ -1,4 +1,4 @@
-"""OWS model."""
+"""Generic OWS model."""
 
 import gws
 import gws.base.feature
@@ -10,10 +10,16 @@ import gws.gis.source
 
 
 class Object(gws.base.model.default_model.Object):
-    """Generic OWS Model."""
+    """Generic OWS model.
+
+    Read-only model that reads features from the queryable source layers of an
+    OWS service provider. Clients cannot create, update or delete features.
+    """
 
     provider: gws.OwsServiceProvider
+    """Service provider."""
     sourceLayers: list[gws.SourceLayer]
+    """Source layers to read features from."""
 
     def configure(self):
         self.configure_model()
@@ -27,6 +33,12 @@ class Object(gws.base.model.default_model.Object):
         self.configure_source_layers()
 
     def configure_source_layers(self):
+        """Select the queryable source layers of the provider, or those given in the configuration.
+
+        Returns:
+            Always ``True``.
+        """
+
         return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers, is_queryable=True)
 
     def find_features(self, search, mc):

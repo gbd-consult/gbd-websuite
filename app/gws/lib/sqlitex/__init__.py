@@ -1,15 +1,27 @@
 """Convenience wrapper for the SQLite driver.
 
-This wrapper accepts a database path and optionally an "init" DDL script.
-It executes queries given in a text form.
+The ``Object`` class accepts a database path and optionally an "init" DDL script.
+It executes queries given in a text form, with named parameters (``:name``).
 
-Each query runs on its own connection, which is closed immediately afterwards.
+Each query runs on its own connection in autocommit mode, which is closed immediately afterwards.
 
 If a query fails with "no such table", the wrapper runs the "init" script and repeats the query once.
 The script can contain multiple statements.
 
-A query that fails with a recoverable error is repeated on a new connection.
+A query that fails with a recoverable error (e.g. the database is locked) is repeated on a new connection,
+up to ``MAX_ATTEMPTS`` times. Other errors are raised as ``Error``.
 
+Example::
+
+    import gws.lib.sqlitex
+
+    db = gws.lib.sqlitex.Object(
+        '/data/jobs.sqlite',
+        init_ddl='CREATE TABLE jobs (uid TEXT PRIMARY KEY, state TEXT)',
+    )
+    db.insert('jobs', {'uid': 'a1', 'state': 'open'})
+    db.update('jobs', {'state': 'done'}, 'a1')
+    rows = db.select('SELECT * FROM jobs WHERE state=:state', state='done')
 """
 
 import sqlite3
@@ -35,27 +47,65 @@ _RECOVERABLE_ERRORS = {
 
 
 class Error(gws.Error):
+    """Raised when a query fails."""
+
     pass
 
 
 class Object:
+    """SQLite database wrapper."""
+
     def __init__(self, db_path: str, init_ddl: str = '', uid_column: str = 'uid'):
+        """Create a database wrapper.
+
+        Args:
+            db_path: Path to the database file.
+            init_ddl: DDL script to run when a table does not exist.
+            uid_column: Name of the primary key column, used by ``update`` and ``delete``.
+        """
         self.dbPath = db_path
         self.initDDL = init_ddl
         self.uidName = uid_column
 
     def execute(self, stmt: str, **params):
-        """Execute a text DML statement."""
+        """Execute a text statement that does not return rows.
+
+        Args:
+            stmt: SQL statement.
+            **params: Values for the named parameters of the statement.
+
+        Raises:
+            ``Error``: If the statement fails.
+        """
 
         self._exec2(False, stmt, params)
 
     def select(self, stmt: str, **params) -> list[dict]:
-        """Execute a text select statement."""
+        """Execute a text select statement.
+
+        Args:
+            stmt: SQL statement.
+            **params: Values for the named parameters of the statement.
+
+        Returns:
+            Result rows as dicts.
+
+        Raises:
+            ``Error``: If the statement fails.
+        """
 
         return self._exec2(True, stmt, params)
 
     def insert(self, table_name: str, rec: dict):
-        """Insert a new record (dict) into a table."""
+        """Insert a record into a table.
+
+        Args:
+            table_name: Table name.
+            rec: Record as a dict of column names and values.
+
+        Raises:
+            ``Error``: If the statement fails.
+        """
 
         keys = ','.join(rec)
         vals = ','.join(':' + k for k in rec)
@@ -63,7 +113,16 @@ class Object:
         self._exec2(False, f'INSERT INTO {table_name} ({keys}) VALUES({vals})', rec)
 
     def update(self, table_name: str, rec: dict, uid):
-        """Update a record (dict) in a table."""
+        """Update a record in a table.
+
+        Args:
+            table_name: Table name.
+            rec: Columns to update, as a dict of column names and values.
+            uid: Value of the primary key column of the record.
+
+        Raises:
+            ``Error``: If the statement fails.
+        """
 
         vals = ','.join(f'{k}=:{k}' for k in rec)
         self._exec2(
@@ -73,7 +132,15 @@ class Object:
         )
 
     def delete(self, table_name: str, uid):
-        """Delete a record by uid from a table."""
+        """Delete a record from a table.
+
+        Args:
+            table_name: Table name.
+            uid: Value of the primary key column of the record.
+
+        Raises:
+            ``Error``: If the statement fails.
+        """
 
         self._exec2(
             False,

@@ -1,4 +1,28 @@
-"""XML helper."""
+"""Helper for custom XML namespaces.
+
+The helper registers custom XML namespaces, which can then be used in
+generated XML documents. The namespaces are configured in the ``namespaces`` list and
+registered globally in :obj:`gws.lib.xmlx.namespace` when the helper is
+configured. Other code can add namespaces at run time with ``add_namespace``.
+
+By default, a custom namespace is declared to extend the GML3 schema.
+
+Example::
+
+    helpers+ {
+        type "xml"
+        namespaces+ {
+            xmlns "demo"
+            uri "https://example.com/namespace/demo"
+            schemaLocation "https://example.com/namespace/demo.xsd"
+        }
+    }
+
+Example::
+
+    helper = root.app.helper('xml')
+    ns = helper.add_namespace(gws.Config(xmlns='demo', uri='https://example.com/namespace/demo'))
+"""
 
 from typing import Optional
 import gws
@@ -30,12 +54,24 @@ class Config(gws.Config):
 
 @gws.ext.object.helper('xml')
 class Object(gws.Node):
+    """XML helper, which registers custom namespaces."""
+
     def configure(self):
         for c in self.cfg('namespaces', default=[]):
             self.add_namespace(c)
 
     def add_namespace(self, cfg: NamespaceConfig) -> gws.XmlNamespace:
-        """Add a custom namespace for XML generation and register it globally."""
+        """Create a custom namespace and register it globally.
+
+        Args:
+            cfg: Namespace configuration.
+
+        Returns:
+            The registered namespace.
+
+        Raises:
+            ``gws.ConfigurationError``: If the prefix or the URI conflicts with an already registered namespace.
+        """
 
         xmlns = cfg.get('xmlns')
         if cfg.get('version'):

@@ -1,4 +1,11 @@
-"""Date widget."""
+"""Date widget.
+
+Input for date values. This is the default widget of ``date`` fields.
+
+Example::
+
+    fields+ { name "start_date" type "date" widget.type "date" }
+"""
 
 import gws
 import gws.base.model.widget
@@ -18,4 +25,6 @@ class Props(gws.base.model.widget.Props):
 
 @gws.ext.object.modelWidget('date')
 class Object(gws.base.model.widget.Object):
+    """Date widget object."""
+
     pass

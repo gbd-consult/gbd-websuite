@@ -9,14 +9,19 @@ from . import core
 
 
 class Object(core.Object):
-    """Base grabber for sources addressed as tile pyramids."""
+    """Base grabber for sources addressed as tile pyramids.
+
+    Composes boxes and tiles from source tiles, mosaicked and warped into the
+    target grid. Provides subclasses with the composition and the caching of
+    source tiles.
+
+    Subclasses set ``sourceTms`` and implement ``fetch_tile_as_bytes``.
+    """
 
     sourceTms: gws.TileMatrixSet
     """Source tile matrix set."""
 
     def compose_box_as_image(self, extent, w, h, params=None):
-        """Mosaic the covering source tiles of the best matrix and warp them onto the box."""
-
         w = gws.u.to_rounded_int(w)
         h = gws.u.to_rounded_int(h)
 
@@ -60,7 +65,21 @@ class Object(core.Object):
         )
 
     def fetch_tile_as_bytes(self, tm: gws.TileMatrix, col: int, row: int) -> bytes:
-        """Fetch a source tile with exactly one request, as encoded bytes."""
+        """Fetch a source tile with exactly one request, as encoded bytes.
+
+        Subclasses must implement this.
+
+        Args:
+            tm: Source tile matrix.
+            col: Tile column.
+            row: Tile row.
+
+        Returns:
+            The encoded tile image.
+
+        Raises:
+            ``NotImplementedError``: In the base class.
+        """
 
         raise NotImplementedError(f'fetch_tile_as_bytes not implemented in {self!r}')
 

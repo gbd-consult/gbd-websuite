@@ -1,4 +1,4 @@
-"""Generic group layer."""
+"""Group layer."""
 
 import gws
 import gws.config
@@ -24,6 +24,12 @@ class Props(core.Props):
 
 @gws.ext.object.layer('group')
 class Object(core.Object):
+    """Group layer.
+
+    Holds the child layers from the ``layers`` configuration and derives its
+    extent, resolutions, legend and render capabilities from them.
+    """
+
     isGroup = True
 
     def configure(self):

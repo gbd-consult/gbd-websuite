@@ -1,4 +1,55 @@
-"""Map render utilities."""
+"""Map rendering.
+
+This package renders maps for printing, exporting and templates. It works with
+three kinds of objects, defined in ``types.pyinc``:
+
+- ``gws.MapView``: the geometry of a rendered map: bounds, center, scale,
+  rotation, size in mm and pixels and the DPI.
+- ``gws.MapRenderInput``: what to render: the map size, the bbox or the
+  center and scale, the target CRS, the DPI and a list of input planes
+  (image layers, SVG layers, features, images, SVG "soups").
+- ``gws.MapRenderOutput``: the rendered map, a list of output planes,
+  each either a raster image or a list of SVG elements, and the view.
+
+Design
+------
+
+``render_map`` creates two views of the map: a vector view, always at
+``gws.lib.uom.PDF_DPI``, and a raster view. For pixel sizes, the raster view
+is the vector view. For mm sizes, rasters use the requested DPI, clamped to
+``MIN_DPI`` and ``MAX_DPI``.
+
+Input planes are processed bottom-up. Image layers are rendered by the
+layer as a box, SVG layers and features are converted to SVG elements.
+Consecutive raster planes are composed into one image, consecutive SVG
+planes are merged into one element list, so the output alternates between
+raster and SVG planes. The background color is applied to the first raster
+plane only. A plane that fails to render is logged and skipped.
+
+The output can be converted to HTML (``output_to_html_element``,
+``output_to_html_string``), where raster planes become ``img`` tags and SVG
+planes ``svg`` elements, stacked in a ``div``.
+
+The package also creates views from a center and scale or from a bbox
+(``map_view_from_center``, ``map_view_from_bbox``) and provides the
+transformer from map coordinates to view pixels
+(``map_view_transformer``), which is used by the SVG drawing code.
+
+Example::
+
+    mri = gws.MapRenderInput(
+        bbox=(0, 0, 1000, 1000),
+        targetCrs=gws.lib.crs.WEBMERCATOR,
+        dpi=300,
+        mapSize=(200, 200, gws.Uom.mm),
+        planes=[
+            gws.MapRenderInputPlane(type=gws.MapRenderInputPlaneType.imageLayer, layer=layer),
+        ],
+        user=user,
+    )
+    mro = gws.gis.render.render_map(mri)
+    html = gws.gis.render.output_to_html_string(mro)
+"""
 
 import math
 
@@ -11,7 +62,9 @@ import gws.gis.zoom
 import gws.lib.xmlx as xmlx
 
 MAX_DPI = 1200
+"""Max. DPI for raster planes."""
 MIN_DPI = gws.lib.uom.PDF_DPI
+"""Min. DPI for raster planes."""
 
 
 # Map Views
@@ -24,18 +77,20 @@ def map_view_from_center(
         scale: float,
         rotation: float = 0,
 ) -> gws.MapView:
-    """Creates a map view based on a center point.
+    """Create a map view from a center point and a scale.
+
+    The extent is computed from the size in mm, assuming that the CRS units are meters.
 
     Args:
-        size: The map size in units.
-        center: The center point of the map.
-        crs: The coordinate reference system.
-        dpi: The resolution in dots per inch.
-        scale: The map scale.
-        rotation: The map rotation angle in degrees.
+        size: Map size in mm or pixels.
+        center: Center point.
+        crs: CRS of the view.
+        dpi: Resolution in dots per inch.
+        scale: Scale denominator.
+        rotation: Rotation angle in degrees.
 
     Returns:
-        A configured MapView instance.
+        A map view.
     """
     return _map_view(None, center, crs, dpi, rotation, scale, size)
 
@@ -47,17 +102,19 @@ def map_view_from_bbox(
         dpi: int,
         rotation: float = 0,
 ) -> gws.MapView:
-    """Creates a map view based on a bounding box.
+    """Create a map view from a bounding box.
+
+    The scale is computed from the bbox width and the pixel width.
 
     Args:
-        size: The map size in units.
-        bbox: The bounding box of the map.
-        crs: The coordinate reference system.
-        dpi: The resolution in dots per inch.
-        rotation: The map rotation angle in degrees.
+        size: Map size in mm or pixels.
+        bbox: Bounding box.
+        crs: CRS of the view.
+        dpi: Resolution in dots per inch.
+        rotation: Rotation angle in degrees.
 
     Returns:
-        A configured MapView instance.
+        A map view.
     """
     return _map_view(bbox, None, crs, dpi, rotation, None, size)
 
@@ -70,23 +127,7 @@ def _map_view(
         scale: float | None,
         size: gws.UomSize
 ) -> gws.MapView:
-    """Creates a generic map view from either a bounding box or a center point.
-
-    Args:
-        bbox: The bounding box for the map view.
-        center: The center point for the map view.
-        crs: The coordinate reference system.
-        dpi: The resolution in dots per inch.
-        rotation: The rotation angle in degrees.
-        scale: The map scale (if using center-based view).
-        size: The size of the map.
-
-    Returns:
-        A MapView instance with computed properties.
-
-    Raises:
-        gws.Error: If neither center nor bbox is provided.
-    """
+    """Create a map view from a bbox, or from a center and scale if there is no bbox."""
     view = gws.MapView(
         dpi=dpi,
         rotation=rotation,
@@ -122,13 +163,16 @@ def _map_view(
 
 
 def map_view_transformer(view: gws.MapView):
-    """Creates a pixel transformer f(map_x, map_y) -> (pixel_x, pixel_y) for a view
+    """Create a transformer from map coordinates to pixel coordinates of a view.
+
+    Pixel coordinates are integers, relative to the top left corner of the view
+    at the view's scale and DPI. For a rotated view, points are rotated around the view center.
 
     Args:
-        view: The map view instance.
+        view: Map view.
 
     Returns:
-        A function that transforms map coordinates (x, y) into pixel coordinates.
+        A function ``f(x, y) -> (px, py)``.
     """
 
     # @TODO cache the transformer
@@ -179,13 +223,20 @@ class _Renderer(gws.Data):
 
 
 def render_map(mri: gws.MapRenderInput) -> gws.MapRenderOutput:
-    """Renders a map based on input parameters.
+    """Render a map.
+
+    Planes are rendered bottom-up. Consecutive raster planes are composed into one image plane,
+    consecutive vector planes into one SVG plane. Errors in a plane are logged and the plane is skipped.
+    If ``mri.notify`` is set, it is called with ``begin_plane`` and ``end_plane`` for each plane.
 
     Args:
-        mri: The map render input configuration.
+        mri: Render input.
 
     Returns:
-        A MapRenderOutput instance containing rendered data.
+        The render output, with the vector view as its view.
+
+    Raises:
+        gws.Error: If the map size unit is neither mm nor pixels.
     """
     rd = _Renderer(
         mri=mri,
@@ -312,15 +363,18 @@ def _add_svg_elements(rd: _Renderer, elements, opacity):
 
 
 def output_to_html_element(mro: gws.MapRenderOutput, wrap='relative') -> gws.XmlElement:
-    """Converts a MapRenderOutput to an HTML element.
+    """Convert a render output to an HTML element.
+
+    Image planes are saved to ephemeral PNG files and become ``img`` tags,
+    SVG planes become ``svg`` elements, all absolutely positioned in a ``div`` of the view's mm size.
 
     Args:
-        mro: The MapRenderOutput object to convert.
-        wrap: The CSS position value for the wrapper div. Must be one of
-            'relative', 'absolute', 'fixed', or None. Default is 'relative'.
+        mro: Render output.
+        wrap: CSS position of the ``div``: ``relative``, ``absolute`` or ``fixed``.
+            With any other value, the ``div`` has no style.
 
     Returns:
-        A gws.XmlElement representing a div containing the map output.
+        A ``div`` element.
     """
     w, h = mro.view.mmSize
 
@@ -348,15 +402,14 @@ def output_to_html_element(mro: gws.MapRenderOutput, wrap='relative') -> gws.Xml
 
 
 def output_to_html_string(mro: gws.MapRenderOutput, wrap='relative') -> str:
-    """Converts a MapRenderOutput to an HTML string.
+    """Convert a render output to an HTML string.
 
     Args:
-        mro: The MapRenderOutput object to convert.
-        wrap: The CSS position value for the wrapper div. Must be one of
-            'relative', 'absolute', 'fixed', or None. Default is 'relative'.
+        mro: Render output.
+        wrap: CSS position of the wrapper ``div``, see ``output_to_html_element``.
 
     Returns:
-        A string containing the HTML representation of the map output.
+        The HTML of a ``div`` element.
     """
     div = output_to_html_element(mro, wrap)
     return div.to_string()

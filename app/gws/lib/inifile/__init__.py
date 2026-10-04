@@ -1,17 +1,29 @@
-"""Tools to deal with ini config files."""
+"""Read and write ini files.
+
+Reads one or more ini files with ``configparser`` into a nested dict (section, then option)
+or into a flat dict with ``section.option`` keys, and writes a flat dict back as ini text.
+When reading, option names keep their case, files that do not exist are skipped, and values
+from later files override earlier ones.
+
+Example::
+
+    d = gws.lib.inifile.from_paths_flat('/data/a.ini', '/data/b.ini')
+    # {'section.option': 'value', ...}
+    text = gws.lib.inifile.to_string({'section.option': 'value'})
+"""
 
 import configparser
 import io
 
 
 def from_paths(*paths: str) -> dict:
-    """Merges the key-value pairs of `.ini` files into a dictionary.
+    """Read ini files into a nested dict.
 
     Args:
-        paths: Paths to `.ini` files.
+        *paths: Paths to ini files. Missing files are skipped, later files override earlier ones.
 
     Returns:
-        Nested dictionary with sections as keys and options as sub-keys.
+        A dict with section names as keys and dicts of options as values.
     """
 
     res = {}
@@ -25,13 +37,13 @@ def from_paths(*paths: str) -> dict:
 
 
 def from_paths_flat(*paths: str) -> dict:
-    """Merges the key-value pairs of `.ini` files into a flat dictionary.
+    """Read ini files into a flat dict.
 
     Args:
-        paths: Paths to `.ini` files.
+        *paths: Paths to ini files. Missing files are skipped, later files override earlier ones.
 
     Returns:
-        Flat dictionary with the section names as prefixes.
+        A dict with ``section.option`` keys.
     """
     res = {}
     cc = _from_paths(paths)
@@ -44,6 +56,7 @@ def from_paths_flat(*paths: str) -> dict:
 
 
 def _from_paths(paths):
+    """Read ini files into a case-sensitive ``ConfigParser``."""
     cc = configparser.ConfigParser()
     cc.optionxform = lambda optionstr: str(optionstr)
 
@@ -54,13 +67,16 @@ def _from_paths(paths):
 
 
 def to_string(d: dict) -> str:
-    """Converts key-value pairs in a dictionary to a string grouped in sections.
+    """Convert a flat dict to ini text.
+
+    Keys are split at the first dot into a section name and an option name.
+    Option names are lowercased.
 
     Args:
-        d: Key-value pairs.
+        d: A dict with ``section.option`` keys and string values.
 
     Returns:
-        String formatted like `.ini` files.
+        Ini file content.
     """
 
     cc = configparser.ConfigParser()

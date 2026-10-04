@@ -1,3 +1,5 @@
+"""uWSGI entry point of the spool server."""
+
 import gws.server.spool.wsgi_app as wsgi_app
 
 wsgi_app.init()

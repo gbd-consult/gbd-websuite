@@ -1,6 +1,17 @@
-"""Exporter for the CSV format.
+"""CSV exporter.
 
-See https://gdal.org/en/stable/drivers/vector/gml.html#dataset-creation-options for supported options.
+Exports vector features with the GDAL ``CSV`` driver. Each model is
+written to its own file. GDAL creation options can be passed with
+``options``, see
+https://gdal.org/en/stable/drivers/vector/csv.html.
+
+Example::
+
+    exporters+ {
+        type "csv"
+        title "CSV"
+        target "download"
+    }
 """
 
 import gws
@@ -24,6 +35,8 @@ class Props(gws.base.exporter.Props):
 
 @gws.ext.object.exporter('csv')
 class Object(gws.base.exporter.Object):
+    """CSV exporter."""
+
     supportsVector = True
     supportsRaster = False
     supportsMultiLayer = False

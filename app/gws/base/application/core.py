@@ -1,4 +1,4 @@
-"""Core application object"""
+"""Application object and root configuration."""
 
 from typing import Optional
 
@@ -118,7 +118,7 @@ class Config(gws.ConfigWithAccess):
 
 
 class Object(gws.Application):
-    """Main Application object"""
+    """Application object."""
 
     _helperMap: dict[str, gws.Node]
 

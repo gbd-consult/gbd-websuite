@@ -1,3 +1,5 @@
+"""Base legend object."""
+
 from typing import Optional
 
 import gws
@@ -18,10 +20,17 @@ class Config(gws.ConfigWithAccess):
 
 
 class Object(gws.Legend):
-    """Generic legend object."""
+    """Base legend object.
+
+    Reads the common ``cacheMaxAge`` and ``options`` settings. Subclasses
+    implement ``render`` and can stack several legend images into one with
+    ``combine_outputs``.
+    """
 
     cacheMaxAge: int
+    """How long legend images from remote sources are cached, in seconds."""
     options: dict
+    """Provider-specific legend options."""
 
     def configure(self):
         self.options = self.cfg('options', default={})
@@ -29,15 +38,18 @@ class Object(gws.Legend):
 
 
 def combine_outputs(lro_list: list[gws.LegendRenderOutput], options: dict = None) -> Optional[gws.LegendRenderOutput]:
-    """Combine multiple LegendRenderOutputs into a single output.
+    """Combine several legend outputs into one image.
+
+    The images are stacked vertically, aligned to the left. Outputs without an
+    image are skipped.
 
     Args:
-        lro_list: A list of legend render outputs to combine.
-        options: Optional combination settings (currently unused).
+        lro_list: Legend outputs to combine; ``None`` entries are allowed.
+        options: Legend options, currently unused.
 
     Returns:
-        A new LegendRenderOutput containing the combined image,
-        or None if no images were provided.
+        A new legend output with the combined image, or ``None`` if there are
+        no images.
     """
     imgs = []
     for lro in lro_list:
@@ -50,10 +62,12 @@ def combine_outputs(lro_list: list[gws.LegendRenderOutput], options: dict = None
 
 
 def _combine_images(images: list[gws.Image], options: dict = None):
+    """Combine images into one."""
     return _combine_vertically(images)
 
 
 def _combine_vertically(images: list[gws.Image]):
+    """Stack images vertically on a transparent canvas."""
     ws = [img.size()[0] for img in images]
     hs = [img.size()[1] for img in images]
 

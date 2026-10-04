@@ -1,3 +1,5 @@
+"""User objects and conversion of provider records to users."""
+
 from typing import Optional, cast
 
 import gws
@@ -21,9 +23,21 @@ _FIELDS = {
 
 
 class User(gws.User):
+    """Base user.
+
+    Holds the user fields, roles and attributes, and implements the permission
+    checks. Subclasses for special users override the permission decision.
+    """
+
     isGuest = False
 
     def __init__(self, provider, roles):
+        """Create a user with empty attributes.
+
+        Args:
+            provider: The authentication provider of the user.
+            roles: User roles.
+        """
         super().__init__()
 
         self.authProvider = provider
@@ -109,24 +123,34 @@ class User(gws.User):
 
 
 class GuestUser(User):
+    """Guest user, used for requests without a login."""
+
     isGuest = True
 
 
 class SystemUser(User):
+    """System user, allowed everything."""
+
     def acl_bit(self, access, obj):
         return gws.c.ALLOW
 
 
 class NobodyUser(User):
+    """User that is denied everything."""
+
     def acl_bit(self, access, obj):
         return gws.c.DENY
 
 
 class AuthorizedUser(User):
+    """Logged-in user."""
+
     pass
 
 
 class AdminUser(User):
+    """Logged-in user with the ``admin`` role, allowed everything."""
+
     def acl_bit(self, access, obj):
         return gws.c.ALLOW
 
@@ -137,6 +161,14 @@ class AdminUser(User):
 ##
 
 def to_dict(usr) -> dict:
+    """Convert a user to a dict.
+
+    Args:
+        usr: The user.
+
+    Returns:
+        A dict with the user fields, ``attributes``, ``data``, ``roles`` and ``uid``.
+    """
     d = {}
 
     d['attributes'] = usr.attributes or {}
@@ -151,6 +183,18 @@ def to_dict(usr) -> dict:
 
 
 def from_dict(provider: gws.AuthProvider, d: dict) -> gws.User:
+    """Restore a user from a dict created by ``to_dict``.
+
+    Returns the guest user if the roles contain ``guest``, an ``AdminUser`` if they
+    contain ``admin`` and an ``AuthorizedUser`` otherwise.
+
+    Args:
+        provider: The authentication provider of the user.
+        d: The dict.
+
+    Returns:
+        The user.
+    """
     roles = set(d.get('roles', []))
 
     if gws.c.ROLE_GUEST in roles:
@@ -173,14 +217,30 @@ def from_dict(provider: gws.AuthProvider, d: dict) -> gws.User:
 
 
 def from_record(provider: gws.AuthProvider, user_rec: dict) -> gws.User:
-    """Create a User from a raw record as returned from a provider.
+    """Create a user from a record returned by a provider.
 
-    A provider can return an arbitrary dict of values. Entries whose keys are
-    in the `_FIELDS` list (case-insensitively), are copied to the newly
-    created `User` object.
+    A provider can return an arbitrary dict of values. The entries ``authToken``,
+    ``displayName``, ``email``, ``localUid``, ``loginName``, ``mfaSecret`` and
+    ``mfaUid`` (or their lowercase forms) are copied to the user. ``roles`` and
+    ``attributes`` are copied as well, other entries are stored in the user's
+    ``data`` dict, with common LDAP attribute aliases (for example ``cn`` and
+    ``commonName``) filled in both ways.
 
-    Entries ``roles`` and ``attributes`` are copied as well,
-    other entries are stored in the user's ``data`` dict.
+    The role ``all`` is always added. A record with the role ``guest`` returns
+    the guest user, one with ``admin`` creates an ``AdminUser``; all other users
+    get the role ``user``. ``loginName`` and ``email`` fall back to ``login`` and
+    ``email`` in the data, ``localUid`` to the login name, ``displayName`` to the
+    login name.
+
+    Args:
+        provider: The authentication provider.
+        user_rec: The record.
+
+    Returns:
+        The user.
+
+    Raises:
+        gws.Error: If the record has neither a local uid nor a login name.
     """
 
     data = dict(user_rec)
@@ -244,6 +304,7 @@ _ALIASES = [
 
 
 def _process_aliases(r):
+    """Fill in LDAP attribute aliases, in both directions."""
     for a, b in _ALIASES:
         if a in r:
             r[b] = r[a]

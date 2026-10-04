@@ -1,4 +1,4 @@
-"""OWS Service."""
+"""Base OWS service."""
 
 from typing import Optional, cast
 
@@ -48,7 +48,15 @@ class Config(gws.ConfigWithAccess):
 
 
 class Object(gws.OwsService):
-    """Baseclass for OWS services."""
+    """Base class for OWS services.
+
+    Configures supported CRSs and bounds, image formats, templates and metadata,
+    parses incoming requests and dispatches them to operation handlers. Provides
+    subclasses with helpers to create template, XML, image and legend responses.
+    Subclasses set ``protocol`` and ``supportedVersions``, implement
+    ``configure_operations`` and ``layer_is_compatible`` and provide a handler
+    method for each operation.
+    """
 
     def configure(self):
         self.project = self.find_closest(gws.ext.object.project)
@@ -68,6 +76,7 @@ class Object(gws.OwsService):
         self.configure_metadata()
 
     def configure_image_formats(self):
+        """Configure image formats from the configuration, or PNG and JPEG by default."""
         p = self.cfg('imageFormats')
         if p:
             self.imageFormats = []
@@ -86,6 +95,16 @@ class Object(gws.OwsService):
         ]
 
     def configure_bounds(self):
+        """Configure the supported bounds.
+
+        The CRS list is taken from the configuration, or the project map CRS, or
+        Web Mercator and WGS84. The extent is taken from the configuration, or the
+        project map, or the first CRS. ``supportedBounds`` holds the extent in each CRS.
+
+        Returns:
+            Always ``True``.
+        """
+
         p = self.cfg('supportedCrs')
         if p:
             crs_list = [gws.lib.crs.require(s) for s in p]
@@ -108,12 +127,31 @@ class Object(gws.OwsService):
         return True
 
     def configure_templates(self):
+        """Configure the service templates.
+
+        Returns:
+            ``True`` if any templates are configured.
+        """
+
         return gws.config.util.configure_templates_for(self)
 
     def configure_operations(self):
+        """Configure ``supportedOperations``. Must be implemented by subclasses."""
         pass
 
     def available_formats(self, verb: gws.OwsVerb):
+        """Return the formats available for an operation.
+
+        For image operations, these are the mime types of the image formats,
+        otherwise the mime types of the templates for the operation.
+
+        Args:
+            verb: Request type.
+
+        Returns:
+            A sorted list of mime types.
+        """
+
         fs = set()
 
         if verb in core.IMAGE_VERBS:
@@ -127,6 +165,12 @@ class Object(gws.OwsService):
         return sorted(fs)
 
     def configure_metadata(self):
+        """Configure the service metadata, merged from the project, the application and the configuration.
+
+        Returns:
+            Always ``True``.
+        """
+
         self.metadata = gws.base.metadata.from_args(
             self.project.metadata if self.project else None,
             self.root.app.metadata,
@@ -139,11 +183,21 @@ class Object(gws.OwsService):
         self.post_configure_host()
 
     def post_configure_host(self):
+        """Warn if no canonical host or host names are configured for the site."""
+
         site = self.root.app.webMgr.site
         if not site.canonicalHost and not site.hostnames:
             self.root.config_warning('neither "web.site.canonicalHost" nor "web.site.hostnames" is set, service urls will reflect the request host')
 
     def post_configure_root_layer(self):
+        """Configure the root layer given by ``rootLayerUid``.
+
+        If the service has no project, the project of the root layer is used.
+
+        Raises:
+            ``gws.ConfigurationError``: If the layer is not found or belongs to a different project.
+        """
+
         self.rootLayer = None
 
         uid = self.cfg('rootLayerUid')
@@ -165,6 +219,17 @@ class Object(gws.OwsService):
     ##
 
     def url_path(self, sr: request.Object) -> str:
+        """Return the URL path of the service.
+
+        The project uid is included if the request project is not the service project.
+
+        Args:
+            sr: Service request.
+
+        Returns:
+            The URL path.
+        """
+
         if sr.project and sr.project != self.project:
             return gws.u.action_url_path('owsService', serviceUid=self.uid, projectUid=sr.project.uid)
         else:
@@ -173,6 +238,21 @@ class Object(gws.OwsService):
     ##
 
     def init_request(self, req: gws.WebRequester) -> request.Object:
+        """Create a service request from a web request.
+
+        Supports GET requests and XML POST requests, optionally wrapped in a SOAP
+        envelope. XML requests are converted to parameters by ``parse_xml_request``.
+
+        Args:
+            req: Web request.
+
+        Returns:
+            The service request.
+
+        Raises:
+            ``gws.base.web.error.BadRequest``: If the request cannot be parsed.
+        """
+
         if req.method == 'GET':
             return request.Object(self, req, req.params())
 
@@ -199,6 +279,17 @@ class Object(gws.OwsService):
         raise gws.base.web.error.BadRequest()
 
     def parse_xml_request(self, xml: gws.XmlElement) -> Optional[dict]:
+        """Convert an XML request to parameters.
+
+        The base implementation returns an empty dict; subclasses that support
+        XML requests override this.
+
+        Args:
+            xml: Request element.
+
+        Returns:
+            Request parameters, empty if the request is not supported.
+        """
         return {}
 
     def handle_request(self, req: gws.WebRequester) -> gws.ContentResponse:
@@ -214,11 +305,29 @@ class Object(gws.OwsService):
             return err.to_xml_response('ows' if self.isOwsCommon else 'ogc')
 
     def dispatch_request(self, sr: request.Object):
+        """Call the handler method of the requested operation.
+
+        Args:
+            sr: Service request.
+
+        Returns:
+            The handler response.
+        """
+
         fn = getattr(self, sr.operation.handlerName)
         return fn(sr)
 
     def get_template(self, sr: request.Object, mime_type: str = '') -> Optional[gws.Template]:
-        """Find a template for the given service request."""
+        """Find a template for the given service request.
+
+        Args:
+            sr: Service request.
+            mime_type: Output mime type.
+
+        Returns:
+            The template, or ``None`` if not found.
+        """
+
         return self.root.app.templateMgr.find_template(
             f'ows.{sr.operation.verb}',
             where=[self, sr.project],
@@ -227,7 +336,21 @@ class Object(gws.OwsService):
         )
 
     def template_response(self, sr: request.Object, mime_type: str = '', **kwargs) -> gws.ContentResponse:
-        """Render a template for the given service request."""
+        """Render a template for the given service request.
+
+        If no template is found for the mime type, the XML template is used.
+
+        Args:
+            sr: Service request.
+            mime_type: Output mime type.
+            **kwargs: Additional template arguments.
+
+        Returns:
+            The rendered response.
+
+        Raises:
+            ``error.InvalidFormat``: If there is no XML template either.
+        """
 
         tpl = self.get_template(sr, mime_type=mime_type)
         if not tpl:
@@ -251,10 +374,34 @@ class Object(gws.OwsService):
         return tpl.render(gws.TemplateRenderInput(args=args))
 
     def xml_response(self, el: gws.XmlElement, opts: gws.XmlOptions = None) -> gws.ContentResponse:
+        """Create an XML response.
+
+        Args:
+            el: Root element.
+            opts: Serialization options.
+
+        Returns:
+            The XML response.
+        """
+
         xml = el.to_string(opts)
         return gws.ContentResponse(mimeType=gws.lib.mime.XML, content=xml)
 
     def image_response(self, sr: request.Object, img: Optional[gws.Image], mime_type: str) -> gws.ContentResponse:
+        """Create an image response, encoded with the options of the matching image format.
+
+        Args:
+            sr: Service request.
+            img: Image, or ``None`` for an empty pixel.
+            mime_type: Output mime type.
+
+        Returns:
+            The image response.
+
+        Raises:
+            ``error.InvalidFormat``: If the mime type is not supported.
+        """
+
         ifmt = self.find_image_format(mime_type)
         if img:
             gws.log.debug(f'image_response: {img.mode()=} {img.size()=} {mime_type=} {ifmt.options}')
@@ -262,6 +409,18 @@ class Object(gws.OwsService):
         return gws.ContentResponse(mimeType=mime_type, content=content)
 
     def find_image_format(self, mime_type: str) -> gws.ImageFormat:
+        """Find an image format by mime type.
+
+        Args:
+            mime_type: Mime type. If empty, the first format is returned.
+
+        Returns:
+            The image format.
+
+        Raises:
+            ``error.InvalidFormat``: If the mime type is not supported.
+        """
+
         if not mime_type:
             return self.imageFormats[0]
         for f in self.imageFormats:
@@ -270,6 +429,19 @@ class Object(gws.OwsService):
         raise error.InvalidFormat()
 
     def render_legend(self, sr: request.Object, lcs: list[core.LayerCaps], mime_type: str) -> gws.ContentResponse:
+        """Render a combined legend for the given layers.
+
+        The response is cached per layer set and mime type.
+
+        Args:
+            sr: Service request.
+            lcs: Layer caps.
+            mime_type: Output mime type.
+
+        Returns:
+            The image response.
+        """
+
         uids = [lc.layer.uid for lc in lcs]
         cache_key = 'gws.base.ows.server.legend.' + gws.u.sha256(uids) + mime_type
 
@@ -288,6 +460,20 @@ class Object(gws.OwsService):
         return gws.u.get_app_global(cache_key, _get)
 
     def feature_collection(self, sr: request.Object, lcs: list[core.LayerCaps], hits: int, results: list[gws.SearchResult]) -> core.FeatureCollection:
+        """Create a feature collection from search results.
+
+        Features are transformed to the request ``targetCrs``.
+
+        Args:
+            sr: Service request.
+            lcs: Layer caps, used to link the members to their layers.
+            hits: Total number of matching features.
+            results: Search results.
+
+        Returns:
+            The feature collection.
+        """
+
         fc = core.FeatureCollection(
             members=[],
             numMatched=hits,

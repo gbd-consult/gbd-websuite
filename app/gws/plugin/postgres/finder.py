@@ -1,3 +1,5 @@
+"""PostgreSQL finder."""
+
 from typing import Optional, cast
 
 import gws
@@ -21,8 +23,12 @@ class Config(gws.base.search.finder.Config):
 
 @gws.ext.object.finder('postgres')
 class Object(gws.base.search.finder.Object):
+    """Finder that searches a PostgreSQL table through its ``postgres`` models."""
+
     db: gws.DatabaseProvider
+    """Database provider."""
     tableName: str
+    """Table to search."""
 
     def configure(self):
         self.tableName = self.cfg('tableName') or self.cfg('_defaultTableName')
@@ -38,12 +44,30 @@ class Object(gws.base.search.finder.Object):
         self.supportsFilterSearch = True
 
     def configure_provider(self):
+        """Set the database provider from ``dbUid``, or the first ``postgres`` provider.
+
+        Returns:
+            ``True`` if a provider was set.
+
+        Raises:
+            ``gws.Error``: If no provider is found.
+        """
         return gws.config.util.configure_database_provider_for(self)
 
     def configure_models(self):
         return gws.config.util.configure_models_for(self, with_default=True)
 
     def create_model(self, cfg):
+        """Create a ``postgres`` model for the table of the finder.
+
+        The model gets the database provider, the table and the ``sqlFilter`` of the finder.
+
+        Args:
+            cfg: Model configuration, or ``None`` for the default model.
+
+        Returns:
+            The model object.
+        """
         return self.create_child(
             gws.ext.object.model,
             cfg,

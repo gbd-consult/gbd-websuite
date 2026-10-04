@@ -12,9 +12,26 @@ from . import core
 
 
 class Reader:
+    """Reads a raw value against a spec type and returns the parsed value.
+
+    Readers are selected first by type uid (built-in atoms and special types
+    like ``gws.CrsName`` or ``gws.Duration``) and then by type kind. Objects
+    are returned as ``gws.Data``. Some special types are converted, e.g. a
+    ``gws.CrsName`` is read as an SRID and a ``gws.Duration`` as seconds.
+    """
+
     atom = core.make_type({'c': core.c.ATOM})
+    """Placeholder type passed to readers of types that are not in the specs."""
 
     def __init__(self, runtime, path, options):
+        """Create a reader.
+
+        Args:
+            runtime: Spec runtime used to look up types.
+            path: Path of the config file, used to resolve relative paths.
+            options: A collection of ``gws.SpecReadOption`` values.
+        """
+
         self.runtime = runtime
         self.path = path
 
@@ -32,6 +49,22 @@ class Reader:
         self.pop = lambda: ...
 
     def read(self, value, type_uid):
+        """Read a value.
+
+        With the ``verboseErrors`` option, the reader tracks its position in
+        the value and adds a ``gws.ConfigErrorInfo`` to the error.
+
+        Args:
+            value: Raw value.
+            type_uid: Type uid or extension name.
+
+        Returns:
+            The parsed value.
+
+        Raises:
+            ``core.ReadError``: If the value does not match the type.
+        """
+
         if not self.verbose_errors:
             return self.read2(value, type_uid)
 
@@ -45,6 +78,19 @@ class Reader:
             raise self.add_config_error_info(exc)
 
     def read2(self, value, type_uid):
+        """Read a value without adding error information, used recursively by the readers.
+
+        Args:
+            value: Raw value.
+            type_uid: Type uid or extension name.
+
+        Returns:
+            The parsed value.
+
+        Raises:
+            ``core.ReadError``: If the value does not match the type or the type is unknown.
+        """
+
         typ = self.runtime.get_type(type_uid)
 
         if type_uid in _READERS:
@@ -59,6 +105,15 @@ class Reader:
         return _READERS[typ.c](self, value, typ)
 
     def add_config_error_info(self, exc: Exception):
+        """Add the value and the read stack to a read error.
+
+        Args:
+            exc: Read error with the message and the value as arguments.
+
+        Returns:
+            The same exception with a ``gws.ConfigErrorInfo`` as the third argument.
+        """
+
         cei = gws.ConfigErrorInfo(
             value=_format_error_value(exc),
             path=self.path,

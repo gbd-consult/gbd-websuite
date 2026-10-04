@@ -1,4 +1,4 @@
-"""Postgres database provider."""
+"""PostgreSQL database provider."""
 
 from typing import Optional
 
@@ -34,6 +34,13 @@ class Config(gws.base.database.provider.Config):
 
 @gws.ext.object.databaseProvider('postgres')
 class Object(gws.base.database.provider.Object):
+    """PostgreSQL/PostGIS database provider.
+
+    Connects to a PostgreSQL database and describes its tables and columns,
+    including PostGIS geometry columns, for the layers, models and finders
+    that use it.
+    """
+
     def url(self):
         return connection_url(self.config)
 
@@ -116,6 +123,7 @@ class Object(gws.base.database.provider.Object):
         return col
 
     def _get_geom_type_and_srid(self, table, column_name):
+        """Return the geometry type and SRID of a column, from its type or from ``geometry_columns``."""
         sa_table = self.table(table)
         sa_col = self.column(table, column_name)
 
@@ -154,6 +162,23 @@ class Object(gws.base.database.provider.Object):
 ##
 
 def connection_url(cfg: gws.Config) -> Optional[str]:
+    """Create a connection URL from a provider configuration.
+
+    If ``host`` is configured, the URL is built from the host, port, database
+    and credentials. Otherwise, if ``serviceName`` is configured, the URL refers
+    to that service in the PostgreSQL service file given by ``PGSERVICEFILE``.
+    ``options`` are added as URL parameters, with ``application_name`` set to
+    ``GWS`` by default.
+
+    Args:
+        cfg: Provider configuration.
+
+    Returns:
+        The connection URL, or ``None`` if neither ``host`` nor ``serviceName`` is configured.
+
+    Raises:
+        ``sa.Error``: If ``serviceName`` is used and the service file does not exist.
+    """
     # https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING
     # https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PARAMKEYWORDS
 

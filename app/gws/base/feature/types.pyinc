@@ -6,10 +6,15 @@ class FeatureRecord(Data):
     """Raw data from a feature source."""
 
     attributes: dict
+    """Attribute values as read from the source or as written to it."""
     meta: dict
+    """Extra source information, e.g. ``layerName`` for features from OWS responses."""
     uid: Optional[str]
+    """Feature id provided by the source."""
     shape: Optional['Shape']
+    """Geometry provided by the source."""
     ewkt: str
+    """Geometry as EWKT, provided by some sources."""
 
 
 class FeatureProps(Props):
@@ -27,46 +32,138 @@ class FeatureProps(Props):
 
 
 class Feature:
-    """Feature object."""
+    """Feature object.
+
+    A set of named attributes that belongs to a model. The model defines the
+    uid attribute (``uidName``) and the geometry attribute (``geometryName``).
+    """
 
     attributes: dict
+    """Attribute values as python values."""
     category: str
+    """Category for grouping features in the client, e.g. the source layer name."""
     cssSelector: str
+    """CSS selector for the feature style in the client."""
     errors: list['ModelValidationError']
+    """Validation errors."""
     isNew: bool
+    """The feature is new and not yet saved."""
     model: 'Model'
+    """Model the feature belongs to."""
     props: 'FeatureProps'
+    """Data from or for the client."""
     record: 'FeatureRecord'
+    """Raw data from or for the source."""
     views: dict
+    """Rendered views, keyed by view name, e.g. ``title`` or ``label``."""
     createWithFeatures: list['Feature']
+    """Related features a new feature is created with."""
     insertedPrimaryKey: Optional[int | str]
+    """Primary key of the row inserted when the feature was created."""
 
     def get(self, name: str, default=None) -> Any:
-        """Get attribute value."""
+        """Get an attribute value.
+
+        Args:
+            name: Attribute name.
+            default: Value to return if the attribute does not exist.
+
+        Returns:
+            The attribute value, or ``default``.
+        """
 
     def has(self, name: str) -> bool:
-        """Check if attribute exists."""
+        """Check if an attribute exists.
+
+        Args:
+            name: Attribute name.
+
+        Returns:
+            ``True`` if the attribute exists.
+        """
 
     def set(self, name: str, value: Any) -> 'Feature':
-        """Set attribute value."""
+        """Set an attribute value.
+
+        Args:
+            name: Attribute name.
+            value: Attribute value.
+
+        Returns:
+            The feature itself.
+        """
 
     def raw(self, name: str) -> Any:
-        """Get raw attribute value from the record."""
+        """Get a raw attribute value from the record.
+
+        Args:
+            name: Attribute name.
+
+        Returns:
+            The value, or ``None`` if the record has no such attribute.
+        """
 
     def render_views(self, templates: list['Template'], **kwargs) -> 'Feature':
-        """Render feature views using provided templates, populate views`."""
+        """Render feature views and store them in ``views``.
+
+        Each template renders the view named after the last part of its subject,
+        e.g. ``feature.title`` renders ``title``. The templates receive the
+        feature attributes, ``feature`` and the extra arguments.
+
+        Args:
+            templates: Feature templates.
+            **kwargs: Extra template arguments.
+
+        Returns:
+            The feature itself.
+        """
 
     def shape(self) -> Optional['Shape']:
-        """Get feature shape."""
+        """Get the feature geometry.
+
+        Returns:
+            The geometry, or ``None`` if the model has no geometry or the feature has no value.
+        """
 
     def to_svg(self, view: 'MapView', label: Optional[str] = None, style: Optional['Style'] = None) -> list[XmlElement]:
-        """Render feature shape to SVG fragments for the given map view."""
+        """Render the feature geometry as SVG fragments for a map view.
+
+        Args:
+            view: Map view. The geometry is transformed to its CRS.
+            label: Label text.
+            style: Style.
+
+        Returns:
+            A list of SVG elements, empty if the feature has no geometry.
+        """
 
     def to_geojson(self, keep_crs=False) -> dict:
-        """Convert feature to GeoJSON dict."""
+        """Convert the feature to a GeoJSON feature.
+
+        The geometry is converted to WGS84 unless ``keep_crs`` is set. The uid
+        is added as the ``id`` property.
+
+        Args:
+            keep_crs: Keep the geometry coordinates in the feature CRS.
+
+        Returns:
+            A GeoJSON feature dict.
+        """
 
     def transform_to(self, crs: 'Crs') -> 'Feature':
-        """Transform feature shape to the given CRS."""
+        """Transform the feature geometry to another CRS, in place.
+
+        Args:
+            crs: Target CRS.
+
+        Returns:
+            The feature itself.
+        """
 
     def uid(self) -> FeatureUid:
-        """Get feature unique id."""
+        """Get the unique id of the feature.
+
+        Returns:
+            The value of the uid attribute as a string, an empty string if the model
+            has no uid attribute, or ``None`` if the feature has no value.
+        """

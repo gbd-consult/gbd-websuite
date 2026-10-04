@@ -1,4 +1,4 @@
-"""Common configuration utilities."""
+"""Helpers for ``configure`` methods: create common children and find providers."""
 
 from typing import Optional, cast
 
@@ -7,6 +7,19 @@ import gws.gis.source
 
 
 def configure_templates_for(obj: gws.Node, extra: Optional[list] = None) -> bool:
+    """Create the templates of an object.
+
+    Templates are created from the ``templates`` config and from ``extra``,
+    using the object's ``create_template`` method if it has one.
+    The result is stored in ``obj.templates``.
+
+    Args:
+        obj: Object to configure.
+        extra: Additional template configs, appended after the configured ones.
+
+    Returns:
+        ``True`` if at least one template was created.
+    """
     fn = _create_fn(obj, 'create_template', gws.ext.object.template)
     obj.templates = []
 
@@ -21,6 +34,18 @@ def configure_templates_for(obj: gws.Node, extra: Optional[list] = None) -> bool
 
 
 def configure_models_for(obj: gws.Node, with_default=False) -> bool:
+    """Create the models of an object.
+
+    Models are created from the ``models`` config, using the object's
+    ``create_model`` method if it has one. The result is stored in ``obj.models``.
+
+    Args:
+        obj: Object to configure.
+        with_default: If no models are configured, create one model with an empty config.
+
+    Returns:
+        ``True`` if models are configured or a default model was created.
+    """
     fn = _create_fn(obj, 'create_model', gws.ext.object.model)
     obj.models = []
 
@@ -37,6 +62,18 @@ def configure_models_for(obj: gws.Node, with_default=False) -> bool:
 
 
 def configure_finders_for(obj: gws.Node, with_default=False) -> bool:
+    """Create the finders of an object.
+
+    Finders are created from the ``finders`` config, using the object's
+    ``create_finder`` method if it has one. The result is stored in ``obj.finders``.
+
+    Args:
+        obj: Object to configure.
+        with_default: If no finders are configured, create one finder with an empty config.
+
+    Returns:
+        ``True`` if finders are configured or a default finder was created.
+    """
     fn = _create_fn(obj, 'create_finder', gws.ext.object.finder)
     obj.finders = []
 
@@ -53,6 +90,7 @@ def configure_finders_for(obj: gws.Node, with_default=False) -> bool:
 
 
 def _create_fn(obj, name: str, cls: type):
+    """Return the object's create method with the given name, or a function that creates a child of ``cls``."""
     fn = getattr(obj, name, None)
     if fn:
         return fn
@@ -67,6 +105,24 @@ def configure_source_layers_for(
         is_queryable: bool = None,
         is_visible: bool = None,
 ) -> bool:
+    """Select the source layers of an object.
+
+    If ``sourceLayers`` is configured, it is used as a filter on ``layers``.
+    Otherwise, the internal ``_defaultSourceLayers`` config is used as is, if set.
+    Otherwise, ``layers`` are filtered by the given flags.
+    The result is stored in ``obj.sourceLayers``.
+
+    Args:
+        obj: Object to configure.
+        layers: Source layers to select from.
+        is_group: Filter by the group flag.
+        is_image: Filter by the image flag.
+        is_queryable: Filter by the queryable flag.
+        is_visible: Filter by the visible flag.
+
+    Returns:
+        Always ``True``.
+    """
     p = obj.cfg('sourceLayers')
     if p:
         obj.sourceLayers = gws.gis.source.filter_layers(layers, p)
@@ -88,6 +144,22 @@ def configure_source_layers_for(
 
 
 def configure_provider_for(obj: gws.Node, cls: type) -> bool:
+    """Set the provider of an object.
+
+    If ``provider`` is configured, a shared provider object is created from it.
+    Otherwise, the internal ``_defaultProvider`` config is used, if it is an instance of ``cls``.
+    The result is stored in ``obj.provider``.
+
+    Args:
+        obj: Object to configure.
+        cls: Provider class.
+
+    Returns:
+        ``True`` if a provider was set.
+
+    Raises:
+        ``gws.Error``: If no provider is found.
+    """
     p = obj.cfg('provider')
     if p:
         obj.provider = obj.root.create_shared(cls, p)
@@ -102,6 +174,22 @@ def configure_provider_for(obj: gws.Node, cls: type) -> bool:
 
 
 def configure_database_provider_for(obj: gws.Node, ext_type: Optional[str] = None) -> bool:
+    """Set the database provider of an object.
+
+    The provider is looked up by the ``dbUid`` config, then taken from the
+    internal ``_defaultDb`` config, then found by the extension type.
+    The result is stored in ``obj.db``.
+
+    Args:
+        obj: Object to configure.
+        ext_type: Extension type of the provider, e.g. ``postgres``. Defaults to the object's ``extType``.
+
+    Returns:
+        ``True`` if a provider was set.
+
+    Raises:
+        ``gws.Error``: If ``dbUid`` is configured but not found, or if no provider is found.
+    """
     mgr = obj.root.app.databaseMgr
 
     uid = obj.cfg('dbUid')

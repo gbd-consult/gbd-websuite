@@ -14,6 +14,14 @@ Object = None
 
 
 def object_repr(self):
+    """Return a short representation of an object.
+
+    Args:
+        self: The object.
+
+    Returns:
+        A string with the class or extension name, title, uid and the object id.
+    """
     r = getattr(self, 'extName', None) or class_name(self)
     s = getattr(self, 'title', None)
     if s:
@@ -25,6 +33,12 @@ def object_repr(self):
 
 
 def node_initialize(self, config):
+    """Implement ``gws.Node.initialize``.
+
+    Args:
+        self: The node.
+        config: Configuration.
+    """
     self.config = config
     self.permissions = configure_permissions(self)
     super_invoke(self, 'pre_configure')
@@ -32,35 +46,105 @@ def node_initialize(self, config):
 
 
 def node_create_child(self, classref, config, **kwargs):
+    """Implement ``gws.Node.create_child``.
+
+    Args:
+        self: The parent node.
+        classref: Class reference.
+        config: Configuration.
+        **kwargs: Additional configuration properties.
+
+    Returns:
+        A newly created node or ``None``.
+    """
     return self.root.create(classref, parent=self, config=config, **kwargs)
 
 
 def node_create_child_if_configured(self, classref, config=None, **kwargs):
+    """Implement ``gws.Node.create_child_if_configured``.
+
+    Args:
+        self: The parent node.
+        classref: Class reference.
+        config: Configuration.
+        **kwargs: Additional configuration properties.
+
+    Returns:
+        A newly created node or ``None``.
+    """
     if not config:
         return None
     return self.root.create(classref, parent=self, config=config, **kwargs)
 
 
 def node_create_children(self, classref, configs, **kwargs):
+    """Implement ``gws.Node.create_children``.
+
+    Args:
+        self: The parent node.
+        classref: Class reference.
+        configs: List of configurations.
+        **kwargs: Additional configuration properties.
+
+    Returns:
+        A list of newly created nodes, without the ones that failed.
+    """
     if not configs:
         return []
     return u.compact(self.create_child(classref, cfg, **kwargs) for cfg in configs)
 
 
 def node_cfg(self, key: str, default=None):
+    """Implement ``gws.Node.cfg``.
+
+    Args:
+        self: The node.
+        key: Property key, nested keys are separated by dots.
+        default: Value to return if the property is ``None`` or missing.
+
+    Returns:
+        The property value or the default.
+    """
     val = u.get(self.config, key)
     return val if val is not None else default
 
 
 def node_find_all(self, classref):
+    """Implement ``gws.Node.find_all``.
+
+    Args:
+        self: The node.
+        classref: Class reference. If ``None``, all nodes match.
+
+    Returns:
+        A list of matching children.
+    """
     return find_all_in(self.root, self.children, classref)
 
 
 def node_find_first(self, classref):
+    """Implement ``gws.Node.find_first``.
+
+    Args:
+        self: The node.
+        classref: Class reference. If ``None``, all nodes match.
+
+    Returns:
+        The first matching child or ``None``.
+    """
     return find_first_in(self.root, self.children, classref)
 
 
 def node_find_closest(self, classref):
+    """Implement ``gws.Node.find_closest``.
+
+    Args:
+        self: The node.
+        classref: Class reference. If ``None``, all nodes match.
+
+    Returns:
+        The closest matching ancestor below the root, or ``None``.
+    """
     node = self.parent
     while True:
         if not node or node is self.root:
@@ -71,6 +155,15 @@ def node_find_closest(self, classref):
 
 
 def node_find_ancestors(self, classref):
+    """Implement ``gws.Node.find_ancestors``.
+
+    Args:
+        self: The node.
+        classref: Class reference. If ``None``, all nodes match.
+
+    Returns:
+        A list of matching ancestors below the root, from the parent upwards.
+    """
     ls = []
     node = self.parent
 
@@ -85,6 +178,15 @@ def node_find_ancestors(self, classref):
 
 
 def node_find_descendants(self, classref):
+    """Implement ``gws.Node.find_descendants``.
+
+    Args:
+        self: The node.
+        classref: Class reference. If ``None``, all nodes match.
+
+    Returns:
+        A list of matching descendants in the depth-first order.
+    """
     ls = []
 
     def _walk(node):
@@ -101,6 +203,12 @@ def node_find_descendants(self, classref):
 
 
 def root_init(self, specs):
+    """Implement ``gws.Root.__init__``.
+
+    Args:
+        self: The root.
+        specs: Specs runtime.
+    """
     self.specs = specs
     self.app = None
     self.permissions = {}
@@ -114,6 +222,19 @@ def root_init(self, specs):
 
 
 def root_initialize(self, node, config):
+    """Implement ``gws.Root.initialize``.
+
+    The node is pushed onto ``configStack`` while it is initialized.
+    Exceptions are logged and recorded in ``configErrors``.
+
+    Args:
+        self: The root.
+        node: The node.
+        config: Configuration.
+
+    Returns:
+        ``True`` if the node was initialized, ``False`` if it failed.
+    """
     self.configStack.append(node)
 
     try:
@@ -129,6 +250,11 @@ def root_initialize(self, node, config):
 
 
 def root_post_initialize(self):
+    """Implement ``gws.Root.post_initialize``.
+
+    Args:
+        self: The root.
+    """
     for node in reversed(self.nodes):
         self.configStack = []
         p = node
@@ -144,6 +270,11 @@ def root_post_initialize(self):
 
 
 def root_activate(self):
+    """Implement ``gws.Root.activate``.
+
+    Args:
+        self: The root.
+    """
     for node in self.nodes:
         # if type(node).activate != Node.activate:
         #     log.debug(f'activate: {node!r}')
@@ -151,14 +282,42 @@ def root_activate(self):
 
 
 def root_find_all(self, classref):
+    """Implement ``gws.Root.find_all``.
+
+    Args:
+        self: The root.
+        classref: Class reference. If ``None``, all nodes match.
+
+    Returns:
+        A list of matching nodes.
+    """
     return find_all_in(self, self.nodes, classref)
 
 
 def root_find_first(self, classref):
+    """Implement ``gws.Root.find_first``.
+
+    Args:
+        self: The root.
+        classref: Class reference. If ``None``, all nodes match.
+
+    Returns:
+        The first matching node or ``None``.
+    """
     return find_first_in(self, self.nodes, classref)
 
 
 def root_get(self, uid, classref):
+    """Implement ``gws.Root.get``.
+
+    Args:
+        self: The root.
+        uid: Node uid.
+        classref: Class reference. If given, the node must match it.
+
+    Returns:
+        The node or ``None``.
+    """
     if not uid:
         return
     node = self.uidMap.get(uid)
@@ -167,15 +326,46 @@ def root_get(self, uid, classref):
 
 
 def root_object_count(self) -> int:
+    """Implement ``gws.Root.object_count``.
+
+    Args:
+        self: The root.
+
+    Returns:
+        The number of nodes.
+    """
     return len(self.nodes)
 
 
 def root_create(self, classref, parent, config, **kwargs):
+    """Implement ``gws.Root.create``.
+
+    Args:
+        self: The root.
+        classref: Class reference.
+        parent: Parent node.
+        config: Configuration.
+        **kwargs: Additional configuration properties.
+
+    Returns:
+        A newly created node or ``None``.
+    """
     config = to_config(config, kwargs)
     return create_node(self, classref, parent, config)
 
 
 def root_create_shared(self, classref, config, **kwargs):
+    """Implement ``gws.Root.create_shared``.
+
+    Args:
+        self: The root.
+        classref: Class reference.
+        config: Configuration.
+        **kwargs: Additional configuration properties.
+
+    Returns:
+        An existing node with the same uid, a newly created node, or ``None``.
+    """
     config = to_config(config, kwargs)
 
     uid = config.uid
@@ -189,6 +379,19 @@ def root_create_shared(self, classref, config, **kwargs):
 
 
 def root_create_temporary(self, classref, config, **kwargs):
+    """Implement ``gws.Root.create_temporary``.
+
+    The node is not registered in the root and ``post_configure`` is run immediately.
+
+    Args:
+        self: The root.
+        classref: Class reference.
+        config: Configuration.
+        **kwargs: Additional configuration properties.
+
+    Returns:
+        A newly created node or ``None``.
+    """
     config = to_config(config, kwargs)
     node = create_node(self, classref, None, config, temp=True)
     if node:
@@ -197,6 +400,18 @@ def root_create_temporary(self, classref, config, **kwargs):
 
 
 def root_create_application(self, config, **kwargs):
+    """Implement ``gws.Root.create_application``.
+
+    The application gets the fixed uid ``const.APPLICATION_UID``.
+
+    Args:
+        self: The root.
+        config: Configuration.
+        **kwargs: Additional configuration properties.
+
+    Returns:
+        The Application object.
+    """
     config = to_config(config, kwargs)
 
     node = alloc_node(self, 'gws.base.application.core.Object')
@@ -217,10 +432,31 @@ def root_create_application(self, config, **kwargs):
 
 
 def class_name(node):
+    """Return the full class name of an object.
+
+    Args:
+        node: An object.
+
+    Returns:
+        The module and class name, like ``gws.base.layer.core.Object``.
+    """
     return node.__class__.__module__ + '.' + node.__class__.__name__
 
 
 def alloc_node(self, classref, typ=None):
+    """Create an uninitialized node of the class found in the specs.
+
+    Args:
+        self: The root.
+        classref: Class reference.
+        typ: Extension type, for ``ext`` class references.
+
+    Returns:
+        The new node, with ``root``, ``extName`` and ``extType`` set.
+
+    Raises:
+        Error: If the class is not found.
+    """
     cls = self.specs.get_class(classref, typ)
     if not cls:
         raise Error(f'class {classref}:{typ} not found')
@@ -234,6 +470,17 @@ def alloc_node(self, classref, typ=None):
 
 
 def configure_permissions(self):
+    """Compute the permissions of a node from its ``access`` and ``permissions`` config.
+
+    ``access`` sets the read permission. In ``permissions``, ``all`` sets all modes, ``edit`` sets write,
+    create and delete, and the specific modes override both.
+
+    Args:
+        self: The node.
+
+    Returns:
+        A mapping from an access mode to an ACL.
+    """
     perms = {
         Access.read: [],
         Access.write: [],
@@ -266,6 +513,18 @@ def configure_permissions(self):
 
 
 def create_node(self, classref, parent, config, temp=False):
+    """Create and initialize a node.
+
+    Args:
+        self: The root.
+        classref: Class reference.
+        parent: Parent node, the new node is appended to its children.
+        config: Configuration. Its ``type`` selects the extension type.
+        temp: If ``True``, the node is not registered in the root.
+
+    Returns:
+        The new node, or ``None`` if the initialization failed.
+    """
     node = alloc_node(self, classref, config.get('type'))
     node.uid = get_or_generate_uid(self, config)
     node.parent = parent
@@ -288,6 +547,16 @@ def create_node(self, classref, parent, config, temp=False):
 
 
 def find_all_in(root, nodes, classref):
+    """Filter nodes by a class reference.
+
+    Args:
+        root: The root.
+        nodes: A list of nodes.
+        classref: Class reference. If ``None``, all nodes match.
+
+    Returns:
+        A list of matching nodes.
+    """
     if not classref:
         return nodes
     cls, name, ext_name = root.specs.parse_classref(classref)
@@ -300,11 +569,30 @@ def find_all_in(root, nodes, classref):
 
 
 def find_first_in(root, nodes, classref):
+    """Find the first node that matches a class reference.
+
+    Args:
+        root: The root.
+        nodes: A list of nodes.
+        classref: Class reference. If ``None``, all nodes match.
+
+    Returns:
+        The first matching node or ``None``.
+    """
     found = find_all_in(root, nodes, classref)
     return found[0] if found else None
 
 
 def get_or_generate_uid(self, config):
+    """Return the uid from the config, or generate a new numeric one.
+
+    Args:
+        self: The root.
+        config: Configuration.
+
+    Returns:
+        A uid.
+    """
     if config.get('uid'):
         return config.get('uid')
     self.uidCount += 1
@@ -312,6 +600,19 @@ def get_or_generate_uid(self, config):
 
 
 def is_a(root, node, classref):
+    """Check if a node matches a class reference.
+
+    A class matches by ``isinstance``, a class name matches exactly,
+    an ``ext`` name matches the node's extension name or its prefix.
+
+    Args:
+        root: The root.
+        node: The node.
+        classref: Class reference.
+
+    Returns:
+        ``True`` if the node matches.
+    """
     cls, name, ext_name = root.specs.parse_classref(classref)
     if cls:
         return isinstance(node, cls)
@@ -323,6 +624,19 @@ def is_a(root, node, classref):
 
 
 def props_of(node, user, *context):
+    """Implement ``gws.props_of``.
+
+    Args:
+        node: The object.
+        user: The user.
+        *context: Context objects for the permission check.
+
+    Returns:
+        A ``Props`` object or ``None``.
+
+    Raises:
+        Error: If the object's ``props`` returns an invalid type.
+    """
     if not user.can_use(node, *context):
         return None
     p = make_props2(node, user)
@@ -334,6 +648,18 @@ def props_of(node, user, *context):
 
 
 def make_props2(obj, user):
+    """Recursively convert a value to props for a user.
+
+    Objects are converted with their ``props`` method, or dropped if the user has no read permission.
+    ``None`` values are removed from dicts and lists.
+
+    Args:
+        obj: An object, ``Data``, dict, list or a scalar value.
+        user: The user.
+
+    Returns:
+        A scalar, dict or list, or ``None``.
+    """
     if u.is_atom(obj):
         return obj
 
@@ -355,6 +681,12 @@ def make_props2(obj, user):
 
 
 def register_config_error(self, exc):
+    """Record an exception in ``configErrors``, with the current config stack.
+
+    Args:
+        self: The root.
+        exc: The exception.
+    """
     try:
         msg = getattr(exc, 'message', None) or str(exc.args[0])
     except:
@@ -363,6 +695,12 @@ def register_config_error(self, exc):
 
 
 def root_config_warning(self, message):
+    """Implement ``gws.Root.config_warning``.
+
+    Args:
+        self: The root.
+        message: Warning message.
+    """
     cei = config_info(self, message)
     loc = ''
     if cei.stack:
@@ -372,6 +710,15 @@ def root_config_warning(self, message):
 
 
 def config_info(self, message):
+    """Create a configuration error or warning record.
+
+    Args:
+        self: The root.
+        message: The message.
+
+    Returns:
+        A ``Data`` object with ``message`` and ``stack``, a list of locations from the innermost node outwards.
+    """
     cei = Data(message=message, stack=[])
     for node in reversed(self.configStack):
         cei.stack.append(
@@ -387,6 +734,14 @@ def config_info(self, message):
 
 
 def config_location_repr(loc):
+    """Return a short representation of a configuration location.
+
+    Args:
+        loc: A location from ``config_info``.
+
+    Returns:
+        A string with the object type, name, uid and the property name.
+    """
     p = [
         loc.objectType,
         repr(loc.objectName) if loc.objectName else None,
@@ -399,6 +754,12 @@ def config_location_repr(loc):
 
 
 def super_invoke(node, method):
+    """Invoke a method of every class in the node's MRO that defines it, base classes first.
+
+    Args:
+        node: The node.
+        method: Method name.
+    """
     # since `super().configure` is mandatory in `configure` methods,
     # let's automate this by collecting all super 'configure' methods
 
@@ -416,4 +777,15 @@ def super_invoke(node, method):
 
 
 def to_config(config, defaults):
+    """Merge keyword defaults and a configuration into a new ``Data`` object.
+
+    Values in ``config`` override the defaults, ``None`` values are skipped.
+
+    Args:
+        config: Configuration.
+        defaults: Default values.
+
+    Returns:
+        A new ``Data`` object.
+    """
     return u.merge(Data(), defaults, config)

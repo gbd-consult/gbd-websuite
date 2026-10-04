@@ -100,13 +100,52 @@ class Layer(Node):
     """Bounds the client zooms to for this layer; defaults to ``bounds``."""
 
     def find_features(self, search: 'SearchQuery', user: 'User') -> list['Feature']:
-        """Find features in the layer's readable model."""
+        """Find features in the layer.
+
+        Vector layers search in the first model the user can read; other
+        layers return an empty list.
+
+        Args:
+            search: Search query.
+            user: The user who searches.
+
+        Returns:
+            Found features.
+        """
 
     def render(self, lri: LayerRenderInput) -> Optional['LayerRenderOutput']:
-        """Render a box, a tile or an SVG fragment, depending on the input type."""
+        """Render a box, a tile or an SVG fragment, depending on the input type.
+
+        Args:
+            lri: Render input.
+
+        Returns:
+            Render output with image content or SVG tags, or ``None`` if the
+            layer has nothing to render.
+        """
 
     def render_legend(self, args: Optional[dict | Data] = None) -> Optional['LegendRenderOutput']:
-        """Render the legend; without ``args`` the output is cached for the server lifetime."""
+        """Render the layer legend.
+
+        Without ``args`` the output is cached for the server lifetime.
+
+        Args:
+            args: Arguments passed to the legend renderer.
+
+        Returns:
+            Legend output, or ``None`` if the layer has no legend.
+        """
 
     def url_path_for(self, kind: str) -> str:
-        """URL path for ``box``, ``tile``, ``legend`` or ``features`` requests to this layer."""
+        """Return the URL path for requests to this layer.
+
+        Args:
+            kind: ``box``, ``tile``, ``legend`` or ``features``. The ``tile``
+                path contains ``{z}``, ``{x}`` and ``{y}`` placeholders.
+
+        Returns:
+            URL path.
+
+        Raises:
+            ``gws.Error``: If ``kind`` is not recognized.
+        """

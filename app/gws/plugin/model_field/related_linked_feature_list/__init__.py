@@ -1,13 +1,34 @@
-"""Related Linked Feature List field
+"""Related linked feature list field.
 
 Represents an M:N relationship between two models via a link table ("associative entity")::
 
-    +---------+         +---------------+         +---------+
-    | table A |         | link table    |         | table B |
-    +---------+         +---------------+         +---------+
-    | key_a   |-------<<| a           b |>>-------| key_b   |
-    +---------+         +---------------+         +---------+
+    +------------+         +-------------------------------+         +-----------+
+    | this model |         | linkTableName                 |         | toModel   |
+    +------------+         +-------------------------------+         +-----------+
+    | fromColumn |-------<<| linkFromColumn   linkToColumn |>>-------| toColumn  |
+    +------------+         +-------------------------------+         +-----------+
 
+The value of the field is the list of linked features of the related model.
+``fromColumn`` and ``toColumn`` default to the primary keys. The link table
+must be in the same database as this model.
+
+When a feature is written, the rows of the link table are synchronized with
+the field value: missing links are inserted, links to features no longer in
+the list are deleted. The linked features themselves are not changed. When a
+related feature is created together with features of this model, links to
+them are inserted. Without a configured widget, the field uses a
+``featureList`` widget.
+
+Example::
+
+    fields+ {
+        name "tags"
+        type "relatedLinkedFeatureList"
+        toModel "model_tag"
+        linkTableName "edit.poi_tag"
+        linkFromColumn "poi_id"
+        linkToColumn "tag_id"
+    }
 """
 
 import gws
@@ -42,6 +63,8 @@ class Props(related_field.Props):
 
 @gws.ext.object.modelField('relatedLinkedFeatureList')
 class Object(related_field.Object):
+    """Related linked feature list field object."""
+
     attributeType = gws.AttributeType.featurelist
 
     def configure_relationship(self):
@@ -152,6 +175,16 @@ class Object(related_field.Object):
         self.after_write(feature, key, mc)
 
     def after_write(self, feature, key, mc: gws.ModelContext):
+        """Synchronize the link table with the field value of a written feature.
+
+        Does nothing if the user may not write the field or the maximum relation
+        depth is reached.
+
+        Args:
+            feature: The created or updated feature.
+            key: Value of the key column of the feature.
+            mc: The model context.
+        """
         if not mc.user.can_write(self) or mc.relDepth >= mc.maxDepth:
             return
 
@@ -177,6 +210,15 @@ class Object(related_field.Object):
         self.delete_links(cur_links - new_links, mc)
 
     def get_links(self, left_keys, mc):
+        """Read the links of the given keys from the link table.
+
+        Args:
+            left_keys: Key values of features of this model.
+            mc: The model context.
+
+        Returns:
+            A set of ``(from_key, to_key)`` tuples.
+        """
         sql = sa.select(
             self.rel.link.fromKey,
             self.rel.link.toKey,
@@ -187,6 +229,12 @@ class Object(related_field.Object):
             return set((lk, rk) for lk, rk in conn.execute(sql))
 
     def create_links(self, links, mc):
+        """Insert links into the link table.
+
+        Args:
+            links: ``(from_key, to_key)`` tuples.
+            mc: The model context.
+        """
         sql = sa.insert(self.rel.link.table)
         # fmt: off
         values = [
@@ -199,6 +247,12 @@ class Object(related_field.Object):
                 conn.execute(sql, values)
 
     def delete_links(self, links, mc):
+        """Delete links from the link table.
+
+        Args:
+            links: ``(from_key, to_key)`` tuples.
+            mc: The model context.
+        """
         with self.model.db.connect() as conn:
             for lk, rk in links:
                 sql = sa.delete(

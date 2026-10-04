@@ -1,3 +1,5 @@
+"""Web manager."""
+
 from typing import Optional
 
 import gws
@@ -16,6 +18,8 @@ class Config(gws.Config):
 
 
 class Object(gws.WebManager):
+    """Web manager."""
+
     def configure(self):
         p = self.cfg('site')
         if not p:

@@ -1,16 +1,4 @@
-"""Schema generator.
-
-Generate python APIs and object databases from GeoInfoDok sources.
-
-For version 6 use RR cat files Basisschema.cat and Fachschema.cat
-For version 7 use the QEA (sqlite) file AAA-7.1.2.qea
-
-Usage::
-
-    generator.py 6 /path/to/Basisschema.cat /path/to/Fachschema.cat
-    generator.py 7 /path/to/AAA-7.1.2.qea
-
-"""
+"""Generate the GeoInfoDok schema modules from the official model files."""
 
 import re
 import os
@@ -22,6 +10,16 @@ import sqlalchemy as sa
 
 
 def main(version, *paths):
+    """Generate ``gid<version>.py`` in this directory.
+
+    Args:
+        version: GeoInfoDok version, ``6`` or ``7``.
+        *paths: Model files, ``.cat`` files for version 6, a ``.qea`` file for version 7.
+
+    Raises:
+        ``ValueError``: If the version is not supported.
+    """
+
     if version == '6':
         nodes = Parser6().parse(paths)
 
@@ -123,19 +121,46 @@ STD_TYPES = {
 ##
 
 class Node:
+    """A schema element: category, class, union, enumeration or attribute.
+
+    Keyword arguments passed to the constructor become attributes.
+    Missing attributes read as ``None``.
+    """
+
     def __init__(self, **kwargs):
+        """Create a node.
+
+        Args:
+            **kwargs: Attribute values.
+        """
+
         vars(self).update(kwargs)
 
     def __getattr__(self, item):
+        """Return ``None`` for missing attributes."""
+
         return None
 
 
 ##
 
 class Parser:
+    """Base class for model file parsers.
+
+    A parser creates a flat list of nodes from the model files and then
+    resolves keys, super classes and the ``is_aa`` and ``is_reo`` flags.
+    """
+
     nodes: list[Node] = []
+    """Parsed nodes."""
 
     def finalize(self):
+        """Resolve keys, category roots, super classes and flags of the parsed nodes.
+
+        Returns:
+            The nodes that have a node type.
+        """
+
         for node in self.nodes:
             self.make_key(node)
 
@@ -149,6 +174,15 @@ class Parser:
         return [node for node in self.nodes if node.T]
 
     def make_key(self, node):
+        """Compute the key of a node, a path of lower-case names of its parents.
+
+        Args:
+            node: Schema node.
+
+        Returns:
+            The key.
+        """
+
         if node.key:
             return node.key
 
@@ -161,6 +195,8 @@ class Parser:
         return node.key
 
     def filter_category_roots(self):
+        """Keep only nodes under the known category roots and shorten their keys."""
+
         new_nodes = []
         roots = {'/' + to_name(k).lower(): '/' + v for k, v in CATEGORY_ROOTS.items()}
 
@@ -174,6 +210,8 @@ class Parser:
         self.nodes = new_nodes
 
     def resolve_supers(self):
+        """Replace the super class names of class nodes with the super class nodes."""
+
         for node in self.nodes:
             for sup_name in popattr(node, 'pSuperNames', []):
                 sup = self.find_node(sup_name)
@@ -181,6 +219,19 @@ class Parser:
                     node.supers.append(sup)
 
     def check_flag(self, node, prop, root):
+        """Compute a flag that is set for a root class and all of its subclasses.
+
+        The flag is stored on the node.
+
+        Args:
+            node: Schema node.
+            prop: Flag attribute name.
+            root: Name of the root class.
+
+        Returns:
+            The flag value.
+        """
+
         a = getattr(node, prop)
         if a is not None:
             return a
@@ -194,11 +245,29 @@ class Parser:
         return v
 
     def find_node(self, name):
+        """Find a node by name.
+
+        Args:
+            name: Node name.
+
+        Returns:
+            The first node with this name, or ``None``.
+        """
+
         for node in self.nodes:
             if node.name == name:
                 return node
 
     def get_doc(self, rec):
+        """Return the documentation text of a model record.
+
+        Args:
+            rec: Model record.
+
+        Returns:
+            The unescaped text without a leading ``[X]`` marker.
+        """
+
         s = rec.get('documentation') or rec.get('Note') or rec.get('Notes') or ''
         s = s.strip()
         s = html.unescape(s)
@@ -209,6 +278,18 @@ class Parser:
         return s
 
     def get_hname(self, node):
+        """Return the human-readable name of a node, taken from its documentation.
+
+        The first quoted word or sentence of the documentation is used if it
+        matches the node name.
+
+        Args:
+            node: Schema node.
+
+        Returns:
+            The name, or ``None`` if not found.
+        """
+
         # sometimes, the first quoted word in the name of the object, as in
         # sonstigeEigenschaft: "'Sonstige Eigenschaft' sind Informationen zum Grenzpunkt...
         #
@@ -242,14 +323,38 @@ class Parser:
             return 'Funktion'
 
     def add_enum_value(self, node, k, v):
+        """Add a value to an enumeration node.
+
+        Args:
+            node: Schema node.
+            k: Value code. If ``None``, the next sequence number is used.
+            v: Value text.
+        """
+
         if k is None:
             k = len(node.values) + 1
         node.values[k] = v
 
     def set_type_from_record(self, node, rec):
+        """Set the type of an attribute node from a model record.
+
+        Args:
+            node: Schema node.
+            rec: Model record.
+        """
+
         self.set_type_from_string(node, rec.get('type', '') or rec.get('Type', ''))
 
     def set_type_from_string(self, node, s):
+        """Set the type of an attribute node from a type string.
+
+        ``Sequence<X>`` and ``Set<X>`` set the type ``X`` and the list flag.
+
+        Args:
+            node: Schema node.
+            s: Type string.
+        """
+
         m = re.match(r'(Sequence|Set)<(.+?)>', s)
         if m:
             node.type = m.group(2)
@@ -258,6 +363,13 @@ class Parser:
             node.type = s
 
     def set_cardinality_from_string(self, node, s=None):
+        """Set the optional or list flag of an attribute node from a cardinality string.
+
+        Args:
+            node: Schema node.
+            s: Cardinality, e.g. ``0..1`` or ``0..*``.
+        """
+
         if not s:
             return
         elif s == '0..1':
@@ -266,6 +378,13 @@ class Parser:
             node.list = True
 
     def set_cardinality_from_record(self, node, rec):
+        """Set the optional or list flag of an attribute node from the bounds in a model record.
+
+        Args:
+            node: Schema node.
+            rec: Model record with ``LowerBound`` and ``UpperBound``.
+        """
+
         lb = str(rec['LowerBound'])
         ub = str(rec['UpperBound'])
         if lb == '0' and ub == '1':
@@ -275,7 +394,18 @@ class Parser:
 
 
 class Parser6(Parser):
+    """Parser for GeoInfoDok 6 Rational Rose ``.cat`` files."""
+
     def parse(self, paths):
+        """Parse model files.
+
+        Args:
+            paths: Paths to ``.cat`` files.
+
+        Returns:
+            A list of nodes.
+        """
+
         for path in paths:
             cat = CatParser().parse(path)
             self.parse_object(cat[1], None)
@@ -283,6 +413,16 @@ class Parser6(Parser):
         return self.finalize()
 
     def parse_object(self, rec, parent):
+        """Create a node and its child nodes from a ``.cat`` record.
+
+        Args:
+            rec: Parsed ``.cat`` record.
+            parent: Parent node.
+
+        Returns:
+            The new node.
+        """
+
         node = Node(name=rec['NAME'], pParent=parent, doc=self.get_doc(rec))
         self.nodes.append(node)
 
@@ -341,6 +481,12 @@ class Parser6(Parser):
         return node
 
     def parse_associations(self, rec):
+        """Add association roles as attributes to the classes they connect.
+
+        Args:
+            rec: Parsed ``.cat`` record, searched recursively for associations.
+        """
+
         if rec['TYPE'] != 'Association':
             for o2 in rec.get('logical_models', []):
                 self.parse_associations(o2)
@@ -388,20 +534,43 @@ class Parser6(Parser):
 ##
 
 class Parser7(Parser):
+    """Parser for GeoInfoDok 7 Enterprise Architect ``.qea`` (sqlite) files."""
+
     engine: sa.Engine
+    """Engine for the current file."""
 
     def parse(self, paths):
+        """Parse model files.
+
+        Args:
+            paths: Paths to ``.qea`` files.
+
+        Returns:
+            A list of nodes.
+        """
+
         for path in paths:
             self.engine = sa.create_engine(f'sqlite:///' + path)
             self.build_from_sqlite()
         return self.finalize()
 
     def select(self, table):
+        """Read all rows of a table.
+
+        Args:
+            table: Table name.
+
+        Returns:
+            A list of row mappings.
+        """
+
         with self.engine.begin() as conn:
             sel = sa.text(f'SELECT * FROM {table}')
             return list(conn.execute(sel).mappings().all())
 
     def build_from_sqlite(self):
+        """Create nodes from the objects, attributes and connectors in the current file."""
+
 
         nodes_by_uid = {}
         nodes_by_gid = {}
@@ -506,9 +675,23 @@ class Parser7(Parser):
 
 
 class CatParser:
-    """Parser for RR cat files."""
+    """Parser for Rational Rose ``.cat`` files.
+
+    A ``.cat`` file is a nested structure of lists, objects and values in
+    parentheses. Objects become dicts with ``TYPE`` and ``NAME`` keys and
+    their properties, lists become Python lists.
+    """
 
     def parse(self, path):
+        """Parse a ``.cat`` file.
+
+        Args:
+            path: File path.
+
+        Returns:
+            A list of top-level items.
+        """
+
         with open(path, 'rb') as fp:
             text = fp.read().decode('latin-1')
         self.tokenize(text)
@@ -525,11 +708,22 @@ class CatParser:
             [^()\s]+ 
         )
     '''
+    """Token pattern: bracket, name or value."""
 
     tokens = []
+    """Tokens as ``(bracket, name, value)`` tuples."""
     token_pos = 0
+    """Position of the current token."""
 
     def tokenize(self, text):
+        """Split a ``.cat`` file into tokens.
+
+        Lines starting with ``|`` are collected into a single string value.
+
+        Args:
+            text: File content.
+        """
+
         docstring_buf = []
         self.tokens = []
 
@@ -551,17 +745,37 @@ class CatParser:
                 self.tokens.append((br, name, val))
 
     def tok(self):
+        """Return the current token.
+
+        Returns:
+            A ``(bracket, name, value)`` tuple.
+        """
+
         return self.tokens[self.token_pos]
 
     def pop(self):
+        """Advance to the next token."""
+
         self.token_pos += 1
 
     def eof(self):
+        """Check whether all tokens are consumed.
+
+        Returns:
+            ``True`` at the end of the token list.
+        """
+
         return self.token_pos >= len(self.tokens)
 
     ##
 
     def parse_sequence(self):
+        """Parse items up to the closing bracket or the end of input.
+
+        Returns:
+            A list of items.
+        """
+
         items = []
         while not self.eof():
             br, name, val = self.tok()
@@ -572,6 +786,15 @@ class CatParser:
         return items
 
     def parse_item(self):
+        """Parse a single item: a value, a boolean, a list, an object or a sequence.
+
+        Returns:
+            The parsed item.
+
+        Raises:
+            ``SyntaxError``: If the token cannot start an item.
+        """
+
         br, name, val = self.tok()
         if val:
             self.pop()
@@ -600,6 +823,12 @@ class CatParser:
         raise SyntaxError(f'invalid token {br=} {name=} {val=}')
 
     def parse_list(self):
+        """Parse a ``(list <type> ...)`` item.
+
+        Returns:
+            A list of items.
+        """
+
         # e.g. (list Attribute_Set (object... (object...
 
         self.pop()  # list
@@ -608,6 +837,12 @@ class CatParser:
         return self.parse_sequence()
 
     def parse_object(self):
+        """Parse an ``(object <type> <name> ...)`` item.
+
+        Returns:
+            A dict with ``TYPE``, ``NAME`` and the object properties.
+        """
+
         # e.g. (object ClassAttribute "Sonstiges" attr val attr val
         # e.g. (object Attribute
 
@@ -642,6 +877,12 @@ class CatParser:
         return rec
 
     def parse_value(self):
+        """Parse a ``(value <type> <value>)`` item.
+
+        Returns:
+            The value.
+        """
+
         # e.g. (value Text "30000")
 
         self.pop()  # value
@@ -654,19 +895,41 @@ class CatParser:
 
 
 class PythonGenerator:
+    """Generator for the Python schema module."""
+
     unknownTypes = set()
+    """Referenced types that are not defined in the model, emitted as empty classes."""
     knownTypes = set()
+    """Names of the classes, enumerations and unions in the model."""
     nameToNode = {}
+    """Nodes by name."""
     keyToNode = {}
+    """Nodes by key."""
     seen = set()
+    """Names of the nodes already generated."""
     metadata = {}
+    """Metadata by type name, written as ``METADATA``."""
     py = []
+    """Generated source lines."""
 
     def __init__(self, nodes, version: str):
+        """Create a generator.
+
+        Args:
+            nodes: Parsed nodes.
+            version: GeoInfoDok version.
+        """
+
         self.nodes = nodes
         self.version = version
 
     def build(self):
+        """Generate the module source.
+
+        Returns:
+            The Python source code.
+        """
+
         self.knownTypes = set(
             node.name
             for node in self.nodes
@@ -705,12 +968,24 @@ class PythonGenerator:
         return py.replace('<VERSION>', self.version)
 
     def make_nodes(self, nodes):
+        """Generate unions, categories, enumerations and classes, in this order.
+
+        Args:
+            nodes: Nodes, sorted by name.
+        """
+
         for ts in T_UNION, T_CATEGORY, T_ENUM, T_CLASS:
             for node in nodes:
                 if node.T == ts:
                     self.make_node(node)
 
     def make_node(self, node):
+        """Generate a node and its metadata, unless it is already generated.
+
+        Args:
+            node: Schema node.
+        """
+
         if node.name not in self.seen:
             self.seen.add(node.name)
             fn = getattr(self, 'make_' + node.T)
@@ -718,6 +993,12 @@ class PythonGenerator:
             self.make_metadata(node)
 
     def make_union(self, node):
+        """Generate a type alias for a union node.
+
+        Args:
+            node: Schema node.
+        """
+
         items = sorted(set(self.get_type(a.type) for a in node.attributes))
         typ = items[0] if len(items) == 1 else 'Union[' + comma(items) + ']'
 
@@ -725,10 +1006,22 @@ class PythonGenerator:
         self.py.append(self.get_docstring(node, '', False))
 
     def make_category(self, node):
+        """Generate a class for a category node.
+
+        Args:
+            node: Schema node.
+        """
+
         self.py.append(f'class {node.name}(Category):')
         self.py.append(self.get_docstring(node, TAB, True))
 
     def make_enum(self, node):
+        """Generate a class with a ``VALUES`` dict for an enumeration node.
+
+        Args:
+            node: Schema node.
+        """
+
         self.py.append(f'class {node.name}(Enumeration):')
         self.py.append(self.get_docstring(node, TAB, True))
         self.py.append('')
@@ -737,6 +1030,14 @@ class PythonGenerator:
         self.py.append(f'{TAB}}}')
 
     def make_class(self, node):
+        """Generate a class with attribute annotations for a class node.
+
+        Super classes are generated first.
+
+        Args:
+            node: Schema node.
+        """
+
         node.attributes = node.attributes or []
 
         super_types = []
@@ -769,6 +1070,12 @@ class PythonGenerator:
             self.py.append(self.get_docstring(a, TAB, False))
 
     def make_metadata(self, node):
+        """Add the metadata of a node to ``metadata``.
+
+        Args:
+            node: Schema node.
+        """
+
         d = {
             'kind': node.T,
             'name': node.name,
@@ -783,6 +1090,15 @@ class PythonGenerator:
         self.metadata[node.name] = d
 
     def make_class_metadata(self, node):
+        """Return the class-specific metadata of a class node.
+
+        Args:
+            node: Schema node.
+
+        Returns:
+            A dict with ``kind``, ``geom``, ``attributes`` and ``supers``.
+        """
+
         d = {}
 
         d['kind'] = 'object' if node.is_aa else 'struct'
@@ -802,6 +1118,18 @@ class PythonGenerator:
         return d
 
     def get_type(self, typ, quoted=True):
+        """Return the annotation for a type name.
+
+        Types not defined in the model are added to ``unknownTypes``.
+
+        Args:
+            typ: Type name.
+            quoted: Whether to quote model type names.
+
+        Returns:
+            The annotation, ``Any`` for an empty type.
+        """
+
         if not typ:
             return 'Any'
 
@@ -815,6 +1143,17 @@ class PythonGenerator:
         return quote(typ) if quoted else typ
 
     def get_docstring(self, node, indent, prepend_name):
+        """Return the docstring source of a node.
+
+        Args:
+            node: Schema node.
+            indent: Indentation.
+            prepend_name: Whether to put the human-readable name before the documentation.
+
+        Returns:
+            The wrapped and indented docstring.
+        """
+
         name = node.hname or node.name or ' '
 
         if node.doc:
@@ -833,10 +1172,31 @@ class PythonGenerator:
 
 
 def popattr(obj, attr, default=None):
+    """Remove an attribute from an object and return its value.
+
+    Args:
+        obj: Object.
+        attr: Attribute name.
+        default: Value to return if the attribute is not set.
+
+    Returns:
+        The attribute value or the default.
+    """
+
     return obj.__dict__.pop(attr, default)
 
 
 def wrap_indent(s, indent):
+    """Wrap each line of a string and indent it.
+
+    Args:
+        s: Text.
+        indent: Indentation.
+
+    Returns:
+        The wrapped text.
+    """
+
     return nl(
         nl(indent + ln for ln in textwrap.wrap(p.strip(), WRAP_WIDTH))
         for p in s.split('\n')
@@ -844,6 +1204,15 @@ def wrap_indent(s, indent):
 
 
 def quote(s):
+    """Wrap a string in single quotes.
+
+    Args:
+        s: String.
+
+    Returns:
+        The quoted string.
+    """
+
     return "'" + (s or '') + "'"
 
 
@@ -859,6 +1228,17 @@ _UID_DE_TRANS = {
 
 
 def to_name(s):
+    """Convert a string to a Python identifier.
+
+    Umlauts are transliterated and non-word characters are replaced by ``_``.
+
+    Args:
+        s: String.
+
+    Returns:
+        The identifier, an empty string for an empty input.
+    """
+
     if not s:
         return ''
     s = str(s)
@@ -874,6 +1254,16 @@ def to_name(s):
 
 
 def json_dict_body(d, indent):
+    """Format a dict as indented JSON, without the enclosing braces.
+
+    Args:
+        d: Dict.
+        indent: Indentation of the entries.
+
+    Returns:
+        The formatted entries.
+    """
+
     js = json.dumps(d, indent=len(TAB), ensure_ascii=False).split('\n')[1:-1]
     ind = ' ' * (len(indent) - len(TAB))
     return nl(ind + p for p in js)

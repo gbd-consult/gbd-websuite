@@ -50,9 +50,14 @@ class Config(gws.base.legend.Config):
 
 @gws.ext.object.legend('qgis')
 class Object(gws.base.legend.Object):
+    """Legend rendered by QGIS Server with GetLegendGraphic."""
+
     provider: provider.Object
+    """QGIS provider."""
     sourceLayers: list[gws.SourceLayer]
+    """Source layers in the legend."""
     params: dict
+    """GetLegendGraphic request parameters."""
 
     def configure(self):
         self.configure_provider()
@@ -60,16 +65,38 @@ class Object(gws.base.legend.Object):
         self.configure_params()
 
     def configure_provider(self):
+        """Set the QGIS provider.
+
+        Returns:
+            ``True`` if a provider was set.
+
+        Raises:
+            ``gws.Error``: If no provider is found.
+        """
         return gws.config.util.configure_provider_for(self, provider.Object)
 
     def configure_sources(self):
+        """Select the source layers of the legend.
+
+        Raises:
+            ``gws.Error``: If the provider is not set.
+        """
         gws.u.require(self.provider, 'failed to configure service provider')
         self.configure_source_layers()
 
     def configure_source_layers(self):
+        """Select the source layers from the provider layers.
+
+        Returns:
+            Always ``True``.
+        """
         return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers)
 
     def configure_params(self):
+        """Build the GetLegendGraphic parameters.
+
+        Configured ``options`` override the default legend parameters.
+        """
         defaults = dict(
             DPI=96,
             FORMAT=gws.lib.mime.PNG,

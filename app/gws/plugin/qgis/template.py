@@ -1,30 +1,4 @@
-"""QGIS Print template.
-
-The Qgis print templates work this way:
-
-We read the qgis project and locate a template object within by its title or the index,
-by default the first template is taken.
-
-We find all `label` and `html` blocks in the template and create our `html` templates from
-them, so that they can make use of our placeholders like `@legend`.
-
-When rendering, we render our map as pdf.
-
-Then we render these html templates, and create a clone of the qgis project
-with resulting html injected at the proper places.
-
-Then we render the Qgis template without the map, using Qgis `GetPrint` to generate html.
-
-And finally, combine two pdfs so that the qgis pdf is above the map pdf.
-This is because we need qgis to draw grids and other decorations above the map.
-
-Caveats/todos:
-
-- both qgis "paper" and the map element must be transparent
-- since we create a copy of the qgis project, it must use absolute paths to all assets
-- the position of the map in qgis is a couple of mm off when we combine, for better results, the map position/size in qgis must be integer
-
-"""
+"""QGIS print template."""
 from typing import Optional
 
 import gws
@@ -55,17 +29,32 @@ class Config(gws.base.template.Config):
 
 
 class _HtmlBlock(gws.Data):
+    """A label or HTML item of a print layout, as an ``html`` template."""
+
     attrName: str
+    """Attribute of the layout item that holds the text."""
     template: gws.plugin.template.html.Object
+    """Template created from the text."""
 
 
 @gws.ext.object.template('qgis')
 class Object(gws.base.template.Object):
+    """Print template based on a print layout of a QGIS project.
+
+    The map is rendered by WebSuite and the layout by QGIS Server; the result
+    is one PDF.
+    """
+
     provider: provider.Object
+    """QGIS provider."""
     qgisTemplate: caps.PrintTemplate
+    """The print layout."""
     mapPosition: gws.UomSize
+    """Position of the map item on the page."""
     cssPath: str
+    """Stylesheet for the HTML map overlay."""
     htmlBlocks: dict[str, _HtmlBlock]
+    """Label and HTML items of the layout, keyed by item UUID."""
 
     def configure(self):
         self.configure_provider()
@@ -73,6 +62,14 @@ class Object(gws.base.template.Object):
         self._load()
 
     def configure_provider(self):
+        """Set the QGIS provider.
+
+        Returns:
+            ``True`` if a provider was set.
+
+        Raises:
+            ``gws.Error``: If no provider is found.
+        """
         return gws.config.util.configure_provider_for(self, provider.Object)
 
     def render(self, tri):
@@ -110,6 +107,11 @@ class Object(gws.base.template.Object):
     ##
 
     def _load(self):
+        """Find the print layout and read the page and map sizes.
+
+        The layout is selected by ``index``, or by the template title, or the
+        first layout is used.
+        """
 
         idx = self.cfg('index')
         if idx is not None:
@@ -149,6 +151,7 @@ class Object(gws.base.template.Object):
         raise gws.Error(f'print template {title!r} not found')
 
     def _render_map(self, tri: gws.TemplateRenderInput, out_path):
+        """Render the first map of the render input as a PDF at the position of the map item."""
         if not tri.maps:
             return
 
@@ -195,6 +198,7 @@ class Object(gws.base.template.Object):
         return html
 
     def _render_qgis(self, tri: gws.TemplateRenderInput, mro: gws.MapRenderOutput, out_path):
+        """Print the layout without the map with QGIS Server GetPrint."""
 
         # prepare params for the qgis server
 
@@ -236,6 +240,7 @@ class Object(gws.base.template.Object):
             gws.lib.osx.unlink(project_copy_path)
 
     def _collect_html_blocks(self):
+        """Create ``html`` templates from the label and HTML items of the layout."""
         self.htmlBlocks = {}
 
         for el in self.qgisTemplate.elements:
@@ -257,6 +262,7 @@ class Object(gws.base.template.Object):
                 )
 
     def _render_html_blocks(self, tri: gws.TemplateRenderInput, qgis_project: project.Object):
+        """Render the HTML blocks into the project XML, return ``True`` if anything changed."""
         if not self.htmlBlocks:
             # there are no html blocks...
             return False

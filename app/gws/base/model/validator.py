@@ -17,6 +17,12 @@ class Config(gws.Config):
 
 
 class Object(gws.ModelValidator):
+    """Base model validator.
+
+    Provides the error message and the set of operations the validator applies to.
+    Subclasses implement ``validate``.
+    """
+
     def configure(self):
         self.message = self.cfg('message') or DEFAULT_MESSAGE_PREFIX + self.extType
 

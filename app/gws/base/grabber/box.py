@@ -14,7 +14,14 @@ MAX_SOURCE_PIXEL_RATIO = 4
 
 
 class Object(core.Object):
-    """Base grabber for sources that render arbitrary boxes."""
+    """Base grabber for sources that render arbitrary boxes.
+
+    Composes tiles and boxes from source requests in the source CRS. Provides
+    subclasses with meta-tiling of tile blocks, splitting of large requests
+    into chunks and reprojection into the target CRS.
+
+    Subclasses implement ``fetch_box_as_bytes`` and ``fetch_box_as_image``.
+    """
 
     maxRequestPixels: int
     """Cap on the pixel size of one source request; larger boxes are fetched in chunks."""
@@ -22,14 +29,20 @@ class Object(core.Object):
     """Pixels rendered around a block or chunk and cropped, for consistent labels across seams."""
 
     def __init__(self, opts: core.Options):
+        """Create a box grabber.
+
+        ``requestTiles`` and ``requestBuffer`` are taken from the cache settings,
+        ``maxRequestPixels`` defaults to 4096.
+
+        Args:
+            opts: Grabber options.
+        """
         super().__init__(opts)
         self.requestTiles = self.cache.requestTiles
         self.requestBuffer = self.cache.requestBuffer
         self.maxRequestPixels = 4096
 
     def compose_tile_block_as_image_dict(self, mt, params=None):
-        """Render the block plus a buffer in one request and cut it into tiles."""
-
         z = mt[-1]
         n = self.requestTiles
         bx, by, _ = self.block_start_tile(mt)
@@ -71,8 +84,6 @@ class Object(core.Object):
         return block_images
 
     def compose_box_as_image(self, extent, w, h, params=None):
-        """Fetch the box in the source CRS, warping it when the CRS differ."""
-
         w = gws.u.to_rounded_int(w)
         h = gws.u.to_rounded_int(h)
 
@@ -115,12 +126,42 @@ class Object(core.Object):
         )
 
     def fetch_box_as_bytes(self, bounds: gws.Bounds, w: int, h: int, params: dict | None = None) -> bytes:
-        """Fetch a box from the source with exactly one request, as encoded bytes."""
+        """Fetch a box from the source with exactly one request, as encoded bytes.
+
+        Subclasses must implement this.
+
+        Args:
+            bounds: Box bounds in the source CRS.
+            w: Width in pixels.
+            h: Height in pixels.
+            params: Dynamic request parameters.
+
+        Returns:
+            The encoded image.
+
+        Raises:
+            ``NotImplementedError``: In the base class.
+        """
 
         raise NotImplementedError(f'fetch_box_as_bytes not implemented in {self!r}')
 
     def fetch_box_as_image(self, bounds: gws.Bounds, w: int, h: int, params: dict | None = None) -> gws.Image:
-        """Fetch a box from the source with exactly one request, as an image."""
+        """Fetch a box from the source with exactly one request, as an image.
+
+        Subclasses must implement this.
+
+        Args:
+            bounds: Box bounds in the source CRS.
+            w: Width in pixels.
+            h: Height in pixels.
+            params: Dynamic request parameters.
+
+        Returns:
+            The image.
+
+        Raises:
+            ``NotImplementedError``: In the base class.
+        """
 
         raise NotImplementedError(f'fetch_box_as_image not implemented in {self!r}')
 

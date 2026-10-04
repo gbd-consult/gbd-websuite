@@ -1,4 +1,33 @@
-"""GDAL/OGR wrapper."""
+"""GDAL/OGR wrapper.
+
+This package provides a thin layer over the GDAL Python bindings (``osgeo.gdal``, ``osgeo.ogr``)
+for reading and writing raster and vector data sets.
+
+Data sets are opened with ``open_raster`` or ``open_vector``, or created in memory
+from an image with ``open_from_image``. If no driver name is given, the driver is chosen
+by the file extension. Data sets are context managers that flush and close themselves on exit.
+
+- ``RasterDataSet`` reads a raster into a ``gws.Image``, reports its size and bounds,
+  warps it to an image or a file (``gdal.Warp``), and saves copies in other formats.
+- ``VectorDataSet`` gives access to ``VectorLayer`` objects, creates new layers and runs transactions.
+- ``VectorLayer`` describes its columns, reads features as ``gws.FeatureRecord`` objects and inserts records.
+
+Attribute values are converted between OGR field types and ``gws.AttributeType``,
+geometries between OGR and ``gws.Shape``. Geo-transforms always use the
+easting/longitude-first axis order.
+
+Example::
+
+    import gws.lib.gdalx
+
+    with gws.lib.gdalx.open_raster('/data/ortho.tif') as ds:
+        bounds = ds.bounds()
+        img = ds.to_image()
+
+    with gws.lib.gdalx.open_vector('/data/out.gpkg', 'w') as ds:
+        la = ds.create_layer('roads', {'name': gws.AttributeType.str}, gws.GeometryType.linestring, crs)
+        la.insert(records)
+"""
 
 from typing import Any, Optional, Iterable, cast
 
@@ -20,26 +49,46 @@ import gws.lib.datetimex as datetimex
 
 
 class Error(gws.Error):
+    """GDAL error."""
+
     pass
 
 
 class DriverInfo(gws.Data):
+    """Information about a GDAL driver."""
+
     index: int
+    """Driver index in GDAL."""
     name: str
+    """Short driver name, like ``GTiff``."""
     longName: str
+    """Long driver name, like ``GeoTIFF``."""
     extensions: list[str]
+    """File extensions supported by the driver."""
     metaData: dict
+    """Driver metadata."""
 
 
 def get_drivers() -> list[DriverInfo]:
-    """Enumerate GDAL drivers."""
+    """Enumerate GDAL drivers.
+
+    Returns:
+        Information about all available drivers.
+    """
 
     di = gws.u.get_app_global('gdal_drivers', _fetch_driver_infos)
     return di.infos
 
 
 def get_driver(name: str) -> Optional[DriverInfo]:
-    """Get driver info by name."""
+    """Get driver info by name.
+
+    Args:
+        name: Short driver name, like ``GTiff``.
+
+    Returns:
+        Driver information, or ``None`` if the driver is not found.
+    """
 
     for di in get_drivers():
         if di.name == name:
@@ -47,12 +96,23 @@ def get_driver(name: str) -> Optional[DriverInfo]:
 
 
 def supported_attribute_types():
+    """Get attribute types that can be written to vector data sets.
+
+    Returns:
+        A list of ``gws.AttributeType`` values.
+    """
     return list(_ATTR_TO_OGR.keys())
 
 
 @contextlib.contextmanager
 def gdal_config(options: dict):
-    """Temporarily set GDAL config options."""
+    """Context manager that temporarily sets GDAL config options.
+
+    The previous values are restored on exit.
+
+    Args:
+        options: GDAL config options, like ``{'GDAL_CACHEMAX': '512'}``.
+    """
 
     prev = {}
     for key, value in options.items():
@@ -73,14 +133,20 @@ def open_raster(
     default_crs: Optional[gws.Crs] = None,
     options: dict = None,
 ) -> 'RasterDataSet':
-    """Create a raster DataSet from a path.
+    """Open a raster data set.
 
     Args:
         path: File path.
-        mode: 'r' (=read), 'a' (=update), 'w' (=create/write)
-        driver: Driver name, if omitted, will be suggested from the path extension.
-        default_crs: Default CRS for geometries (fallback to Webmercator).
-        options: Options for gdal.OpenEx/CreateDataSource.
+        mode: ``r`` (read), ``a`` (update) or ``w`` (create).
+        driver: Driver name. If omitted, the driver is chosen by the path extension.
+        default_crs: CRS to use if the data set has none, web mercator by default.
+        options: Driver-specific open or creation options.
+
+    Returns:
+        The raster data set.
+
+    Raises:
+        ``Error``: If the mode is invalid, no suitable raster driver is found, or the data set cannot be opened or created.
     """
 
     dso = _DataSetOptions(
@@ -103,21 +169,23 @@ def open_vector(
     geometry_as_text: bool = False,
     options: dict = None,
 ) -> 'VectorDataSet':
-    """Create a vector DataSet from a path.
+    """Open a vector data set.
 
     Args:
         path: File path.
-        mode: 'r' (=read), 'a' (=update), 'w' (=create/write)
-        driver: Driver name, if omitted, will be suggested from the path extension.
-        encoding: If not None, strings will be automatically decoded.
-        default_crs: Default CRS for geometries (fallback to Webmercator).
-        geometry_as_text: Don't interpret geometry, extract raw WKT.
-        options: Options for gdal.OpenEx/CreateDataSource.
-
+        mode: ``r`` (read), ``a`` (update) or ``w`` (create).
+        driver: Driver name. If omitted, the driver is chosen by the path extension.
+        encoding: Encoding of string attributes. If set, strings are decoded when reading,
+            otherwise they are returned as bytes.
+        default_crs: CRS for geometries without one, web mercator by default.
+        geometry_as_text: Do not convert geometries to shapes, return them as EWKT in ``FeatureRecord.ewkt``.
+        options: Driver-specific open or creation options.
 
     Returns:
-        DataSet object.
+        The vector data set.
 
+    Raises:
+        ``Error``: If the mode is invalid, no suitable vector driver is found, or the data set cannot be opened or created.
     """
 
     dso = _DataSetOptions(
@@ -139,14 +207,16 @@ def open_from_image(
     rotation: gws.Size = None,
     options: dict = None,
 ) -> 'RasterDataSet':
-    """Create an in-memory Dataset from an Image.
+    """Create an in-memory raster data set from an image.
 
     Args:
         image: Image object.
-        bounds: Geographic bounds.
-        x_rotation: GeoTransform x rotation.
-        y_rotation: GeoTransform y rotation.
+        bounds: Bounds of the image.
+        rotation: Geo-transform rotation terms ``(x, y)``, no rotation by default.
         options: Driver-specific creation options.
+
+    Returns:
+        The raster data set.
     """
 
     gdal.UseExceptions()
@@ -179,20 +249,35 @@ def open_from_image(
 
 
 class _DriverInfoCache(gws.Data):
+    """Cached information about GDAL drivers."""
+
     infos: list[DriverInfo]
+    """All drivers."""
     extToName: dict
+    """Map of file extensions to lists of driver names."""
     vectorNames: set[str]
+    """Names of vector drivers."""
     rasterNames: set[str]
+    """Names of raster drivers."""
 
 
 class _DataSetOptions(gws.Data):
+    """Options a data set was opened with."""
+
     path: str
+    """File path."""
     mode: str
+    """Open mode."""
     driver: str
+    """Driver name."""
     encoding: str
+    """Encoding of string attributes."""
     defaultCrs: gws.Crs
+    """CRS to use if the data has none."""
     geometryAsText: bool
+    """Return geometries as EWKT instead of shapes."""
     gdalOpts: dict
+    """Driver-specific options."""
 
 
 def _open(dso: _DataSetOptions, need_raster):
@@ -234,12 +319,24 @@ def _open(dso: _DataSetOptions, need_raster):
 
 
 class _DataSet:
+    """Base class for GDAL data sets."""
+
     gdDataset: gdal.Dataset
+    """Underlying GDAL data set."""
     gdDriver: gdal.Driver
+    """Underlying GDAL driver."""
     dso: _DataSetOptions
+    """Options the data set was opened with."""
     driverName: str
+    """Driver name."""
 
     def __init__(self, dso: _DataSetOptions, gd_dataset):
+        """Wrap a GDAL data set.
+
+        Args:
+            dso: Options the data set was opened with.
+            gd_dataset: GDAL data set.
+        """
         self.gdDataset = gd_dataset
         self.gdDriver = self.gdDataset.GetDriver()
         self.driverName = self.gdDriver.GetDescription()
@@ -253,21 +350,40 @@ class _DataSet:
         return False
 
     def close(self):
+        """Flush the data set and release it."""
         self.gdDataset.FlushCache()
         setattr(self, 'gdDataset', None)
 
     def crs(self) -> Optional[gws.Crs]:
+        """Get the CRS of the data set.
+
+        Returns:
+            The CRS, or ``None`` if the data set has no CRS or it is unknown.
+        """
         srid = _srid_from_srs(self.gdDataset.GetSpatialRef())
         return gws.lib.crs.get(srid) if srid else None
 
     def set_crs(self, crs: gws.Crs):
+        """Set the CRS of the data set.
+
+        Args:
+            crs: The CRS.
+        """
         srs = _srs_from_srid(crs.srid)
         self.gdDataset.SetSpatialRef(srs)
 
 
 class RasterDataSet(_DataSet):
+    """Raster data set."""
+
     def to_image(self) -> gws.Image:
-        """Convert the raster dataset to an Image object."""
+        """Convert the raster data set to an image.
+
+        Each raster band becomes an image channel, values are read as 8-bit.
+
+        Returns:
+            The image.
+        """
 
         band_count = self.gdDataset.RasterCount
         x_size = self.gdDataset.RasterXSize
@@ -283,14 +399,19 @@ class RasterDataSet(_DataSet):
         return gws.lib.image.from_array(arr)
 
     def warp_to_image(self, options: dict) -> gws.Image:
-        """Warp a dataset and return the result as an Image.
+        """Warp the data set in memory and return the result as an image.
+
+        See https://gdal.org/en/stable/api/python/utilities.html#osgeo.gdal.WarpOptions
+        and https://gdal.org/en/stable/programs/gdalwarp.html for the options.
 
         Args:
-            options: GDAL WarpOptions
+            options: Keyword arguments for ``gdal.Warp``. The ``format`` option is ignored.
 
-        See:
-            https://gdal.org/en/stable/api/python/utilities.html#osgeo.gdal.WarpOptions
-            https://gdal.org/en/stable/programs/gdalwarp.html
+        Returns:
+            The warped image.
+
+        Raises:
+            ``Error``: If the warp fails.
         """
 
         gdal.UseExceptions()
@@ -305,15 +426,17 @@ class RasterDataSet(_DataSet):
         return RasterDataSet(_DataSetOptions(path=''), gd).to_image()
 
     def warp_to_path(self, path: str, options: dict):
-        """Warp a dataset and store it at the given path.
+        """Warp the data set and store it at the given path.
+
+        See https://gdal.org/en/stable/api/python/utilities.html#osgeo.gdal.WarpOptions
+        and https://gdal.org/en/stable/programs/gdalwarp.html for the options.
 
         Args:
             path: Destination path.
-            options: GDAL WarpOptions
+            options: Keyword arguments for ``gdal.Warp``. If ``format`` is not given, it is chosen by the path extension.
 
-        See:
-            https://gdal.org/en/stable/api/python/utilities.html#osgeo.gdal.WarpOptions
-            https://gdal.org/en/stable/programs/gdalwarp.html
+        Raises:
+            ``Error``: If no driver is found for the path or the warp fails.
         """
 
         gdal.UseExceptions()
@@ -329,13 +452,16 @@ class RasterDataSet(_DataSet):
         gd = None
 
     def save_as(self, path: str, driver: str = '', strict=False, options: dict = None):
-        """Create a copy of a DataSet.
+        """Save a copy of the data set, including its metadata.
 
         Args:
             path: Destination path.
-            driver: Driver name, if omitted, will be suggested from the path extension.
-            strict: If True, fail if some options are not supported.
+            driver: Driver name. If omitted, the driver is chosen by the path extension.
+            strict: Fail if the copy cannot be made exactly, for example, if the format does not support some data.
             options: Driver-specific creation options.
+
+        Raises:
+            ``Error``: If no suitable raster driver is found.
         """
 
         gdal.UseExceptions()
@@ -352,9 +478,19 @@ class RasterDataSet(_DataSet):
         gd = None
 
     def size(self) -> gws.Size:
+        """Get the raster size.
+
+        Returns:
+            A ``(width, height)`` tuple in pixels.
+        """
         return (self.gdDataset.RasterXSize, self.gdDataset.RasterYSize)
 
     def bounds(self) -> gws.Bounds:
+        """Get the bounds of the raster, computed from its geo-transform.
+
+        Returns:
+            The bounds, in the data set CRS or the default CRS.
+        """
         return _geotransform_to_bounds(
             self.gdDataset.GetGeoTransform(),
             (self.gdDataset.RasterXSize, self.gdDataset.RasterYSize),
@@ -363,8 +499,17 @@ class RasterDataSet(_DataSet):
 
 
 class VectorDataSet(_DataSet):
+    """Vector data set."""
+
     @contextlib.contextmanager
     def transaction(self):
+        """Context manager that runs a transaction.
+
+        The transaction is committed on success and rolled back on an exception.
+
+        Yields:
+            This data set.
+        """
         self.gdDataset.StartTransaction()
         try:
             yield self
@@ -384,13 +529,18 @@ class VectorDataSet(_DataSet):
     ) -> 'VectorLayer':
         """Create a new layer.
 
+        For Shapefiles, the data set encoding is passed to the driver.
+
         Args:
             name: Layer name.
-            columns: Column definitions.
-            geometry_type: Geometry type.
-            crs: CRS for geometries.
-            overwrite: If True, overwrite existing layer.
-            options: Driver-specific creation options.
+            columns: Map of column names to attribute types.
+            geometry_type: Geometry type. If omitted, the layer has no geometry.
+            crs: CRS for geometries, the default CRS of the data set by default.
+            overwrite: Overwrite an existing layer.
+            options: Driver-specific layer creation options.
+
+        Returns:
+            The new layer.
         """
 
         opts = dict(options or {})
@@ -428,13 +578,24 @@ class VectorDataSet(_DataSet):
         return VectorLayer(self, gd_layer)
 
     def layers(self) -> list['VectorLayer']:
-        """Get all layers."""
+        """Get all layers.
+
+        Returns:
+            A list of layers.
+        """
 
         cnt = self.gdDataset.GetLayerCount()
         return [VectorLayer(self, self.gdDataset.GetLayerByIndex(n)) for n in range(cnt)]
 
     def layer(self, name_or_index: str | int) -> Optional['VectorLayer']:
-        """Get a layer by name or index."""
+        """Get a layer by name or index.
+
+        Args:
+            name_or_index: Layer name or index.
+
+        Returns:
+            The layer, or ``None`` if not found.
+        """
 
         gd_layer = None
         if isinstance(name_or_index, int):
@@ -444,7 +605,17 @@ class VectorDataSet(_DataSet):
         return VectorLayer(self, gd_layer) if gd_layer else None
 
     def require_layer(self, name_or_index: str | int) -> 'VectorLayer':
-        """Get a layer by name or index, raise an error if not found."""
+        """Get a layer by name or index, and fail if it is not found.
+
+        Args:
+            name_or_index: Layer name or index.
+
+        Returns:
+            The layer.
+
+        Raises:
+            ``Error``: If the layer is not found.
+        """
 
         la = self.layer(name_or_index)
         if la:
@@ -453,18 +624,39 @@ class VectorDataSet(_DataSet):
 
 
 class VectorLayer:
+    """Layer of a vector data set."""
+
     name: str
+    """Layer name."""
     dso: _DataSetOptions
+    """Options of the data set."""
     gdLayer: ogr.Layer
+    """Underlying OGR layer."""
     gdDefn: ogr.FeatureDefn
+    """Underlying OGR feature definition."""
 
     def __init__(self, ds: VectorDataSet, gd_layer: ogr.Layer):
+        """Wrap an OGR layer.
+
+        Args:
+            ds: Data set the layer belongs to.
+            gd_layer: OGR layer.
+        """
         self.gdLayer = gd_layer
         self.gdDefn = self.gdLayer.GetLayerDefn()
         self.name = self.gdDefn.GetName()
         self.dso = ds.dso
 
     def describe(self) -> gws.DataSetDescription:
+        """Describe the layer columns.
+
+        The description includes the FID column (as the primary key), attribute columns
+        of supported types, and geometry columns. If there are several geometry columns,
+        the last one is used as the layer geometry.
+
+        Returns:
+            The layer description.
+        """
         desc = gws.DataSetDescription(
             columns=[],
             columnMap={},
@@ -534,6 +726,20 @@ class VectorLayer:
         return desc
 
     def insert(self, records: list[gws.FeatureRecord]) -> list[int]:
+        """Insert feature records into the layer.
+
+        Integer record uids are used as feature ids. Attributes that are ``None``
+        or have no matching column are skipped.
+
+        Args:
+            records: Feature records.
+
+        Returns:
+            Feature ids of the inserted features.
+
+        Raises:
+            ``Error``: If an attribute value cannot be set.
+        """
         desc = self.describe()
         fids = []
 
@@ -567,12 +773,31 @@ class VectorLayer:
         return fids
 
     def count(self, force=False):
+        """Count features in the layer.
+
+        Args:
+            force: Count features even if this is expensive for the driver.
+
+        Returns:
+            The number of features, or ``-1`` if the count is not available without ``force``.
+        """
         return self.gdLayer.GetFeatureCount(force=1 if force else 0)
 
     def get_all(self) -> list[gws.FeatureRecord]:
+        """Read all features.
+
+        Returns:
+            A list of feature records.
+        """
         return list(self.iter_features())
 
     def iter_features(self) -> Iterable[gws.FeatureRecord]:
+        """Iterate over all features.
+
+        Yields:
+            Feature records. The record uid is the feature id as a string,
+            ``meta['layerName']`` is the layer name.
+        """
         self.gdLayer.ResetReading()
 
         while True:
@@ -582,6 +807,14 @@ class VectorLayer:
             yield self._feature_record(gd_feature)
 
     def get(self, fid: int) -> Optional[gws.FeatureRecord]:
+        """Read a feature by its id.
+
+        Args:
+            fid: Feature id.
+
+        Returns:
+            The feature record, or ``None`` if not found.
+        """
         gd_feature = self.gdLayer.GetFeature(fid)
         if gd_feature:
             return self._feature_record(gd_feature)

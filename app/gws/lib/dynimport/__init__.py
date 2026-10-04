@@ -1,4 +1,22 @@
-"""Handle dynamic imports"""
+"""Dynamic imports of Python code.
+
+This package loads Python code at run time, either as a plain script or as a regular module:
+
+- ``load_file`` and ``load_string`` execute Python source and return its global namespace.
+  Nothing is added to ``sys.modules``. This is used, for example, for Python config files.
+- ``import_from_path`` imports a module from a file path and registers it in ``sys.modules``.
+  Paths inside the application directory are imported as part of the ``gws`` package.
+  Other paths (plugins) are imported relative to the deepest parent directory that is not a package
+  (has no ``__init__.py``), so that the plugin's own package structure is preserved.
+
+Example::
+
+    import gws.lib.dynimport
+
+    fn = gws.lib.dynimport.load_file('/data/config.py').get('main')
+
+    mod = gws.lib.dynimport.import_from_path('gws/plugin/ows_client/wms/caps.py')
+"""
 
 import sys
 import os
@@ -8,18 +26,33 @@ import gws
 
 
 class Error(gws.Error):
-    """Custom error class for import-related exceptions."""
+    """Dynamic import error."""
     pass
 
 
 def load_file(path: str) -> dict:
-    """Load a python file and return its globals."""
+    """Execute a Python file and return its globals.
+
+    Args:
+        path: Path to the Python file.
+
+    Returns:
+        The global namespace of the executed code.
+    """
 
     return load_string(gws.u.read_file(path), path)
 
 
 def load_string(text: str, path='') -> dict:
-    """Load a string as python code and return its globals."""
+    """Execute a string as Python code and return its globals.
+
+    Args:
+        text: Python source code.
+        path: File path, used for ``__file__`` and in error messages.
+
+    Returns:
+        The global namespace of the executed code.
+    """
 
     globs = {'__file__': path}
     code = compile(text, path, 'exec')
@@ -28,17 +61,21 @@ def load_string(text: str, path='') -> dict:
 
 
 def import_from_path(path: str, base_dir: str = gws.c.APP_DIR):
-    """Imports a module from a given file path.
+    """Import a module from a file path.
+
+    If the path is a directory, its ``__init__.py`` is imported. If a module with the same name
+    is already imported from the same file, it is returned as is.
 
     Args:
-        path: The relative or absolute path to the module file.
-        base_dir: The base directory to resolve relative paths. Defaults to `gws.c.APP_DIR`.
+        path: Relative or absolute path to the module file or package directory.
+        base_dir: Base directory to resolve relative paths, the application directory by default.
 
     Returns:
         The imported module.
 
     Raises:
-        Error: If the module file is not found or a base directory cannot be located.
+        ``Error``: If the module file is not found, a base directory cannot be located,
+            a module with the same name was imported from a different file, or the import fails.
     """
     abs_path = _abs_path(path, base_dir)
     if not os.path.isfile(abs_path):
@@ -61,15 +98,7 @@ def import_from_path(path: str, base_dir: str = gws.c.APP_DIR):
 
 
 def _abs_path(path: str, base_dir: str) -> str:
-    """Converts a relative path to an absolute normalized path.
-
-    Args:
-        path: The input file path.
-        base_dir: The base directory for resolving relative paths.
-
-    Returns:
-        The absolute, normalized file path.
-    """
+    """Convert a path to an absolute normalized path of a Python file."""
     if not os.path.isabs(path):
         path = os.path.join(base_dir, path)
     path = os.path.normpath(path)
@@ -79,18 +108,7 @@ def _abs_path(path: str, base_dir: str) -> str:
 
 
 def _do_import(abs_path: str, base_dir: str):
-    """Imports a module given its absolute path and base directory.
-
-    Args:
-        abs_path: The absolute path to the module file.
-        base_dir: The base directory for resolving module names.
-
-    Returns:
-        The imported module.
-
-    Raises:
-        Error: If the module import fails or an existing module is being overwritten.
-    """
+    """Import a module by its absolute path, with the module name relative to the base directory."""
     mod_name = _module_name(abs_path[len(base_dir):])
 
     if mod_name in sys.modules:
@@ -111,14 +129,7 @@ def _do_import(abs_path: str, base_dir: str):
 
 
 def _module_name(path: str) -> str:
-    """Derives the module name from a given file path.
-
-    Args:
-        path: The file path of the module.
-
-    Returns:
-        The module name in dotted notation.
-    """
+    """Derive a dotted module name from a relative file path."""
     parts = path.strip('/').split('/')
     if parts[-1] == '__init__.py':
         parts.pop()

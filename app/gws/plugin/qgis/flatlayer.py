@@ -1,3 +1,5 @@
+"""The ``qgisflat`` layer."""
+
 from typing import Optional
 
 import gws
@@ -25,10 +27,20 @@ class Config(gws.base.layer.Config):
 
 @gws.ext.object.layer('qgisflat')
 class Object(gws.base.layer.image.Object):
+    """Image layer that renders selected QGIS project layers as one image.
+
+    The image is rendered by QGIS Server. The layer also provides search,
+    feature models and a legend for its source layers.
+    """
+
     provider: provider.Object
+    """QGIS provider."""
     sqlFilters: dict
+    """SQL filters, mapping a source layer name (or ``*`` for all layers) to a filter expression."""
     imageLayers: list[gws.SourceLayer]
+    """Source layers to render."""
     searchLayers: list[gws.SourceLayer]
+    """Queryable source layers."""
 
     def configure(self):
         self.sqlFilters = self.cfg('sqlFilters', default={})
@@ -61,6 +73,11 @@ class Object(gws.base.layer.image.Object):
         self.searchLayers = gws.gis.source.filter_layers(self.sourceLayers, is_queryable=True)
 
     def configure_source_layers(self):
+        """Select the visible image layers of the project.
+
+        Returns:
+            Always ``True``.
+        """
         return gws.config.util.configure_source_layers_for(
             self,
             self.provider.sourceLayers,
@@ -72,6 +89,14 @@ class Object(gws.base.layer.image.Object):
         return gws.config.util.configure_models_for(self, with_default=True)
 
     def create_model(self, cfg):
+        """Create a ``qgis`` model for the layer's queryable source layers.
+
+        Args:
+            cfg: Model configuration, or ``None`` for the default model.
+
+        Returns:
+            The model.
+        """
         return self.create_child(
             gws.ext.object.model,
             cfg,
@@ -135,6 +160,14 @@ class Object(gws.base.layer.image.Object):
             return True
 
     def create_finder(self, cfg):
+        """Create a ``qgis`` finder for the layer's queryable source layers.
+
+        Args:
+            cfg: Finder configuration, or ``None`` for the default finder.
+
+        Returns:
+            The finder.
+        """
         return self.create_child(
             gws.ext.object.finder,
             cfg,
@@ -146,6 +179,18 @@ class Object(gws.base.layer.image.Object):
     ##
 
     def render_params(self, lri: gws.LayerRenderInput, parent_sql_filters: dict=None) -> dict:
+        """Build the GetMap parameters for the layer.
+
+        The parameters contain ``LAYERS`` and, if any SQL filters apply,
+        ``FILTER``, on top of the extra parameters of the render input.
+
+        Args:
+            lri: Render input.
+            parent_sql_filters: SQL filters of the parent layer, which override the layer's own filters.
+
+        Returns:
+            GetMap parameters.
+        """
         params = dict(lri.extraParams or {})
         
         layers = [sl.name for sl in self.imageLayers]

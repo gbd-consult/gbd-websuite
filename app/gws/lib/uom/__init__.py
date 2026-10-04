@@ -1,21 +1,46 @@
+"""Units of measure.
+
+Conversions between map scales and resolutions, between millimetres and pixels,
+and parsing of values with units.
+
+Values with units are represented as tuples, see the ``gws.Uom*`` types:
+
+- ``gws.UomValue``: ``(5, gws.Uom.mm)``,
+- ``gws.UomPoint`` and ``gws.UomSize``: ``(10, 20, gws.Uom.mm)``,
+- ``gws.UomExtent``: ``(0, 0, 100, 200, gws.Uom.mm)``.
+
+Conversions between millimetres and pixels need a resolution in pixels per inch.
+Scale and resolution conversions use the OGC standard pixel size of 0.28 mm.
+
+Example::
+
+    import gws.lib.uom
+
+    v = gws.lib.uom.parse('5mm')                  # (5.0, gws.Uom.mm)
+    gws.lib.uom.to_px(v, 96)                      # (18.89..., gws.Uom.px)
+    gws.lib.uom.to_str(v)                         # '5mm'
+    gws.lib.uom.parse_point('10mm,20mm')          # (10.0, 20.0, gws.Uom.mm)
+    gws.lib.uom.res_to_scale(0.28)                # 1000
+"""
+
 import re
 
 import gws
 
 MM_PER_IN = 25.4
-"""Conversion factor from inch to millimetre"""
+"""Conversion factor from inch to millimetre."""
 
 PT_PER_IN = 72
-"""Conversion factor from inch to points"""
+"""Conversion factor from inch to points."""
 
 OGC_M_PER_PX = 0.00028
 """OGC meter per pixel (OGC 06-042, 7.2.4.6.9: 1px = 0.28mm)."""
 
 OGC_SCREEN_PPI = MM_PER_IN / (OGC_M_PER_PX * 1000)  # 90.71
-"""Pixel per inch on screen using the Open Geospatial Consortium standard"""
+"""Screen pixels per inch according to the OGC standard pixel size."""
 
 PDF_DPI = 96
-"""Dots per inch in a pdf file"""
+"""Dots per inch in a PDF file."""
 
 # 1 centimeter precision
 
@@ -28,26 +53,26 @@ _number = int | float
 
 
 def scale_to_res(x: _number) -> float:
-    """Converts the scale to the user's resolution.
+    """Convert a scale denominator to a resolution.
 
     Args:
-        x: Scale.
+        x: Scale denominator.
 
     Returns:
-        Resolution in pixel.
+        Resolution in metres per pixel, using the OGC pixel size.
     """
     # return round(x * OGC_M_PER_PX, 4)
     return x * OGC_M_PER_PX
 
 
 def res_to_scale(x: _number) -> int:
-    """Converts the user's resolution to the scale.
+    """Convert a resolution to a scale denominator.
 
     Args:
-        x: Resolution in pixel per inch.
+        x: Resolution in metres per pixel.
 
     Returns:
-        Scale.
+        Scale denominator, using the OGC pixel size.
     """
     return int(x / OGC_M_PER_PX)
 
@@ -86,26 +111,30 @@ def res_to_scale(x: _number) -> int:
 
 
 def mm_to_px(x: _number, ppi: int) -> float:
-    """Converts millimetres to pixel.
+    """Convert millimetres to pixels.
 
     Args:
         x: Millimetres.
         ppi: Pixels per inch.
 
     Returns:
-        Amount of pixels."""
+        Number of pixels.
+    """
     return x * (ppi / MM_PER_IN)
 
 
 def to_px(xu: gws.UomValue, ppi: int) -> gws.UomValue:
-    """Converts a measurement to amount of pixels.
+    """Convert a value with a unit to pixels.
 
     Args:
-        xu: A measurement to convert to pixels.
+        xu: Value in ``px`` or ``mm``.
         ppi: Pixels per inch.
 
     Returns:
-        A measurement.
+        The value in pixels.
+
+    Raises:
+        ``ValueError``: If the unit is not ``px`` or ``mm``.
     """
     x, u = xu
     if u == gws.Uom.px:
@@ -116,28 +145,31 @@ def to_px(xu: gws.UomValue, ppi: int) -> gws.UomValue:
 
 
 def size_mm_to_px(xy: gws.Size, ppi: int) -> gws.Size:
-    """Converts a rectangle description in millimetres to pixels.
+    """Convert a size in millimetres to pixels.
 
     Args:
-        xy: A rectangle measurements in mm.
+        xy: Size in millimetres.
         ppi: Pixels per inch.
 
     Returns:
-        A rectangle in pixel.
+        Size in pixels.
     """
     x, y = xy
     return mm_to_px(x, ppi), mm_to_px(y, ppi)
 
 
 def size_to_px(xyu: gws.UomSize, ppi: int) -> gws.UomSize:
-    """Converts a rectangle description of any unit to pixels.
+    """Convert a size with a unit to pixels.
 
     Args:
-        xyu: A rectangle measurements with its unit.
+        xyu: Size in ``px`` or ``mm``.
         ppi: Pixels per inch.
 
     Returns:
-        The rectangle measurements in pixels.
+        Size in pixels.
+
+    Raises:
+        ``ValueError``: If the unit is not ``px`` or ``mm``.
     """
     x, y, u = xyu
     if u == gws.Uom.px:
@@ -151,27 +183,30 @@ def size_to_px(xyu: gws.UomSize, ppi: int) -> gws.UomSize:
 
 
 def px_to_mm(x: _number, ppi: int) -> float:
-    """Converts pixel to millimetres.
+    """Convert pixels to millimetres.
 
     Args:
-        x: Amount of pixels.
-        ppi: Pixel per inch.
+        x: Number of pixels.
+        ppi: Pixels per inch.
 
     Returns:
-        Amount of millimetres.
+        Millimetres.
     """
     return x * (MM_PER_IN / ppi)
 
 
 def to_mm(xu: gws.UomValue, ppi: int) -> gws.UomValue:
-    """Converts a measurement of any unit to millimetres.
+    """Convert a value with a unit to millimetres.
 
     Args:
-        xu: A measurement to convert.
+        xu: Value in ``mm`` or ``px``.
         ppi: Pixels per inch.
 
     Returns:
-        A measurement.
+        The value in millimetres.
+
+    Raises:
+        ``ValueError``: If the unit is not ``mm`` or ``px``.
     """
     x, u = xu
     if u == gws.Uom.mm:
@@ -182,30 +217,31 @@ def to_mm(xu: gws.UomValue, ppi: int) -> gws.UomValue:
 
 
 def size_px_to_mm(xy: gws.Size, ppi: int) -> gws.Size:
-    """Converts a rectangle description in pixel to millimetres.
+    """Convert a size in pixels to millimetres.
 
     Args:
-        xy: A rectangle measurements in pixels.
-        ppi: Pixel per inch
+        xy: Size in pixels.
+        ppi: Pixels per inch.
 
     Returns:
-        The rectangle measurements in millimetres.
+        Size in millimetres.
     """
     x, y = xy
     return px_to_mm(x, ppi), px_to_mm(y, ppi)
 
 
 def size_to_mm(xyu: gws.UomSize, ppi: int) -> gws.UomSize:
-    """Converts a rectangle description of any unit to millimetres.
+    """Convert a size with a unit to millimetres.
 
     Args:
-        xyu: A rectangle measurements with its unit.
+        xyu: Size in ``mm`` or ``px``.
         ppi: Pixels per inch.
 
     Returns:
-        The rectangle measurements in millimetres.
+        Size in millimetres.
+
     Raises:
-        ``ValueError``: if the unit is invalid.
+        ``ValueError``: If the unit is not ``mm`` or ``px``.
     """
     x, y, u = xyu
     if u == gws.Uom.mm:
@@ -216,13 +252,16 @@ def size_to_mm(xyu: gws.UomSize, ppi: int) -> gws.UomSize:
 
 
 def to_str(xu: gws.UomValue) -> str:
-    """Converts a to a string.
+    """Convert a value with a unit to a string.
+
+    Whole numbers are written without a decimal part.
 
     Args:
-        xu: A measurement to convert.
+        xu: Value with a unit.
 
     Returns:
-        The input tuple as a string, like '5mm'."""
+        A string like ``5mm``.
+    """
     x, u = xu
     sx = str(int(x)) if (x % 1 == 0) else str(x)
     return sx + str(u)
@@ -245,14 +284,17 @@ _unit_re = re.compile(r"""(?x)
 
 
 def parse(val: str | int | float | tuple | list, default_unit: gws.Uom = None) -> gws.UomValue:
-    """Parse a measurement in the string or numeric form.
+    """Parse a value with a unit.
 
     Args:
-        val: A measurement to parse (e.g. '5mm', 5, [5, 'mm']).
-        default_unit: Default unit.
+        val: A string like ``'5mm'``, a number, or a pair like ``[5, 'mm']``.
+        default_unit: Unit for numbers and for strings without a known unit.
+
+    Returns:
+        The value with its unit.
 
     Raises:
-         ``ValueError``: if the unit is missing, if the formatting is wrong or if the unit is invalid.
+        ``ValueError``: If the format is invalid, or the unit is missing or unknown and there is no default unit.
     """
     if isinstance(val, (list, tuple)):
         if len(val) == 2:
@@ -281,13 +323,16 @@ def parse(val: str | int | float | tuple | list, default_unit: gws.Uom = None) -
 
 
 def parse_point(val: str | tuple | list) -> gws.UomPoint:
-    """Parse a point in the string or numeric form.
+    """Parse a point with a unit.
 
     Args:
-        val: A point to parse, either a string '1mm 2mm' or a list [1, 2, 'mm'].
+        val: A comma-separated string like ``'1mm,2mm'``, a list like ``['1mm', '2mm']`` or a list like ``[1, 2, 'mm']``.
+
+    Returns:
+        The point with its unit.
 
     Raises:
-        ``ValueError``: if the point is invalid.
+        ``ValueError``: If the point is invalid or the units differ.
     """
 
     v = gws.u.to_list(val)
@@ -306,13 +351,16 @@ def parse_point(val: str | tuple | list) -> gws.UomPoint:
 
 
 def parse_extent(val: str | tuple | list) -> gws.UomExtent:
-    """Parse an extent in the string or numeric form.
+    """Parse an extent with a unit.
 
     Args:
-        val: An extent to parse, either a string '1mm 2mm 3mm 4mm' or a list [1, 2, 3, 4, 'mm'].
+        val: A comma-separated string like ``'1mm,2mm,3mm,4mm'``, a list of four strings, or a list like ``[1, 2, 3, 4, 'mm']``.
+
+    Returns:
+        The extent with its unit.
 
     Raises:
-        ``ValueError``: if the extent is invalid.
+        ``ValueError``: If the extent is invalid or the units differ.
     """
 
     v = gws.u.to_list(val)

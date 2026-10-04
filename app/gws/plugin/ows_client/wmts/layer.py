@@ -1,3 +1,5 @@
+"""WMTS layer."""
+
 from typing import Optional
 
 import gws
@@ -48,12 +50,23 @@ class Props(gws.base.layer.core.Props):
 
 @gws.ext.object.layer('wmts')
 class Object(gws.base.layer.image.Object):
+    """Image layer that shows the tiles of a WMTS source layer.
+
+    The tiles are fetched by the server through a WMTS grabber, or loaded by
+    the client directly from the service in the ``client`` display mode.
+    """
+
     provider: provider.Object
+    """WMTS service provider."""
     sourceLayers: list[gws.SourceLayer]
+    """Source layers selected for this layer."""
 
     activeLayer: gws.SourceLayer
+    """Source layer shown by this layer."""
     activeStyle: gws.SourceStyle
+    """Source style requested for the tiles."""
     activeTms: gws.TileMatrixSet
+    """Tile matrix set used for the tiles."""
 
     canRenderInClient = True
 
@@ -120,9 +133,22 @@ class Object(gws.base.layer.image.Object):
         self.configure_style()
 
     def configure_source_layers(self):
+        """Select the source layers from the image layers of the provider.
+
+        Returns:
+            Always ``True``.
+        """
         return gws.config.util.configure_source_layers_for(self, self.provider.sourceLayers, is_image=True)
 
     def configure_tms(self):
+        """Select the tile matrix set of the active source layer.
+
+        The tile matrix set must be in the forced CRS of the provider or, if
+        none is forced, in the CRS that best matches the map CRS.
+
+        Raises:
+            ``gws.Error``: If there is no tile matrix set in that CRS.
+        """
         crs = self.provider.forceCrs
         if not crs:
             crs = gws.lib.crs.best_match(self.mapCrs, [tms.crs for tms in self.activeLayer.tileMatrixSets])
@@ -132,6 +158,17 @@ class Object(gws.base.layer.image.Object):
         self.activeTms = tms_list[0]
 
     def configure_style(self):
+        """Select the style of the active source layer.
+
+        The style is the one named by the ``styleName`` configuration value, else
+        the default style of the source layer, else a style named ``default``.
+
+        Returns:
+            Always ``True``.
+
+        Raises:
+            ``gws.Error``: If the configured style does not exist.
+        """
         p = self.cfg('styleName')
         if p:
             for style in self.activeLayer.styles:

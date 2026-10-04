@@ -1,57 +1,102 @@
 class StyleValues(Data):
-    """CSS Style values."""
+    """Style values, as parsed by ``gws.lib.style.parser``."""
 
     fill: Color
+    """Fill color."""
 
     stroke: Color
+    """Stroke (line) color."""
     stroke_dasharray: list[int]
+    """Dash pattern, as a list of dash and gap lengths."""
     stroke_dashoffset: int
+    """Offset of the dash pattern."""
     stroke_linecap: Literal['butt', 'round', 'square']
+    """Shape of line ends."""
     stroke_linejoin: Literal['bevel', 'round', 'miter']
+    """Shape of line corners."""
     stroke_miterlimit: int
+    """Limit for miter joins."""
     stroke_width: int
+    """Stroke width in pixels."""
 
     marker: Literal['circle', 'square', 'arrow', 'cross']
+    """Marker symbol drawn at the vertices of a geometry."""
     marker_fill: Color
+    """Marker fill color."""
     marker_size: int
+    """Marker size in pixels."""
     marker_stroke: Color
+    """Marker stroke color."""
     marker_stroke_dasharray: list[int]
+    """Marker dash pattern."""
     marker_stroke_dashoffset: int
+    """Offset of the marker dash pattern."""
     marker_stroke_linecap: Literal['butt', 'round', 'square']
+    """Shape of marker line ends."""
     marker_stroke_linejoin: Literal['bevel', 'round', 'miter']
+    """Shape of marker line corners."""
     marker_stroke_miterlimit: int
+    """Limit for marker miter joins."""
     marker_stroke_width: int
+    """Marker stroke width in pixels."""
 
     with_geometry: Literal['all', 'none']
+    """Draw the geometry (``all``) or not (``none``)."""
     with_label: Literal['all', 'none']
+    """Draw the label (``all``) or not (``none``)."""
 
     label_align: Literal['left', 'right', 'center']
+    """Horizontal text alignment of the label."""
     label_background: Color
+    """Label background color."""
     label_fill: Color
+    """Label text color."""
     label_font_family: str
+    """Label font family."""
     label_font_size: int
+    """Label font size in pixels."""
     label_font_style: Literal['normal', 'italic']
+    """Label font style."""
     label_font_weight: Literal['normal', 'bold']
+    """Label font weight."""
     label_line_height: int
+    """Line spacing for multi-line labels."""
     label_max_scale: int
+    """Maximal scale denominator at which the label is shown."""
     label_min_scale: int
+    """Minimal scale denominator at which the label is shown."""
     label_offset_x: int
+    """Horizontal label offset in pixels."""
     label_offset_y: int
+    """Vertical label offset in pixels."""
     label_padding: list[int]
+    """Label padding in pixels, as ``[top, right, bottom, left]``."""
     label_placement: Literal['start', 'end', 'middle']
+    """Label position along the geometry: the first point, the last point or the centroid."""
     label_stroke: Color
+    """Label text stroke color."""
     label_stroke_dasharray: list[int]
+    """Label text dash pattern."""
     label_stroke_dashoffset: int
+    """Offset of the label text dash pattern."""
     label_stroke_linecap: Literal['butt', 'round', 'square']
+    """Shape of label text line ends."""
     label_stroke_linejoin: Literal['bevel', 'round', 'miter']
+    """Shape of label text line corners."""
     label_stroke_miterlimit: int
+    """Limit for label text miter joins."""
     label_stroke_width: int
+    """Label text stroke width in pixels."""
 
     point_size: int
+    """Diameter of point geometries in pixels."""
     icon: str
+    """Icon for point geometries. After parsing, a ``gws.lib.style.icon.ParsedIcon`` object."""
 
     offset_x: int
+    """Horizontal offset of the drawn geometry in pixels."""
     offset_y: int
+    """Vertical offset of the drawn geometry in pixels."""
 
 
 class StyleProps(Props):
@@ -63,8 +108,11 @@ class StyleProps(Props):
 
 
 class Style:
-    """CSS Style object."""
+    """Feature style."""
 
     cssSelector: str
+    """CSS selector of the style."""
     text: str
+    """Raw CSS text of the style."""
     values: StyleValues
+    """Parsed style values."""

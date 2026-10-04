@@ -1,3 +1,5 @@
+"""CLI commands for user accounts."""
+
 from typing import Optional, cast
 
 import gws
@@ -6,6 +8,8 @@ import gws.config
 from . import helper
 
 class AccountResetParams(gws.CliParams):
+    """Parameters of the ``accountReset`` command."""
+
     uid: Optional[list[str]]
     """List of account IDs to reset."""
 
@@ -13,6 +17,8 @@ class AccountResetParams(gws.CliParams):
 
 
 class Object(gws.Node):
+    """CLI commands for user accounts."""
+
     @gws.ext.command.cli('accountReset')
     def account_reset(self, p: AccountResetParams):
         """Reset an account or multiple accounts."""
