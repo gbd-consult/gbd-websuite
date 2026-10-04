@@ -127,7 +127,6 @@ A CLI command is a method of a class in the category `cli`. The class extends <%
 
 ```py
 import gws
-import gws.config
 
 
 class CountParams(gws.CliParams):
@@ -142,7 +141,7 @@ class Object(gws.Node):
     def count(self, p: CountParams):
         """Count the layers of a project."""
 
-        root = gws.config.load()
+        root = gws.load_root()
         ...
 ```
 

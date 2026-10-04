@@ -1,5 +1,7 @@
 """Internal implementations of ``gws.Node`` and ``gws.Root`` methods."""
 
+import sys
+
 from . import (
     const as c,
     util as u,
@@ -426,6 +428,76 @@ def root_create_application(self, config, **kwargs):
     self.initialize(node, config)
 
     return node
+
+
+##
+
+_ROOT_NAME = 'gws_root_object'
+
+
+def save_root(root, path=None):
+    """Implement ``gws.save_root``.
+
+    Args:
+        root: The root.
+        path: File path.
+
+    Returns:
+        The file path.
+    """
+    path = path or c.ROOT_PICKLE_PATH
+    u.serialize_to_path(sys.path, f'{path}.syspath')
+    u.serialize_to_path(root, path)
+    return path
+
+
+def load_root(path=None):
+    """Implement ``gws.load_root``.
+
+    Args:
+        path: File path.
+
+    Returns:
+        The root.
+    """
+    path = path or c.ROOT_PICKLE_PATH
+    for p in u.unserialize_from_path(f'{path}.syspath'):
+        if p not in sys.path:
+            sys.path.insert(0, p)
+            log.debug(f'path {p!r} added to sys.path')
+    root = u.unserialize_from_path(path)
+    return activate_root(root)
+
+
+def activate_root(root):
+    """Implement ``gws.activate_root``.
+
+    Args:
+        root: The root.
+
+    Returns:
+        The root.
+    """
+    root.activate()
+    return u.set_app_global(_ROOT_NAME, root)
+
+
+def deactivate_root():
+    """Implement ``gws.deactivate_root``."""
+    u.delete_app_global(_ROOT_NAME)
+
+
+def get_root():
+    """Implement ``gws.get_root``.
+
+    Returns:
+        The root.
+    """
+
+    def _err():
+        raise Error('no configuration root found')
+
+    return u.get_app_global(_ROOT_NAME, _err)
 
 
 ##

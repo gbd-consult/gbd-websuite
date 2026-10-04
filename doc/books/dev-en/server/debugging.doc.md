@@ -74,7 +74,7 @@ gws.u.ensure_system_dirs()
 
 cr = gws.config.configure(config_path='/data/config.cx')
 gws.config.log_report(cr)
-root = gws.config.activate(cr.root)
+root = gws.activate_root(cr.root)
 
 client = werkzeug.test.Client(gws.base.web.wsgi_app.make_application(root))
 res = client.post('/_/projectInfo', json={'projectUid': 'hello'})

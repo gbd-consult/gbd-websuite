@@ -3,7 +3,6 @@
 import cProfile
 
 import gws
-import gws.config
 import gws.base.action
 import gws.base.auth
 import gws.base.web
@@ -51,7 +50,7 @@ class Object(gws.Node):
     def _invoke(self, p: InvokeRequest):
         """Load the configuration, run an API command with an empty web request and return its response."""
         environ = {}
-        root = gws.config.load()
+        root = gws.load_root()
         req = gws.base.web.wsgi.Requester(root, environ, root.app.webMgr.site)
 
         fn, request = root.app.actionMgr.prepare_action(

@@ -4,7 +4,6 @@ from typing import Optional, cast
 
 import gws
 import gws.base.action
-import gws.config
 import gws.lib.jsonx
 import gws.lib.osx
 import gws.lib.mime
@@ -72,7 +71,7 @@ class Object(gws.base.action.Object):
     def print(self, p: CliParams):
         """Print a request from a JSON file."""
 
-        root = gws.config.load()
+        root = gws.load_root()
         request = root.specs.read(
             gws.lib.jsonx.from_path(p.request),
             'gws.PrintRequest',

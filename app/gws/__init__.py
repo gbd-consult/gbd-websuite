@@ -1282,6 +1282,64 @@ def create_root(specs: 'SpecRuntime') -> Root:
     return Root(specs)
 
 
+def save_root(root: Root, path: str = None) -> str:
+    """Pickle the root object to a file.
+
+    ``sys.path`` is pickled next to it, to ``<path>.syspath``, so that ``load_root`` can restore it.
+
+    Args:
+        root: The root object.
+        path: File path. Defaults to ``config.pickle`` in the config directory.
+
+    Returns:
+        The file path.
+    """
+    return tree_impl.save_root(root, path)
+
+
+def load_root(path: str = None) -> Root:
+    """Load a pickled root object, activate it and make it the current root.
+
+    ``sys.path`` is restored first, so that plugin modules can be imported.
+
+    Args:
+        path: File path. Defaults to ``config.pickle`` in the config directory.
+
+    Returns:
+        The root object.
+    """
+    return tree_impl.load_root(path)
+
+
+def activate_root(root: Root) -> Root:
+    """Activate the root object and make it the current root.
+
+    Args:
+        root: The root object.
+
+    Returns:
+        The root object.
+    """
+    return tree_impl.activate_root(root)
+
+
+def deactivate_root():
+    """Remove the current root."""
+    return tree_impl.deactivate_root()
+
+
+def get_root() -> Root:
+    """Return the current root object.
+
+    Returns:
+        The root object set by ``activate_root`` or ``load_root``.
+
+    Raises:
+        Error: If there is no current root.
+    """
+    return tree_impl.get_root()
+
+
 def props_of(obj: Object, user: 'User', *context) -> Optional['Props']:
     """Generate props for an object, if the user is allowed to use it.
 

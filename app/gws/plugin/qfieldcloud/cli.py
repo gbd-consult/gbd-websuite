@@ -2,7 +2,6 @@
 
 from typing import cast, Optional
 import gws
-import gws.config
 import gws.base.action
 
 
@@ -31,7 +30,7 @@ class Object(gws.Node):
     def invoke(self, p: PackageRequest):
         """Package a QField Cloud project into a directory."""
 
-        root = gws.config.load()
+        root = gws.load_root()
         project = None
         if p.projectUid:
             project = root.app.project(p.projectUid)

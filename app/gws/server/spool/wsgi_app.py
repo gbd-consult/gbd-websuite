@@ -29,7 +29,7 @@ def spooler(env):
         The uWSGI ``SPOOL_OK`` code, so the spooler removes the task.
     """
     try:
-        runner.run(gws.config.get_root(), env)
+        runner.run(gws.get_root(), env)
     except:
         gws.log.exception()
 

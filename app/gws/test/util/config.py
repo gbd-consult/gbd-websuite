@@ -79,5 +79,5 @@ def gws_root(cfg: str = '', specs: gws.SpecRuntime = None, activate=True, defaul
     if not activate:
         return root
 
-    root = gws.config.activate(root)
+    root = gws.activate_root(root)
     return root

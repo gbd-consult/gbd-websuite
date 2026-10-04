@@ -3,7 +3,6 @@
 import re
 
 import gws
-import gws.config
 import gws.base.shape
 import gws.lib.crs
 import gws.lib.dynimport
@@ -37,7 +36,7 @@ class Object(gws.Node):
     def do_copy(self, p: CopyParams):
         """Copy a QGIS project between files and databases."""
 
-        root = gws.config.load()
+        root = gws.load_root()
         src_prj = project.from_store(root, _addr_to_store(p.src))
         src_prj.to_store(root, _addr_to_store(p.dst))
 
@@ -45,7 +44,7 @@ class Object(gws.Node):
     def do_caps(self, p: CapsParams):
         """Print the parsed capabilities of a QGIS project as JSON."""
 
-        root = gws.config.load()
+        root = gws.load_root()
         src_prj = project.from_store(root, _addr_to_store(p.src))
         caps = src_prj.caps()
 

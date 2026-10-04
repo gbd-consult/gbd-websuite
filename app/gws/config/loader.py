@@ -1,11 +1,10 @@
-"""Configuration loader: configure, store and load the root object."""
+"""Configuration loader: configure, save and load the root object."""
 
 from typing import Optional
 import sys
 
 import gws
 import gws.spec.runtime
-import gws.lib.jsonx
 import gws.lib.osx
 import gws.lib.dynimport
 
@@ -13,10 +12,6 @@ from . import parser
 
 _ERROR_PREFIX = 'CONFIGURATION ERROR'
 _WARNING_PREFIX = 'CONFIGURATION WARNING'
-
-_ROOT_NAME = 'gws_root_object'
-
-_DEFAULT_STORE_PATH = gws.c.CONFIG_DIR + '/config.pickle'
 
 _DEFAULT_CONFIG_PATHS = [
     '/data/config.cx',
@@ -286,29 +281,8 @@ def initialize(specs: gws.SpecRuntime, config: gws.Config) -> gws.Root:
     return root
 
 
-def activate(root: gws.Root):
-    """Activate the root object and make it the current root.
-
-    Args:
-        root: Root object.
-
-    Returns:
-        The root object.
-    """
-    root.activate()
-    return gws.u.set_app_global(_ROOT_NAME, root)
-
-
-def deactivate():
-    """Remove the current root."""
-    return gws.u.delete_app_global(_ROOT_NAME)
-
-
-def store(root: gws.Root, path=None) -> str:
-    """Serialize the root object to a file.
-
-    The current ``sys.path`` is saved next to it in ``<path>.syspath.json``,
-    so that ``load`` can restore it.
+def save(root: gws.Root, path=None) -> str:
+    """Save the root object to a file, see ``gws.save_root``.
 
     Args:
         root: Root object.
@@ -318,20 +292,18 @@ def store(root: gws.Root, path=None) -> str:
         The file path.
 
     Raises:
-        ``gws.ConfigurationError``: If the root cannot be stored.
+        ``gws.ConfigurationError``: If the root cannot be saved.
     """
-    path = path or _DEFAULT_STORE_PATH
+    path = path or gws.c.ROOT_PICKLE_PATH
     gws.log.debug(f'writing config to {path!r}')
     try:
-        gws.lib.jsonx.to_path(f'{path}.syspath.json', sys.path)
-        gws.u.serialize_to_path(root, path)
-        return path
+        return gws.save_root(root, path)
     except Exception as exc:
-        raise gws.ConfigurationError('unable to store configuration') from exc
+        raise gws.ConfigurationError('unable to save configuration') from exc
 
 
 def load(path=None) -> gws.Root:
-    """Load a stored root object, activate it and make it the current root.
+    """Load a saved root object, see ``gws.load_root``, and log the user, time and memory used.
 
     Args:
         path: File path. Defaults to ``config.pickle`` in the config directory.
@@ -343,44 +315,16 @@ def load(path=None) -> gws.Root:
         ``gws.ConfigurationError``: If the root cannot be loaded or activated.
     """
     ui = gws.lib.osx.user_info()
-    path = path or _DEFAULT_STORE_PATH
+    path = path or gws.c.ROOT_PICKLE_PATH
     gws.log.info(f'loading config from {path!r}, user {ui["pw_name"]} ({ui["pw_uid"]}:{ui["pw_gid"]})')
     try:
-        return _load(path)
+        tm1 = _time_and_memory()
+        root = gws.load_root(path)
+        info = _info_string(root, tm1)
+        gws.log.info(f'configuration loaded, {info}')
+        return root
     except Exception as exc:
         raise gws.ConfigurationError('unable to load configuration') from exc
-
-
-def _load(path) -> gws.Root:
-    """Restore ``sys.path``, unserialize and activate the root."""
-    sys_path = gws.lib.jsonx.from_path(f'{path}.syspath.json')
-    for p in sys_path:
-        if p not in sys.path:
-            sys.path.insert(0, p)
-            gws.log.debug(f'path {p!r} added to sys.path')
-
-    tm1 = _time_and_memory()
-    root = gws.u.unserialize_from_path(path)
-    activate(root)
-    info = _info_string(root, tm1)
-    gws.log.info(f'configuration loaded, {info}')
-
-    return root
-
-
-def get_root() -> gws.Root:
-    """Return the current root object.
-
-    Returns:
-        The root object set by ``activate`` or ``load``.
-
-    Raises:
-        ``gws.Error``: If there is no current root.
-    """
-    def _err():
-        raise gws.Error('no configuration root found')
-
-    return gws.u.get_app_global(_ROOT_NAME, _err)
 
 
 def real_config_path(config_path: str) -> str:

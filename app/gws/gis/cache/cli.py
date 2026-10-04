@@ -10,7 +10,6 @@ import gws.lib.crs
 import gws.lib.datetimex
 import gws.lib.jsonx
 import gws.lib.cli as cli
-import gws.config
 
 from . import core, seed
 
@@ -73,7 +72,7 @@ class Object(gws.Node):
     def do_status(self, p: StatusParams):
         """Display the cache status."""
 
-        root = gws.config.loader.load()
+        root = gws.load_root()
         inv = core.inventory(root)
         core.apply_filter(inv, _filter(p))
         core.add_stats(inv)
@@ -88,21 +87,21 @@ class Object(gws.Node):
     def do_cleanup(self, p: gws.CliParams):
         """Remove orphan cache directories."""
 
-        root = gws.config.loader.load()
+        root = gws.load_root()
         core.cleanup(root)
 
     @gws.ext.command.cli('cacheDrop')
     def do_drop(self, p: DropParams):
         """Remove cached tiles."""
 
-        root = gws.config.loader.load()
+        root = gws.load_root()
         core.drop(root, _filter_with_geom(p))
 
     @gws.ext.command.cli('cacheSeed')
     def do_seed(self, p: SeedParams):
         """Seed the selected caches."""
 
-        root = gws.config.loader.load()
+        root = gws.load_root()
 
         opts = core.SeedOptions(
             filter=_filter_with_geom(p),

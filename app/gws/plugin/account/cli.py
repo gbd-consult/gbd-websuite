@@ -3,7 +3,6 @@
 from typing import Optional, cast
 
 import gws
-import gws.config
 
 from . import helper
 
@@ -23,7 +22,7 @@ class Object(gws.Node):
     def account_reset(self, p: AccountResetParams):
         """Reset an account or multiple accounts."""
 
-        root = gws.config.load()
+        root = gws.load_root()
         h = cast(helper.Object, root.app.helper('account'))
 
         for uid in p.uid:

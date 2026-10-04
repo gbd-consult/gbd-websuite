@@ -3,7 +3,6 @@
 from typing import Optional, cast
 
 import gws
-import gws.config
 import gws.base.action
 import gws.lib.jsonx
 import gws.lib.osx
@@ -69,7 +68,7 @@ class Object(gws.Node):
     def _prepare(self, project_uid):
         """Load the configuration and find the ``alkis`` action, exit if there is none."""
 
-        root = gws.config.load()
+        root = gws.load_root()
         self.act = cast(action.Object, gws.base.action.get_action_for_cli(root, 'alkis', project_uid))
         if not self.act:
             exit(1)

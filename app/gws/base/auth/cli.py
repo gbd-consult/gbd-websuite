@@ -3,7 +3,6 @@
 from typing import Optional, cast
 
 import gws
-import gws.config
 import gws.lib.datetimex as dtx
 import gws.lib.cli as cli
 
@@ -32,7 +31,7 @@ class Object(gws.Node):
     def sessions(self, p: gws.EmptyRequest):
         """Show active authorization sessions."""
 
-        root = gws.config.load()
+        root = gws.load_root()
         sm = root.app.authMgr.sessionMgr
 
         sm.cleanup()
@@ -62,7 +61,7 @@ class Object(gws.Node):
     def sessrem(self, p: RemoveParams):
         """Remove authorization sessions."""
 
-        root = gws.config.load()
+        root = gws.load_root()
         sm = root.app.authMgr.sessionMgr
 
         n = 0

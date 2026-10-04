@@ -2,7 +2,7 @@
 
 This package turns configuration sources (files or Python dicts) into a
 validated ``gws.Config`` tree and builds the object tree (``gws.Root``) from it.
-It also stores the configured root on disk and loads it back in the server
+It also saves the configured root on disk and loads it back in the server
 processes.
 
 Submodules:
@@ -14,8 +14,9 @@ Submodules:
   ``projects`` list, from ``projectPaths`` and from files in ``projectDirs``.
 - ``gws.config.loader``: drives the whole process. It creates the specs, runs the
   parser, creates and initializes the root object, collects errors and warnings
-  into a ``gws.ConfigResult`` and logs a report. It also stores the root as a
-  pickle file, loads it back and keeps the active root in an application global.
+  into a ``gws.ConfigResult`` and logs a report. It also saves the root
+  (``gws.save_root``) and loads it back (``gws.load_root``), logging the user,
+  time and memory used.
 - ``gws.config.util``: helpers used by ``configure`` methods of objects to
   create common children (templates, models, finders) and to find providers,
   database providers and source layers.
@@ -40,7 +41,7 @@ Example::
     cr = gws.config.configure(config_path='/data/config.cx')
     gws.config.log_report(cr)
     if cr.root:
-        gws.config.store(cr.root)
+        gws.config.save(cr.root)
 
     # later, in a server process
     root = gws.config.load()
@@ -54,14 +55,11 @@ Example::
 """
 
 from .loader import (
-    activate,
     configure,
-    deactivate,
     initialize,
     parse,
     load,
-    get_root,
-    store,
+    save,
     log_report,
 )
 from .parser import CONFIG_PATH_PATTERN

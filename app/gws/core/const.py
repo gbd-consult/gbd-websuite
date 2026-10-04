@@ -22,6 +22,8 @@ MISC_DIR = f'{VAR_DIR}/misc'
 SERVER_DIR = f'{VAR_DIR}/server'
 QGIS_DIR = f'{VAR_DIR}/qgis'
 
+ROOT_PICKLE_PATH = f'{CONFIG_DIR}/config.pickle'
+
 FASTCACHE_DIR = f'{TMP_DIR}/fastcache'
 PIDS_DIR = f'{TMP_DIR}/pids'
 SPOOL_DIR = f'{TMP_DIR}/spool'

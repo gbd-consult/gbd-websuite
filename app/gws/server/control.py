@@ -71,7 +71,7 @@ def configure_and_store(manifest_path='', config_path='', is_starting=False):
         ``gws.ConfigurationError``: If the configuration fails.
     """
     root = configure(manifest_path, config_path, is_starting)
-    gws.config.store(root)
+    gws.config.save(root)
     return root
 
 
