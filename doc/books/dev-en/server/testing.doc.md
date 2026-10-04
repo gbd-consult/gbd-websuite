@@ -27,7 +27,7 @@ image = gbdconsult/gbd-qgis-server-arm64:3.40
 
 Tests are in `_test` directories next to the code, in files named `*_test.py`. The runner finds them in the whole `gws` package, there is no central test directory.
 
-Test utilities are in `gws.test.util`, imported as `u`. A test that configures an application from an inline configuration and calls a command:
+Test utilities are in <% pyapi('gws.test.util', 'gws.test.util') %>, imported as `u`. A test that configures an application from an inline configuration and calls a command:
 
 ```py
 import gws
@@ -65,13 +65,13 @@ def test_get_features(root: gws.Root):
 
 | Function | Purpose |
 |----------|---------|
-| `u.gws_root(cfg, **vars)` | configure and activate a root from a `cx` string; `{name}` placeholders are replaced with `vars` |
-| `u.http.get(root, url)`, `u.http.post(root, url)` | send a request to the application |
-| `u.http.api(root, cmd, request)` | call an API command |
-| `u.pg.create(table, columns)`, `u.pg.insert(table, rows)`, `u.pg.rows(sql)` | prepare and query the test database |
-| `u.auth.add_user(name, password, roles)` | add a user to the mock authorization provider |
-| `u.mockserver.add(snippet)` | add a handler to the mock HTTP server |
-| `u.option(name)` | read an option of the test configuration, for example service hosts and ports |
-| `u.fixture`, `u.raises` | `pytest.fixture`, `pytest.raises` |
+| <% pyapi('gws.test.util.config.gws_root', 'u.gws_root(cfg, **vars)') %> | configure and activate a root from a `cx` string; `{name}` placeholders are replaced with `vars` |
+| <% pyapi('gws.test.util.http.get', 'u.http.get(root, url)') %>, <% pyapi('gws.test.util.http.post', 'u.http.post(root, url)') %> | send a request to the application |
+| <% pyapi('gws.test.util.http.api', 'u.http.api(root, cmd, request)') %> | call an API command |
+| <% pyapi('gws.test.util.pg.create', 'u.pg.create(table, columns)') %>, <% pyapi('gws.test.util.pg.insert', 'u.pg.insert(table, rows)') %>, <% pyapi('gws.test.util.pg.rows', 'u.pg.rows(sql)') %> | prepare and query the test database |
+| <% pyapi('gws.test.util.auth.add_user', 'u.auth.add_user(name, password, roles)') %> | add a user to the mock authorization provider |
+| <% pyapi('gws.test.util.mockserver_client.add', 'u.mockserver.add(snippet)') %> | add a handler to the mock HTTP server |
+| <% pyapi('gws.test.util.options.option', 'u.option(name)') %> | read an option of the test configuration, for example service hosts and ports |
+| <% pyapi('gws.test.util.fixture', 'u.fixture') %>, <% pyapi('gws.test.util.raises', 'u.raises') %> | `pytest.fixture`, `pytest.raises` |
 
 The database configured by `u.gws_root` is the PostgreSQL service of the test environment. The full list of utilities is in <% pyapi('gws.test.util') %>.

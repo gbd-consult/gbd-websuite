@@ -4,7 +4,7 @@ The [configuration reference](/admin-de/reference) is generated from the source 
 
 ## Generation ::
 
-The spec generator writes the reference as Markdown to `app/__build/configref.en.md` and `app/__build/configref.de.md`. The administrator book includes the German version with `%include`. Each class gets its own section, whose SID is the class name, for example `gws.base.map.core.Config`. The `%ref` command links to these sections.
+The spec generator writes the reference as Markdown to `app/__build/configref.en.md` and `app/__build/configref.de.md`. The administrator book includes the German version with `%include`. Each class gets its own section, whose SID is the class name, for example <% pyapi('gws.base.map.core.Config', 'gws.base.map.core.Config') %>. The `%ref` command links to these sections.
 
 `make.sh doc` and the documentation development server regenerate the reference before building.
 

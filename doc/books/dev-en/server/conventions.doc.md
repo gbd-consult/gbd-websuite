@@ -40,7 +40,7 @@ Configuration keys, request parameters and props are camelCase, because they are
 
 ## Modules ::
 
-A module that implements an extension type defines `Config`, `Props` and `Object` under these names. Interfaces from `gws` are implemented by a class with the same name in the implementing package, for example `gws.base.feature.Feature` implements `gws.Feature`.
+A module that implements an extension type defines `Config`, `Props` and `Object` under these names. Interfaces from `gws` are implemented by a class with the same name in the implementing package, for example <% pyapi('gws.base.feature.Feature', 'gws.base.feature.Feature') %> implements <% pyapi('gws.Feature', 'gws.Feature') %>.
 
 ## Types ::
 

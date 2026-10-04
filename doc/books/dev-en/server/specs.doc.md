@@ -31,7 +31,7 @@ The server generates the specs each time it configures, and the `gws` CLI each t
 
 ## Supported types ::
 
-Fields of `Config`, `Props`, `Request` and `Response` classes can use:
+Fields of <% pyapi('gws.Config') %>, <% pyapi('gws.Props') %>, <% pyapi('gws.Request') %> and <% pyapi('gws.Response') %> classes can use:
 
 - `str`, `int`, `float`, `bool`, `bytes`, `Any`
 - `list[T]`, `set[T]`, `dict`, `dict[str, T]`, `tuple[...]`
@@ -59,7 +59,7 @@ Some types are strings in the configuration and are converted when the configura
 | <% pyapi('gws.Regex') %> | regular expression | `str`, checked for syntax |
 | <% pyapi('gws.Url') %> | `http` or `https` URL | `str` |
 
-`self.cfg()` returns the converted values. The conversions are defined in <% pyapi('gws.spec.reader') %>.
+<% pyapi('gws.Node.cfg', 'self.cfg()') %> returns the converted values. The conversions are defined in <% pyapi('gws.spec.reader') %>.
 
 ## Docstrings ::
 

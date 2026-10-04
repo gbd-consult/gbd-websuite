@@ -7,8 +7,8 @@ The server code is the package `gws` in `app/gws`. Each package links to its API
 | Package | Contents |
 |---------|----------|
 | <% pyapi('gws') %> | Basic types and the interfaces of all components, generated from the `.pyinc` files of the packages. Every module imports it with `import gws`. |
-| <% pyapi('gws.config') %> | Reads configuration files in all supported formats, validates them against the specs, builds the object tree, stores it and loads it in the worker processes. `gws.config.util` has helpers that configure common children, like templates, models and finders. |
-| <% pyapi('gws.core') %> | The object tree implementation behind `gws.Node` and `gws.Root`. Also general utilities (`gws.u`), logging (`gws.log`), debugging helpers (`gws.debug`), constants such as system paths and role names (`gws.c`), and environment variables (`gws.env`). |
+| <% pyapi('gws.config') %> | Reads configuration files in all supported formats, validates them against the specs, builds the object tree, stores it and loads it in the worker processes. <% pyapi('gws.config.util', 'gws.config.util') %> has helpers that configure common children, like templates, models and finders. |
+| <% pyapi('gws.core') %> | The object tree implementation behind <% pyapi('gws.Node', 'gws.Node') %> and <% pyapi('gws.Root', 'gws.Root') %>. Also general utilities (<% pyapi('gws.core.util', 'gws.u') %>), logging (<% pyapi('gws.core.log', 'gws.log') %>), debugging helpers (<% pyapi('gws.core.debug', 'gws.debug') %>), constants such as system paths and role names (<% pyapi('gws.core.const', 'gws.c') %>), and environment variables (<% pyapi('gws.core.env', 'gws.env') %>). |
 | <% pyapi('gws.ext') %> | The decorators that register extension types and commands. They do nothing at runtime, the spec generator reads them from the source. |
 | <% pyapi('gws.server') %> | Configuration and control of the embedded servers (nginx, uWSGI, rsyslog), the `gws server` commands, the monitor that reloads the server on configuration changes, and the spooler for background jobs. |
 | <% pyapi('gws.spec') %> | The spec generator, which parses the source code, and the spec runtime, which validates configurations and requests, converts special types and imports extension classes on demand. |
@@ -16,13 +16,13 @@ The server code is the package `gws` in `app/gws`. Each package links to its API
 
 ## Base ::
 
-`gws.base` contains the core components. They are always loaded, and most of them define a base class that plugins extend.
+<% pyapi('gws.base', 'gws.base') %> contains the core components. They are always loaded, and most of them define a base class that plugins extend.
 
 | Package | Contents |
 |---------|----------|
 | <% pyapi('gws.base.action') %> | The base action class and the action manager, which finds the action for a command, validates the request and checks permissions. Also the `gws action` CLI commands. |
 | <% pyapi('gws.base.admin') %> | The `admin` action with diagnostic pages: an inspector for the configured object tree and a viewer for cached tiles. |
-| <% pyapi('gws.base.application') %> | The application object, the first node of the tree. It configures all global components in a fixed order and holds the managers, like `actionMgr`, `authMgr` or `databaseMgr`. |
+| <% pyapi('gws.base.application') %> | The application object, the first node of the tree. It configures all global components in a fixed order and holds the managers, like <% pyapi('gws.Application.actionMgr') %>, <% pyapi('gws.Application.authMgr') %> or <% pyapi('gws.Application.databaseMgr') %>. |
 | <% pyapi('gws.base.auth') %> | Users and roles, the authorization manager, base classes for authentication methods (how credentials arrive), providers (where users come from), multi-factor adapters and sessions. |
 | <% pyapi('gws.base.client') %> | The configuration of the client UI: which elements (toolbar buttons, sidebar tabs, and so on) a project shows, and their options. |
 | <% pyapi('gws.base.database') %> | Database providers and connections (SQLAlchemy), and base classes for database-backed layers, models and user sources. |
@@ -36,14 +36,14 @@ The server code is the package `gws` in `app/gws`. Each package links to its API
 | <% pyapi('gws.base.map') %> | The map object, which defines the coordinate system, extent and resolutions of a project, and the `map` action, which renders images, tiles, legends and features of layers. |
 | <% pyapi('gws.base.metadata') %> | Metadata of projects, layers and services, based on ISO 19115 and the OGC service standards, with INSPIRE support. |
 | <% pyapi('gws.base.model') %> | Data models and fields: reading features from a source, converting them for the client, and validating and writing them back. The module docstring describes the data flow. |
-| <% pyapi('gws.base.ows') %> | OGC web services. `ows.client` parses capabilities and queries WMS, WFS and WMTS sources. `ows.server` implements WMS, WMTS, WFS and CSW services for configured projects. |
+| <% pyapi('gws.base.ows') %> | OGC web services. <% pyapi('gws.base.ows.client', 'ows.client') %> parses capabilities and queries WMS, WFS and WMTS sources. <% pyapi('gws.base.ows.server', 'ows.server') %> implements WMS, WMTS, WFS and CSW services for configured projects. |
 | <% pyapi('gws.base.printer') %> | Printers and the print worker, which renders a map and a template into a PDF or image in a background job. |
 | <% pyapi('gws.base.project') %> | Projects: a map, a client configuration and project-specific actions, finders, models, templates and printers. Also the `projectInfo` command, which sends a project to the client. |
 | <% pyapi('gws.base.search') %> | The search manager, which runs a search query over all finders a user can access, and the base finder class. Finders search layers, models or external services. |
 | <% pyapi('gws.base.shape') %> | Geometries in a coordinate system, based on Shapely, with conversions from and to WKT, WKB, GeoJSON and extents. |
 | <% pyapi('gws.base.storage') %> | A key-value store where the client saves user data, like selections or annotations, by category. Storage providers implement the backend. |
 | <% pyapi('gws.base.template') %> | The base template class and the template manager, which finds a template by subject (for example `feature.label`) along the tree. |
-| <% pyapi('gws.base.web') %> | Web sites with their rewrite rules, CORS and SSL settings, request parsing (`gws.WebRequester`), the WSGI application and the `web` action for assets, pages and downloads. |
+| <% pyapi('gws.base.web') %> | Web sites with their rewrite rules, CORS and SSL settings, request parsing (<% pyapi('gws.WebRequester', 'gws.WebRequester') %>), the WSGI application and the `web` action for assets, pages and downloads. |
 
 ## GIS ::
 
@@ -56,7 +56,7 @@ The server code is the package `gws` in `app/gws`. Each package links to its API
 
 ## Libraries ::
 
-`gws.lib` contains libraries that do not depend on the object tree.
+<% pyapi('gws.lib', 'gws.lib') %> contains libraries that do not depend on the object tree.
 
 | Package | Contents |
 |---------|----------|
@@ -96,4 +96,4 @@ The server code is the package `gws` in `app/gws`. Each package links to its API
 
 ## Plugins ::
 
-`gws.plugin` contains the optional components. Each plugin package implements one or more extension types, for example layer types, database and OWS providers, authentication methods, model fields, templates or client tools. A plugin is loaded only if the configuration uses one of its types. External plugins, listed in the manifest, work the same way, see [](/dev-en/server/plugins).
+<% pyapi('gws.plugin', 'gws.plugin') %> contains the optional components. Each plugin package implements one or more extension types, for example layer types, database and OWS providers, authentication methods, model fields, templates or client tools. A plugin is loaded only if the configuration uses one of its types. External plugins, listed in the manifest, work the same way, see [](/dev-en/server/plugins).

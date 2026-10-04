@@ -2,7 +2,7 @@
 
 ## The gws package ::
 
-`app` is the Python path root, `app/gws` is the package. Its subpackages are described in [](/dev-en/overview/components). Packages under `gws.base` are always loaded. Packages under `gws.plugin` and external plugins are loaded only when the configuration uses them.
+`app` is the Python path root, `app/gws` is the package. Its subpackages are described in [](/dev-en/overview/components). Packages under <% pyapi('gws.base', 'gws.base') %> are always loaded. Packages under <% pyapi('gws.plugin', 'gws.plugin') %> and external plugins are loaded only when the configuration uses them.
 
 ## Basic types ::
 
@@ -13,9 +13,9 @@
 # @include base/layer/types.pyinc
 ```
 
-An interface is a class whose methods have only docstrings, for example <% pyapi('gws.Layer') %>. The package that implements it, like `gws.base.layer`, defines a class that extends the interface. To add or change an interface, edit the package's `types.pyinc` and run `make.sh spec`.
+An interface is a class whose methods have only docstrings, for example <% pyapi('gws.Layer') %>. The package that implements it, like <% pyapi('gws.base.layer', 'gws.base.layer') %>, defines a class that extends the interface. To add or change an interface, edit the package's `types.pyinc` and run `make.sh spec`.
 
-Short aliases are available everywhere: `gws.u` (<% pyapi('gws.core.util') %>), `gws.c` (<% pyapi('gws.core.const') %>), `gws.log`, `gws.debug` and `gws.env`.
+Short aliases are available everywhere: <% pyapi('gws.core.util', 'gws.u') %> (`gws.core.util`), <% pyapi('gws.core.const', 'gws.c') %> (`gws.core.const`), <% pyapi('gws.core.log', 'gws.log') %> (`gws.core.log`), <% pyapi('gws.core.debug', 'gws.debug') %> (`gws.core.debug`) and <% pyapi('gws.core.env', 'gws.env') %> (`gws.core.env`).
 
 ## Package contents ::
 

@@ -166,6 +166,10 @@ def _api_doc_dir(opts):
 
 
 def _pyapi_url(name):
+    # doc root
+    if not name:
+        return API_DIR + '/py/index.html'
+
     # 'gws/Config' would match the 'gws/config' package on case-insensitive filesystems
     if name == 'gws.Config':
         return API_DIR + '/py/gws/index.html#gws.Config'

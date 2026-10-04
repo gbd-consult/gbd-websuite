@@ -11,15 +11,15 @@ gws.log.debug(f'loading {path=}')
 gws.log.exception()
 ```
 
-`gws.log.exception()` logs the current exception with its chain of causes.
+<% pyapi('gws.core.log.exception', 'gws.log.exception()') %> logs the current exception with its chain of causes.
 
 <% pyapi('gws.core.debug') %>, available as `gws.debug`, has helpers for quick inspection. They log at the debug level:
 
 | Function | Purpose |
 |----------|---------|
-| `gws.debug.p(obj, d=3)` | log the structure of an object, up to the depth `d` |
-| `gws.debug.p(stack=True)` | log the call stack |
-| `gws.debug.time_start(label)`, `gws.debug.time_end()` | log the time between the two calls |
+| <% pyapi('gws.core.debug.p', 'gws.debug.p(obj, d=3)') %> | log the structure of an object, up to the depth `d` |
+| <% pyapi('gws.core.debug.p', 'gws.debug.p(stack=True)') %> | log the call stack |
+| <% pyapi('gws.core.debug.time_start', 'gws.debug.time_start(label)') %>, <% pyapi('gws.core.debug.time_end', 'gws.debug.time_end()') %> | log the time between the two calls |
 
 ## Developer options ::
 
@@ -87,7 +87,7 @@ Run it in the container as the server user:
 docker exec gws-container gws -p /data/debug.py
 ```
 
-`root` gives access to the whole tree, for example `root.get('my_layer')` returns the node with the uid `my_layer`. The functions for configuring and loading are in <% pyapi('gws.config.loader') %>.
+`root` gives access to the whole tree, for example <% pyapi('gws.Root.get', "root.get('my_layer')") %> returns the node with the uid `my_layer`. The functions for configuring and loading are in <% pyapi('gws.config.loader') %>.
 
 ## Debugger ::
 

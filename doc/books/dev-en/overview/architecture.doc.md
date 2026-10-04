@@ -19,11 +19,11 @@ Configuring runs once, in the process that starts the server:
 
 1. The specs are generated from the source code.
 2. The configuration files are read and validated against the specs.
-3. The object tree is built: each node runs `pre_configure` and `configure`, and creates its children.
-4. When the tree is complete, each node runs `post_configure`.
+3. The object tree is built: each node runs <% pyapi('gws.Node.pre_configure') %> and <% pyapi('gws.Node.configure') %>, and creates its children.
+4. When the tree is complete, each node runs <% pyapi('gws.Node.post_configure') %>.
 5. The tree is pickled to `/gws-var/config/config.pickle`.
 
-Each web and spool worker then loads the pickled tree and calls `activate` on every node. The code for these steps is in <% pyapi('gws.config.loader') %>.
+Each web and spool worker then loads the pickled tree and calls <% pyapi('gws.Node.activate') %> on every node. The code for these steps is in <% pyapi('gws.config.loader') %>.
 
 Since `activate` runs in every worker, it is the place for per-process resources, like database connections or file watchers. `configure` and `post_configure` run only once and must not rely on such resources.
 

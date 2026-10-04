@@ -10,9 +10,9 @@
 </span>
 %end
 
-%def pyapi(name)
-    %let h 
-        <a href="<% options.webRoot %>/<% options.pyapi_url(name) %>" title="<% name %>"><code><% name.split('.')[-1] %></code></a>
+%def pyapi(name, text=None)
+    %let h
+        <a href="<% options.webRoot %>/<% options.pyapi_url(name) %>" title="<% name %>">`<% text or name.split('.')[-1] %>`</a>
     %end
     %return h.strip()
 %end

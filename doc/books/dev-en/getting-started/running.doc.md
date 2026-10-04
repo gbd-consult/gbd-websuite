@@ -113,7 +113,7 @@ The server configures itself once on start and stores the configured object tree
 
 `gws server reload` restarts the workers without configuring.
 
-With the developer option `server.auto_reload`, uWSGI restarts the workers whenever a Python module changes. The workers then load the stored tree with the new code, so changes to command methods take effect immediately. Changes to `configure` and to `Config` classes still need `gws server reconfigure`. Developer options are described in [](/dev-en/server/debugging):
+With the developer option `server.auto_reload`, uWSGI restarts the workers whenever a Python module changes. The workers then load the stored tree with the new code, so changes to command methods take effect immediately. Changes to <% pyapi('gws.Node.configure') %> and to `Config` classes still need `gws server reconfigure`. Developer options are described in [](/dev-en/server/debugging):
 
 ```
 developer {

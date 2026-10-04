@@ -29,7 +29,7 @@ Section files are also [Jump](https://github.com/gebrkn/jump) templates. Besides
 | `%demo "select_tool"` | link to a demo project |
 | `<% '<' + '% pyapi("gws.base.map.core.Object") %' + '>' %>` | link to a Python name in the API documentation |
 
-`pyapi` takes a fully qualified name of a module, class, function or attribute, and shows its last component as the link text.
+`pyapi` takes a fully qualified name of a module, class, function or attribute, and shows its last component as the link text. An optional second argument sets a different link text, for example `<% '<' + '% pyapi("gws.Node.cfg", "self.cfg()") %' + '>' %>`.
 
 ## Creating a book ::
 

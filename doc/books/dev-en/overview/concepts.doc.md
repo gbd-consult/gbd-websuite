@@ -4,7 +4,7 @@
 
 On start, the server reads the configuration and builds a tree of objects from it. The root of the tree is <% pyapi('gws.Root') %>, its first child is the application, which creates projects, layers, actions and all other objects. The tree is built once and stays in memory until the server is reconfigured.
 
-The objects in the tree are called nodes and extend <% pyapi('gws.Node') %>. Each node has its configuration, a parent, a list of children and a unique id. A node creates its children in its `configure` method, so the tree mirrors the nesting of the configuration.
+The objects in the tree are called nodes and extend <% pyapi('gws.Node') %>. Each node has its configuration, a parent, a list of children and a unique id. A node creates its children in its <% pyapi('gws.Node.configure') %> method, so the tree mirrors the nesting of the configuration.
 
 ## Object kinds ::
 
@@ -16,7 +16,7 @@ The code works with three kinds of objects:
 
 ## Data objects ::
 
-`gws.Data` is a simple bag of attributes. Reading an attribute that is not set returns `None` instead of raising an error. Specialized data classes describe the structures that cross the server boundary:
+<% pyapi('gws.Data', 'gws.Data') %> is a simple bag of attributes. Reading an attribute that is not set returns `None` instead of raising an error. Specialized data classes describe the structures that cross the server boundary:
 
 | Class | Purpose |
 |-------|---------|

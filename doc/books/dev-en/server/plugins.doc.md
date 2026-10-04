@@ -23,11 +23,11 @@ class Object(gws.base.database.layer.Object):
 
 A type that is created from the configuration needs a registered `Config`. A registered `Props` class is needed only if the props differ from the base class.
 
-The decorated classes get two attributes: `extName`, the full name like `gws.ext.object.layer.postgres`, and `extType`, the type name like `postgres`.
+The decorated classes get two attributes: <% pyapi('gws.Node.extName') %>, the full name like `gws.ext.object.layer.postgres`, and <% pyapi('gws.Node.extType') %>, the type name like `postgres`.
 
 ## Categories ::
 
-The categories are listed in `gws/ext/types.txt`. An extension implements the interface of its category, usually by extending a base class from `gws.base`:
+The categories are listed in `gws/ext/types.txt`. An extension implements the interface of its category, usually by extending a base class from <% pyapi('gws.base', 'gws.base') %>:
 
 | Category | Interface | Purpose |
 |----------|-----------|---------|
@@ -80,7 +80,7 @@ class Object(gws.Node):
         self.models = self.create_children(gws.ext.object.model, self.cfg('models'))
 ```
 
-Helpers (category `helper`) are application-wide services, configured once in the `helpers` list. Get them with `self.root.app.helper('<type>')`.
+Helpers (category `helper`) are application-wide services, configured once in the `helpers` list. Get them with <% pyapi('gws.Application.helper', "self.root.app.helper('<type>')") %>.
 
 ## Registration ::
 
@@ -123,7 +123,7 @@ class Object(gws.base.model.validator.Object):
 
 ## CLI commands ::
 
-A CLI command is a method of a class in the category `cli`. The class extends `gws.Node`, the method takes one parameter that extends <% pyapi('gws.CliParams') %>:
+A CLI command is a method of a class in the category `cli`. The class extends <% pyapi('gws.Node', 'gws.Node') %>, the method takes one parameter that extends <% pyapi('gws.CliParams') %>:
 
 ```py
 import gws

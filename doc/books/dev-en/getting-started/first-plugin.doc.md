@@ -49,7 +49,7 @@ class Object(gws.base.action.Object):
 The module declares three things:
 
 - `Config`: the configuration of the action. `@gws.ext.config.action('hello')` registers it as the action type `hello`.
-- `Object`: the action itself, registered with `@gws.ext.object.action('hello')`. `configure` reads the configuration when the server starts.
+- `Object`: the action itself, registered with `@gws.ext.object.action('hello')`. <% pyapi('gws.Node.configure') %> reads the configuration when the server starts.
 - Two commands: `helloSay` is an API command that takes and returns JSON, `helloPage` is a GET command that returns plain text.
 
 ## Manifest and configuration ::
@@ -103,7 +103,7 @@ curl http://localhost:3333/_/helloPage?name=World
 
 ## Next steps ::
 
-- [](/dev-en/server/objects) explains `Config`, `configure` and the object tree.
+- [](/dev-en/server/objects) explains `Config`, <% pyapi('gws.Node.configure') %> and the object tree.
 - [](/dev-en/server/actions) covers commands, requests and responses.
 - [](/dev-en/server/plugins) describes the plugin layout.
 - To include the plugin in the generated client types, run `make.sh spec --manifest <path>` with a manifest whose plugin paths are valid on the host.

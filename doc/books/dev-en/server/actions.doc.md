@@ -31,7 +31,7 @@ The type annotation of `p` defines the accepted parameters. The server validates
 
 Strict validation requires exact types and rejects unknown keys. Relaxed validation converts strings to the declared types, ignores the case of keys and drops unknown keys.
 
-The client calls only `api` commands. `get` commands serve URLs that are opened directly, like downloads or images. A `raw` command receives a <% pyapi('gws.Request') %> with only `projectUid` and `localeUid` set.
+The client calls only `api` commands. `get` commands serve URLs that are opened directly, like downloads or images. A `raw` command receives a <% pyapi('gws.Request') %> with only <% pyapi('gws.Request.projectUid') %> and <% pyapi('gws.Request.localeUid') %> set.
 
 ## URLs ::
 
@@ -60,7 +60,7 @@ class GetFeaturesRequest(gws.Request):
 | `GET /_/mapGetFeatures?layerUid=roads&resolution=2.5` | `GetFeaturesRequest(layerUid='roads', resolution=2.5, limit=0)` |
 | `GET /_/mapGetFeatures/layerUid/roads?foo=bar` | `GetFeaturesRequest(layerUid='roads', limit=0)` |
 
-`raw` commands get a `gws.Request` with only `projectUid` and `localeUid`, taken from the parameters or from a `projectUid/<uid>` path segment. The method reads everything else from the requester, for example the rest of the path with `req.path()`.
+`raw` commands get a <% pyapi('gws.Request', 'gws.Request') %> with only `projectUid` and `localeUid`, taken from the parameters or from a `projectUid/<uid>` path segment. The method reads everything else from the requester, for example the rest of the path with <% pyapi('gws.WebRequester.path', 'req.path()') %>.
 
 To build a command URL in code, use <% pyapi('gws.core.util.action_url_path') %>.
 
@@ -78,10 +78,10 @@ Four objects take part in handling a request:
 For each HTTP request, the web application:
 
 1. Creates a requester from the WSGI environment and parses the URL and the body.
-2. Runs the middleware in order. The authentication middleware opens the session and sets `req.user`. A middleware can also return a responder and end the request early.
+2. Runs the middleware in order. The authentication middleware opens the session and sets <% pyapi('gws.WebRequester.user', 'req.user') %>. A middleware can also return a responder and end the request early.
 3. Reads the parameters into the request object, as described above, and finds the action.
 4. Calls the command method with the requester and the request. The method returns a response.
-5. Converts the response to a responder: JSON or msgpack for a `gws.Response`, raw content for a `gws.ContentResponse`, a redirect for a `gws.RedirectResponse`.
+5. Converts the response to a responder: JSON or msgpack for a `gws.Response`, raw content for a <% pyapi('gws.ContentResponse', 'gws.ContentResponse') %>, a redirect for a <% pyapi('gws.RedirectResponse', 'gws.RedirectResponse') %>.
 6. Runs the middleware again, in reverse order, with the responder. The authentication middleware saves the session and sets the session cookie here.
 7. Sends the responder to the client.
 
@@ -89,16 +89,16 @@ If an exception is raised in any of these steps, it is converted to an error res
 
 ## Requests ::
 
-Request classes extend <% pyapi('gws.Request') %>, which has two fields: `projectUid` and `localeUid`. If `projectUid` is set, the project must exist and the user must be able to read it.
+Request classes extend <% pyapi('gws.Request') %>, which has two fields: <% pyapi('gws.Request.projectUid') %> and <% pyapi('gws.Request.localeUid') %>. If `projectUid` is set, the project must exist and the user must be able to read it.
 
 The first argument, `req`, is the <% pyapi('gws.WebRequester') %>. Useful members:
 
 | Member | Purpose |
 |--------|---------|
-| `req.user` | the current <% pyapi('gws.User') %> |
-| `req.param(key)`, `req.header(key)`, `req.cookie(key)` | raw request values |
-| `req.isGet`, `req.isPost`, `req.isApi` | request type |
-| `req.data()`, `req.text()`, `req.form()` | request body |
+| <% pyapi('gws.WebRequester.user', 'req.user') %> | the current <% pyapi('gws.User') %> |
+| <% pyapi('gws.WebRequester.param', 'req.param(key)') %>, <% pyapi('gws.WebRequester.header', 'req.header(key)') %>, <% pyapi('gws.WebRequester.cookie', 'req.cookie(key)') %> | raw request values |
+| <% pyapi('gws.WebRequester.isGet', 'req.isGet') %>, <% pyapi('gws.WebRequester.isPost', 'req.isPost') %>, <% pyapi('gws.WebRequester.isApi', 'req.isApi') %> | request type |
+| <% pyapi('gws.WebRequester.data', 'req.data()') %>, <% pyapi('gws.WebRequester.text', 'req.text()') %>, <% pyapi('gws.WebRequester.form', 'req.form()') %> | request body |
 
 To get objects by uid, use the user's methods, which check permissions:
 
@@ -107,15 +107,15 @@ layer = req.user.require_layer(p.layerUid)
 model = req.user.require(p.modelUid, gws.ext.object.model, gws.Access.write)
 ```
 
-`require` raises a "not found" or "forbidden" error, `acquire` returns `None` instead.
+<% pyapi('gws.User.require') %> raises a "not found" or "forbidden" error, <% pyapi('gws.User.acquire') %> returns `None` instead.
 
 ## Responses ::
 
 | Return type | Sent as |
 |-------------|---------|
 | <% pyapi('gws.Response') %> or a subclass | JSON or msgpack, in the format of the request |
-| <% pyapi('gws.ContentResponse') %> | raw content from `content` or from a file in `contentPath`, with `mimeType`; `contentFilename` makes it a download |
-| <% pyapi('gws.RedirectResponse') %> | redirect to `location` |
+| <% pyapi('gws.ContentResponse') %> | raw content from <% pyapi('gws.ContentResponse.content') %> or from a file in <% pyapi('gws.ContentResponse.contentPath') %>, with <% pyapi('gws.ContentResponse.mimeType') %>; <% pyapi('gws.ContentResponse.contentFilename') %> makes it a download |
+| <% pyapi('gws.RedirectResponse') %> | redirect to <% pyapi('gws.RedirectResponse.location') %> |
 
 A command that returns `None` fails with 404.
 
