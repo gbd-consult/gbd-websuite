@@ -9,7 +9,6 @@ fields and so on) live in ``gws.plugin`` and subclass the classes here.
 Subpackages:
 
 - ``action``: server actions, the base class of all actions and the action manager.
-- ``admin``: administration pages (object inspector, cache viewer).
 - ``application``: the application object, the root node of the object tree.
 - ``auth``: authentication and authorization: the auth manager, base classes
   for auth methods, providers, MFA adapters and session managers, and users.

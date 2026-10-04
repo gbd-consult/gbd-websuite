@@ -77,6 +77,10 @@ Helpers and storage
 - ``upload_helper``: helper for chunked file uploads.
 - ``xml_helper``: helper for custom XML namespaces.
 
+Administration
+
+- ``admin_action``: administration pages (object inspector, cache viewer).
+
 Applications
 
 - ``alkis``: ALKIS cadastre search.

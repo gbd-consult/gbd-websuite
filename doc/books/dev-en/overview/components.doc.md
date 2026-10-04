@@ -21,7 +21,6 @@ The server code is the package `gws` in `app/gws`. Each package links to its API
 | Package | Contents |
 |---------|----------|
 | <% pyapi('gws.base.action') %> | The base action class and the action manager, which finds the action for a command, validates the request and checks permissions. Also the `gws action` CLI commands. |
-| <% pyapi('gws.base.admin') %> | The `admin` action with diagnostic pages: an inspector for the configured object tree and a viewer for cached tiles. |
 | <% pyapi('gws.base.application') %> | The application object, the first node of the tree. It configures all global components in a fixed order and holds the managers, like <% pyapi('gws.Application.actionMgr') %>, <% pyapi('gws.Application.authMgr') %> or <% pyapi('gws.Application.databaseMgr') %>. |
 | <% pyapi('gws.base.auth') %> | Users and roles, the authorization manager, base classes for authentication methods (how credentials arrive), providers (where users come from), multi-factor adapters and sessions. |
 | <% pyapi('gws.base.client') %> | The configuration of the client UI: which elements (toolbar buttons, sidebar tabs, and so on) a project shows, and their options. |
