@@ -50,29 +50,6 @@ def test_map_view_from_bbox_geographic():
     assert render.map_view_from_bbox(size, bbox, crs, dpi, rotation).scale == int(res * gws.lib.crs.METERS_PER_DEGREE / gws.lib.uom.OGC_M_PER_PX)
 
 
-# is it a mapping from the map to px?
-def test_map_view_transformer():
-    size = (400.0, 400.0, gws.Uom.px)
-    bbox = (100.0, 100.0, 500.0, 500.0)
-    crs = gws.lib.crs.WEBMERCATOR
-    dpi = 1000
-    rotation = 0
-    mv = render.map_view_from_bbox(size, bbox, crs, dpi, rotation)
-    f = render.map_view_transformer(mv)
-    assert f(1, 2) == (-1091, 5490)
-
-
-def test_map_view_transformer_rotated():
-    size = (400.0, 400.0, gws.Uom.px)
-    bbox = (100.0, 100.0, 500.0, 500.0)
-    crs = gws.lib.crs.WEBMERCATOR
-    dpi = 1000
-    rotation = 45
-    mv = render.map_view_from_bbox(size, bbox, crs, dpi, rotation)
-    f = render.map_view_transformer(mv)
-    assert f(1, 2) == (-2449, 2197)
-
-
 def test_render_map_mm_bbox():
     layer = gws.Layer
     layer.opacity = 0.5

@@ -9,8 +9,8 @@ import shapely.geometry
 import shapely.ops
 
 import gws
+import gws.lib.extent
 import gws.lib.font
-import gws.gis.render
 import gws.base.shape
 import gws.lib.uom
 import gws.lib.xmlx as xmlx
@@ -52,7 +52,7 @@ def shape_to_fragment(shape: gws.Shape, view: gws.MapView, label: str = None, st
     if geom.is_empty:
         return []
 
-    trans = gws.gis.render.map_view_transformer(view)
+    trans = _map_view_transformer(view)
     geom = shapely.ops.transform(trans, geom)
 
     if not style:
@@ -154,7 +154,7 @@ def soup_to_fragment(view: gws.MapView, points: list[gws.Point], tags: list) -> 
     if len(tags) > MAX_SOUP_TAGS:
         raise gws.Error(f'too many soup tags: {len(tags)}')
 
-    trans = gws.gis.render.map_view_transformer(view)
+    trans = _map_view_transformer(view)
 
     try:
         px = [trans(*p) for p in points]
@@ -200,6 +200,57 @@ def soup_to_fragment(view: gws.MapView, points: list[gws.Point], tags: list) -> 
         raise gws.Error('invalid soup') from exc
 
     return element.normalize_fragment(els)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# transform
+
+def _map_view_transformer(view: gws.MapView):
+    """Create a transformer from map coordinates to pixel coordinates of a view.
+
+    Pixel coordinates are integers, relative to the top left corner of the view
+    at the view's scale and DPI. For a rotated view, points are rotated around the view center.
+
+    Args:
+        view: Map view.
+
+    Returns:
+        A function ``f(x, y) -> (px, py)``.
+    """
+
+    # @TODO cache the transformer
+
+    def translate(x, y):
+        x = x - ext[0]
+        y = ext[3] - y
+        return x * m2px, y * m2px
+
+    def translate_int(x, y):
+        x, y = translate(x, y)
+        return int(x), int(y)
+
+    def rotate(x, y):
+        return (
+            cosa * (x - ox) - sina * (y - oy) + ox,
+            sina * (x - ox) + cosa * (y - oy) + oy)
+
+    def translate_rotate_int(x, y):
+        x, y = translate(x, y)
+        x, y = rotate(x, y)
+        return int(x), int(y)
+
+    m2px = 1000.0 * gws.lib.uom.mm_to_px(1 / view.scale, view.dpi)
+
+    ext = view.bounds.extent
+
+    if not view.rotation:
+        return translate_int
+
+    ox, oy = translate(*gws.lib.extent.center(ext))
+    cosa = math.cos(math.radians(view.rotation))
+    sina = math.sin(math.radians(view.rotation))
+
+    return translate_rotate_int
 
 
 # ----------------------------------------------------------------------------------------------------------------------

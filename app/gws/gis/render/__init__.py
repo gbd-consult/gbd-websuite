@@ -31,9 +31,7 @@ The output can be converted to HTML (``output_to_html_element``,
 planes ``svg`` elements, stacked in a ``div``.
 
 The package also creates views from a center and scale or from a bbox
-(``map_view_from_center``, ``map_view_from_bbox``) and provides the
-transformer from map coordinates to view pixels
-(``map_view_transformer``), which is used by the SVG drawing code.
+(``map_view_from_center``, ``map_view_from_bbox``).
 
 Example::
 
@@ -51,7 +49,6 @@ Example::
     html = gws.gis.render.output_to_html_string(mro)
 """
 
-import math
 
 import gws
 import gws.lib.extent
@@ -160,54 +157,6 @@ def _map_view(
         return view
 
     raise gws.Error('center or bbox required')
-
-
-def map_view_transformer(view: gws.MapView):
-    """Create a transformer from map coordinates to pixel coordinates of a view.
-
-    Pixel coordinates are integers, relative to the top left corner of the view
-    at the view's scale and DPI. For a rotated view, points are rotated around the view center.
-
-    Args:
-        view: Map view.
-
-    Returns:
-        A function ``f(x, y) -> (px, py)``.
-    """
-
-    # @TODO cache the transformer
-
-    def translate(x, y):
-        x = x - ext[0]
-        y = ext[3] - y
-        return x * m2px, y * m2px
-
-    def translate_int(x, y):
-        x, y = translate(x, y)
-        return int(x), int(y)
-
-    def rotate(x, y):
-        return (
-            cosa * (x - ox) - sina * (y - oy) + ox,
-            sina * (x - ox) + cosa * (y - oy) + oy)
-
-    def translate_rotate_int(x, y):
-        x, y = translate(x, y)
-        x, y = rotate(x, y)
-        return int(x), int(y)
-
-    m2px = 1000.0 * gws.lib.uom.mm_to_px(1 / view.scale, view.dpi)
-
-    ext = view.bounds.extent
-
-    if not view.rotation:
-        return translate_int
-
-    ox, oy = translate(*gws.lib.extent.center(ext))
-    cosa = math.cos(math.radians(view.rotation))
-    sina = math.sin(math.radians(view.rotation))
-
-    return translate_rotate_int
 
 
 # Rendering

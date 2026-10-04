@@ -309,6 +309,20 @@ def test_multigeometry():
     """)
 
 
+def test_map_view_transformer():
+    bounds = gws.Bounds(crs=crs.WEBMERCATOR, extent=(100.0, 100.0, 500.0, 500.0))
+    view = gws.MapView(bounds=bounds, rotation=0, scale=3571, dpi=1000)
+    f = draw._map_view_transformer(view)
+    assert f(1, 2) == (-1091, 5490)
+
+
+def test_map_view_transformer_rotated():
+    bounds = gws.Bounds(crs=crs.WEBMERCATOR, extent=(100.0, 100.0, 500.0, 500.0))
+    view = gws.MapView(bounds=bounds, rotation=45, scale=3571, dpi=1000)
+    f = draw._map_view_transformer(view)
+    assert f(1, 2) == (-2449, 2197)
+
+
 def _style(**kwargs) -> gws.Style:
     return gws.lib.style.Object('', '', gws.StyleValues(**kwargs))
 
