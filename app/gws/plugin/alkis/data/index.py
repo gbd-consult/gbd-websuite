@@ -341,9 +341,6 @@ class Object(gws.Node):
         tab = self.table(table_id)
         conn.execute(sa.text(f'DROP TABLE IF EXISTS {self.schema}.{tab.name}'))
 
-    INSERT_SIZE = 5000
-    """Number of rows inserted per statement."""
-
     def create_table(
         self,
         table_id: str,
@@ -355,19 +352,20 @@ class Object(gws.Node):
         Args:
             table_id: Table id.
             values: Rows as dicts of column names and values.
-            progress: Progress indicator, updated after each chunk of rows.
+            progress: Progress indicator, updated after all rows are inserted.
         """
 
         tab = self.table(table_id)
         self.saMeta.create_all(self.db.engine(), tables=[tab])
 
+        if not values:
+            return
+
         with self.db.connect() as conn:
-            for i in range(0, len(values), self.INSERT_SIZE):
-                vals = values[i : i + self.INSERT_SIZE]
-                conn.execute(sa.insert(tab).values(vals))
-                conn.commit()
-                if progress:
-                    progress.update(len(vals))
+            conn.execute(sa.insert(tab), values)
+            conn.commit()
+        if progress:
+            progress.update(len(values))
 
     ##
 

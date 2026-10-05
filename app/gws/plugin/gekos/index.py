@@ -197,7 +197,8 @@ class Object(gws.Node):
             table.drop(conn.saConn, checkfirst=True)
             table.create(conn.saConn)
             conn.commit()
-            conn.execute(sa.insert(table).values(recs))
-            conn.commit()
+            if recs:
+                conn.execute(sa.insert(table), recs)
+                conn.commit()
 
         gws.log.info(f'saved {len(recs)} records in {schema}.{name}')
