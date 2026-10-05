@@ -23,8 +23,8 @@ Die Felder sind gewöhnliche Modellfelder, deren `name` auf einen flachen Schlü
 actions+ {
     type "alkis"
     dbUid "DB_ALKIS"
-    dataSchema "public"
-    indexSchema "gws82"
+    dataSchema "alkis"
+    indexSchema "gws"
     crs 25832
 
     ui {

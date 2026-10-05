@@ -18,8 +18,8 @@ Die Aktion `alkis` benötigt nur die Datenbankanbindung: `dbUid`, `dataSchema` (
 actions+ {
     type "alkis"
     dbUid "DB_ALKIS"
-    dataSchema "public"
-    indexSchema "gws82"
+    dataSchema "alkis"
+    indexSchema "gws"
     crs 25832
 }
 

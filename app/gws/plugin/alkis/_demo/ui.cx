@@ -24,8 +24,8 @@ Die Optionen werden unter `ui` der Aktion `alkis` freigeschaltet:
 actions+ {
     type "alkis"
     dbUid "DB_ALKIS"
-    dataSchema "public"
-    indexSchema "gws82"
+    dataSchema "alkis"
+    indexSchema "gws"
     crs 25832
 
     limit 200
