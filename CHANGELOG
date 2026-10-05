@@ -1,3 +1,13 @@
+## Version 8.5.4
+
+- updated and restructured administrator documentation
+- new developer documentation and Python API documentation
+- new `mapshare` plugin: shareable links and QR codes for a map position
+- QField Cloud: the GWS project is now optional, new `thumbnail` option, better error handling
+- default reversed rewrite rules for the homepage and project pages
+- `make.sh` can run in docker
+- plugin API: `gws.base.shape` moved to `lib`; root lifecycle functions moved to the core API
+
 ## Version 8.5.3
 
 - configuration warnings: non-fatal configuration problems are collected and logged in a warnings report after startup
