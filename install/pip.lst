@@ -8,7 +8,7 @@ jq==1.*
 pendulum==3.*
 Pillow==12.*
 psutil==7.*
-psycopg2-binary==2.*
+psycopg[binary]==3.*
 pycountry==26.*
 pypdf==6.*
 pyproj==3.*
@@ -41,10 +41,6 @@ Pygments==2.*
 
 # lib/vendor/dog uses the 2.x plugin API
 mistune==2.*
-
-# NB see https://github.com/lepture/python-livereload/issues/270
-tornado==6.*
-livereload==2.*
 
 pyodbc==5.*
 Authlib==1.*
