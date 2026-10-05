@@ -19,6 +19,7 @@ const SEARCH_LIMIT = 50;
 const NAV_SCROLL_KEY = 'dog.navScroll';
 const SEARCH_TEXT_KEY = 'dog.searchText';
 const SIDEBAR_KEY = 'dog.sidebar';
+const SIDEBAR_MEDIA_QUERY = '(min-width: 768px)';
 const MAX_DEPTH = 999;
 
 let searchSeq = 0;
@@ -42,10 +43,23 @@ async function main() {
     }
 }
 
+function openSidebarOnBody() {
+    if (!matchMedia(SIDEBAR_MEDIA_QUERY).matches || sessionStorage.getItem(SIDEBAR_KEY) === 'closed') {
+        return;
+    }
+    const observer = new MutationObserver(() => {
+        if (document.body) {
+            document.body.classList.add('sidebar_open');
+            observer.disconnect();
+        }
+    });
+    observer.observe(document.documentElement, { childList: true });
+}
+
 function initSidebar() {
     $('#sidebar_toggle').addEventListener('click', () => {
         const open = document.body.classList.toggle('sidebar_open');
-        if (matchMedia('(min-width: 768px)').matches) {
+        if (matchMedia(SIDEBAR_MEDIA_QUERY).matches) {
             sessionStorage.setItem(SIDEBAR_KEY, open ? 'open' : 'closed');
         }
     });
@@ -321,4 +335,5 @@ function prepareConfigRef() {
 }
 
 
-main();
+openSidebarOnBody();
+document.addEventListener('DOMContentLoaded', main);

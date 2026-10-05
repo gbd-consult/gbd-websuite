@@ -5,19 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><% options.title %> - <% options.subTitle %></title>
     <link rel="stylesheet" href="<% options.webRoot %>/_static/theme.css">
-    <script src="<% options.webRoot %>/_static/_dog.js" defer></script>
-    <script src="<% options.webRoot %>/_static/theme.js" defer></script>
+    <script src="<% options.webRoot %>/_static/_dog.js"></script>
+    <script src="<% options.webRoot %>/_static/theme.js"></script>
 </head>
 
 <body>
-    <script>
-        (function () {
-            if (matchMedia('(min-width: 768px)').matches && sessionStorage.getItem('dog.sidebar') !== 'closed') {
-                document.body.classList.add('sidebar_open');
-            }
-        })();
-    </script>
-
     <button type="button" id="sidebar_toggle" aria-label="Navigation ein-/ausblenden"></button>
 
     <aside>
