@@ -84,38 +84,34 @@ class Object(related_field.Object):
         self.rel = related_field.Relationship(
             src=related_field.RelRef(
                 model=self.model,
-                table=self.model.table(),
-                key=self.column_or_uid(self.model, self.cfg('fromColumn')),
-                uid=self.model.uid_column(),
+                keyName=self.model.column(self.cfg('fromColumn') or self.model.uidName).name,
             ),
-            tos=[],
+            dstList=[],
         )
 
         for c in self.cfg('related'):
-            to_mod = self.get_model(c.toModel)
-            self.rel.tos.append(
+            dst_mod = self.get_model(c.toModel)
+            self.rel.dstList.append(
                 related_field.RelRef(
-                    model=to_mod,
-                    table=to_mod.table(),
-                    key=to_mod.column(c.toColumn),
-                    uid=to_mod.uid_column(),
+                    model=dst_mod,
+                    keyName=dst_mod.column(c.toColumn).name,
                 )
             )
 
     ##
 
-    def before_create_related(self, to_feature, mc):
-        for feature in to_feature.createWithFeatures:
+    def before_create_related(self, dst_feature, mc):
+        for feature in dst_feature.createWithFeatures:
             if feature.model == self.model:
                 key = self.key_for_uid(
                     self.rel.src.model,
-                    self.rel.src.key,
+                    self.key_column(self.rel.src),
                     feature.uid(),
                     mc,
                 )
-                for to in self.rel.tos:
-                    if to_feature.model == to.model:
-                        to_feature.record.attributes[to.key.name] = key
+                for dst in self.rel.dstList:
+                    if dst_feature.model == dst.model:
+                        dst_feature.record.attributes[dst.keyName] = key
                         return
 
     def after_select(self, features, mc):
@@ -127,20 +123,20 @@ class Object(related_field.Object):
 
         uid_to_f = {f.uid(): f for f in features}
 
-        for to in self.rel.tos:
+        for dst in self.rel.dstList:
             sql = (
                 sa.select(
-                    to.uid,
-                    self.rel.src.uid,
+                    dst.model.uid_column(),
+                    self.rel.src.model.uid_column(),
                 )
                 .select_from(
-                    to.table.join(
-                        self.rel.src.table,
-                        self.rel.src.key.__eq__(to.key),
+                    dst.model.table().join(
+                        self.rel.src.model.table(),
+                        self.key_column(self.rel.src) == self.key_column(dst),
                     ),
                 )
                 .where(
-                    self.rel.src.uid.in_(uid_to_f),
+                    self.rel.src.model.uid_equals(uid_to_f),
                 )
             )
 
@@ -149,18 +145,18 @@ class Object(related_field.Object):
                 for r, u in conn.execute(sql):
                     r_to_uids.setdefault(str(r), []).append(str(u))
 
-            for to_feature in to.model.get_features(
+            for dst_feature in dst.model.get_features(
                 r_to_uids,
                 gws.base.model.secondary_context(mc),
             ):
-                for uid in r_to_uids.get(to_feature.uid(), []):
+                for uid in r_to_uids.get(dst_feature.uid(), []):
                     feature = uid_to_f.get(uid)
-                    feature.get(self.name).append(to_feature)
+                    feature.get(self.name).append(dst_feature)
 
     def after_create(self, feature, mc):
         key = self.key_for_uid(
             self.model,
-            self.rel.src.key,
+            self.key_column(self.rel.src),
             feature.insertedPrimaryKey,
             mc,
         )
@@ -169,7 +165,7 @@ class Object(related_field.Object):
     def after_update(self, feature, mc):
         key = self.key_for_uid(
             self.model,
-            self.rel.src.key,
+            self.key_column(self.rel.src),
             feature.uid(),
             mc,
         )
@@ -189,35 +185,35 @@ class Object(related_field.Object):
         if not mc.user.can_write(self) or mc.relDepth >= mc.maxDepth:
             return
 
-        for to in self.rel.tos:
-            if not mc.user.can_edit(to.model):
+        for dst in self.rel.dstList:
+            if not mc.user.can_edit(dst.model):
                 continue
 
-            cur_uids = self.to_uids_for_key(to, key, mc)
+            cur_uids = self.dst_uids_for_key(dst, key, mc)
 
             # fmt: off
             new_uids = set(
-                to_feature.uid() 
-                for to_feature in feature.get(self.name, []) 
-                if to_feature.model == to.model
+                dst_feature.uid() 
+                for dst_feature in feature.get(self.name, []) 
+                if dst_feature.model == dst.model
             )
             # fmt: on
 
             ins_uids = new_uids - cur_uids
             if ins_uids:
                 sql = (
-                    sa.update(to.table)
+                    sa.update(dst.model.table())
                     .values(
-                        {to.key.name: key},
+                        {dst.keyName: key},
                     )
                     .where(
-                        to.uid.in_(ins_uids),
+                        dst.model.uid_equals(ins_uids),
                     )
                 )
-                with to.model.db.connect() as conn:
+                with dst.model.db.connect() as conn:
                     conn.execute(sql)
 
-            self.drop_links(to, cur_uids - new_uids, mc)
+            self.drop_links(dst, cur_uids - new_uids, mc)
 
     def before_delete(self, feature, mc):
         if not mc.user.can_write(self) or mc.relDepth >= mc.maxDepth:
@@ -225,7 +221,7 @@ class Object(related_field.Object):
 
         key = self.key_for_uid(
             self.model,
-            self.rel.src.key,
+            self.key_column(self.rel.src),
             feature.uid(),
             mc,
         )
@@ -237,51 +233,51 @@ class Object(related_field.Object):
 
         key = getattr(mc, f'_DELETED_KEY_{self.uid}')
 
-        for to in self.rel.tos:
-            if not mc.user.can_edit(to.model):
+        for dst in self.rel.dstList:
+            if not mc.user.can_edit(dst.model):
                 continue
-            cur_uids = self.to_uids_for_key(to, key, mc)
-            self.drop_links(to, cur_uids, mc)
+            cur_uids = self.dst_uids_for_key(dst, key, mc)
+            self.drop_links(dst, cur_uids, mc)
 
-    def to_uids_for_key(self, to: related_field.RelRef, key, mc):
+    def dst_uids_for_key(self, dst: related_field.RelRef, key, mc):
         """Find the uids of the child features that refer to a parent key.
 
         Args:
-            to: The child side of the relationship.
+            dst: The child side of the relationship.
             key: The parent key value.
             mc: The model context.
 
         Returns:
             A set of child feature uids as strings.
         """
-        sql = sa.select(to.uid).where(to.key.__eq__(key))
-        with to.model.db.connect() as conn:
+        sql = sa.select(dst.model.uid_column()).where(self.key_column(dst) == key)
+        with dst.model.db.connect() as conn:
             return set(str(u[0]) for u in conn.execute(sql))
 
-    def drop_links(self, to: related_field.RelRef, to_uids, mc):
+    def drop_links(self, dst: related_field.RelRef, dst_uids, mc):
         """Unlink child features from their parent.
 
         Clears the foreign key of the child features, or deletes them if the
         relationship has ``deleteCascade`` set.
 
         Args:
-            to: The child side of the relationship.
-            to_uids: Uids of the child features.
+            dst: The child side of the relationship.
+            dst_uids: Uids of the child features.
             mc: The model context.
         """
-        if not to_uids:
+        if not dst_uids:
             return
         if self.rel.deleteCascade:
-            sql = sa.delete(to.table).where(to.uid.in_(to_uids))
+            sql = sa.delete(dst.model.table()).where(dst.model.uid_equals(dst_uids))
         else:
             sql = (
-                sa.update(to.table)
+                sa.update(dst.model.table())
                 .values(
-                    {to.key.name: None},
+                    {dst.keyName: None},
                 )
                 .where(
-                    to.uid.in_(to_uids),
+                    dst.model.uid_equals(dst_uids),
                 )
             )
-        with to.model.db.connect() as conn:
+        with dst.model.db.connect() as conn:
             conn.execute(sql)

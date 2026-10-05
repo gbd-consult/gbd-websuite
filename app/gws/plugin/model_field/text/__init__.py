@@ -77,7 +77,7 @@ class Object(gws.base.model.scalar_field.Object):
         col = sa.cast(model.column(self.name), sa.String)
 
         if ts.type == gws.TextSearchType.exact:
-            mc.dbSelect.keywordWhere.append(col.__eq__(kw))
+            mc.dbSelect.keywordWhere.append(col == kw)
             return
 
         if ts.type == gws.TextSearchType.any:

@@ -211,7 +211,7 @@ class Object:
             gws.log.debug(f'commit_upload: found feature: model={me.gpName}: {fld.name=} {uid=} {path=} ')
 
             with me.model.db.connect() as conn:
-                sql = me.model.table().update().where(me.model.uid_column().__eq__(uid)).values({fld.contentColumn: content})
+                sql = me.model.table().update().where(me.model.uid_equals(uid)).values({fld.contentColumn: content})
                 conn.execute(sql)
                 conn.commit()
 

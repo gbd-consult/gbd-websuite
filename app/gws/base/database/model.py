@@ -1,6 +1,6 @@
 """Base database model."""
 
-from typing import Optional
+from typing import Optional, Iterable
 
 import gws
 import gws.base.feature
@@ -62,6 +62,12 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
             raise gws.Error(f'invalid primary key {self.uidName!r} for table {self.tableName!r}')
         return self.db.column(self.table(), self.uidName)
 
+    def uid_equals(self, uid):
+        col = self.uid_column()
+        if isinstance(uid, (str, bytes)) or not isinstance(uid, Iterable):
+            return col == sa.bindparam(None, uid, type_=col.type)
+        return col.in_(sa.bindparam(None, list(uid), expanding=True, type_=col.type))
+
     ##
 
     def find_features(self, search, mc):
@@ -120,7 +126,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
             if not self.uidName:
                 gws.log.debug(f'build_select: {self}: no primary key for {self.tableName=}')
                 return
-            sel = sel.where(self.uid_column().in_(mc.search.uids))
+            sel = sel.where(self.uid_equals(mc.search.uids))
 
         if mc.search.keyword and not mc.dbSelect.keywordWhere:
             gws.log.debug(f'build_select: {self}: no keyword where')
@@ -230,7 +236,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
             if not feature.record.attributes:
                 return feature.uid()
 
-            sql = self.table().update().where(self.uid_column().__eq__(feature.uid())).values(feature.record.attributes)
+            sql = self.table().update().where(self.uid_equals(feature.uid())).values(feature.record.attributes)
             conn.execute(sql)
 
             for fld in self.fields:
@@ -248,7 +254,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
             for fld in self.fields:
                 fld.before_delete(feature, mc)
 
-            sql = sa.delete(self.table()).where(self.uid_column().__eq__(feature.uid()))
+            sql = sa.delete(self.table()).where(self.uid_equals(feature.uid()))
 
             conn.execute(sql)
 

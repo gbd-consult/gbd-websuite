@@ -57,22 +57,18 @@ class Object(related_multi_feature_list.Object):
     """Related feature list field object."""
 
     def configure_relationship(self):
-        to_mod = self.get_model(self.cfg('toModel'))
+        dst_mod = self.get_model(self.cfg('toModel'))
 
         self.rel = related_field.Relationship(
             src=related_field.RelRef(
                 model=self.model,
-                table=self.model.table(),
-                key=self.column_or_uid(self.model, self.cfg('fromColumn')),
-                uid=self.model.uid_column(),
+                keyName=self.model.column(self.cfg('fromColumn') or self.model.uidName).name,
             ),
-            tos=[
+            dstList=[
                 related_field.RelRef(
-                    model=to_mod,
-                    table=to_mod.table(),
-                    key=to_mod.column(self.cfg('toColumn')),
-                    uid=to_mod.uid_column(),
+                    model=dst_mod,
+                    keyName=dst_mod.column(self.cfg('toColumn')).name,
                 )
             ],
         )
-        self.rel.to = self.rel.tos[0]
+        self.rel.dst = self.rel.dstList[0]

@@ -5333,19 +5333,19 @@ class ModelField(Node):
             mc: The model context.
         """
 
-    def before_create_related(self, to_feature: 'Feature', mc: ModelContext):
+    def before_create_related(self, dst_feature: 'Feature', mc: ModelContext):
         """Called before a feature of another model, created together with features of this model, is inserted.
 
         Args:
-            to_feature: The feature being created.
+            dst_feature: The feature being created.
             mc: The model context.
         """
 
-    def after_create_related(self, to_feature: 'Feature', mc: ModelContext):
+    def after_create_related(self, dst_feature: 'Feature', mc: ModelContext):
         """Called after a feature of another model, created together with features of this model, is inserted.
 
         Args:
-            to_feature: The created feature.
+            dst_feature: The created feature.
             mc: The model context.
         """
 
@@ -5389,11 +5389,11 @@ class ModelField(Node):
             mc: The model context.
         """
 
-    def do_init_related(self, to_feature: 'Feature', mc: ModelContext):
+    def do_init_related(self, dst_feature: 'Feature', mc: ModelContext):
         """Initialize a new feature of another model that is created together with features of this model.
 
         Args:
-            to_feature: The new feature.
+            dst_feature: The new feature.
             mc: The model context.
         """
 
@@ -5792,6 +5792,22 @@ class DatabaseModel(Model):
 
         Returns:
             The column object for ``uidName``.
+
+        Raises:
+            ``gws.Error``: If the model has no primary key or the key column does not exist.
+        """
+
+    def uid_equals(self, uid: FeatureUid | Iterable[FeatureUid]) -> 'sqlalchemy.ColumnElement[bool]':
+        """Return a condition that matches features by uid.
+
+        The values are bound with the type of the primary key column, so that
+        string uids can be compared with columns of other types.
+
+        Args:
+            uid: A feature uid, or an iterable of uids.
+
+        Returns:
+            An ``=`` condition for a single uid, an ``IN`` condition for an iterable.
 
         Raises:
             ``gws.Error``: If the model has no primary key or the key column does not exist.

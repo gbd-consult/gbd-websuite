@@ -41,6 +41,22 @@ class DatabaseModel(Model):
             ``gws.Error``: If the model has no primary key or the key column does not exist.
         """
 
+    def uid_equals(self, uid: FeatureUid | Iterable[FeatureUid]) -> 'sqlalchemy.ColumnElement[bool]':
+        """Return a condition that matches features by uid.
+
+        The values are bound with the type of the primary key column, so that
+        string uids can be compared with columns of other types.
+
+        Args:
+            uid: A feature uid, or an iterable of uids.
+
+        Returns:
+            An ``=`` condition for a single uid, an ``IN`` condition for an iterable.
+
+        Raises:
+            ``gws.Error``: If the model has no primary key or the key column does not exist.
+        """
+
     def fetch_features(self, select: 'sqlalchemy.Select') -> list['Feature']:
         """Run a SELECT statement and create a feature for each row.
 

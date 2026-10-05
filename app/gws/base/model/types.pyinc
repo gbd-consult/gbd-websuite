@@ -221,19 +221,19 @@ class ModelField(Node):
             mc: The model context.
         """
 
-    def before_create_related(self, to_feature: 'Feature', mc: ModelContext):
+    def before_create_related(self, dst_feature: 'Feature', mc: ModelContext):
         """Called before a feature of another model, created together with features of this model, is inserted.
 
         Args:
-            to_feature: The feature being created.
+            dst_feature: The feature being created.
             mc: The model context.
         """
 
-    def after_create_related(self, to_feature: 'Feature', mc: ModelContext):
+    def after_create_related(self, dst_feature: 'Feature', mc: ModelContext):
         """Called after a feature of another model, created together with features of this model, is inserted.
 
         Args:
-            to_feature: The created feature.
+            dst_feature: The created feature.
             mc: The model context.
         """
 
@@ -277,11 +277,11 @@ class ModelField(Node):
             mc: The model context.
         """
 
-    def do_init_related(self, to_feature: 'Feature', mc: ModelContext):
+    def do_init_related(self, dst_feature: 'Feature', mc: ModelContext):
         """Initialize a new feature of another model that is created together with features of this model.
 
         Args:
-            to_feature: The new feature.
+            dst_feature: The new feature.
             mc: The model context.
         """
 

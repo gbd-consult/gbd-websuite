@@ -58,59 +58,55 @@ class Object(related_field.Object):
     attributeType = gws.AttributeType.feature
 
     def configure_relationship(self):
-        to_mod = self.get_model(self.cfg('toModel'))
+        dst_mod = self.get_model(self.cfg('toModel'))
 
         self.rel = related_field.Relationship(
             src=related_field.RelRef(
                 model=self.model,
-                table=self.model.table(),
-                key=self.model.column(self.cfg('fromColumn')),
-                uid=self.model.uid_column(),
+                keyName=self.model.column(self.cfg('fromColumn')).name,
             ),
-            tos=[
+            dstList=[
                 related_field.RelRef(
-                    model=to_mod,
-                    table=to_mod.table(),
-                    key=self.column_or_uid(to_mod, self.cfg('toColumn')),
-                    uid=to_mod.uid_column(),
+                    model=dst_mod,
+                    keyName=dst_mod.column(self.cfg('toColumn') or dst_mod.uidName).name,
                 )
             ],
         )
-        self.rel.to = self.rel.tos[0]
+        self.rel.dst = self.rel.dstList[0]
 
     ##
 
     def do_init(self, feature, mc):
-        key = feature.record.attributes.get(self.rel.src.key.name)
+        key = feature.record.attributes.get(self.rel.src.keyName)
         if key:
-            to_uids = self.uids_for_key(self.rel.to, key, mc)
-            to_features = self.rel.to.model.get_features(
-                to_uids,
+            dst_uids = self.uids_for_key(self.rel.dst, key, mc)
+            dst_features = self.rel.dst.model.get_features(
+                dst_uids,
                 gws.base.model.secondary_context(mc),
             )
-            if to_features:
-                feature.attributes[self.name] = to_features[0]
+            if dst_features:
+                feature.attributes[self.name] = dst_features[0]
 
-    def after_create_related(self, to_feature, mc):
-        if to_feature.model != self.rel.to.model:
+    def after_create_related(self, dst_feature, mc):
+        if dst_feature.model != self.rel.dst.model:
             return
 
-        for feature in to_feature.createWithFeatures:
+        for feature in dst_feature.createWithFeatures:
             if feature.model == self.model:
                 key = self.key_for_uid(
-                    self.rel.to.model,
-                    self.rel.to.key,
-                    to_feature.insertedPrimaryKey,
+                    self.rel.dst.model,
+                    self.key_column(self.rel.dst),
+                    dst_feature.insertedPrimaryKey,
                     mc,
                 )
                 if key:
-                    self.update_key_for_uids(
-                        self.model,
-                        self.rel.src.key,
-                        [feature.uid()],
-                        key,
-                        mc,
+                    sql = (
+                        sa.update(self.model.table())
+                        .values({self.rel.src.keyName: key})
+                        .where(self.model.uid_equals(feature.uid()))
                     )
+                    with self.model.db.connect() as conn:
+                        conn.execute(sql)
 
     def uids_for_key(self, rel: related_field.RelRef, key, mc):
         """Find the uids of the features whose key column has the given value.
@@ -123,7 +119,7 @@ class Object(related_field.Object):
         Returns:
             A set of feature uids as strings.
         """
-        sql = sa.select(rel.uid).where(rel.key.__eq__(key))
+        sql = sa.select(rel.model.uid_column()).where(self.key_column(rel) == key)
         with rel.model.db.connect() as conn:
             return set(str(u) for u in conn.execute(sql))
 
@@ -135,16 +131,16 @@ class Object(related_field.Object):
 
         sql = (
             sa.select(
-                self.rel.to.uid,
-                self.rel.src.uid,
+                self.rel.dst.model.uid_column(),
+                self.rel.src.model.uid_column(),
             )
             .select_from(
-                self.rel.to.table.join(
-                    self.rel.src.table,
-                    self.rel.src.key.__eq__(self.rel.to.key),
+                self.rel.dst.model.table().join(
+                    self.rel.src.model.table(),
+                    self.key_column(self.rel.src) == self.key_column(self.rel.dst),
                 ),
             )
-            .where(self.rel.src.uid.in_(uid_to_f))
+            .where(self.rel.src.model.uid_equals(uid_to_f))
         )
 
         r_to_uids = {}
@@ -152,13 +148,13 @@ class Object(related_field.Object):
             for r, u in conn.execute(sql):
                 r_to_uids.setdefault(str(r), []).append(str(u))
 
-        for to_feature in self.rel.to.model.get_features(
+        for dst_feature in self.rel.dst.model.get_features(
             r_to_uids,
             gws.base.model.secondary_context(mc),
         ):
-            for uid in r_to_uids.get(to_feature.uid(), []):
+            for uid in r_to_uids.get(dst_feature.uid(), []):
                 feature = uid_to_f.get(uid)
-                feature.set(self.name, to_feature)
+                feature.set(self.name, dst_feature)
 
     def before_create(self, feature, mc):
         self.before_write(feature, mc)
@@ -181,12 +177,12 @@ class Object(related_field.Object):
 
         if feature.has(self.name):
             key = None
-            to_feature = feature.get(self.name)
-            if to_feature:
+            dst_feature = feature.get(self.name)
+            if dst_feature:
                 key = self.key_for_uid(
-                    self.rel.to.model,
-                    self.rel.to.key,
-                    to_feature.uid(),
+                    self.rel.dst.model,
+                    self.key_column(self.rel.dst),
+                    dst_feature.uid(),
                     mc,
                 )
-            feature.record.attributes[self.rel.src.key.name] = key
+            feature.record.attributes[self.rel.src.keyName] = key

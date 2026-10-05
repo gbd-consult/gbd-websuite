@@ -115,7 +115,7 @@ def _from_db(root: gws.Root, store: Store):
     tab = db.table(f'{schema}.{_PRJ_TABLE}')
 
     with db.connect() as conn:
-        for row in conn.execute(sa.select(tab.c.content).where(tab.c.name.__eq__(store.projectName))):
+        for row in conn.execute(sa.select(tab.c.content).where(tab.c.name == store.projectName)):
             return _from_zipped_bytes(row[0])
         raise Error(f'{store.projectName!r} not found')
 
@@ -131,8 +131,8 @@ def _to_db(root: gws.Root, store: Store, content: bytes):
     }
 
     with db.connect() as conn:
-        conn.execute(tab.delete().where(tab.c.name.__eq__(store.projectName + '.bak')))
-        conn.execute(tab.update().values(name=store.projectName + '.bak').where(tab.c.name.__eq__(store.projectName)))
+        conn.execute(tab.delete().where(tab.c.name == store.projectName + '.bak'))
+        conn.execute(tab.update().values(name=store.projectName + '.bak').where(tab.c.name == store.projectName))
         conn.execute(tab.insert().values(
             name=store.projectName,
             metadata=metadata,
