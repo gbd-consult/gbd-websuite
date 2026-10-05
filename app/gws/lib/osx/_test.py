@@ -28,10 +28,10 @@ def test_getenv_default():
 
 def test_nowait():
     p = _executable('#!/bin/bash\nsleep 100\n')
-    assert p not in osx.run('ps -ax')
+    assert p not in osx.run('ps -axww')
     osx.run_nowait(p)
     time.sleep(0.5)
-    assert p in osx.run('ps -ax')
+    assert p in osx.run('ps -axww')
 
 
 def test_run():
