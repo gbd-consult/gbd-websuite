@@ -90,7 +90,7 @@ class Object(gws.base.database.provider.Object):
 
         tab = self.table(table)
         sql = sa.select(sa.func.ST_Extent(tab.columns.get(desc.geometryName)))
-        with self.connect() as conn:
+        with self.begin() as conn:
             box = conn.execute(sql).scalar_one()
         extent = gws.lib.extent.from_box(box)
         if extent:

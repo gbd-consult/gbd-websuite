@@ -1050,9 +1050,8 @@ class Object(gws.base.action.Object):
             fs_ids=','.join(fs_uids or []),
         )
 
-        with self.ix.db.connect() as conn:
+        with self.ix.db.begin() as conn:
             conn.execute(sa.insert(self.eigentuemer.logTable).values([data]))
-            conn.commit()
 
         gws.log.debug(f'alkis: _log_eigentuemer_access {is_ok=}')
 

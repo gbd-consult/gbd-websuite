@@ -1408,33 +1408,32 @@ class _Runner:
     def run(self):
         """Collect all data and write the index tables."""
 
-        with self.ix.db.connect() as conn:
-            with ProgressIndicator(f'ALKIS: indexing'):
-                self.place.load_or_collect()
-                self.memory_info()
+        with ProgressIndicator(f'ALKIS: indexing'):
+            self.place.load_or_collect()
+            self.memory_info()
 
-                self.buchung.load_or_collect()
-                self.memory_info()
+            self.buchung.load_or_collect()
+            self.memory_info()
 
-                self.lage.load_or_collect()
-                self.memory_info()
+            self.lage.load_or_collect()
+            self.memory_info()
 
-                self.fsdata.load_or_collect()
-                gws.log.info(f'ALKIS: fs counts: {self.fsdata.counts}')
-                self.memory_info()
+            self.fsdata.load_or_collect()
+            gws.log.info(f'ALKIS: fs counts: {self.fsdata.counts}')
+            self.memory_info()
 
-                self.part.load_or_collect()
-                self.memory_info()
+            self.part.load_or_collect()
+            self.memory_info()
 
-                self.fsindex.collect()
-                self.memory_info()
+            self.fsindex.collect()
+            self.memory_info()
 
-                self.place.write()
-                self.buchung.write()
-                self.lage.write()
-                self.fsdata.write()
-                self.part.write()
-                self.fsindex.write()
+            self.place.write()
+            self.buchung.write()
+            self.lage.write()
+            self.fsdata.write()
+            self.part.write()
+            self.fsindex.write()
 
     def memory_info(self):
         """Log the memory used since the runner was created."""

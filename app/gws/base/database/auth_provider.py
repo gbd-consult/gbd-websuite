@@ -96,7 +96,7 @@ class Object(gws.base.auth.provider.Object):
     def _get_records(self, sql: str, params: dict) -> list[dict]:
         """Run a query with ``{name}`` placeholders converted to bind parameters."""
         sql = re.sub(r'{(\w+)}', r':\1', sql)
-        with self.db.connect() as conn:
+        with self.db.begin() as conn:
             return [gws.u.to_dict(r) for r in conn.execute(sa.text(sql), params)]
 
     def _make_user(self, rec: dict, validate: bool) -> gws.User:

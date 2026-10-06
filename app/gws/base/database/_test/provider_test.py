@@ -28,9 +28,9 @@ def test_table(db):
 def test_count(db: gws.DatabaseProvider):
     tab = db.table('s1.tab1')
 
-    with db.connect() as conn:
-        conn.exec_commit('truncate s1.tab1')
-        conn.exec_commit(
+    with db.begin() as conn:
+        conn.execute('truncate s1.tab1')
+        conn.execute(
             tab.insert().values(
             [
                 {'id': 1, 'a': 'X'},
@@ -38,7 +38,6 @@ def test_count(db: gws.DatabaseProvider):
                 {'id': 3, 'a': 'Z'},
             ]),
         )
-        conn.commit()
         assert db.count(tab) == 3
 
 
@@ -67,17 +66,17 @@ def test_has_column(db):
 
 
 def test_select_text(db):
-    with db.connect() as conn:
-        conn.exec_commit('truncate s1.tab1')
-        conn.exec_commit("insert into s1.tab1 (id, a) values (1, 'hello'), (2, 'world')")
+    with db.begin() as conn:
+        conn.execute('truncate s1.tab1')
+        conn.execute("insert into s1.tab1 (id, a) values (1, 'hello'), (2, 'world')")
 
     rows = db.select_text('select id, a from s1.tab1 order by id')
     assert rows == [{'id': 1, 'a': 'hello'}, {'id': 2, 'a': 'world'}]
 
 
 def test_execute_text(db):
-    with db.connect() as conn:
-        conn.exec_commit('truncate s1.tab1')
+    with db.begin() as conn:
+        conn.execute('truncate s1.tab1')
 
     db.execute_text("insert into s1.tab1 (id, a) values (99, 'z')")
     rows = db.select_text('select id, a from s1.tab1')

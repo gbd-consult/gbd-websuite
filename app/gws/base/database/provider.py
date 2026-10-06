@@ -1,5 +1,6 @@
 """Base database provider."""
 
+import contextlib
 import threading
 from typing import Optional, cast
 
@@ -21,6 +22,15 @@ class Config(gws.Config):
 
 
 _thread_local = threading.local()
+
+
+def _connections() -> dict[str, sa.Connection]:
+    """Return the open connections of the current thread, keyed by provider uid."""
+    d = getattr(_thread_local, 'connections', None)
+    if d is None:
+        d = {}
+        _thread_local.connections = d
+    return d
 
 
 class Object(gws.DatabaseProvider):
@@ -108,7 +118,7 @@ class Object(gws.DatabaseProvider):
             # @TODO add options for reflection
 
             gws.debug.time_start(f'AUTOLOAD {self.uid=} {schema=}')
-            with self.connect() as conn:
+            with self.begin() as conn:
                 md.reflect(conn.saConn, schema, resolve_fks=False, views=True)
             gws.debug.time_end()
             return md
@@ -121,44 +131,44 @@ class Object(gws.DatabaseProvider):
         else:
             self.saMetaMap[schema] = gws.u.get_cached_object(f'database_metadata_schema_{schema}', life_time, _load)
 
+    @contextlib.contextmanager
+    def begin(self, nested=False):
+        conns = _connections()
+        sa_conn = conns.get(self.uid)
+
+        if sa_conn is not None:
+            if not nested:
+                yield connection.Object(self, sa_conn)
+                return
+            with sa_conn.begin_nested():
+                yield connection.Object(self, sa_conn)
+            return
+
+        sa_conn = self.engine().connect()
+        conns[self.uid] = sa_conn
+        try:
+            with sa_conn.begin():
+                yield connection.Object(self, sa_conn)
+        finally:
+            conns.pop(self.uid, None)
+            sa_conn.close()
+
     def connect(self):
-        conn = self._open_connection()
-        return connection.Object(self, conn)
+        return self.begin()
+
+    @contextlib.contextmanager
+    def autocommit_connection(self):
+        if self.uid in _connections():
+            raise gws.Error(f'db {self.uid!r}: autocommit_connection inside a transaction')
+        sa_conn = self.engine().connect().execution_options(isolation_level='AUTOCOMMIT')
+        try:
+            yield connection.Object(self, sa_conn)
+        finally:
+            sa_conn.close()
 
     def _sa_connection(self) -> sa.Connection | None:
         """Return the open connection of the current thread, if any."""
-        return getattr(_thread_local, '_connection', None)
-
-    def _open_connection(self) -> sa.Connection:
-        """Return the connection of the current thread, opening it if needed, and increment the counter."""
-        conn = getattr(_thread_local, '_connection', None)
-        cc = getattr(_thread_local, '_connectionCount', 0)
-
-        if conn is None:
-            assert cc == 0
-            conn = self.engine().connect()
-            setattr(_thread_local, '_connection', conn)
-        else:
-            assert cc > 0
-
-        setattr(_thread_local, '_connectionCount', cc + 1)
-        # gws.log.debug(f'db.connect: open: {cc + 1}')
-        return conn
-
-    def _close_connection(self):
-        """Decrement the connection counter of the current thread, closing the connection at zero."""
-        conn = getattr(_thread_local, '_connection', None)
-        cc = getattr(_thread_local, '_connectionCount', 0)
-        assert conn is not None
-        assert cc > 0
-        # gws.log.debug(f'db.connect: close: {cc}')
-        if cc == 1:
-            if conn:
-                conn.close()
-            setattr(_thread_local, '_connection', None)
-            setattr(_thread_local, '_connectionCount', 0)
-        else:
-            setattr(_thread_local, '_connectionCount', cc - 1)
+        return _connections().get(self.uid)
 
     def table(self, table, **kwargs):
         tab = self._sa_table(table)
@@ -171,7 +181,7 @@ class Object(gws.DatabaseProvider):
         if tab is None:
             return 0
         sql = sa.select(sa.func.count()).select_from(tab)
-        with self.connect() as conn:
+        with self.begin() as conn:
             return conn.fetch_int(sql)
 
     def has_schema(self, schema):
@@ -210,22 +220,12 @@ class Object(gws.DatabaseProvider):
         return tab is not None and column_name in tab.columns
 
     def select_text(self, sql, **kwargs):
-        with self.connect() as conn:
-            try:
-                return [gws.u.to_dict(r) for r in conn.execute(sa.text(sql), kwargs)]
-            except sa.Error:
-                conn.rollback()
-                raise
+        with self.begin() as conn:
+            return [gws.u.to_dict(r) for r in conn.execute(sa.text(sql), kwargs)]
 
     def execute_text(self, sql, **kwargs):
-        with self.connect() as conn:
-            try:
-                res = conn.execute(sa.text(sql), kwargs)
-                conn.commit()
-                return res
-            except sa.Error:
-                conn.rollback()
-                raise
+        with self.begin() as conn:
+            return conn.execute(sa.text(sql), kwargs)
 
     SA_TO_ATTR = {
         # common: sqlalchemy.sql.sqltypes

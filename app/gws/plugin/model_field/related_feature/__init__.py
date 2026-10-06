@@ -105,7 +105,7 @@ class Object(related_field.Object):
                         .values({self.rel.src.keyName: key})
                         .where(self.model.uid_equals(feature.uid()))
                     )
-                    with self.model.db.connect() as conn:
+                    with self.model.db.begin() as conn:
                         conn.execute(sql)
 
     def uids_for_key(self, rel: related_field.RelRef, key, mc):
@@ -120,7 +120,7 @@ class Object(related_field.Object):
             A set of feature uids as strings.
         """
         sql = sa.select(rel.model.uid_column()).where(self.key_column(rel) == key)
-        with rel.model.db.connect() as conn:
+        with rel.model.db.begin() as conn:
             return set(str(u) for u in conn.execute(sql))
 
     def after_select(self, features, mc):
@@ -144,7 +144,7 @@ class Object(related_field.Object):
         )
 
         r_to_uids = {}
-        with self.model.db.connect() as conn:
+        with self.model.db.begin() as conn:
             for r, u in conn.execute(sql):
                 r_to_uids.setdefault(str(r), []).append(str(u))
 

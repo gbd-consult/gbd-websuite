@@ -141,7 +141,7 @@ class Object(related_field.Object):
             )
 
             r_to_uids = {}
-            with self.model.db.connect() as conn:
+            with self.model.db.begin() as conn:
                 for r, u in conn.execute(sql):
                     r_to_uids.setdefault(str(r), []).append(str(u))
 
@@ -210,7 +210,7 @@ class Object(related_field.Object):
                         dst.model.uid_equals(ins_uids),
                     )
                 )
-                with dst.model.db.connect() as conn:
+                with dst.model.db.begin() as conn:
                     conn.execute(sql)
 
             self.drop_links(dst, cur_uids - new_uids, mc)
@@ -251,7 +251,7 @@ class Object(related_field.Object):
             A set of child feature uids as strings.
         """
         sql = sa.select(dst.model.uid_column()).where(self.key_column(dst) == key)
-        with dst.model.db.connect() as conn:
+        with dst.model.db.begin() as conn:
             return set(str(u[0]) for u in conn.execute(sql))
 
     def drop_links(self, dst: related_field.RelRef, dst_uids, mc):
@@ -279,5 +279,5 @@ class Object(related_field.Object):
                     dst.model.uid_equals(dst_uids),
                 )
             )
-        with dst.model.db.connect() as conn:
+        with dst.model.db.begin() as conn:
             conn.execute(sql)

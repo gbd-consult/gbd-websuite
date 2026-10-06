@@ -15,7 +15,7 @@ Submodules
 - ``provider`` - the base database provider. It wraps an SQLAlchemy ``Engine``,
   hands out connections, reflects and caches table structures and describes
   tables and columns.
-- ``connection`` - the connection object returned by ``provider.connect()``,
+- ``connection`` - the connection object yielded by ``provider.begin()``,
   a thin wrapper around an SQLAlchemy ``Connection`` with fetch helpers.
 - ``model`` - the base database model, which reads features with a SELECT built
   by the model fields and creates, updates and deletes table rows.
@@ -35,19 +35,31 @@ Layers, models and other objects refer to a provider with ``dbUid``. Without
 ``dbUid`` they use the default provider passed by their parent or the first
 provider of their type (see ``gws.config.util.configure_database_provider_for``).
 
-A provider keeps one SQLAlchemy connection per thread. ``connect()`` calls can
-be nested; inner calls reuse the open connection, and only the outermost one
-closes it::
+A provider keeps one SQLAlchemy connection per thread. ``begin()`` opens it,
+begins a transaction and yields the connection. The outermost ``begin()``
+commits on normal exit, rolls back on an exception and closes the connection.
+Inner calls join the open transaction, or create a savepoint with
+``nested=True``::
 
-    with db.connect() as conn:
-        rows = conn.fetch_all('SELECT * FROM my_table WHERE id = :id', id=1)
-        with db.connect() as conn2:
-            # the same connection
+    with db.begin() as conn:
+        conn.execute('INSERT INTO my_table (id) VALUES (:id)', {'id': 1})
+        with db.begin() as conn2:
+            # the same connection and transaction, sees the insert
             n = conn2.fetch_int('SELECT count(*) FROM my_table')
+    # committed
 
-Because the connection is shared, a ``commit()`` or ``rollback()`` on any level
-ends the transaction for all levels. The ``fetch_*`` helpers roll back after
-reading.
+The connection itself has no ``commit()`` or ``rollback()``. To catch a
+database error and continue in the same transaction, wrap the statement in a
+savepoint::
+
+    try:
+        with db.begin(nested=True) as conn:
+            conn.execute('INSERT ...')
+    except sa.Error:
+        ...
+
+Statements that cannot run in a transaction, like ``VACUUM``, use
+``autocommit_connection()``, which is a separate connection.
 
 The engine is created on activation and is not pickled. Connection pooling is
 off unless ``withPool`` is set; the ``pool`` options ``disabled``,

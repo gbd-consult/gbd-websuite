@@ -5933,76 +5933,23 @@ class DatabaseConnection:
     """Database connection.
 
     Wraps an SQLAlchemy ``Connection`` and provides some convenience methods.
-    Returned by ``DatabaseProvider.connect`` and used as a context manager,
-    which closes the connection on exit.
+    Returned by ``DatabaseProvider.begin``. The connection does not control
+    the transaction: it is committed or rolled back by ``begin``.
 
     Statements can be SQLAlchemy objects or SQL strings with ``:name`` bind
-    parameters. The ``fetch_*`` methods roll back the transaction after reading.
+    parameters.
     """
 
     saConn: 'sqlalchemy.Connection'
     """The underlying SQLAlchemy connection."""
 
-    def __enter__(self) -> 'DatabaseConnection': ...
-
-    def __exit__(self, exc_type, exc_value, traceback): ...
-
-    def execute(self, stmt: 'sqlalchemy.Executable', params=None, execution_options: dict=None) -> 'sqlalchemy.CursorResult':
-        """Execute an SQLAlchemy statement.
-
-        Args:
-            stmt: Statement.
-            params: Bind parameters, a dict or a list of dicts.
-            execution_options: SQLAlchemy execution options.
-
-        Returns:
-            The result.
-        """
-
-    def commit(self):
-        """Commit the current transaction."""
-
-    def rollback(self):
-        """Roll back the current transaction."""
-
-    def close(self):
-        """Close the connection.
-
-        The connection is shared by nested ``connect`` calls, and only the
-        outermost ``close`` closes the SQLAlchemy connection.
-        """
-
-    def exec(self, stmt: 'DatabaseStmt', **params) -> 'sqlalchemy.CursorResult':
+    def execute(self, stmt: 'DatabaseStmt', params=None, execution_options: dict=None) -> 'sqlalchemy.CursorResult':
         """Execute a statement.
 
         Args:
             stmt: Statement or SQL string.
-            **params: Bind parameters.
-
-        Returns:
-            The result.
-        """
-
-    def exec_commit(self, stmt: 'DatabaseStmt', **params) -> 'sqlalchemy.CursorResult':
-        """Execute a statement and commit, or roll back on error.
-
-        Args:
-            stmt: Statement or SQL string.
-            **params: Bind parameters.
-
-        Returns:
-            The result.
-
-        Raises:
-            ``Exception``: Any error from the execution is re-raised after the rollback.
-        """
-
-    def exec_rollback(self, stmt: 'DatabaseStmt', **params) -> 'sqlalchemy.CursorResult':
-        """Execute a statement and roll back afterwards.
-
-        Args:
-            stmt: Statement or SQL string.
-            **params: Bind parameters.
+            params: Bind parameters, a dict or a list of dicts.
+            execution_options: SQLAlchemy execution options.
 
         Returns:
             The result.
@@ -6118,23 +6065,48 @@ class DatabaseProvider(Node):
     table structures and describes tables and columns.
     """
 
-    def connect(self) -> 'DatabaseConnection':
-        """Open a connection, to be used as a context manager.
+    def begin(self, nested: bool = False) -> ContextManager['DatabaseConnection']:
+        """Begin a transaction, to be used as a context manager.
 
-        Calls can be nested. An inner call does not open a new connection, but
-        returns a wrapper around the open one. Only the outermost connection is
-        closed upon exit::
+        The outermost call opens a connection and begins a transaction, which
+        is committed on normal exit and rolled back on an exception. Inner
+        calls in the same thread join the open transaction, or create a
+        savepoint if ``nested`` is set::
 
-            with db.connect():
-                ...
-                with db.connect():  # no-op
-                    ...
-                # connection remains open
-                ...
-            # connection closed
+            with db.begin() as conn:
+                conn.execute('INSERT ...')
+                with db.begin() as conn2:  # same connection and transaction
+                    rows = conn2.fetch_all('SELECT ...')
+                with db.begin(nested=True) as conn3:  # savepoint
+                    conn3.execute('UPDATE ...')
+            # committed, connection closed
+
+        Unlike SQLAlchemy ``Engine.begin``, an inner call does not open a new
+        connection. Each provider keeps its own connection per thread.
+
+        Args:
+            nested: Create a savepoint when joining an open transaction. An
+                exception inside the block then rolls back to the savepoint
+                only. Has no effect on the outermost call.
 
         Returns:
-            The connection.
+            A context manager that yields the connection.
+        """
+
+    def connect(self) -> ContextManager['DatabaseConnection']:
+        """Deprecated, same as ``begin``."""
+
+    def autocommit_connection(self) -> ContextManager['DatabaseConnection']:
+        """Open a separate connection in autocommit mode, to be used as a context manager.
+
+        For statements that cannot run inside a transaction, like ``VACUUM``.
+        The connection is not shared with ``begin``.
+
+        Returns:
+            A context manager that yields the connection.
+
+        Raises:
+            ``gws.Error``: If a transaction of this provider is open in the current thread.
         """
 
     def engine_options(self, **kwargs):
@@ -6309,11 +6281,11 @@ class DatabaseProvider(Node):
             A list of rows as dicts.
 
         Raises:
-            ``sqlalchemy.exc.SQLAlchemyError``: On database errors, after a rollback.
+            ``sqlalchemy.exc.SQLAlchemyError``: On database errors.
         """
 
     def execute_text(self, sql: str, **kwargs) -> 'sqlalchemy.CursorResult':
-        """Execute a textual statement and commit.
+        """Execute a textual statement in a transaction, see ``begin``.
 
         Args:
             sql: SQL statement with ``:name`` bind parameters.
@@ -6323,7 +6295,7 @@ class DatabaseProvider(Node):
             The result.
 
         Raises:
-            ``sqlalchemy.exc.SQLAlchemyError``: On database errors, after a rollback.
+            ``sqlalchemy.exc.SQLAlchemyError``: On database errors.
         """
 
     def schema_names(self) -> list[str]:

@@ -95,13 +95,12 @@ class Object(dt.Reader):
     def count(self, cls, table_name=None):
         # NB not using db.count to avoid schema introspection
         sql = f"SELECT COUNT(*) FROM {self.schema}.{table_name or cls.__name__.lower()}"
-        with self.db.connect() as conn:
-            try:
+        try:
+            with self.db.begin(nested=True) as conn:
                 rs = list(conn.execute(sa.text(sql)))
                 return rs[0][0]
-            except sa.Error:
-                conn.rollback()
-                return 0
+        except sa.Error:
+            return 0
 
     def read_all(self, cls, table_name=None, uids=None):
         sql = f"SELECT * FROM {self.schema}.{table_name or cls.__name__.lower()}"
@@ -111,7 +110,7 @@ class Object(dt.Reader):
         else:
             sql = sa.text(sql)
 
-        with self.db.connect() as conn:
+        with self.db.begin() as conn:
             for row in conn.execute(sql, execution_options={'stream_results': True}):
                 r = gws.u.to_dict(row)
                 o = self.as_struct(cls, '', r)

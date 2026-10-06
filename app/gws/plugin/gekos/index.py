@@ -193,12 +193,10 @@ class Object(gws.Node):
         sa_meta = sa.MetaData(schema=schema)
         table = sa.Table(name, sa_meta, *columns, schema=schema)
 
-        with self.db.connect() as conn:
+        with self.db.begin() as conn:
             table.drop(conn.saConn, checkfirst=True)
             table.create(conn.saConn)
-            conn.commit()
             if recs:
                 conn.execute(sa.insert(table), recs)
-                conn.commit()
 
         gws.log.info(f'saved {len(recs)} records in {schema}.{name}')

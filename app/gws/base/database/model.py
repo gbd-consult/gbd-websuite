@@ -84,7 +84,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
             where=[],
         )
 
-        with self.db.connect():
+        with self.db.begin():
             for fld in self.fields:
                 fld.before_select(mc)
 
@@ -102,7 +102,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
     def fetch_features(self, select):
         features = []
 
-        with self.db.connect() as conn:
+        with self.db.begin() as conn:
             for row in conn.fetch_all(select):
                 features.append(
                     gws.base.feature.new(
@@ -194,7 +194,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
             if from_feature.model not in related_models:
                 related_models.append(from_feature.model)
 
-        with self.db.connect() as conn:
+        with self.db.begin() as conn:
             for m in related_models:
                 for fld in m.fields:
                     fld.before_create_related(feature, mc)
@@ -219,8 +219,6 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
                 for fld in m.fields:
                     fld.after_create_related(feature, mc)
 
-            conn.commit()
-
         return feature.insertedPrimaryKey
 
     def update_feature(self, feature, mc):
@@ -229,7 +227,7 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
 
         feature.record = gws.FeatureRecord(attributes={}, meta={})
 
-        with self.db.connect() as conn:
+        with self.db.begin() as conn:
             for fld in self.fields:
                 fld.before_update(feature, mc)
 
@@ -242,15 +240,13 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
             for fld in self.fields:
                 fld.after_update(feature, mc)
 
-            conn.commit()
-
         return feature.uid()
 
     def delete_feature(self, feature, mc):
         if not mc.user.can_delete(self):
             raise gws.ForbiddenError(f'model {self.uid!r} can_delete=False')
 
-        with self.db.connect() as conn:
+        with self.db.begin() as conn:
             for fld in self.fields:
                 fld.before_delete(feature, mc)
 
@@ -260,7 +256,5 @@ class Object(gws.base.model.Object, gws.DatabaseModel):
 
             for fld in self.fields:
                 fld.after_delete(feature, mc)
-
-            conn.commit()
 
         return feature.uid()

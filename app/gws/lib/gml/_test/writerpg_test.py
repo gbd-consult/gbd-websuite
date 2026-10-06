@@ -46,7 +46,7 @@ def test_with_postgis(root: gws.Root):
     for s in DATA.strip().split('--'):
         wkt_list.append(re.sub(r'\s+', ' ', s.strip()))
 
-    with db.connect() as conn:
+    with db.begin() as conn:
         for version in [2, 3]:
             for wkt in wkt_list:
                 sql = f"SELECT ST_AsGML({version},ST_GeomFromText('{wkt}',4326))"

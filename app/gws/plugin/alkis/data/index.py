@@ -268,10 +268,11 @@ class Object(gws.Node):
 
         d = {}
 
-        with self.db.connect():
+        with self.db.begin():
             for table_id in table_ids:
                 try:
-                    d[table_id] = self.db.count(self.table(table_id))
+                    with self.db.begin(nested=True):
+                        d[table_id] = self.db.count(self.table(table_id))
                 except sa.exc.SQLAlchemyError:
                     d[table_id] = 0
 
@@ -323,17 +324,15 @@ class Object(gws.Node):
             table_id: Table id.
         """
 
-        with self.db.connect() as conn:
+        with self.db.begin() as conn:
             self._drop_table(conn, table_id)
-            conn.commit()
 
     def drop(self):
         """Drop all index tables."""
 
-        with self.db.connect() as conn:
+        with self.db.begin() as conn:
             for table_id in self.ALL_TABLES:
                 self._drop_table(conn, table_id)
-            conn.commit()
 
     def _drop_table(self, conn, table_id):
         """Drop an index table using an open connection."""
@@ -356,14 +355,14 @@ class Object(gws.Node):
         """
 
         tab = self.table(table_id)
-        self.saMeta.create_all(self.db.engine(), tables=[tab])
+
+        with self.db.begin() as conn:
+            self.saMeta.create_all(conn.saConn, tables=[tab])
+            if values:
+                conn.execute(sa.insert(tab), values)
 
         if not values:
             return
-
-        with self.db.connect() as conn:
-            conn.execute(sa.insert(tab), values)
-            conn.commit()
         if progress:
             progress.update(len(values))
 
@@ -384,7 +383,7 @@ class Object(gws.Node):
         if self._defaultLand:
             return self._defaultLand
 
-        with self.db.connect() as conn:
+        with self.db.begin() as conn:
             sel = sa.select(self.table(TABLE_PLACE)).where(sa.text("data->>'kind' = 'gemarkung'")).limit(1)
             for r in conn.execute(sel):
                 p = unserialize(r.data)
@@ -423,7 +422,7 @@ class Object(gws.Node):
         if self.gemarkungFilter:
             sel = sel.where(indexlage.c.gemarkungcode.in_(self.gemarkungFilter))
 
-        with self.db.connect() as conn:
+        with self.db.begin() as conn:
             for r in conn.execute(sel):
                 self._strasseList.append(
                     dt.Strasse(
@@ -457,7 +456,7 @@ class Object(gws.Node):
         lage_uids = []
         adresse_map = {}
 
-        with self.db.connect() as conn:
+        with self.db.begin() as conn:
             for r in conn.execute(sel):
                 lage_uids.append(r[0])
 
@@ -509,7 +508,7 @@ class Object(gws.Node):
 
         fs_uids = []
 
-        with self.db.connect() as conn:
+        with self.db.begin() as conn:
             for r in conn.execute(sel):
                 uid = r[0].partition('_')[0]
                 if uid not in fs_uids:
@@ -542,7 +541,7 @@ class Object(gws.Node):
         if not qo.withHistorySearch:
             sel = sel.where(~indexfs.c.fshistoric)
 
-        with self.db.connect() as conn:
+        with self.db.begin() as conn:
             r = list(conn.execute(sel))
             return r[0][0]
 
@@ -569,7 +568,7 @@ class Object(gws.Node):
         # NB the consumer might be slow, close connection on each chunk
 
         while True:
-            with self.db.connect() as conn:
+            with self.db.begin() as conn:
                 sel2 = sel.offset(offset).limit(qo.pageSize)
                 fs_uids = [r[0] for r in conn.execute(sel2)]
                 if not fs_uids:
@@ -824,7 +823,7 @@ class Object(gws.Node):
             unless ``withHistoryDisplay`` is set, historic Flurstuecke are left out.
         """
 
-        with self.db.connect() as conn:
+        with self.db.begin() as conn:
             return self._load_flurstueck(conn, fs_uids, qo)
 
     def _load_flurstueck(self, conn, fs_uids, qo: dt.FlurstueckQueryOptions):

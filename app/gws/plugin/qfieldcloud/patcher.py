@@ -139,7 +139,7 @@ class Object:
             me: Model entry.
             ops: Operations to commit.
         """
-        with me.model.db.connect() as conn:
+        with me.model.db.begin() as conn:
             for op in ops:
                 gws.log.debug(f'{op.type=} {op.feature.attributes=}')
                 mc = gws.ModelContext(op=op.type, user=self.user, project=self.project)
@@ -151,7 +151,6 @@ class Object:
                     continue
                 if op.type == gws.ModelOperation.delete:
                     me.model.delete_feature(op.feature, mc)
-            conn.commit()
 
     def apply_upload(self, root: gws.Root, args: Args) -> bool:
         """Apply the file upload in ``args.filePath`` and ``args.fileContent``.
@@ -210,10 +209,9 @@ class Object:
                 continue
             gws.log.debug(f'commit_upload: found feature: model={me.gpName}: {fld.name=} {uid=} {path=} ')
 
-            with me.model.db.connect() as conn:
+            with me.model.db.begin() as conn:
                 sql = me.model.table().update().where(me.model.uid_equals(uid)).values({fld.contentColumn: content})
                 conn.execute(sql)
-                conn.commit()
 
             return True
 
@@ -237,7 +235,7 @@ class Object:
         Returns:
             Primary key of the feature, or ``None`` if not found.
         """
-        with me.model.db.connect() as conn:
+        with me.model.db.begin() as conn:
             sel = me.model.table().select().with_only_columns(me.model.uid_column()).where(ff.nameColumn == path)
             rec = conn.fetch_first(sel)
             if rec:

@@ -121,7 +121,7 @@ class Object(related_field.Object):
         )
 
         r_to_uids = {}
-        with self.model.db.connect() as conn:
+        with self.model.db.begin() as conn:
             for r, u in conn.execute(sql):
                 r_to_uids.setdefault(str(r), []).append(str(u))
 
@@ -193,7 +193,7 @@ class Object(related_field.Object):
         ).where(
             self.rel.dst.model.uid_equals(dst_uids),
         )
-        with self.rel.dst.model.db.connect() as conn:
+        with self.rel.dst.model.db.begin() as conn:
             r_uid_to_key = {str(u): k for u, k in conn.execute(sql)}
 
         new_links = set()
@@ -221,7 +221,7 @@ class Object(related_field.Object):
         ).where(
             self.link_column(self.rel.link.srcKeyName).in_(left_keys),
         )
-        with self.model.db.connect() as conn:
+        with self.model.db.begin() as conn:
             return set((lk, rk) for lk, rk in conn.execute(sql))
 
     def create_links(self, links, mc):
@@ -239,7 +239,7 @@ class Object(related_field.Object):
         ]
         # fmt: on
         if values:
-            with self.model.db.connect() as conn:
+            with self.model.db.begin() as conn:
                 conn.execute(sql, values)
 
     def delete_links(self, links, mc):
@@ -249,7 +249,7 @@ class Object(related_field.Object):
             links: ``(src_key, dst_key)`` tuples.
             mc: The model context.
         """
-        with self.model.db.connect() as conn:
+        with self.model.db.begin() as conn:
             for lk, rk in links:
                 sql = sa.delete(
                     self.link_table(),

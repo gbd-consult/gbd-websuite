@@ -241,6 +241,6 @@ class Object(field.Object):
             The key value, or None if the feature is not found.
         """
         sql = sa.select(key_column).where(model.uid_equals(uid))
-        with model.db.connect() as conn:
+        with model.db.begin() as conn:
             rs = list(conn.execute(sql))
         return rs[0][0] if rs else None
