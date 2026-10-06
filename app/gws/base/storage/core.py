@@ -149,9 +149,10 @@ class Object(gws.Node):
         if p.verb == Verb.write:
             if not p.entryName or not p.entryData:
                 raise gws.ForbiddenError()
-            if p.entryName in state.names and not state.canWrite:
+            exists = p.entryName in self.storageProvider.list_names(self.categoryName)
+            if exists and not state.canWrite:
                 raise gws.ForbiddenError()
-            if p.entryName not in state.names and not state.canCreate:
+            if not exists and not state.canCreate:
                 raise gws.ForbiddenError()
 
             d = gws.lib.jsonx.to_string(p.entryData)

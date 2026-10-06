@@ -21,6 +21,7 @@ def root():
     u.auth.drop_users()
     u.auth.add_user('user_1', 'password_1', roles=['role_1'])
     u.auth.add_user('user_2', 'password_2')
+    u.auth.add_user('user_3', 'password:3', roles=['role_1'])
 
     yield u.gws_root(cfg)
 
@@ -46,6 +47,11 @@ def test_valid_credentials(root: gws.Root):
 def test_no_header_is_guest(root: gws.Root):
     res = _project_info(root)
     assert res.status_code == 403
+
+
+def test_password_with_colon(root: gws.Root):
+    res = _project_info(root, _basic('user_3', 'password:3'))
+    assert res.status_code == 200
 
 
 def test_wrong_password(root: gws.Root):

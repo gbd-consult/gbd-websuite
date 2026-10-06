@@ -645,7 +645,7 @@ def _datasource_space_delimited(text):
         return v, u[len(v) :].strip()
 
     def _unesc(s):
-        return re.sub(r'\\(.)', '\1', s)
+        return re.sub(r'\\(.)', r'\1', s)
 
     def _mid(s):
         return s[1:-1].strip()

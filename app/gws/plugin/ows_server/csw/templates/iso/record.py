@@ -212,7 +212,7 @@ def record(ta: server.TemplateArgs, md: gws.Metadata):
     def content():
         yield tag('GMD:fileIdentifier/GCO:CharacterString', md.catalogUid)
 
-        w_lang()
+        yield w_lang()
         yield w_code('characterSet', 'MD_CharacterSetCode', 'utf8')
 
         yield w_code('hierarchyLevel', 'MD_ScopeCode', md.isoScope)

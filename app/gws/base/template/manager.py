@@ -7,7 +7,6 @@ import gws.lib.mime
 
 TEMPLATE_TYPES = {
     '.cx.html': 'html',
-    '.cx.csv': 'csv',
     '.qgs': 'qgis',
     '.cx.py': 'py',
 }

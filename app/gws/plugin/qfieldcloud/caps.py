@@ -192,8 +192,8 @@ class Parser:
     ``assign_path_props`` complete the layer entries and are called separately.
     """
 
-    project: core.QfcProject
-    """QField project (unused, the project is stored in ``qfcProject``)."""
+    qfcProject: core.QfcProject
+    """QField project."""
     caps: Caps
     """Capabilities being built."""
     qgisCaps: gws.plugin.qgis.caps.Caps

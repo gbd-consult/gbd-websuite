@@ -233,7 +233,7 @@ class Object(gws.base.edit.helper.Object):
         if not r.get('validpassword'):
             raise Error(f'get_account_by_credentials: {username=} wrong password')
 
-        if expected_status:
+        if expected_status is not None:
             status = r.get(core.Columns.status)
             if status != expected_status:
                 raise Error(f'get_account_by_credentials: {username=} wrong {status=} {expected_status=}')
@@ -291,7 +291,7 @@ class Object(gws.base.edit.helper.Object):
             gws.log.warning(f'get_account_by_tc: {category=} {tc=} expired')
             return
 
-        if expected_status:
+        if expected_status is not None:
             status = r.get(core.Columns.status)
             if status != expected_status:
                 gws.log.warning(f'get_account_by_tc: {category=} {tc=} wrong {status=} {expected_status=}')

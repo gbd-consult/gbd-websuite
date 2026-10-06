@@ -87,6 +87,13 @@ def test_authenticate_wrong_password(root: gws.Root):
         pass
 
 
+def test_authenticate_password_is_not_stripped(root: gws.Root):
+    am = root.app.authMgr
+    prv = am.providers[0]
+    with u.raises(gws.AuthenticationError):
+        prv.authenticate(am.methods[0], gws.Data(username='a', password=' apass '))
+
+
 def test_authenticate_nonexistent_user(root: gws.Root):
     """Test authentication with non-existent user returns None"""
     am = root.app.authMgr

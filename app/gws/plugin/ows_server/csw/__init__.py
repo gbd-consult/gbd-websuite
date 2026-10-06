@@ -20,7 +20,8 @@ Templates:
 
 - ``templates/iso/getCapabilities.cx.py``: ``ows.GetCapabilities``.
 - ``templates/iso/describeRecord.cx.py``: ``ows.DescribeRecord``.
-- ``templates/iso/getRecords.cx.py``: ``ows.GetRecords`` and ``ows.GetRecordById``.
+- ``templates/iso/getRecords.cx.py``: ``ows.GetRecords``.
+- ``templates/iso/getRecordById.cx.py``: ``ows.GetRecordById``.
 
 References:
 
@@ -81,7 +82,7 @@ _DEFAULT_TEMPLATES_ISO = [
     ),
     gws.Config(
         type='py',
-        path=f'{_cdir}/templates/iso/getRecords.cx.py',
+        path=f'{_cdir}/templates/iso/getRecordById.cx.py',
         subject='ows.GetRecordById',
         mimeTypes=[gws.lib.mime.XML],
     ),

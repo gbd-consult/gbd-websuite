@@ -1,6 +1,6 @@
 """Exporter action."""
 
-from typing import Optional, cast
+from typing import cast
 
 import gws
 import gws.base.action
@@ -23,8 +23,6 @@ class Props(gws.base.action.Props):
 class CliParams(gws.CliParams):
     """Parameters of the ``gws exporter export`` command."""
 
-    project: Optional[str]
-    """Project uid. Not used, the project is taken from the request."""
     request: str
     """Path to a JSON file with a ``gws.ExportRequest``."""
     output: str

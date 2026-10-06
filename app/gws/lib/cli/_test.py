@@ -207,6 +207,15 @@ def test_main():
             mock.patch('gws.lib.cli.error') as mock_error:
         cli.main("test", failing_func, "Usage: test")
         mock_error.assert_called()
+        mock_exit.assert_called_with(1)
+
+    def interrupted_func(args):
+        raise KeyboardInterrupt()
+
+    with mock.patch('sys.argv', ['script.py', 'arg']), \
+            mock.patch('sys.exit') as mock_exit:
+        cli.main("test", interrupted_func, "Usage: test")
+        mock_exit.assert_called_with(130)
 
 
 # def test_text_table():

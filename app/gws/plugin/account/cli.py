@@ -25,7 +25,7 @@ class Object(gws.Node):
         root = gws.load_root()
         h = cast(helper.Object, root.app.helper('account'))
 
-        for uid in p.uid:
+        for uid in p.uid or []:
             account = h.get_account_by_id(uid)
             if not account:
                 continue

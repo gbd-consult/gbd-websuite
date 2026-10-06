@@ -96,8 +96,6 @@ class Object(server.service.Object):
     """Grids by tile matrix set identifier."""
 
     def configure(self):
-        gws.config.util.configure_templates_for(self, extra=_DEFAULT_TEMPLATES)
-
         configured = {}
         for p in self.cfg('grids', default=[]):
             if not p.crs:
@@ -135,6 +133,9 @@ class Object(server.service.Object):
                     matrices=self.make_tile_matrices(mg, 0, MAX_LEVEL),
                 )
             )
+
+    def configure_templates(self):
+        return gws.config.util.configure_templates_for(self, extra=_DEFAULT_TEMPLATES)
 
     def configure_operations(self):
         self.supportedOperations = [

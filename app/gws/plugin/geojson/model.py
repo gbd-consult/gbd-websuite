@@ -35,10 +35,10 @@ class Object(gws.base.model.default_model.Object):
     def configure_provider(self):
         return gws.config.util.configure_provider_for(self, provider.Object)
 
-    def find_features(self, search, user, **kwargs):
+    def find_features(self, search, mc):
         # fmt: off
         return [
-            self.feature_from_record(rec, user) 
+            self.feature_from_record(rec, mc) 
             for rec in self.provider.get_records(search)
         ]
         # fmt: on

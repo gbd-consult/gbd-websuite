@@ -23,7 +23,7 @@ Example::
     w.stop()
 """
 
-from typing import Callable, TypeAlias
+from typing import Callable, Optional, TypeAlias
 import os
 import re
 
@@ -71,8 +71,8 @@ def new(notify: _NotifyFn):
 class Watcher:
     """File system watcher."""
 
-    observer: watchdog.observers.Observer
-    """The ``watchdog`` observer, created by ``start``."""
+    observer: Optional[watchdog.observers.Observer]
+    """The ``watchdog`` observer, created by ``start``. ``None`` before ``start``."""
 
     def __init__(self, notify: _NotifyFn):
         """Create a watcher.
@@ -81,6 +81,7 @@ class Watcher:
             notify: Callback, called with the event type and the path.
         """
         self.notify = notify
+        self.observer = None
         self.dirEntries = {}
         self.filePaths = set()
         self.excludePatterns = []

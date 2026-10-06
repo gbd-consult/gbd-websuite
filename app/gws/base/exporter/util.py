@@ -63,7 +63,7 @@ def _create_group(features: list[gws.Feature], ea: gws.ExportArgs, er: gws.Expor
         title='',
         columns={},
         geomType=None,
-        srid=0,
+        crs=None,
     )
 
     f = features[0]

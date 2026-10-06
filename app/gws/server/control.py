@@ -222,10 +222,11 @@ def app_is_running(srv):
 _FALLBACK_CONFIG = gws.Config(
     server=gws.Config(
         timeZone="Europe/Berlin",
-        monitor=gws.Config(disabled=True),
+        withMonitor=False,
+        withSpool=False,
+        withWeb=True,
         log=gws.Config(level='INFO'),
         qgis=gws.Config(host='qgis', port=80),
-        spool=gws.Config(disabled=True),
-        web=gws.Config(disabled=False, workers=1, timeout=60, maxRequestLength=10),
+        web=gws.Config(workers=1, timeout=60, maxRequestLength=10),
     )
 )

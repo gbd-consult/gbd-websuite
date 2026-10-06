@@ -76,7 +76,7 @@ def get_drivers() -> list[DriverInfo]:
         Information about all available drivers.
     """
 
-    di = gws.u.get_app_global('gdal_drivers', _fetch_driver_infos)
+    di = gws.u.get_app_global('gdal_driver_infos', _fetch_driver_infos)
     return di.infos
 
 

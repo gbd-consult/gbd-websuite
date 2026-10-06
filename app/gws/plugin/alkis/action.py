@@ -270,7 +270,7 @@ class FindFlurstueckRequest(gws.Request):
     eigentuemerControlInput: Optional[str]
     """Control input for owner data access in control mode."""
     limit: Optional[int]
-    """Unused, the action limit applies."""
+    """Maximum number of results, capped by the action limit."""
 
     wantEigentuemer: Optional[bool]
     """Request owner data."""
@@ -375,8 +375,6 @@ class ExportFlurstueckRequest(gws.Request):
     """Exporter uid, the first usable exporter if empty."""
     modelUids: Optional[list[str]]
     """Uids of the export models to use."""
-    eigentuemerControlInput: Optional[str]
-    """Control input for owner data access, unused; the one in ``findRequest`` is checked."""
 
 
 class ExportFlurstueckResponse(gws.Response):
@@ -873,7 +871,6 @@ class Object(gws.base.action.Object):
         'flurstuecksfolge',
         'zaehler',
         'nenner',
-        'flurstueckskennzeichen',
         'flaecheBis',
         'flaecheVon',
         'gemarkung',
@@ -940,7 +937,7 @@ class Object(gws.base.action.Object):
             strasseSearchOptions=self.strasseSearchOptions,
             nameSearchOptions=self.nameSearchOptions,
             buchungsblattSearchOptions=self.buchungsblattSearchOptions,
-            limit=self.limit,
+            limit=min(p.limit or self.limit, self.limit),
             withEigentuemer=False,
             withBuchung=False,
             withHistorySearch=bool(p.wantHistorySearch),

@@ -12,6 +12,6 @@ def main(ta: server.TemplateArgs):
         tag(
             'CSW:GetRecordByIdResponse',
             {'version': ta.version},
-            rec.record(ta, ta.metadataCollection.members[0])
+            [rec.record(ta, md) for md in ta.metadataCollection.members]
         ),
     )

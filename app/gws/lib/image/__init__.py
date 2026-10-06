@@ -134,7 +134,7 @@ def from_path(path: str) -> 'Image':
 _DATA_URL_RE = r'data:image/(png|gif|jpeg|jpg);base64,'
 
 
-def from_data_url(url: str) -> Optional['Image']:
+def from_data_url(url: str) -> 'Image':
     """Create an image from a base64 data URL.
 
     Only PNG, GIF and JPEG data URLs are accepted.
@@ -155,12 +155,11 @@ def from_data_url(url: str) -> Optional['Image']:
     return from_bytes(r)
 
 
-def from_array(arr: np.ndarray, mode: str = None) -> 'Image':
+def from_array(arr: np.ndarray) -> 'Image':
     """Create an image from a numpy array.
 
     Args:
         arr: Pixel array, as returned by ``Image.to_array``.
-        mode: Not used.
 
     Returns:
         An image object.

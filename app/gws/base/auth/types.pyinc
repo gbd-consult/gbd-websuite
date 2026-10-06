@@ -382,7 +382,7 @@ class AuthMethod(Node):
             A session, or ``None`` if the request has no session for this method.
         """
 
-    def close_session(self, req: 'WebRequester', res: 'WebResponder') -> bool:
+    def close_session(self, req: 'WebRequester', res: 'WebResponder') -> None:
         """Close the session of a request.
 
         Called at the end of every web request whose session was opened by this
@@ -391,9 +391,6 @@ class AuthMethod(Node):
         Args:
             req: The web request.
             res: The web response.
-
-        Returns:
-            ``True`` if the session was closed.
         """
 
 
@@ -473,13 +470,6 @@ class AuthMultiFactorAdapter(Node):
 
         Returns:
             The transaction with an updated state.
-        """
-
-    def cancel(self, mfa: AuthMultiFactorTransaction):
-        """Cancel a transaction.
-
-        Args:
-            mfa: The transaction.
         """
 
     def check_state(self, mfa: AuthMultiFactorTransaction) -> bool:

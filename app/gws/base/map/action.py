@@ -86,7 +86,7 @@ class DescribeLayerRequest(gws.Request):
     """Layer UID."""
 
 
-class DescribeLayerResponse(gws.Request):
+class DescribeLayerResponse(gws.Response):
     """Layer description response."""
 
     content: str
@@ -319,7 +319,7 @@ class Object(gws.base.action.Object):
         tpl = self.root.app.templateMgr.find_template(f'feature.label', where=[layer, project], user=req.user)
         if tpl:
             for feature in features:
-                feature.render_views([tpl], project=project, layer=self, user=req.user)
+                feature.render_views([tpl], project=project, layer=layer, user=req.user)
 
         mc = gws.ModelContext(
             op=gws.ModelOperation.read,

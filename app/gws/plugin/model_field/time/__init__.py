@@ -32,7 +32,7 @@ class Props(gws.base.model.scalar_field.Props):
 class Object(gws.base.model.scalar_field.Object):
     """Time field object."""
 
-    attributeType = gws.AttributeType.datetime
+    attributeType = gws.AttributeType.time
 
     def configure_widget(self):
         if not super().configure_widget():

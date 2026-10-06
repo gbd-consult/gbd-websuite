@@ -26,7 +26,8 @@ A job goes through the states ``open`` (created), ``running`` and then
 uWSGI spooler if it is available, otherwise the job runs at once in the
 current process. ``run_job`` marks the job as running atomically, so a job runs
 only once, imports the worker class and calls its ``run`` class method. An
-exception in the worker puts the job into the ``error`` state.
+exception in the worker, other than ``gws.JobTerminated``, puts the job into
+the ``error`` state.
 
 Workers
 -------

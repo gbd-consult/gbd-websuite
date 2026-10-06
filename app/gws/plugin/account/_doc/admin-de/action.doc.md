@@ -1,6 +1,6 @@
 # Aktion "account" :/admin-de/konfiguration/action/account
 
-Die Aktion `account` stellt die Selbstbedienungs-Funktionen für Benutzerkonten bereit: das Onboarding, bei dem ein Nutzer über den per E-Mail zugesandten Freischaltungs-Code sein Passwort setzt und – falls konfiguriert – einen zweiten Faktor einrichtet. Es handelt sich nicht um eine offene Registrierung; die Konten werden zuvor administrativ angelegt (siehe [Benutzerkonten](/admin-de/themen/zugriff/konten)). Die zugehörige Client-Oberfläche ist der Dialog `Dialog.Account`.
+Die Aktion `account` stellt die Selbstbedienungs-Funktionen für Benutzerkonten bereit: das Onboarding, bei dem ein Nutzer über den per E-Mail zugesandten Freischaltungs-Code sein Passwort setzt und – falls konfiguriert – einen zweiten Faktor einrichtet. Es handelt sich nicht um eine offene Registrierung; die Konten werden zuvor administrativ angelegt (siehe [Benutzerkonten](/admin-de/themen/zugriff/konten)). Die zugehörige Client-Oberfläche ist der Dialog `Account.Dialog`.
 
 ## Beispiel-Konfiguration ::
 

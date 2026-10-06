@@ -318,7 +318,7 @@ class Object(server.service.Object):
             The values of the ``VALUEREFERENCE`` attribute of the found features.
         """
         value_ref = sr.string_param('VALUEREFERENCE')
-        fc = self.get_features(sr)
+        fc = self.get_features(sr, value_ref)
         fc.values = [m.feature.get(value_ref) for m in fc.members]
         return self.template_response(sr, sr.requested_format('OUTPUTFORMAT'), featureCollection=fc)
 

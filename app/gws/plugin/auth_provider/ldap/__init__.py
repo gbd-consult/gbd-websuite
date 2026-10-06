@@ -153,7 +153,7 @@ class Object(gws.base.auth.provider.Object):
 
     def authenticate(self, method, credentials):
         username = credentials.get('username', '').strip()
-        password = credentials.get('password', '').strip()
+        password = credentials.get('password', '')
         if not username or not password:
             return
 

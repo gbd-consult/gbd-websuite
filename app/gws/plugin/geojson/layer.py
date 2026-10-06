@@ -23,8 +23,6 @@ class Config(gws.base.layer.Config):
 class Object(gws.base.layer.vector.Object):
     """GeoJSON layer."""
 
-    path: str
-    """Path to the GeoJSON file. Not set; the path is kept by the provider."""
     provider: provider.Object
     """The GeoJSON provider."""
 

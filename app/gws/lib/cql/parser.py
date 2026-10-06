@@ -233,9 +233,6 @@ class _Parser:
             if tok.type != 'WHITESPACE':
                 yield tok
 
-    def node(self, type: str, *args):
-        return {'type': type, 'args': list(args)}
-
     ##
 
     def tok(self) -> _Token:

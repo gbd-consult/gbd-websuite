@@ -164,9 +164,9 @@ class Object(gws.ServerMonitor):
     def _run_periodic_tasks(self, tasks):
         """Run the given tasks, logging and skipping failed ones."""
         for t in tasks:
+            t.lastTime = gws.u.stime()
             try:
                 t.obj.periodic_task()
-                t.lastTime = gws.u.stime()
             except Exception as exc:
                 gws.log.exception(f'MONITOR: periodic task failed {t.obj}: {exc!r}')
 

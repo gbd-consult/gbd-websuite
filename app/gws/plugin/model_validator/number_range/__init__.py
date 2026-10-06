@@ -53,12 +53,12 @@ class Object(gws.base.model.validator.Object):
 
         if self.minVal:
             v = self.minVal.compute(field, feature, mc)
-            if val < v:
+            if v is None or val < v:
                 return False
 
         if self.maxVal:
             v = self.maxVal.compute(field, feature, mc)
-            if val > v:
+            if v is None or val > v:
                 return False
 
         return True

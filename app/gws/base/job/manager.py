@@ -169,7 +169,6 @@ class Object(gws.JobManager):
             worker_cls.run(self.root, job)
         except gws.JobTerminated as exc:
             gws.log.error(f'JOB {job_uid}: JobTerminated: {exc.args[0]!r}')
-            self.update_job(job, state=gws.JobState.error)
         except Exception as exc:
             gws.log.error(f'JOB {job_uid}: FAILED {exc=}')
             gws.log.exception()

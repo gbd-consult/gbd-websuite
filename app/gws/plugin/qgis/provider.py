@@ -293,10 +293,6 @@ class Object(gws.OwsServiceProvider):
             return []
 
         request_crs = self.forceCrs
-        if not request_crs:
-            request_crs = gws.lib.crs.best_match(
-                shape.crs,
-                gws.gis.source.combined_crs_list(source_layers))
 
         box_size_m = 500
         box_size_deg = 1
@@ -310,7 +306,7 @@ class Object(gws.OwsServiceProvider):
             # @TODO use search.resolution here as well
             size = box_size_deg
         if not size:
-            gws.log.debug('cannot request crs {crs!r}, unsupported unit')
+            gws.log.debug(f'cannot request crs {shape.crs!r}, unsupported unit')
             return []
 
         bbox = (

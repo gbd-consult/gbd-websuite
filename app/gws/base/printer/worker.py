@@ -110,8 +110,8 @@ class Object(gws.base.job.worker.Object):
 
         self.tri.locale = gws.lib.intl.locale(self.request.localeUid, self.tri.project.localeUids)
         self.tri.crs = gws.lib.crs.get(self.request.crs) or self.project.map.bounds.crs
+        self.tri.dpi = int(min(gws.gis.render.MAX_DPI, max(self.request.dpi or 0, gws.lib.uom.OGC_SCREEN_PPI)))
         self.tri.maps = [self.prepare_map(self.tri, m) for m in (self.request.maps or [])]
-        self.tri.dpi = int(min(gws.gis.render.MAX_DPI, max(self.request.dpi, gws.lib.uom.OGC_SCREEN_PPI)))
 
         if self.request.type == 'template':
             self.printer = cast(gws.Printer, self.user.require(self.request.printerUid, gws.ext.object.printer))
@@ -294,8 +294,9 @@ class Object(gws.base.job.worker.Object):
             )
 
         if plane.type == gws.PrintPlaneType.url:
-            img = gws.lib.image.from_data_url(plane.url)
-            if not img:
+            try:
+                img = gws.lib.image.from_data_url(plane.url)
+            except gws.lib.image.Error:
                 gws.log.warning(f'PREPARE_FAILED: plane {n}: url error')
                 return
             return gws.MapRenderInputPlane(

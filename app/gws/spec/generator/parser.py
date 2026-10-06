@@ -34,7 +34,7 @@ def _init_parser(gen: base.Generator):
         gen.add_type(c=base.c.ATOM, name=b)
 
 
-def _parse_path(gen: base.Generator, path: str, base_name: str, base_dir: str, parse_all=True):
+def _parse_path(gen: base.Generator, path: str, base_name: str, base_dir: str, parse_all: bool):
     pp = None
 
     base.log.debug(f'parsing {path=}')
@@ -75,14 +75,10 @@ class _PythonParser:
     are considered types.
     """
 
-    lines: list[str]
-    """Not used."""
     moduleNode: ast.Module
     """Root node of the module."""
     moduleName: str
     """Qualified module name."""
-    docs: dict[int, str]
-    """Not used."""
     imports: dict[str, str]
     """Imported names mapped to qualified names."""
 

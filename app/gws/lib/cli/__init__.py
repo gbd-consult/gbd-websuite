@@ -42,7 +42,6 @@ Example::
 
 import re
 import os
-import shutil
 import sys
 import subprocess
 import time
@@ -204,19 +203,16 @@ def find_files(dirname, pattern=None, deep=True):
             yield de.path
 
 
-def ensure_dir(path, clear=False):
+def ensure_dir(path):
     """Create a directory, including parent directories.
 
     Args:
         path: Directory path.
-        clear: Remove the directory tree after creating it. The directory does not exist afterwards.
 
     Returns:
         The path.
     """
     os.makedirs(path, exist_ok=True)
-    if clear:
-        shutil.rmtree(path)
     return path
 
 
@@ -287,7 +283,7 @@ def main(name, main_fn, usage):
 
     Parses ``sys.argv`` and calls ``main_fn`` with the parsed arguments. With ``-h`` or ``--help``,
     prints the usage text and exits. The return value of ``main_fn`` is used as the exit code.
-    Exceptions are printed as internal errors, keyboard interrupts are ignored.
+    Exceptions are printed as internal errors and exit with code 1, keyboard interrupts exit with code 130.
 
     Args:
         name: Script name, used as a prefix for messages.
@@ -306,10 +302,11 @@ def main(name, main_fn, usage):
     try:
         sys.exit(main_fn(args))
     except KeyboardInterrupt:
-        pass
+        sys.exit(130)
     except Exception as exc:
         error('INTERNAL ERROR')
         error(traceback.format_exc())
+        sys.exit(1)
 
 
 def text_table(data, header=None, delim=' | '):

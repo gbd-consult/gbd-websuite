@@ -73,8 +73,8 @@ class Object(gws.AuthManager):
     def enter_middleware(self, req: gws.WebRequester):
         sess = self._try_open_session(req)
         if sess:
-            gws.log.debug(f'session: user={req.session.user.uid!r} roles={req.session.user.roles}')
             req.set_session(sess)
+            gws.log.debug(f'session: user={req.session.user.uid!r} roles={req.session.user.roles}')
         else:
             gws.log.debug('session: guest')
             req.set_session(self.guestSession)
@@ -182,12 +182,12 @@ class Object(gws.AuthManager):
             if obj.uid == uid:
                 return obj
 
-    def get_method(self, uid=None, ext_type=None):
+    def get_method(self, uid=None):
         for obj in self.methods:
             if obj.uid == uid:
                 return obj
 
-    def get_multi_factor_adapter(self, uid=None, ext_type=None):
+    def get_multi_factor_adapter(self, uid=None):
         for obj in self.mfAdapters:
             if obj.uid == uid:
                 return obj

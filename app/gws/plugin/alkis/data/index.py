@@ -893,7 +893,7 @@ class Object(gws.Node):
             tab = self.table(TABLE_PART)
             sel = sa.select(tab).where(tab.c.fs.in_(list(fs_map)))
             if not qo.withHistorySearch:
-                sel.where(~tab.c.parthistoric)
+                sel = sel.where(~tab.c.parthistoric)
             pa_list = [unserialize(r.data) for r in conn.execute(sel)]
             pa_list = self._remove_historic(pa_list, hd)
 

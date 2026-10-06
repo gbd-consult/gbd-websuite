@@ -1,6 +1,7 @@
 """MapServer map wrapper."""
 
 import mapscript
+import os
 import re
 
 import gws
@@ -174,7 +175,7 @@ class Map:
 
             if opts.style.marker or opts.style.icon:
                 if opts.style.marker:
-                    self.mapObj.setSymbolSet('/gws-app/gws/lib/mapserver/symbolset.sym')
+                    self.mapObj.setSymbolSet(os.path.join(os.path.dirname(__file__), 'symbolset.sym'))
                     so = self.style_symbol(opts.style)
                     cls.insertStyle(so)
 

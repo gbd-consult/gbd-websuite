@@ -52,7 +52,10 @@ class Object(gws.base.model.default_model.Object):
             canWrite=False,
         )
 
-    def find_features(self, search, user, **kwargs):
+    def find_features(self, search, mc, **kwargs):
+        if not search.shape:
+            return []
+
         params = {
             'q': search.keyword,
             'addressdetails': 1,
@@ -88,7 +91,7 @@ class Object(gws.base.model.default_model.Object):
 
             features.append(self.feature_from_record(
                 gws.FeatureRecord(uid=uid, shape=shape, attributes=self._normalize(rec)),
-                user))
+                mc))
 
         return sorted(features, key=lambda f: (f.get('name'), f.get('osm_class'), f.get('osm_type')))
 

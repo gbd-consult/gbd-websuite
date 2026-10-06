@@ -46,7 +46,7 @@ The service is then available at ``/_/owsService/serviceUid/my_wms``.
 XML Namespaces
 --------------
 
-A ``WFS`` service requires each involved layer to have a configured XML namespace (with ``ows.featureName <ns>:name`` or ``ows.xmls <ns>``).
+A ``WFS`` service requires each involved layer to have a configured XML namespace (with ``ows.featureName <ns>:name`` or ``ows.xmlns <ns>``).
 Additionally, custom namespaces must be configured globally using ``Application.xml`` config.
 
 For some layers, we can autogenerate schemas for custom namespaces on the fly from the layer data.

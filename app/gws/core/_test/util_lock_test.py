@@ -42,6 +42,12 @@ def test_lock_is_acquired_and_released():
         pass
 
 
+def test_lock_context_returns_lock():
+    with gws.u.server_lock('lock_6', 0) as lock:
+        assert lock is not None
+        assert lock.uid == 'lock_6'
+
+
 def test_soft_lock_fails_immediately_when_busy():
     proc, pid = _start_holder('lock_2', 1)
     try:

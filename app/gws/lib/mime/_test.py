@@ -43,3 +43,21 @@ def test_extension_for_empty():
 
 def test_extension_for_guessed():
     assert mime.extension_for('model/obj') == 'obj'
+
+
+def test_get_ooxml():
+    assert mime.get('application/vnd.openxmlformats-officedocument.wordprocessingml.document') == mime.DOCX
+    assert mime.get('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') == mime.XLSX
+    assert mime.get('application/vnd.openxmlformats-officedocument.presentationml.presentation') == mime.PPTX
+
+
+def test_get_ooxml_extension():
+    assert mime.get('docx') == mime.DOCX
+    assert mime.get('xlsx') == mime.XLSX
+    assert mime.get('pptx') == mime.PPTX
+
+
+def test_extension_for_ooxml():
+    assert mime.extension_for(mime.DOCX) == 'docx'
+    assert mime.extension_for(mime.XLSX) == 'xlsx'
+    assert mime.extension_for(mime.PPTX) == 'pptx'

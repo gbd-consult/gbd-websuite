@@ -54,7 +54,7 @@ class PageRequest(gws.Request):
     """Page name, ``home`` or ``project``."""
 
 
-class AssetResponse(gws.Request):
+class AssetResponse(gws.Response):
     """Asset response for API requests."""
 
     content: str
@@ -106,7 +106,7 @@ class Object(gws.base.action.Object):
             project = req.user.require_project(p.projectUid)
             tpl = self.root.app.templateMgr.find_template('project.home', where=[project], user=req.user)
         if not tpl:
-            raise gws.NotFoundError('template not found for {p.name=}')
+            raise gws.NotFoundError(f'template not found for {p.name=}')
         
         return self._serve_template(req, p, tpl, project=project)
 

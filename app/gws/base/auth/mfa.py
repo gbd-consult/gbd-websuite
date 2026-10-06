@@ -6,7 +6,7 @@ import gws
 import gws.lib.otp
 
 
-class OtpConfig:
+class OtpConfig(gws.Config):
     """Options for one-time password generation."""
 
     start: Optional[int]

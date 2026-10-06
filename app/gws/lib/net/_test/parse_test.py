@@ -172,3 +172,10 @@ def test_is_abs_url():
     assert not net.is_abs_url('/path/to/file')
     assert not net.is_abs_url('relative/path')
 
+
+def test_is_abs_url_scheme_chars():
+    assert net.is_abs_url('HTTP://example.com')
+    assert net.is_abs_url('git+ssh://example.com')
+    assert net.is_abs_url('a.b-c://example.com')
+    assert not net.is_abs_url('1http://example.com')
+

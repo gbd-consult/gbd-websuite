@@ -16,11 +16,11 @@ Example::
 
     import gws.lib.uom
 
-    v = gws.lib.uom.parse('5mm')                  # (5.0, gws.Uom.mm)
-    gws.lib.uom.to_px(v, 96)                      # (18.89..., gws.Uom.px)
-    gws.lib.uom.to_str(v)                         # '5mm'
-    gws.lib.uom.parse_point('10mm,20mm')          # (10.0, 20.0, gws.Uom.mm)
-    gws.lib.uom.res_to_scale(0.28)                # 1000
+    v = gws.lib.uom.parse('5mm')  # (5.0, gws.Uom.mm)
+    gws.lib.uom.to_px(v, 96)  # (18.89..., gws.Uom.px)
+    gws.lib.uom.to_str(v)  # '5mm'
+    gws.lib.uom.parse_point('10mm,20mm')  # (10.0, 20.0, gws.Uom.mm)
+    gws.lib.uom.res_to_scale(0.28)  # 1000
 """
 
 import re
@@ -298,7 +298,7 @@ def parse(val: str | int | float | tuple | list, default_unit: gws.Uom = None) -
     """
     if isinstance(val, (list, tuple)):
         if len(val) == 2:
-            return parse(f'{val[0]}{val[1]}')
+            return parse(f'{val[0]}{val[1]}', default_unit)
         raise ValueError(f'invalid format: {val!r}')
 
     if isinstance(val, (int, float)):
@@ -366,7 +366,12 @@ def parse_extent(val: str | tuple | list) -> gws.UomExtent:
     v = gws.u.to_list(val)
 
     if len(v) == 5:
-        v = [f'{v[0]}{v[4]}', f'{v[1]}{v[2]}', f'{v[2]}{v[4]}', f'{v[3]}{v[4]}']
+        v = [
+            f'{v[0]}{v[4]}',
+            f'{v[1]}{v[4]}',
+            f'{v[2]}{v[4]}',
+            f'{v[3]}{v[4]}',
+        ]
 
     if len(v) == 4:
         n1, u1 = parse(v[0])

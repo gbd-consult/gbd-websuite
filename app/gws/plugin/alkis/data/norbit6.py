@@ -106,7 +106,7 @@ class Object(dt.Reader):
     def read_all(self, cls, table_name=None, uids=None):
         sql = f"SELECT * FROM {self.schema}.{table_name or cls.__name__.lower()}"
         if uids:
-            sql += ' WHERE gml_id IN (:uids)'
+            sql += ' WHERE gml_id = ANY(:uids)'
             sql = sa.text(sql).bindparams(uids=uids)
         else:
             sql = sa.text(sql)

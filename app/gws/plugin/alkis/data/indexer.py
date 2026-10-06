@@ -1635,7 +1635,7 @@ def _sortkey_part(pa: dt.Part):
 
 
 def _sortkey_gebaeude(ge: dt.Gebaeude):
-    # sort Gebaeude by area (big->small)
+    # sort Gebaeude by start date, then by area (big->small)
     return ge.recs[-1].beginnt, -ge.recs[-1].geomFlaeche
 
 

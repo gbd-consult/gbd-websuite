@@ -151,9 +151,7 @@ _ENUMS = dict(
     label_align=['left', 'right', 'center'],
     label_font_style=['normal', 'italic'],
     label_font_weight=['normal', 'bold'],
-    label_padding=[int],
     label_placement=['start', 'end', 'middle'],
-    label_stroke_dasharray=[int],
 )
 
 _COLOR_PATTERNS = (

@@ -37,6 +37,11 @@ def cb():
     return Callback()
 
 
+def test_stop_before_start(cb):
+    w = watcher.new(cb)
+    w.stop()
+
+
 def test_simple(tmp_path, cb):
     d1 = _mkdir(tmp_path / '1')
     d2 = _mkdir(tmp_path / '2')

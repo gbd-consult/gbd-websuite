@@ -172,7 +172,7 @@ class _Creator:
                 target=target,
             )
 
-        if typ.c in base.c.TYPE:
+        if typ.c == base.c.TYPE:
             return self.namespace_entry(
                 typ,
                 template='/// $doc \n export type $name = $target;',

@@ -151,11 +151,6 @@ class _Extractor:
             self.queue.append(typ.tOwner)
             return
 
-        if typ.c == base.c.CLASS:
-            self.add(typ, **kwargs)
-            self.queue.extend(typ.tProperties.values())
-            return
-
         if typ.c == base.c.ENUM:
             self.add(typ, **kwargs)
             return

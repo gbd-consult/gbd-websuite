@@ -152,6 +152,8 @@ class Object(gws.Node):
         self.mailFrom = self.cfg('mailFrom')
 
         p = self.cfg('smtp')
+        if not p:
+            raise gws.ConfigurationError('email helper: smtp is not configured')
 
         self.smtp = _SmtpServer(
             mode=p.mode or SmtpMode.ssl,
@@ -189,12 +191,11 @@ class Object(gws.Node):
 
     def _send(self, msg):
         """Send a message with the SMTP server."""
-        if self.smtp:
-            try:
-                with self._smtp_connection() as conn:
-                    conn.send_message(msg)
-            except OSError as exc:
-                raise Error('SMTP error') from exc
+        try:
+            with self._smtp_connection() as conn:
+                conn.send_message(msg)
+        except OSError as exc:
+            raise Error('SMTP error') from exc
 
     def _smtp_connection(self):
         """Open an SMTP connection and log in, if configured."""

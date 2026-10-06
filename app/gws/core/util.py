@@ -990,10 +990,10 @@ def ensure_dir(dir_path: str, base_dir: str = None, mode: int = 0o755, user: int
         if path and not os.path.isdir(path):
             try:
                 os.mkdir(path, mode)
+                chown_default(path, user, group)
             except FileExistsError:
                 pass
 
-    chown_default(bpath, user, group)
     return bpath.decode('utf8')
 
 
@@ -1451,6 +1451,7 @@ class _FileLock:
 
     def __enter__(self):
         self.acquire()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.release()

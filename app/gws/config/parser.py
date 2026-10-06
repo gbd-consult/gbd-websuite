@@ -194,6 +194,7 @@ class _Parser:
         """
         self.ctx = ctx
         self.ctx.errors = ctx.errors or []
+        self.ctx.warnings = ctx.warnings or []
         self.ctx.paths = ctx.paths or set()
         self.ctx.readOptions = ctx.readOptions or set()
         self.ctx.readOptions.add(gws.SpecReadOption.verboseErrors)

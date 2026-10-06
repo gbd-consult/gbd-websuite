@@ -1,6 +1,6 @@
 # Aktion "gekos" :/admin-de/konfiguration/action/gekos
 
-Die Aktion `gekos` stellt die Schnittstelle zur Fachanwendung GekoS bereit. Sie liefert zu Flurstücks- und Adress-Codes die zugehörigen Koordinaten und Objektdaten und verbindet GekoS so mit der Flurstückssuche. Mit `index` konfigurieren Sie den GekoS-Index, mit `templates` die Vorlagen für die Objektdarstellung.
+Die Aktion `gekos` stellt die Schnittstelle zur Fachanwendung GekoS bereit. Sie liefert zu Flurstücks- und Adress-Codes die zugehörigen Koordinaten und Objektdaten und verbindet GekoS so mit der Flurstückssuche. Mit `index` konfigurieren Sie den GekoS-Index.
 
 ## GIS-Schnittstelle in GekoS einrichten
 

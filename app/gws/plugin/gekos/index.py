@@ -157,13 +157,13 @@ class Object(gws.Node):
         distance = self.position.distance
         angle = self.position.angle
 
-        if not distance:
+        if not distance or not angle:
             return x, y
 
         for a in range(0, 360, angle):
             a = math.radians(a)
-            xa = round(x + distance * math.cos(a))
-            ya = round(y + distance * math.sin(a))
+            xa = round(x + distance * math.cos(a), 3)
+            ya = round(y + distance * math.sin(a), 3)
 
             if (xa, ya) not in points:
                 return xa, ya

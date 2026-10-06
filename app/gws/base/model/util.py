@@ -72,24 +72,25 @@ def describe_from_record(fd: gws.FeatureRecord) -> gws.DataSetDescription:
 
     desc = gws.DataSetDescription(columns=[])
 
-    for k, v in fd.attributes:
+    for k, v in fd.attributes.items():
         typ = str(type(v))
         desc.columns.append(gws.ColumnDescription(
             name=k,
             nativeType=typ,
             type=py_to_attr.get(typ, gws.AttributeType.str),
         ))
-        if fd.shape:
-            col = gws.ColumnDescription(
-                name='geometry',
-                geometryType=fd.shape.type,
-                geometrySrid=fd.shape.crs.srid,
-                type=gws.AttributeType.geometry,
-            )
-            desc.columns.append(col)
-            desc.geometryName = col.name
-            desc.geometryType = col.geometryType
-            desc.geometrySrid = col.geometrySrid
+
+    if fd.shape:
+        col = gws.ColumnDescription(
+            name='geometry',
+            geometryType=fd.shape.type,
+            geometrySrid=fd.shape.crs.srid,
+            type=gws.AttributeType.geometry,
+        )
+        desc.columns.append(col)
+        desc.geometryName = col.name
+        desc.geometryType = col.geometryType
+        desc.geometrySrid = col.geometrySrid
 
     desc.columnMap = {col.name: col for col in desc.columns}
     return desc

@@ -465,7 +465,7 @@ class Object(gws.base.action.Object):
             ``gws.NotFoundError``: If the job is not found.
         """
         job_id = rx.parts.get('job_id', '')
-        job = self.get_job(job_id, rx.project, rx.user)
+        job = self.get_job(job_id, rx.user)
         if not job:
             raise gws.NotFoundError(f'Job {job_id!r} not found')
         return _format_job(job, rx)
@@ -942,12 +942,11 @@ class Object(gws.base.action.Object):
         )
         self.get_packager().create_package(self.root, args)
 
-    def get_job(self, job_id: str, project: Optional[gws.Project], user: gws.User) -> Optional[gws.Job]:
+    def get_job(self, job_id: str, user: gws.User) -> Optional[gws.Job]:
         """Return a job of a user.
 
         Args:
             job_id: Job uid.
-            project: GWS project context (not used).
             user: User.
 
         Returns:

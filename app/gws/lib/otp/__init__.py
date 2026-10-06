@@ -284,9 +284,3 @@ def _raw_otp(key: bytes, counter: int, options: Options) -> str:
 
 def _to_bytes(s):
     return s.encode('utf8') if isinstance(s, str) else s
-
-
-def _option(options, key, default):
-    if not options:
-        return default
-    return getattr(options, key, default)

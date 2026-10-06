@@ -66,7 +66,7 @@ class Object(gws.Exporter):
             supportsRaster=self.supportsRaster,
         )
 
-    def notify(self, ea: 'ExportArgs', event: str):
+    def notify(self, ea: gws.ExportArgs, event: str):
         """Pass an export event to the notification callback of the export arguments.
 
         Args:

@@ -131,7 +131,7 @@ class Object(gws.base.layer.group.Object):
             lri: Render input.
 
         Returns:
-            GetMap parameters, or ``None`` if no layers are requested.
+            GetMap parameters, or ``None`` if no readable layers are requested.
         """
         leaves = dict(lri.extraParams or {}).get('compositeLayerUids', [])
         if not leaves:
@@ -160,6 +160,7 @@ class Object(gws.base.layer.group.Object):
 
         if not layers:
             gws.log.debug(f'no layers')
+            return
 
         params = {}
         params['LAYERS'] = list(reversed(layers))

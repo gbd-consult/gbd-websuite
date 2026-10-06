@@ -122,6 +122,9 @@ def exception(msg: str = '', *args, **kwargs):
         **kwargs: ``stacklevel`` to adjust the reported source location in debug mode.
     """
     _, exc, _ = sys.exc_info()
+    if exc is None:
+        _raw(Level.ERROR, msg or 'exception() called without an active exception', args, kwargs)
+        return
     ls = exception_backtrace(exc)
     _raw(Level.ERROR, msg or ls[0], args, kwargs)
     for s in ls[1:]:

@@ -23,31 +23,12 @@ class GetXyRequest(gws.Request):
     """Combined address code."""
 
 
-class GetFsResponse(gws.Response):
-    """Response with a parcel feature."""
-
-    feature: gws.FeatureProps
-    """The parcel feature."""
-
-
 @gws.ext.config.action('gekos')
 class Config(gws.base.action.Config):
     """Integration with the GekoS-Bau software."""
 
     index: Optional[core.IndexConfig]
     """Index of GekoS records loaded from gek-online."""
-    templates: Optional[list[gws.ext.config.template]]
-    """Templates for GekoS features."""
-
-
-_DEFAULT_TEMPLATES = [
-    gws.Config(subject='feature.title', type='html', text='{vollnummer}'),
-    gws.Config(
-        subject='feature.teaser',
-        type='html',
-        text='Flurstück {vollnummer}',
-    ),
-]
 
 
 @gws.ext.object.action('gekos')
@@ -56,13 +37,9 @@ class Object(gws.base.action.Object):
 
     idx: index.Object
     """The GekoS index, or ``None`` if not configured."""
-    templates: list[gws.Template]
-    """Feature templates."""
 
     def configure(self):
         self.idx = self.create_child_if_configured(index.Object, self.cfg('index'))
-        p = self.cfg('templates', default=[]) + _DEFAULT_TEMPLATES
-        self.templates = [self.create_child(gws.ext.object.template, c) for c in p]
 
     @gws.ext.command.get('gekosGetXY')
     def get_xy(self, req: gws.WebRequester, p: GetXyRequest) -> gws.ContentResponse:

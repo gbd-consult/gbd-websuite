@@ -514,12 +514,11 @@ def to_string(fmt: str, d: Optional[dt.date] = None) -> str:
     return _datetime(d).strftime(fmt)
 
 
-def time_to_iso_string(d: Optional[dt.date | dt.time] = None, with_tz='+') -> str:
+def time_to_iso_string(d: Optional[dt.date | dt.time] = None) -> str:
     """Convert a date or time to a time string without time zone.
 
     Args:
         d: Datetime or time to convert. For a date or ``None``, ``00:00:00`` is returned.
-        with_tz: Not used.
 
     Returns:
         A string like ``12:30:00``.

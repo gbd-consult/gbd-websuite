@@ -365,7 +365,7 @@ def extract_params(url: str) -> tuple[str, dict]:
 
 
 def is_abs_url(url):
-    """Check if a URL has a host part, i.e. starts with ``//`` or a lowercase scheme and ``//``.
+    """Check if a URL has a host part, i.e. starts with ``//`` or a scheme and ``//``.
 
     Args:
         url: A URL.
@@ -374,7 +374,7 @@ def is_abs_url(url):
         A truthy match object if the URL is absolute, ``None`` otherwise.
     """
 
-    return re.match(r'^([a-z]+:|)//', url)
+    return re.match(r'^([a-zA-Z][a-zA-Z0-9+.-]*:|)//', url)
 
 
 ##

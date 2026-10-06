@@ -369,7 +369,6 @@ class QgisXmlTransformer:
         self.update_layer_tree()
         self.update_map_layers()
         self.update_referenced_layers()
-        self.update_referenced_layers()
         self.update_edit_widgets()
 
         self.cleanup_layer_group(root_el.find('layer-tree-group'))

@@ -24,6 +24,7 @@ BIN = 'application/octet-stream'
 CSS = 'text/css'
 CSV = 'text/csv'
 DOC = 'application/msword'
+DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 GEOJSON = 'application/geo+json'
 GIF = 'image/gif'
 GML = 'application/gml+xml'
@@ -38,11 +39,13 @@ KML = 'application/vnd.google-earth.kml+xml'
 PDF = 'application/pdf'
 PNG = 'image/png'
 PPT = 'application/vnd.ms-powerpoint'
+PPTX = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
 SVG = 'image/svg+xml'
 TTF = 'application/x-font-ttf'
 TXT = 'text/plain'
 WEBP = 'image/webp'
 XLS = 'application/vnd.ms-excel'
+XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 XML = 'text/xml'
 ZIP = 'application/zip'
 
@@ -52,6 +55,7 @@ _common = {
     CSS,
     CSV,
     DOC,
+    DOCX,
     GEOJSON,
     GIF,
     GML,
@@ -66,10 +70,12 @@ _common = {
     PDF,
     PNG,
     PPT,
+    PPTX,
     SVG,
     TTF,
     TXT,
     XLS,
+    XLSX,
     XML,
     ZIP,
 }
@@ -78,6 +84,7 @@ _common_extensions = {
     'css': CSS,
     'csv': CSV,
     'doc': DOC,
+    'docx': DOCX,
     'gif': GIF,
     'gml': GML,
     'gml2': GML2,
@@ -90,10 +97,12 @@ _common_extensions = {
     'pdf': PDF,
     'png': PNG,
     'ppt': PPT,
+    'pptx': PPTX,
     'svg': SVG,
     'ttf': TTF,
     'txt': TXT,
     'xls': XLS,
+    'xlsx': XLSX,
     'xml': XML,
     'zip': ZIP,
 }
@@ -110,9 +119,6 @@ _aliases = {
     'image/jpg': JPEG,
     'text/xhtml': HTML,
     'application/xml': XML,
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': DOC,
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': XLS,
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation': PPT,
 }
 
 

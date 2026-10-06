@@ -77,6 +77,8 @@ class Object(gws.base.ows.client.provider.Object):
         }
 
         op = self.get_operation(gws.OwsVerb.GetTile)
+        if not op:
+            raise gws.Error(f'WMTS: no GetTile operation and no ResourceURL for layer {sl.name!r}')
         args = self.prepare_operation(op, params=params)
         url = gws.lib.net.add_params(args.url, args.params)
 

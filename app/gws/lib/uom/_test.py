@@ -154,3 +154,16 @@ def test_parse_errors():
         uom.parse('1 bar')
 
 
+def test_parse_pair():
+    assert uom.parse([5, 'mm']) == (5.0, 'mm')
+
+
+def test_parse_pair_default_unit():
+    assert uom.parse([5, ''], 'mm') == (5.0, 'mm')
+    assert uom.parse([5, 'bar'], 'mm') == (5.0, 'mm')
+
+
+def test_parse_extent_list_with_unit():
+    assert uom.parse_extent([1, 2, 3, 4, 'mm']) == (1.0, 2.0, 3.0, 4.0, 'mm')
+
+

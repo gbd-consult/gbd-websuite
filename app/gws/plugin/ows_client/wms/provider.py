@@ -147,7 +147,7 @@ class Object(gws.base.ows.client.provider.Object):
             # @TODO use search.resolution here as well
             size = box_size_deg
         if not size:
-            gws.log.debug('cannot request crs {crs!r}, unsupported unit')
+            gws.log.debug(f'cannot request crs {shape.crs!r}, unsupported unit')
             return []
 
         bbox = (
