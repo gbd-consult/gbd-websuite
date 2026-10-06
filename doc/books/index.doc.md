@@ -14,10 +14,12 @@ Weitere Informationen finden sie unter:
 - [Allgemeiner Überblick](/common-de)
 - [Benutzerhandbuch](/user-de)
 - [Administrator Handbuch](/admin-de)
+- [GBD Konfigurator](/konfigurator-de)
 - [Developer Documentation](/dev-en)
 
 ## :/common-de
 ## :/user-de
 ## :/admin-de
+## :/konfigurator-de
 ## :/dev-en
 ## :/extra/*
