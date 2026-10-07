@@ -4,7 +4,9 @@ Der GBD Konfigurator ist die grafische Oberfläche zum Anzeigen und Bearbeiten d
 
 Dieses Handbuch richtet sich an Administratoren und Projektverantwortliche. Es erklärt den Arbeitsbereich, die Navigation, die verfügbaren Editoren sowie den sicheren Umgang mit lokalen Änderungen, Projekten, JSON und Berechtigungen.
 
-> **Wichtig:** Eine Bearbeitung verändert zunächst nur den lokalen Entwurf im Browser. Erst nach dem abschließenden Bestätigen mit **Anwenden** wird die Konfiguration an den Server gesendet.
+%warn
+**Wichtig:** Eine Bearbeitung verändert zunächst nur den lokalen Entwurf im Browser. Erst nach dem abschließenden Bestätigen mit **Anwenden** wird die Konfiguration an den Server gesendet.
+%end
 
 ## Sicher starten
 
@@ -32,7 +34,7 @@ Der Arbeitsbereich besteht aus mehreren dauerhaft miteinander verbundenen Bereic
 -   **Pfadnavigation ⑥:** Zeigt die Position des aktuell geöffneten Objekts.
 -   **Änderungsbereich [⎋](/konfigurator-de/lokale-aenderungen-pruefen):** Zeigt alle noch nicht veröffentlichten Änderungen.
 
-![Arbeitsbereich des GBD Konfigurators](http://localhost:61085/konfigurator-images/01-arbeitsbereich.png)
+![Arbeitsbereich des GBD Konfigurators](/konfigurator-images/01-arbeitsbereich.png)
 
 *Gesamtansicht mit Bereichsleiste, Konfigurationsbaum, Editor und Leitfaden.*
 
@@ -68,7 +70,7 @@ Das Suchfeld **①** oberhalb des Baums durchsucht die sichtbaren Einträge. Die
 
 Der gefilterte Konfigurationsbaum **②** zeigt die passenden Treffer und ihre Position in der Hierarchie.
 
-![Suche im Konfigurationsbaum](http://localhost:61085/konfigurator-images/02-baumsuche.png)
+![Suche im Konfigurationsbaum](/konfigurator-images/02-baumsuche.png)
 
 *Die Suche filtert den Baum und zeigt die Anzahl der gefundenen Einträge.*
 
@@ -98,7 +100,7 @@ Der Leitfaden kann an unterschiedlichen Stellen angezeigt werden:
 
 Je nach Ansicht lassen sich Breite oder Höhe über den Trenner anpassen. Über das mit **②** markierte Andocksymbol kann die Position des Leitfadens gewechselt werden. Position, Größe und Öffnungszustand werden lokal im Browser gespeichert.
 
-![Rechts angedockter Leitfaden](http://localhost:61085/konfigurator-images/03-leitfaden-rechts.png)
+![Rechts angedockter Leitfaden](/konfigurator-images/03-leitfaden-rechts.png)
 
 *Der Leitfaden kann rechts als eigenes Panel angezeigt werden.*
 
@@ -115,7 +117,7 @@ Textwerte werden direkt in einem Eingabefeld bearbeitet. Zahlenfelder unterschei
 
 Boolesche Eigenschaften werden als Kontrollkästchen oder Schalter dargestellt. Der sichtbare Zustand entspricht dem aktuell im lokalen Entwurf gespeicherten Wert.
 
-![Textfeld und boolesche Werte](http://localhost:61085/konfigurator-images/12-text-und-boolesch.png){border=1, width=560px}
+![Textfeld und boolesche Werte](/konfigurator-images/12-text-und-boolesch.png){border=1, width=560px}
 
 *Beispiel für ein Textfeld und mehrere aktivierte boolesche Optionen in einer realen Serverkonfiguration.*
 
@@ -123,9 +125,11 @@ Boolesche Eigenschaften werden als Kontrollkästchen oder Schalter dargestellt. 
 
 Bei einem Variantentyp bestimmt die Typauswahl, welche weiteren Felder sichtbar sind. Nach einem Typwechsel können neue Pflichtfelder erscheinen oder bisher sichtbare Felder entfallen.
 
-> **Achtung:** Prüfen Sie nach einem Typwechsel alle neu eingeblendeten Pflichtfelder und die Änderungsliste, bevor Sie den Entwurf anwenden.
+%info
+**Achtung:** Prüfen Sie nach einem Typwechsel alle neu eingeblendeten Pflichtfelder und die Änderungsliste, bevor Sie den Entwurf anwenden.
+%end
 
-![Typauswahl eines Variantentyps](http://localhost:61085/konfigurator-images/14-variantentyp.png){border=1, width=520px}
+![Typauswahl eines Variantentyps](/konfigurator-images/14-variantentyp.png){border=1, width=520px}
 
 *Die Typauswahl bestimmt, welche zugehörigen Felder eingeblendet und gegebenenfalls verpflichtend werden.*
 
@@ -133,7 +137,7 @@ Bei einem Variantentyp bestimmt die Typauswahl, welche weiteren Felder sichtbar 
 
 Zeitspannen werden in getrennten Feldern für Tage, Stunden, Minuten und Sekunden bearbeitet. Der Konfigurator setzt die Eingaben in den vom Schema erwarteten Wert um.
 
-![Eingabefelder für eine Zeitdauer](http://localhost:61085/konfigurator-images/13-zeitdauer-standardwert.png){border=1, width=520px}
+![Eingabefelder für eine Zeitdauer](/konfigurator-images/13-zeitdauer-standardwert.png){border=1, width=520px}
 
 *Eine Zeitdauer wird auf mehrere Eingabefelder verteilt; das Rücksetzsymbol stellt den definierten Standardwert wieder her.*
 
@@ -141,7 +145,7 @@ Zeitspannen werden in getrennten Feldern für Tage, Stunden, Minuten und Sekunde
 
 Ein Koordinatenreferenzsystem kann über einen EPSG Code eingegeben oder aus häufig verwendeten Systemen ausgewählt werden. Nach einer Änderung sollten Center, Extent und Kartenvorschau gemeinsam geprüft werden.
 
-![Auswahl eines Koordinatenreferenzsystems](http://localhost:61085/konfigurator-images/15-koordinatenreferenzsystem.png){border=1, width=520px}
+![Auswahl eines Koordinatenreferenzsystems](/konfigurator-images/15-koordinatenreferenzsystem.png){border=1, width=520px}
 
 *Der EPSG-Code kann direkt eingegeben oder aus häufig verwendeten Koordinatenreferenzsystemen ausgewählt werden.*
 
@@ -157,7 +161,7 @@ Ein Auswahlfeld erlaubt ausschließlich die im Schema definierten Werte. Dadurch
 
 Der Kartenmittelpunkt besteht aus X- und Y-Koordinate. Die Werte können direkt eingegeben werden. Wenn die Kartenvorschau verfügbar ist, kann der Mittelpunkt auch durch einen Klick auf die Karte oder durch Verschieben des Markers gesetzt werden.
 
-![X- und Y-Koordinate des Kartenmittelpunkts](http://localhost:61085/konfigurator-images/16-kartenmittelpunkt.png){border=1, width=340px}
+![X- und Y-Koordinate des Kartenmittelpunkts](/konfigurator-images/16-kartenmittelpunkt.png){border=1, width=340px}
 
 *Direkte Eingabe der X- und Y-Koordinate des Kartenmittelpunkts.*
 
@@ -165,7 +169,7 @@ Der Kartenmittelpunkt besteht aus X- und Y-Koordinate. Die Werte können direkt 
 
 Der Extent definiert einen rechteckigen Darstellungsbereich. Er besteht aus minimalen und maximalen X- und Y-Koordinaten.
 
-![Koordinaten einer räumlichen Ausdehnung](http://localhost:61085/konfigurator-images/17-raeumliche-ausdehnung.png){border=1, width=340px}
+![Koordinaten einer räumlichen Ausdehnung](/konfigurator-images/17-raeumliche-ausdehnung.png){border=1, width=340px}
 
 *Der Extent wird durch minimale und maximale X- und Y-Werte begrenzt.*
 
@@ -192,7 +196,7 @@ Nach einer Änderung sollten mindestens folgende Punkte geprüft werden:
 
 Listen aus skalaren Werten werden zeilenweise bearbeitet. Abhängig vom Feld können Texte, Zahlen oder andere einfache Werte hinzugefügt werden.
 
-![Einfache Liste mit skalaren Werten](http://localhost:61085/konfigurator-images/19-einfache-liste.png){border=1, width=520px}
+![Einfache Liste mit skalaren Werten](/konfigurator-images/19-einfache-liste.png){border=1, width=520px}
 
 *Einträge können ergänzt, über den Ziehgriff neu sortiert oder über das Kreuz entfernt werden.*
 
@@ -200,7 +204,7 @@ Listen aus skalaren Werten werden zeilenweise bearbeitet. Abhängig vom Feld kö
 
 Komplexe Listen enthalten vollständige Objekte. Ein Element kann geöffnet werden, um seine Unterfelder zu bearbeiten.
 
-![Komplexe Liste mit Kartenlayern](http://localhost:61085/konfigurator-images/20-komplexe-liste.png){border=1, width=560px}
+![Komplexe Liste mit Kartenlayern](/konfigurator-images/20-komplexe-liste.png){border=1, width=560px}
 
 *Beispiel einer komplexen Liste: Jeder Layer ist ein eigenes Objekt und kann geöffnet, verschoben oder entfernt werden.*
 
@@ -211,13 +215,15 @@ Typische Aktionen sind:
 -   Element über den Ziehgriff neu anordnen,
 -   Element über das Kreuz entfernen.
 
-> **Achtung:** Die Reihenfolge kann fachlich relevant sein. Das gilt insbesondere für Regeln, Prioritäten und Verarbeitungsketten.
+%info
+**Achtung:** Die Reihenfolge kann fachlich relevant sein. Das gilt insbesondere für Regeln, Prioritäten und Verarbeitungsketten.
+%end
 
 ### Wörterbücher
 
 Ein Wörterbuch ordnet eindeutigen Schlüsseln jeweils einen Wert zu. Schlüssel und Werte werden tabellarisch gepflegt. Doppelte Schlüssel sind nicht zulässig.
 
-![Wörterbuch mit Schlüssel-Wert-Paaren](http://localhost:61085/konfigurator-images/21-woerterbuch.png){border=1, width=520px}
+![Wörterbuch mit Schlüssel-Wert-Paaren](/konfigurator-images/21-woerterbuch.png){border=1, width=520px}
 
 *Schlüssel und zugehörige Werte werden zeilenweise erfasst und können neu angeordnet oder entfernt werden.*
 
@@ -225,7 +231,7 @@ Ein Wörterbuch ordnet eindeutigen Schlüsseln jeweils einen Wert zu. Schlüssel
 
 Einige Felder erlauben eine freiere strukturierte Eingabe. Der zulässige Inhalt wird weiterhin durch das Schema und die Validierung des Konfigurators begrenzt.
 
-![Freier strukturierter JSON-Wert](http://localhost:61085/konfigurator-images/18-freier-json-wert.png){border=1, width=520px}
+![Freier strukturierter JSON-Wert](/konfigurator-images/18-freier-json-wert.png){border=1, width=520px}
 
 *Freie strukturierte Werte werden direkt als JSON bearbeitet und anschließend validiert.*
 
@@ -235,7 +241,7 @@ Der Bereich **projects** enthält die in der GBD WebSuite verfügbaren Projekte.
 
 Die Schaltfläche **Projekt erstellen ④** öffnet die Auswahl, auf die weiter unten näher eingegangen wird.
 
-![Projektübersicht](http://localhost:61085/konfigurator-images/08-projekte.png)
+![Projektübersicht](/konfigurator-images/08-projekte.png)
 
 *Die Projektübersicht zeigt alle vorhandenen Projekte sowie ihre Reihenfolge.*
 
@@ -248,7 +254,7 @@ Die Schaltfläche **Projekt erstellen ④** öffnet die Auswahl, auf die weiter 
 -   **Projekt einfügen:** Erstellt ein Projekt aus einem vorbereiteten JSON Objekt.
 -   **Aus Vorlage erstellen:** Verwendet ein zuvor als Vorlage markiertes Projekt.
 
-![Menü zum Erstellen eines Projekts](http://localhost:61085/konfigurator-images/09-projekt-erstellen.png)
+![Menü zum Erstellen eines Projekts](/konfigurator-images/09-projekt-erstellen.png)
 
 *Ein Projekt kann leer, als Kopie, aus JSON oder aus einer Vorlage erstellt werden.*
 
@@ -275,7 +281,7 @@ Fehlt die UID des neuen Projektobjekts, kann der Konfigurator eine neue UID verg
 
 Jede Bearbeitung wird zunächst als lokale Änderung gespeichert. **Der Änderungsbereich ①** zeigt alle Abweichungen vom geladenen Serverstand. **Die** **Anzeige** **③** in der Kopfzeile zeigt die Anzahl der lokalen Änderungen und öffnet den Änderungsbereich.
 
-![Nicht veröffentlichte Änderungen](http://localhost:61085/konfigurator-images/10-lokale-aenderungen.png)
+![Nicht veröffentlichte Änderungen](/konfigurator-images/10-lokale-aenderungen.png)
 
 *Der Änderungsbereich stellt Ausgangswert und neuen lokalen Wert gegenüber.*
 
@@ -329,7 +335,7 @@ Nach einem Fehler:
 
 **Die vollständige JSON Ansicht ①** zeigt den normalisierten Stand der geladenen Konfiguration.
 
-![Vollständige JSON Konfiguration](http://localhost:61085/konfigurator-images/06-json-konfiguration.png)
+![Vollständige JSON Konfiguration](/konfigurator-images/06-json-konfiguration.png)
 
 *Im Nur-Lesen-Modus kann der vollständige Stand kontrolliert und kopiert werden.*
 
@@ -351,20 +357,24 @@ Der Konfigurator weist unter anderem folgende Fehler zurück:
 -   nicht auflösbare Objektstrukturen,
 -   fehlende Pflichtfelder.
 
-> **Achtung:** Der JSON Bearbeitungsmodus kann viele Bereiche gleichzeitig verändern. Verwenden Sie ihn nur, wenn die Auswirkungen des vollständigen Objekts bekannt sind.
+%info
+**Achtung:** Der JSON Bearbeitungsmodus kann viele Bereiche gleichzeitig verändern. Verwenden Sie ihn nur, wenn die Auswirkungen des vollständigen Objekts bekannt sind.
+%end
 
 ## Berechtigungen
 
 **Die Berechtigungshierarchie ①** ordnet die gefundenen Konfigurationsobjekte hierarchisch an.  
 Die mit **②** markierten Badges zeigen die vom Server berechneten effektiven Rollen für Lesen, Schreiben, Erstellen und Löschen.
 
-![Berechtigungsübersicht ohne lokale Änderungen](http://localhost:61085/konfigurator-images/04-berechtigungen.png)
+![Berechtigungsübersicht ohne lokale Änderungen](/konfigurator-images/04-berechtigungen.png)
 
 *Wenn keine lokalen Änderungen vorliegen, werden die effektiven Rollen als Badges angezeigt.*
 
-> **Wichtig bei nicht veröffentlichten Änderungen:** Sobald ein lokaler Entwurf vorhanden ist, kann der Konfigurator die effektiven Berechtigungen nicht mehr zuverlässig anzeigen. Die Berechtigungsdaten stammen vom Server und gehören zum zuletzt geladenen Serverstand, während der lokale Entwurf bereits davon abweicht. Deshalb erscheint **der Hinweis ①** *„Änderungen übernehmen oder verwerfen.“* und die serverberechneten Rollen werden ausgeblendet.
+%warn
+**Wichtig bei nicht veröffentlichten Änderungen:** Sobald ein lokaler Entwurf vorhanden ist, kann der Konfigurator die effektiven Berechtigungen nicht mehr zuverlässig anzeigen. Die Berechtigungsdaten stammen vom Server und gehören zum zuletzt geladenen Serverstand, während der lokale Entwurf bereits davon abweicht. Deshalb erscheint **der Hinweis ①** *„Änderungen übernehmen oder verwerfen.“* und die serverberechneten Rollen werden ausgeblendet.
+%end
 
-![Berechtigungsübersicht bei nicht veröffentlichten Änderungen](http://localhost:61085/konfigurator-images/11-berechtigungen-gesperrt.png)
+![Berechtigungsübersicht bei nicht veröffentlichten Änderungen](/konfigurator-images/11-berechtigungen-gesperrt.png)
 
 *Bei lokalen Änderungen sind die effektiven Rollen vorübergehend nicht verfügbar.*
 
@@ -379,7 +389,7 @@ Während dieser Zeit bleiben die rohen ACL Regeln **②** wie `allow all` ode
 
 ACL Regeln legen fest, welche Rollen eine Aktion ausführen dürfen oder nicht ausführen dürfen. Die Regeln werden in einer definierten Reihenfolge ausgewertet.
 
-![Editor für ACL-Regeln](http://localhost:61085/konfigurator-images/22-acl-regeln.png){border=1, width=520px}
+![Editor für ACL-Regeln](/konfigurator-images/22-acl-regeln.png){border=1, width=520px}
 
 *Jede ACL-Regel enthält eine Entscheidung, eine Rolle sowie Steuerelemente zum Sortieren und Entfernen.*
 
@@ -390,7 +400,9 @@ Für eine Regel werden typischerweise folgende Schritte ausgeführt:
 3.  Regel an die fachlich richtige Position verschieben.
 4.  Weitere Regeln hinzufügen oder vorhandene Regeln entfernen.
 
-> **Wichtig:** Die erste passende Regel entscheidet. Eine falsche Reihenfolge kann deshalb ein anderes Ergebnis erzeugen als erwartet.
+%warn
+**Wichtig:** Die erste passende Regel entscheidet. Eine falsche Reihenfolge kann deshalb ein anderes Ergebnis erzeugen als erwartet.
+%end
 
 Änderungen an der App-Wurzel werden zusätzlich geprüft, damit notwendige Zugriffe nicht vollständig entzogen werden. Eine erkannte vollständige Aussperrung blockiert das Anwenden.
 
@@ -415,7 +427,7 @@ Nach Änderungen an ACL Regeln sollte die Berechtigungsübersicht erneut geöffn
 
 Über das mit **①** markierte Symbol für Sonne oder Mond kann zwischen hellem und dunklem Modus gewechselt werden.
 
-![GBD Konfigurator im dunklen Modus](http://localhost:61085/konfigurator-images/07-dunkler-modus.png)
+![GBD Konfigurator im dunklen Modus](/konfigurator-images/07-dunkler-modus.png)
 
 *Der dunkle Modus passt Oberfläche, Statusfarben und Eingabeelemente gemeinsam an.*
 
