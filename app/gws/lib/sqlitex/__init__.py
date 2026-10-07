@@ -96,21 +96,34 @@ class Object:
 
         return self._exec2(True, stmt, params)
 
-    def insert(self, table_name: str, rec: dict):
+    def insert(self, table_name: str, rec: dict, on_conflict: str = ''):
         """Insert a record into a table.
 
         Args:
             table_name: Table name.
             rec: Record as a dict of column names and values.
+            on_conflict: What to do if the record conflicts with an existing primary or unique key:
+                empty to fail, ``ignore`` to skip the record, ``update`` to update the existing record
+                with the given values (the conflict is detected on the primary key column).
 
         Raises:
-            ``Error``: If the statement fails.
+            ``Error``: If the statement fails, or ``on_conflict`` is invalid.
         """
 
         keys = ','.join(rec)
         vals = ','.join(':' + k for k in rec)
 
-        self._exec2(False, f'INSERT INTO {table_name} ({keys}) VALUES({vals})', rec)
+        if not on_conflict:
+            clause = ''
+        elif on_conflict == 'ignore':
+            clause = ' ON CONFLICT DO NOTHING'
+        elif on_conflict == 'update':
+            sets = ','.join(f'{k}=excluded.{k}' for k in rec if k != self.uidName)
+            clause = f' ON CONFLICT({self.uidName}) DO UPDATE SET {sets}'
+        else:
+            raise Error(f'sqlitex: invalid {on_conflict=}')
+
+        self._exec2(False, f'INSERT INTO {table_name} ({keys}) VALUES({vals}){clause}', rec)
 
     def update(self, table_name: str, rec: dict, uid):
         """Update a record in a table.

@@ -59,6 +59,41 @@ def test_update_operation(tmp_path):
     assert results[0]['col_2'] == 'value_4'
 
 
+def test_insert_on_conflict(tmp_path):
+    """Test insert with the on_conflict option."""
+    db_path = tmp_path / 'test.db'
+
+    init_ddl = """
+        CREATE TABLE table_1 (
+            uid INTEGER PRIMARY KEY,
+            col_1 TEXT,
+            col_2 TEXT
+        )
+    """
+
+    db = sqlitex.Object(str(db_path), init_ddl)
+
+    db.insert('table_1', {'uid': 1, 'col_1': 'value_1', 'col_2': 'value_2'})
+
+    with u.raises(sqlitex.Error):
+        db.insert('table_1', {'uid': 1, 'col_1': 'value_3'})
+
+    db.insert('table_1', {'uid': 1, 'col_1': 'value_3'}, on_conflict='ignore')
+    results = db.select('SELECT * FROM table_1')
+    assert results == [{'uid': 1, 'col_1': 'value_1', 'col_2': 'value_2'}]
+
+    db.insert('table_1', {'uid': 1, 'col_1': 'value_3'}, on_conflict='update')
+    results = db.select('SELECT * FROM table_1')
+    assert results == [{'uid': 1, 'col_1': 'value_3', 'col_2': 'value_2'}]
+
+    db.insert('table_1', {'uid': 2, 'col_1': 'value_4'}, on_conflict='update')
+    results = db.select('SELECT * FROM table_1 ORDER BY uid')
+    assert [r['uid'] for r in results] == [1, 2]
+
+    with u.raises(sqlitex.Error):
+        db.insert('table_1', {'uid': 3}, on_conflict='replace')
+
+
 def test_delete_operation(tmp_path):
     """Test delete operation."""
     db_path = tmp_path / 'test.db'
