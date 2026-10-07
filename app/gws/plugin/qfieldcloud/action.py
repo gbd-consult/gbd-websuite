@@ -19,6 +19,8 @@ class Config(gws.ConfigWithAccess):
     """Projects offered to QField clients."""
     auth: Optional[gws.base.auth.method.Config]
     """Token authentication method for QField clients."""
+    deltaLifeTime: gws.Duration = '30d'
+    """How long uploaded changes are kept on the server for status requests. (added in 8.5)"""
 
 
 @gws.ext.props.action('qfieldcloud')
@@ -48,6 +50,8 @@ class Object(action_base.BaseAction):
             return _error_response(403, 'permission_denied', exc)
         except gws.BadRequestError as exc:
             return _error_response(400, 'validation_error', exc)
+        except core.DeltaApplyError as exc:
+            return _error_response(409, 'delta_apply_failed', exc, str(exc))
 
     def get_handler(self) -> action_handler.Handler:
         """Return a new request handler. Override to use a custom handler.
@@ -61,11 +65,14 @@ class Object(action_base.BaseAction):
 ##
 
 
-def _error_response(status: int, code: str, exc: Exception) -> gws.ContentResponse:
-    """Log an error and return a JSON error response."""
+def _error_response(status: int, code: str, exc: Exception, message: str = '') -> gws.ContentResponse:
+    """Log an error and return a JSON error response, with an optional message shown in QField."""
     gws.log.warning(f'qfieldcloudApi: {status} {code} cause={exc!r}')
+    js = {'code': code}
+    if message:
+        js['message'] = message
     return gws.ContentResponse(
         status=status,
-        content=gws.lib.jsonx.to_string({'code': code}),
+        content=gws.lib.jsonx.to_string(js),
         mimeType=gws.lib.mime.JSON,
     )

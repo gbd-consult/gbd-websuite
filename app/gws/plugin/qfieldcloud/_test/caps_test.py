@@ -9,6 +9,7 @@ from gws.plugin.qfieldcloud import action as action_mod, caps
 from gws.plugin.qfieldcloud._test import util as tu
 
 CONFIG = """
+    {DB_PROVIDER}
     projects+ {
         uid "PROJECT_1"
         access "allow all"
@@ -29,7 +30,7 @@ CONFIG = """
 
 
 def _root(qgs_path, models=''):
-    return u.gws_root(CONFIG, QGS_PATH=repr(qgs_path), MODELS=models)
+    return u.gws_root(CONFIG, QGS_PATH=repr(qgs_path), MODELS=models, DB_PROVIDER=tu.db_provider_config())
 
 
 def _caps(root, uid='QFC_1') -> caps.Caps:
@@ -179,6 +180,7 @@ _CONFIGURED_MODELS = """
     models+ {
         uid "MODEL_POI"
         type "postgres"
+        dbUid "QFC_DB"
         tableName "qfc.poi"
         isEditable true
         permissions.edit "allow all"
@@ -189,6 +191,7 @@ _CONFIGURED_MODELS = """
     models+ {
         uid "MODEL_DISTRICT"
         type "postgres"
+        dbUid "QFC_DB"
         tableName "qfc.district"
         isEditable false
     }
@@ -270,3 +273,19 @@ def test_copy_only_area_of_interest():
     cs = _caps(root)
 
     assert cs.copyOnlyAreaOfInterest is True
+
+
+def test_db_provider():
+    root = _root(tu.qgs_path('caps_models'), _CONFIGURED_MODELS)
+    act = cast(action_mod.Object, root.get('ACTION_1'))
+
+    assert act.get_db_provider(act.qfcProjects[0]).uid == tu.DB_UID
+
+
+def test_models_on_different_database_providers_fail():
+    # without dbUid, the configured models use the default provider, the other layers the qgis connection
+    root = _root(tu.qgs_path('caps_providers'), _CONFIGURED_MODELS.replace('dbUid "QFC_DB"', ''))
+    act = cast(action_mod.Object, root.get('ACTION_1'))
+
+    with u.raises(gws.Error, match='database provider'):
+        act.get_db_provider(act.qfcProjects[0])

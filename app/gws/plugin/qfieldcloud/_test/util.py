@@ -74,6 +74,29 @@ def set_layer_prop(root_el: gws.XmlElement, layer_id: str, name: str, value: str
     raise ValueError(f'layer {layer_id!r} not found')
 
 
+DB_UID = 'QFC_DB'
+
+
+def db_provider_config() -> str:
+    """Return the config of a database provider with the same connection as the fixture QGIS project.
+
+    Models configured with ``dbUid DB_UID`` and the models created for the QGIS layers then share one provider.
+    """
+
+    name = u.option('service.postgres.name')
+    return f'database.providers+ {{ uid "{DB_UID}" type "postgres" serviceName "{name}" schemaCacheLifeTime 0 }}'
+
+
+def remove_deltas(root: gws.Root, action_uid: str = 'ACTION_1'):
+    """Remove the delta databases of the QField projects of an action."""
+
+    act = root.get(action_uid)
+    for qp in act.qfcProjects:
+        path = act.deltas_db_path(qp)
+        if os.path.exists(path):
+            os.unlink(path)
+
+
 def create_tables():
     """Create the postgres tables the fixture project refers to."""
 

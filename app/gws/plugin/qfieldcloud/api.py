@@ -1,7 +1,7 @@
 """Data classes for the QFieldCloud API, based on its ``swagger.yaml``."""
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Optional
 
 import gws
 
@@ -110,29 +110,57 @@ class PublicInfoUser(gws.Data):
     """User name for display."""
 
 
-class Delta(gws.Data):
-    """A single change sent by QField."""
+class DeltaFeature(gws.Data):
+    """Feature state in a delta, before or after the change."""
 
-    deltafile_id: str
-    """Id of the delta payload the delta belongs to."""
-    content: Any
-    """Delta content as sent by QField."""
-    id: str
+    attributes: dict
+    """Feature attributes."""
+    geometry: Optional[str]
+    """Geometry as WKT, only present if the geometry has changed."""
+    files_sha256: Optional[dict]
+    """Checksums of attached files by file name."""
+
+
+class Delta(gws.Data):
+    """A single change, as sent by QField in a delta payload."""
+
+    uuid: str
     """Delta id."""
-    created_by: str
-    """User who sent the delta."""
-    created_at: datetime
-    """Creation time."""
-    updated_at: datetime
-    """Last update time."""
-    status: str
-    """Delta status."""
-    output: str
-    """Output of the delta application."""
-    last_status: Optional[LastStatusEnum]
-    """Last status."""
-    last_feedback: Optional[Any]
-    """Last feedback."""
+    clientId: str
+    """Id of the local export on the device."""
+    exportId: str
+    """Id of the package export."""
+    localLayerId: str
+    """Id of the layer in the packaged QGIS project."""
+    localLayerName: str
+    """Name of the layer in the packaged QGIS project."""
+    localLayerCrs: str
+    """CRS of the layer in the packaged QGIS project."""
+    localPk: str
+    """Primary key of the feature in the packaged layer."""
+    sourceLayerId: str
+    """Id of the layer in the source QGIS project."""
+    sourcePk: str
+    """Primary key of the feature in the source layer."""
+    method: str
+    """Change type, ``create``, ``patch`` or ``delete``."""
+    new: Optional[DeltaFeature]
+    """Feature after the change, ``None`` for deletions."""
+    old: Optional[DeltaFeature]
+    """Feature before the change, ``None`` for creations."""
+
+
+class DeltaStatusType(gws.Enum):
+    """Status of a delta."""
+
+    pending = 'STATUS_PENDING'
+    busy = 'STATUS_BUSY'
+    applied = 'STATUS_APPLIED'
+    conflict = 'STATUS_CONFLICT'
+    not_applied = 'STATUS_NOT_APPLIED'
+    error = 'STATUS_ERROR'
+    ignored = 'STATUS_IGNORED'
+    unpermitted = 'STATUS_UNPERMITTED'
 
 
 class Job(gws.Data):
@@ -403,7 +431,7 @@ class PostJobPayload(gws.Data):
 class DeltasPayload(gws.Data):
     """A delta payload (delta file) sent by QField."""
 
-    deltas: list[dict]
+    deltas: list[Delta]
     """List of deltas."""
     files: list[dict]
     """List of files."""
@@ -413,33 +441,6 @@ class DeltasPayload(gws.Data):
     """Project id."""
     version: str
     """Delta file format version."""
-
-
-class StoredDelta(gws.Data):
-    """A delta as stored on the server and returned to status requests."""
-
-    id: str
-    """Delta id (the ``uuid`` of the delta)."""
-    deltafile_id: str
-    """Id of the delta payload."""
-    created_by: str
-    """Login name of the user who sent the delta."""
-    created_at: str
-    """Creation time."""
-    updated_at: str
-    """Last update time."""
-    status: str
-    """Delta status, e.g. ``STATUS_PENDING`` or ``STATUS_APPLIED``."""
-    client_id: str
-    """Client id."""
-    output: Optional[dict]
-    """Output of the delta application."""
-    last_status: str
-    """Last status, e.g. ``pending`` or ``applied``."""
-    last_feedback: Optional[dict]
-    """Last feedback."""
-    content: dict
-    """Delta content as sent by QField."""
 
 
 class PackageFile(gws.Data):

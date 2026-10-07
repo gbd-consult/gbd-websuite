@@ -14,6 +14,7 @@ from gws.plugin.qfieldcloud import action as action_mod, packager
 from gws.plugin.qfieldcloud._test import util as tu
 
 CONFIG = """
+    {DB_PROVIDER}
     projects+ {
         uid "PROJECT_1"
         access "allow all"
@@ -29,6 +30,7 @@ CONFIG = """
                 models+ {
                     uid "MODEL_POI"
                     type "postgres"
+                    dbUid "QFC_DB"
                     tableName "qfc.poi"
                     isEditable true
                     permissions.edit "allow all"
@@ -52,7 +54,7 @@ CONFIG = """
 @u.fixture(scope='module')
 def root():
     tu.create_tables()
-    yield u.gws_root(CONFIG, QGS_PATH=repr(tu.qgs_path('packager')))
+    yield u.gws_root(CONFIG, QGS_PATH=repr(tu.qgs_path('packager')), DB_PROVIDER=tu.db_provider_config())
 
 
 def _act(root) -> action_mod.Object:
@@ -165,7 +167,7 @@ def test_write_data_with_area_of_interest(tmp_path):
     def patch(root_el):
         tu.set_project_prop(root_el, 'offlineCopyOnlyAoi', '1', 'int')
 
-    root = u.gws_root(CONFIG, QGS_PATH=repr(tu.qgs_path('packager_aoi', patch)))
+    root = u.gws_root(CONFIG, QGS_PATH=repr(tu.qgs_path('packager_aoi', patch)), DB_PROVIDER=tu.db_provider_config())
     _package(root, tmp_path, withData=True)
 
     with gws.lib.gdalx.open_vector(str(tmp_path / 'qm_qfc_poi.gpkg')) as ds:

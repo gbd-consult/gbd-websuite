@@ -43,7 +43,9 @@ def root():
 
     u.auth.add_user('user1', 'pass1')
 
-    yield u.gws_root(CONFIG, QGS_PATH=repr(tu.qgs_path('simple', patch)))
+    root = u.gws_root(CONFIG, QGS_PATH=repr(tu.qgs_path('simple', patch)))
+    tu.remove_deltas(root)
+    yield root
 
 
 def _act(root) -> action_mod.Object:

@@ -8,12 +8,13 @@ packaged according to the settings made with the QFieldSync QGIS plugin.
 
 - ``action``: the ``qfieldcloud`` action. It receives API requests and passes each one to a new request handler.
 - ``action_base``: the base class of the action. It holds the QField projects, caches their capabilities, creates packages (also in background jobs) and manages the package and cache directories.
-- ``action_handler``: the request handler. It dispatches an API request to a route method, authenticates the client by token and stores incoming deltas. It holds the state of a single request only and accesses persistent data via the action.
+- ``action_handler``: the request handler. It dispatches an API request to a route method, authenticates the client by token, and applies incoming deltas and file uploads. It holds the state of a single request only and accesses persistent data via the action.
 - ``api``: data classes and enums mirroring the QFieldCloud API objects (``swagger.yaml``), plus a few objects used by the client that are not in the specification.
 - ``auth``: the ``qfieldcloud`` authorization method, created and registered by the action. It has the fixed uid ``gws.plugin.qfieldcloud.auth``.
 - ``caps``: reads the QFieldSync project and layer properties from the QGIS project and decides, per layer, whether it is packaged for editing, packaged as a base map or removed.
 - ``cli``: the ``qfieldcloudPackage`` command, which creates a package into a directory.
 - ``core``: the configuration and object of a single QField project.
+- ``delta``: stores the deltas sent by QField with their status and the payload ids they were sent with, in a SQLite database per project.
 - ``packager``: writes a package (GeoPackage data, base maps, media files, modified QGIS project).
 - ``patcher``: applies changes ("deltas") and file uploads from QField to the database.
 
@@ -70,7 +71,15 @@ Directories listed in the QFieldSync attachment, data and copy settings are adde
 
 Data flow QField -> GWS, also called "patching".
 
-For each incoming "delta" payload from QField, the plugin extracts the created, updated and deleted features and passes them to the respective Model. The Model is responsible for applying the changes to the Postgres database. The payload is stored for an hour, so that QField can poll its status.
+For each incoming "delta" payload from QField, the plugin extracts the created, updated and deleted features and passes them to the respective Model. The Model is responsible for applying the changes to the Postgres database.
+
+A payload is applied all together or not at all: all changes run in one transaction, which is rolled back if any change fails, including changes for unknown layers and updates or deletions of features that do not exist. All models of a QField project must use the same database provider: the configured models and the QGIS layers marked as "offline editable" must refer to the same database connection, otherwise changes from QField are rejected.
+
+If a payload fails, the request is answered with status 409. QField then keeps the changes on the device, and the user can push them again once the problem is fixed.
+
+Deltas are identified by their content (a hash of the user and the delta), not by the payload id: QField may push the same deltas again under a new payload id, and merges later edits of a feature into a waiting delta. A delta that has already been applied is skipped, a delta that is new, has changed or failed before is applied.
+
+The deltas are stored with their status in ``deltas.sqlite`` in the project directory, together with the payload ids they were pushed with, so that QField can poll the status of a payload and show the upload history. They are kept for ``deltaLifeTime``. A delta that stays pending for more than 5 minutes (e.g. after a server crash) counts as failed.
 
 .. rubric:: File uploads
 
@@ -96,7 +105,7 @@ If a Model supports file uploads, it should contain a virtual file field with ``
         }
     }
 
-QField sends uploads in two steps: first, the file path is included along with the feature changes in the delta payload. Later, the actual file content is uploaded in a separate request. The plugin matches the file content to the respective feature based on the ``nameColumn`` value and writes it into ``contentColumn``.
+QField sends uploads in two steps: first, the file path is included along with the feature changes in the delta payload. Later, the actual file content is uploaded in a separate request. The plugin matches the file content to the respective feature based on the ``nameColumn`` value and writes it into ``contentColumn``. If no feature refers to the file, the upload is answered with status 404, and QField drops the file.
 
 .. rubric:: Extending
 
@@ -111,9 +120,9 @@ Example::
     import gws.plugin.qfieldcloud.patcher
 
     class MyPatcher(gws.plugin.qfieldcloud.patcher.Object):
-        def commit_operations_for_model(self, me, ops):
+        def perform_operations_for_model(self, me, ops):
             ...
-            super().commit_operations_for_model(me, ops)
+            super().perform_operations_for_model(me, ops)
 
     class MyHandler(gws.plugin.qfieldcloud.action_handler.Handler):
         @gws.plugin.qfieldcloud.action_handler.route('GET api/v1/status')
@@ -131,8 +140,6 @@ Example::
 
 from . import (
     action,
-    action_base,
-    action_handler,
     packager,
     patcher,
     caps,
@@ -140,8 +147,6 @@ from . import (
 
 __all__ = [
     'action',
-    'action_base',
-    'action_handler',
     'packager',
     'patcher',
     'caps',

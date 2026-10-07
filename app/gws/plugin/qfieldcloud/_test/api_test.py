@@ -9,12 +9,15 @@ import gws
 import gws.lib.image
 import gws.lib.jsonx
 import gws.lib.mime
+import gws.lib.sqlitex
+import gws.lib.datetimex as dtx
 import gws.test.util as u
 
 from gws.plugin.qfieldcloud import action as action_mod, packager
 from gws.plugin.qfieldcloud._test import util as tu
 
 CONFIG = f"""
+    {{DB_PROVIDER}}
     auth.providers+ {{ type "{u.auth.PROVIDER_1}" }}
     auth.session {{ type "sqlite" }}
     auth.methods+ {{ type web secure False cookieName AUTH_COOKIE }}
@@ -38,6 +41,7 @@ CONFIG = f"""
                 models+ {{
                     uid "MODEL_POI"
                     type "postgres"
+                    dbUid "QFC_DB"
                     tableName "qfc.poi"
                     isEditable true
                     permissions.edit "allow all"
@@ -97,7 +101,9 @@ def root():
     u.auth.add_user('user1', 'pass1', displayName='User One', roles=['role1'])
     u.auth.add_user('user2', 'pass2', displayName='User Two')
 
-    yield u.gws_root(CONFIG, QGS_PATH=repr(tu.qgs_path('api', patch)), THUMBNAIL_PATH=repr(_thumbnail_path()))
+    root = u.gws_root(CONFIG, QGS_PATH=repr(tu.qgs_path('api', patch)), THUMBNAIL_PATH=repr(_thumbnail_path()), DB_PROVIDER=tu.db_provider_config())
+    tu.remove_deltas(root)
+    yield root
 
 
 def _token(root, username='user1', password='pass1'):
@@ -508,8 +514,10 @@ def test_post_deltas_stores_the_payload(root: gws.Root, token):
     assert res.json[0]['id'] == 'D2'
     assert res.json[0]['deltafile_id'] == 'PAYLOAD_2'
     assert res.json[0]['status'] == 'STATUS_APPLIED'
-    assert res.json[0]['last_status'] == 'applied'
     assert res.json[0]['created_by'] == 'user1'
+    assert res.json[0]['created_at']
+    assert res.json[0]['updated_at']
+    assert res.json[0]['content']['method'] == 'create'
 
 
 def test_post_deltas_with_a_qt_boundary(root: gws.Root, token):
@@ -553,6 +561,218 @@ def test_delta_payload_of_another_user(root: gws.Root, token):
     assert res.status_code == 404
 
 
+def _deltas_db(root):
+    act = cast(action_mod.Object, root.get('ACTION_1'))
+    return gws.lib.sqlitex.Object(act.deltas_db_path(act.qfcProjects[0]))
+
+
+def _status(root, token, payload_id):
+    res = u.http.get(root, _url(f'api/v1/deltas/QFC_1/{payload_id}'), headers=_auth(token))
+    assert res.status_code == 200
+    return [d['status'] for d in res.json]
+
+
+def test_failed_payload_is_rolled_back(root: gws.Root, token):
+    u.pg.insert('qfc.poi', [{'id': 1, 'name': 'one'}])
+    u.pg.insert('qfc.note', [])
+
+    res = _post_deltas(root, token, _delta_payload('PAYLOAD_FAIL_1', [
+        _delta('create', 'DF1', layer='note_L3', new={'kind': 'a', 'text': 'note'}),
+        _delta('create', 'DF2', new={'id': 2, 'name': 'two'}),
+        _delta('create', 'DF3', new={'id': 1, 'name': 'duplicate'}),
+    ]))
+
+    assert res.status_code == 409
+    assert res.json['code'] == 'delta_apply_failed'
+    assert u.pg.rows('SELECT id, name FROM qfc.poi') == [(1, 'one')]
+    assert u.pg.rows('SELECT text FROM qfc.note') == []
+    assert _status(root, token, 'PAYLOAD_FAIL_1') == ['STATUS_ERROR'] * 3
+
+
+def test_payload_with_an_unknown_layer_fails(root: gws.Root, token):
+    u.pg.insert('qfc.poi', [])
+
+    res = _post_deltas(root, token, _delta_payload('PAYLOAD_FAIL_2', [
+        _delta('create', 'DF4', new={'id': 1, 'name': 'one'}),
+        _delta('create', 'DF5', layer='NO_SUCH_LAYER', new={'id': 2, 'name': 'two'}),
+    ]))
+
+    assert res.status_code == 409
+    assert u.pg.rows('SELECT id FROM qfc.poi') == []
+
+
+def test_payload_with_an_invalid_delta(root: gws.Root, token):
+    d = _delta('create', 'DF6', new={'id': 1, 'name': 'one'})
+    del d['localLayerId']
+
+    res = _post_deltas(root, token, _delta_payload('PAYLOAD_INVALID', [d]))
+
+    assert res.status_code == 400
+
+
+def test_failed_payload_is_applied_again(root: gws.Root, token):
+    u.pg.insert('qfc.poi', [{'id': 1, 'name': 'one'}])
+    payload = _delta_payload('PAYLOAD_RETRY', [
+        _delta('create', 'DR1', new={'id': 1, 'name': 'retry'}),
+    ])
+
+    assert _post_deltas(root, token, payload).status_code == 409
+
+    u.pg.insert('qfc.poi', [])
+    assert _post_deltas(root, token, payload).status_code == 200
+
+    assert u.pg.rows('SELECT id, name FROM qfc.poi') == [(1, 'retry')]
+    assert _status(root, token, 'PAYLOAD_RETRY') == ['STATUS_APPLIED']
+
+
+def test_applied_payload_is_not_applied_again(root: gws.Root, token):
+    u.pg.insert('qfc.poi', [])
+    payload = _delta_payload('PAYLOAD_TWICE', [
+        _delta('create', 'DT1', new={'id': 1, 'name': 'once'}),
+    ])
+
+    assert _post_deltas(root, token, payload).status_code == 200
+    assert _post_deltas(root, token, payload).status_code == 200
+
+    assert u.pg.rows('SELECT id, name FROM qfc.poi') == [(1, 'once')]
+
+
+def test_applied_deltas_are_not_applied_again_under_a_new_payload_id(root: gws.Root, token):
+    u.pg.insert('qfc.poi', [])
+    deltas = [_delta('create', 'DN1', new={'id': 1, 'name': 'once'})]
+
+    assert _post_deltas(root, token, _delta_payload('PAYLOAD_NEW_ID_1', deltas)).status_code == 200
+    assert _post_deltas(root, token, _delta_payload('PAYLOAD_NEW_ID_2', deltas)).status_code == 200
+
+    assert u.pg.rows('SELECT id, name FROM qfc.poi') == [(1, 'once')]
+    assert _status(root, token, 'PAYLOAD_NEW_ID_2') == ['STATUS_APPLIED']
+
+
+def test_only_new_deltas_are_applied(root: gws.Root, token):
+    u.pg.insert('qfc.poi', [])
+    d1 = _delta('create', 'DM1', new={'id': 1, 'name': 'one'})
+    d2 = _delta('create', 'DM2', new={'id': 2, 'name': 'two'})
+
+    assert _post_deltas(root, token, _delta_payload('PAYLOAD_MIXED_1', [d1])).status_code == 200
+    assert _post_deltas(root, token, _delta_payload('PAYLOAD_MIXED_2', [d1, d2])).status_code == 200
+
+    assert u.pg.rows('SELECT id, name FROM qfc.poi ORDER BY id') == [(1, 'one'), (2, 'two')]
+    assert _status(root, token, 'PAYLOAD_MIXED_2') == ['STATUS_APPLIED', 'STATUS_APPLIED']
+
+
+def test_changed_delta_is_applied_again(root: gws.Root, token):
+    # QField merges later edits into a waiting delta, keeping its uuid
+    u.pg.insert('qfc.poi', [{'id': 1, 'name': 'one'}])
+
+    d = _delta('patch', 'DC1', old={'id': 1, 'name': 'one'}, new={'name': 'two'})
+    assert _post_deltas(root, token, _delta_payload('PAYLOAD_CHANGED_1', [d])).status_code == 200
+
+    d = _delta('patch', 'DC1', old={'id': 1, 'name': 'one'}, new={'name': 'three'})
+    assert _post_deltas(root, token, _delta_payload('PAYLOAD_CHANGED_2', [d])).status_code == 200
+
+    assert u.pg.rows('SELECT id, name FROM qfc.poi') == [(1, 'three')]
+
+
+def test_status_of_a_repushed_payload_lists_the_current_deltas(root: gws.Root, token):
+    u.pg.insert('qfc.poi', [{'id': 1, 'name': 'one'}])
+
+    d = _delta('create', 'DL1', new={'id': 1, 'name': 'duplicate'})
+    assert _post_deltas(root, token, _delta_payload('PAYLOAD_LINKS', [d])).status_code == 409
+
+    d = _delta('create', 'DL1', new={'id': 2, 'name': 'fixed'})
+    assert _post_deltas(root, token, _delta_payload('PAYLOAD_LINKS', [d])).status_code == 200
+
+    assert _status(root, token, 'PAYLOAD_LINKS') == ['STATUS_APPLIED']
+
+
+def test_delta_history(root: gws.Root, token):
+    u.pg.insert('qfc.poi', [])
+    _deltas_db(root).execute('DELETE FROM deltas')
+
+    _post_deltas(root, token, _delta_payload('PAYLOAD_HISTORY_1', [
+        _delta('create', 'DH1', new={'id': 1, 'name': 'one'}),
+    ]))
+    _post_deltas(root, token, _delta_payload('PAYLOAD_HISTORY_2', [
+        _delta('create', 'DH2', new={'id': 2, 'name': 'two'}),
+    ]))
+
+    res = u.http.get(root, _url('api/v1/deltas/QFC_1/'), headers=_auth(token))
+    assert res.status_code == 200
+    assert [(d['id'], d['deltafile_id'], d['status']) for d in res.json] == [
+        ('DH2', 'PAYLOAD_HISTORY_2', 'STATUS_APPLIED'),
+        ('DH1', 'PAYLOAD_HISTORY_1', 'STATUS_APPLIED'),
+    ]
+    assert 'X-Next-Page' not in res.headers
+
+    res = u.http.get(root, _url('api/v1/deltas/QFC_1/?ordering=-created_at&limit=1&offset=0'), headers=_auth(token))
+    assert [d['id'] for d in res.json] == ['DH2']
+    assert 'X-Next-Page' in res.headers
+
+    res = u.http.get(root, _url('api/v1/deltas/QFC_1/?ordering=-created_at&limit=1&offset=1'), headers=_auth(token))
+    assert [d['id'] for d in res.json] == ['DH1']
+    assert 'X-Next-Page' not in res.headers
+
+    tok2 = _token(root, 'user2', 'pass2')
+    res = u.http.get(root, _url('api/v1/deltas/QFC_1/'), headers=_auth(tok2))
+    assert res.json == []
+
+
+def _set_pending(root, payload_id, age):
+    t = dtx.to_timestamp() - age
+    _deltas_db(root).execute(
+        "UPDATE deltas SET status='STATUS_PENDING', updated_at=:t WHERE uid IN (SELECT delta_uid FROM payloads WHERE payload_id=:id)",
+        t=t,
+        id=payload_id,
+    )
+
+
+def test_pending_payload_is_not_applied_again(root: gws.Root, token):
+    u.pg.insert('qfc.poi', [])
+    payload = _delta_payload('PAYLOAD_PENDING', [
+        _delta('create', 'DP1', new={'id': 1, 'name': 'pending'}),
+    ])
+    assert _post_deltas(root, token, payload).status_code == 200
+
+    u.pg.insert('qfc.poi', [])
+    _set_pending(root, 'PAYLOAD_PENDING', age=10)
+
+    assert _post_deltas(root, token, payload).status_code == 409
+    assert u.pg.rows('SELECT id FROM qfc.poi') == []
+    assert _status(root, token, 'PAYLOAD_PENDING') == ['STATUS_PENDING']
+
+
+def test_stale_pending_payload_is_reported_failed_and_applied_again(root: gws.Root, token):
+    u.pg.insert('qfc.poi', [])
+    payload = _delta_payload('PAYLOAD_STALE', [
+        _delta('create', 'DS1', new={'id': 1, 'name': 'stale'}),
+    ])
+    assert _post_deltas(root, token, payload).status_code == 200
+
+    u.pg.insert('qfc.poi', [])
+    _set_pending(root, 'PAYLOAD_STALE', age=3600)
+
+    assert _status(root, token, 'PAYLOAD_STALE') == ['STATUS_ERROR']
+
+    assert _post_deltas(root, token, payload).status_code == 200
+    assert u.pg.rows('SELECT id, name FROM qfc.poi') == [(1, 'stale')]
+    assert _status(root, token, 'PAYLOAD_STALE') == ['STATUS_APPLIED']
+
+
+def test_old_deltas_are_removed(root: gws.Root, token):
+    u.pg.insert('qfc.poi', [])
+    _post_deltas(root, token, _delta_payload('PAYLOAD_OLD', [
+        _delta('create', 'DO1', new={'id': 1, 'name': 'old'}),
+    ]))
+    _deltas_db(root).execute("UPDATE deltas SET created_at=1000 WHERE uid IN (SELECT delta_uid FROM payloads WHERE payload_id='PAYLOAD_OLD')")
+
+    _post_deltas(root, token, _delta_payload('PAYLOAD_NEW', [
+        _delta('create', 'DO2', new={'id': 2, 'name': 'new'}),
+    ]))
+
+    assert u.http.get(root, _url('api/v1/deltas/QFC_1/PAYLOAD_OLD'), headers=_auth(token)).status_code == 404
+    assert _status(root, token, 'PAYLOAD_NEW') == ['STATUS_APPLIED']
+
+
 ##
 # file uploads
 
@@ -563,10 +783,19 @@ def test_post_file(root: gws.Root, token):
     data = {'file': (io.BytesIO(b'JPEG-BYTES'), 'one.jpg')}
     res = u.http.post(root, _url('api/v1/files/QFC_1/DCIM/one.jpg'), data=data, headers=_auth(token))
 
-    assert res.status_code == 200
+    assert res.status_code == 201
 
     rows = u.pg.rows('SELECT photo_content FROM qfc.poi')
     assert bytes(rows[0][0]) == b'JPEG-BYTES'
+
+
+def test_post_file_without_a_feature(root: gws.Root, token):
+    u.pg.insert('qfc.poi', [{'id': 1, 'name': 'one', 'photo': 'DCIM/one.jpg'}])
+
+    data = {'file': (io.BytesIO(b'JPEG-BYTES'), 'other.jpg')}
+    res = u.http.post(root, _url('api/v1/files/QFC_1/DCIM/other.jpg'), data=data, headers=_auth(token))
+
+    assert res.status_code == 404
 
 
 def test_post_file_without_a_file(root: gws.Root, token):
@@ -582,44 +811,27 @@ def test_latest_package_dir_ignores_incomplete_packages(root: gws.Root):
     act = cast(action_mod.Object, root.get('ACTION_1'))
     qp = act.qfcProjects[0]
 
-    base = act.fs_project_base_dir(qp)
+    base = act.project_base_dir(qp)
     for d in os.listdir(base):
         if d.startswith('package_'):
             gws.lib.osx.rmdir(f'{base}/{d}')
 
-    good = act.fs_new_package_dir(qp, '20260101000000001')
+    good = act.new_package_dir(qp, '20260101000000001')
     gws.u.write_file(f'{good}/{packager.COMPLETE_FILE}', '1')
-    act.fs_new_package_dir(qp, '20260101000000002')
+    act.new_package_dir(qp, '20260101000000002')
 
-    assert act.fs_latest_package_dir(qp) == good
+    assert act.latest_package_dir(qp) == good
 
 
 def test_cleanup_old_packages(root: gws.Root):
     act = cast(action_mod.Object, root.get('ACTION_1'))
     qp = act.qfcProjects[0]
 
-    old = act.fs_new_package_dir(qp, '20260101000000003')
+    old = act.new_package_dir(qp, '20260101000000003')
     os.utime(old, (1000, 1000))
-    new = act.fs_new_package_dir(qp, '20260101000000004')
+    new = act.new_package_dir(qp, '20260101000000004')
 
-    act.fs_cleanup_old_packages(qp, keep_seconds=3600)
+    act.cleanup_old_packages(qp, keep_seconds=3600)
 
     assert not os.path.isdir(old)
     assert os.path.isdir(new)
-
-
-def test_cleanup_old_deltas(root: gws.Root):
-    act = cast(action_mod.Object, root.get('ACTION_1'))
-    qp = act.qfcProjects[0]
-
-    old = act.fs_delta_payload_path(qp, 'OLD_PAYLOAD')
-    gws.u.write_file(old, '[]')
-    os.utime(old, (1000, 1000))
-
-    new = act.fs_delta_payload_path(qp, 'NEW_PAYLOAD')
-    gws.u.write_file(new, '[]')
-
-    act.fs_cleanup_old_deltas(qp, keep_seconds=3600)
-
-    assert not os.path.isfile(old)
-    assert os.path.isfile(new)

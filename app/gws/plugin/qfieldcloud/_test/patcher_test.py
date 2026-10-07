@@ -9,6 +9,7 @@ from gws.plugin.qfieldcloud import action as action_mod, patcher
 from gws.plugin.qfieldcloud._test import util as tu
 
 CONFIG = """
+    {DB_PROVIDER}
     projects+ {
         uid "PROJECT_1"
         access "allow all"
@@ -24,6 +25,7 @@ CONFIG = """
                 models+ {
                     uid "MODEL_POI"
                     type "postgres"
+                    dbUid "QFC_DB"
                     tableName "qfc.poi"
                     isEditable true
                     permissions.edit "allow all"
@@ -47,7 +49,7 @@ CONFIG = """
 @u.fixture(scope='module')
 def root():
     tu.create_tables()
-    yield u.gws_root(CONFIG, QGS_PATH=repr(tu.qgs_path('patcher')))
+    yield u.gws_root(CONFIG, QGS_PATH=repr(tu.qgs_path('patcher')), DB_PROVIDER=tu.db_provider_config())
 
 
 @u.fixture(autouse=True)
@@ -63,6 +65,7 @@ def _args(root, **kwargs):
     return patcher.Args(
         qfcProject=qp,
         caps=act.get_caps(qp),
+        db=act.get_db_provider(qp),
         project=root.app.project('PROJECT_1'),
         user=root.app.authMgr.systemUser,
         baseDir='',
@@ -180,34 +183,79 @@ def test_several_changes_in_one_call(root: gws.Root):
 ##
 
 
-def test_unknown_layer_is_ignored(root: gws.Root):
-    ok = _apply(root, _change('create', 'NO_SUCH_LAYER', new={'id': 1, 'name': 'x'}))
+def test_unknown_layer_fails(root: gws.Root):
+    with u.raises(gws.Error):
+        _apply(root, _change('create', 'NO_SUCH_LAYER', new={'id': 1, 'name': 'x'}))
 
-    assert ok is False
     assert _poi() == []
 
 
-def test_non_edit_layer_is_ignored(root: gws.Root):
-    ok = _apply(root, _change('create', 'removed_L7', new={'id': 1, 'name': 'x'}))
+def test_non_edit_layer_fails(root: gws.Root):
+    with u.raises(gws.Error):
+        _apply(root, _change('create', 'removed_L7', new={'id': 1, 'name': 'x'}))
 
-    assert ok is False
     assert _poi() == []
 
 
-def test_update_of_a_missing_feature_is_ignored(root: gws.Root):
+def test_update_of_a_missing_feature_fails(root: gws.Root):
     u.pg.insert('qfc.poi', [{'id': 1, 'name': 'one'}])
 
-    _apply(root, _change('patch', old={'id': 999}, new={'name': 'x'}))
+    with u.raises(gws.Error):
+        _apply(root, _change('patch', old={'id': 999}, new={'name': 'x'}))
 
     assert _poi() == [(1, 'one', None)]
 
 
-def test_delete_of_a_missing_feature_is_ignored(root: gws.Root):
+def test_delete_of_a_missing_feature_fails(root: gws.Root):
     u.pg.insert('qfc.poi', [{'id': 1, 'name': 'one'}])
 
-    _apply(root, _change('delete', old={'id': 999}))
+    with u.raises(gws.Error):
+        _apply(root, _change('delete', old={'id': 999}))
 
     assert _poi() == [(1, 'one', None)]
+
+
+##
+# transactions
+
+
+def test_failed_change_rolls_back_the_same_model(root: gws.Root):
+    u.pg.insert('qfc.poi', [{'id': 1, 'name': 'one'}])
+
+    with u.raises(Exception):
+        _apply(
+            root,
+            _change('create', new={'id': 2, 'name': 'two'}, uid='CHANGE_1'),
+            _change('patch', old={'id': 1}, new={'name': 'ONE'}, uid='CHANGE_2'),
+            _change('create', new={'id': 1, 'name': 'duplicate'}, uid='CHANGE_3'),
+        )
+
+    assert _poi() == [(1, 'one', None)]
+
+
+def test_failed_change_rolls_back_other_models(root: gws.Root):
+    u.pg.insert('qfc.poi', [{'id': 1, 'name': 'one'}])
+
+    with u.raises(Exception):
+        _apply(
+            root,
+            _change('create', 'note_L3', new={'kind': 'a', 'text': 'note'}, uid='CHANGE_1'),
+            _change('create', new={'id': 1, 'name': 'duplicate'}, uid='CHANGE_2'),
+        )
+
+    assert u.pg.rows('SELECT text FROM qfc.note') == []
+    assert _poi() == [(1, 'one', None)]
+
+
+def test_failed_prepare_rolls_back_earlier_changes(root: gws.Root):
+    with u.raises(gws.Error):
+        _apply(
+            root,
+            _change('create', new={'id': 1, 'name': 'one'}, uid='CHANGE_1'),
+            _change('delete', old={'id': 999}, uid='CHANGE_2'),
+        )
+
+    assert _poi() == []
 
 
 ##

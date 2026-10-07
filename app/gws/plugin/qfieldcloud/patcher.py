@@ -55,6 +55,8 @@ class Args(gws.Data):
     """QField project."""
     caps: caps_mod.Caps
     """Capabilities of the QField project."""
+    db: gws.DatabaseProvider
+    """Database provider of the models, used for the transaction."""
     project: Optional[gws.Project]
     """GWS project context."""
     user: gws.User
@@ -74,8 +76,9 @@ class Object:
 
     Changes are converted to model operations, grouped by model, and passed
     to the model methods ``create_feature``, ``update_feature`` and
-    ``delete_feature``. Changes for unknown or non-editable layers, and
-    updates or deletions of features that do not exist, are skipped with a warning.
+    ``delete_feature``. All changes are applied in one transaction:
+    if any change fails, including changes for unknown or non-editable layers and
+    updates or deletions of features that do not exist, nothing is written.
     """
 
     root: gws.Root
@@ -97,28 +100,34 @@ class Object:
     def apply_changes(self, root: gws.Root, args: Args) -> bool:
         """Apply the changes in ``args.changes``.
 
+        The changes are applied in one transaction, which is rolled back if any change fails.
+        All models must use the database provider ``args.db``.
+
         Args:
             root: Root object.
             args: Patcher arguments.
 
         Returns:
             ``True`` if any operations were committed, ``False`` if there was nothing to apply.
+
+        Raises:
+            ``gws.Error``: If a change refers to an unknown layer or a missing feature. Database errors are raised as is.
         """
         self.root = root
         self.prepare(args)
 
         self.ops_by_model = {}
-
-        for cc in self.args.changes:
-            self.prepare_change(cc)
-
-        if not self.ops_by_model:
+        if not self.args.changes:
             return False
 
-        for gpName, ops in self.ops_by_model.items():
-            self.commit_operations_for_model(self.caps.modelMap[gpName], ops)
+        with self.args.db.begin():
+            for cc in self.args.changes:
+                self.prepare_change(cc)
 
-        return True
+            for gpName, ops in self.ops_by_model.items():
+                self.perform_operations_for_model(self.caps.modelMap[gpName], ops)
+
+        return any(self.ops_by_model.values())
 
     def prepare(self, args: Args):
         """Store the arguments in the patcher.
@@ -132,25 +141,22 @@ class Object:
         self.user = self.args.user
         self.caps = args.caps
 
-    def commit_operations_for_model(self, me: caps_mod.ModelEntry, ops: list[Operation]):
-        """Commit operations for a model.
+    def perform_operations_for_model(self, me: caps_mod.ModelEntry, ops: list[Operation]):
+        """Perform operations for a model, in the transaction opened by ``apply_changes``.
 
         Args:
             me: Model entry.
-            ops: Operations to commit.
+            ops: Operations to perform.
         """
-        with me.model.db.begin() as conn:
-            for op in ops:
-                gws.log.debug(f'{op.type=} {op.feature.attributes=}')
-                mc = gws.ModelContext(op=op.type, user=self.user, project=self.project)
-                if op.type == gws.ModelOperation.create:
-                    me.model.create_feature(op.feature, mc)
-                    continue
-                if op.type == gws.ModelOperation.update:
-                    me.model.update_feature(op.feature, mc)
-                    continue
-                if op.type == gws.ModelOperation.delete:
-                    me.model.delete_feature(op.feature, mc)
+        for op in ops:
+            gws.log.debug(f'{op.type=} {op.feature.attributes=}')
+            mc = gws.ModelContext(op=op.type, user=self.user, project=self.project)
+            if op.type == gws.ModelOperation.create:
+                me.model.create_feature(op.feature, mc)
+            elif op.type == gws.ModelOperation.update:
+                me.model.update_feature(op.feature, mc)
+            elif op.type == gws.ModelOperation.delete:
+                me.model.delete_feature(op.feature, mc)
 
     def apply_upload(self, root: gws.Root, args: Args) -> bool:
         """Apply the file upload in ``args.filePath`` and ``args.fileContent``.
@@ -249,14 +255,16 @@ class Object:
 
         Args:
             cc: Change.
+
+        Raises:
+            ``gws.Error``: If the layer is not found or not editable, the geometry field is not found,
+                or the feature to update or delete does not exist.
         """
         le = self.caps.layerMap.get(cc.layerUid)
         if not le:
-            gws.log.warning(f'layer not found: {cc.layerUid!r}')
-            return
+            raise gws.Error(f'layer not found: {cc.layerUid!r}')
         if le.action != caps_mod.LayerAction.edit:
-            gws.log.warning(f'unsupported layer action: {cc.layerUid!r} {le.action!r}')
-            return
+            raise gws.Error(f'unsupported layer action: {cc.layerUid!r} {le.action!r}')
 
         me = le.modelEntry
         pk_name = me.model.uidName
@@ -270,9 +278,8 @@ class Object:
         if cc.wkt:
             geom = me.model.geometryName
             if not geom:
-                gws.log.warning(f'geometry field not found: {me.gpName!r}')
-            else:
-                atts[geom] = gws.lib.shape.from_wkt(cc.wkt, me.model.geometryCrs)
+                raise gws.Error(f'geometry field not found: {me.gpName!r}')
+            atts[geom] = gws.lib.shape.from_wkt(cc.wkt, me.model.geometryCrs)
 
         ops = self.ops_by_model.setdefault(me.gpName, [])
 
@@ -290,8 +297,7 @@ class Object:
             pk = cc.oldAtts.get(pk_name, '')
             feat = self.get_feature(me, pk)
             if not feat:
-                gws.log.warning(f'delete: not found: {pk=} {me.gpName=} {le.qgisId=}')
-                return
+                raise gws.Error(f'delete: not found: {pk=} {me.gpName=} {le.qgisId=}')
             ops.append(Operation(type=gws.ModelOperation.delete, feature=feat))
             return
 
@@ -299,8 +305,7 @@ class Object:
             pk = cc.oldAtts.get(pk_name, '')
             feat = self.get_feature(me, pk)
             if not feat:
-                gws.log.warning(f'update: not found: {pk=} {me.gpName=} {le.qgisId=}')
-                return
+                raise gws.Error(f'update: not found: {pk=} {me.gpName=} {le.qgisId=}')
             mc = gws.ModelContext(op=gws.ModelOperation.update, user=self.user, project=self.project)
             atts[pk_name] = pk
             feat = me.model.feature_from_props(gws.FeatureProps(attributes=atts), mc)

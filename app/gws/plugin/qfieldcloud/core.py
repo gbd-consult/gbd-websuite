@@ -4,6 +4,33 @@ from typing import Optional
 import gws
 import gws.plugin.qgis.provider
 
+from . import api
+
+
+class DeltaApplyError(gws.Error):
+    """Raised when a delta payload cannot be applied."""
+
+
+class DeltaStatus(gws.Data):
+    """Status of a delta, as returned to QField."""
+
+    id: str
+    """Delta id."""
+    deltafile_id: str
+    """Id of the delta payload."""
+    created_by: str
+    """Login name of the user who sent the delta."""
+    created_at: str
+    """Creation time."""
+    updated_at: str
+    """Last update time."""
+    status: api.DeltaStatusType
+    """Delta status."""
+    output: str
+    """Error message, if the delta could not be applied."""
+    content: api.Delta
+    """Delta as sent by QField."""
+
 
 class ProjectConfig(gws.ConfigWithAccess):
     """Project offered to QField, packaged from a QGIS project."""

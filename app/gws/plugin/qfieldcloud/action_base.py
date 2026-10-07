@@ -7,10 +7,11 @@ import re
 import gws
 import gws.base.job
 import gws.base.action
+import gws.lib.jsonx
 import gws.lib.datetimex as dtx
 import gws.lib.osx as osx
 
-from . import core, packager, patcher, caps
+from . import core, packager, patcher, caps, auth
 
 
 class WorkerPayload(gws.Data):
@@ -38,12 +39,18 @@ class BaseAction(gws.base.action.Object):
     """Configured QField projects."""
     capsCache: dict[str, caps.Caps]
     """Capabilities by QField project uid. Not serialized."""
-    method: gws.AuthMethod
+    authMethod: auth.Object
     """Authorization method for QField clients."""
+    deltaLifeTime: int
+    """How long stored delta payloads are kept, in seconds."""
 
     def configure(self):
-        self.method = cast(gws.AuthMethod, self.create_child(gws.ext.object.authMethod, self.cfg('auth'), type='qfieldcloud'))
-        self.root.app.authMgr.add_method(self.method)
+        self.deltaLifeTime = self.cfg('deltaLifeTime', default=3600 * 24 * 30)
+        self.authMethod = cast(
+            auth.Object,
+            self.create_child(gws.ext.object.authMethod, self.cfg('auth'), type='qfieldcloud'),
+        )
+        self.root.app.authMgr.add_method(self.authMethod)
         self.qfcProjects = []
         for p in self.cfg('projects') or []:
             qp = self.create_child(core.QfcProject, p)
@@ -77,8 +84,6 @@ class BaseAction(gws.base.action.Object):
     def get_caps(self, qfc_project: core.QfcProject) -> caps.Caps:
         """Return the capabilities of a QField project, from the cache if they are still valid.
 
-        New capabilities are also written to ``caps.pickle`` in the project cache directory.
-
         Args:
             qfc_project: QField project.
 
@@ -93,13 +98,37 @@ class BaseAction(gws.base.action.Object):
 
         pa = caps.Parser(qfc_project)
         pa.parse()
-        gws.u.serialize_to_path(pa.caps, f'{self.fs_project_cache_dir(qfc_project)}/caps.pickle')
         pa.create_models()
         pa.assign_path_props()
 
         self.capsCache[qfc_project.uid] = pa.caps
         gws.log.debug(f'get_caps: {qfc_project.uid=}: created')
         return pa.caps
+
+    def get_db_provider(self, qfc_project: core.QfcProject) -> gws.DatabaseProvider:
+        """Return the database provider of the models of a QField project.
+
+        Args:
+            qfc_project: QField project.
+
+        Returns:
+            Database provider.
+
+        Raises:
+            ``gws.Error``: If the project has no models, or its models use more than one database provider.
+        """
+        cs = self.get_caps(qfc_project)
+
+        db = None
+        uids = set()
+        for me in cs.modelMap.values():
+            db = me.model.db
+            uids.add(me.model.db.uid)
+
+        if len(uids) != 1 or db is None:
+            raise gws.Error(f'QField project {qfc_project.uid!r}: expected one database provider, found {sorted(uids)}')
+
+        return db
 
     def get_cached_caps(self, qfc_project: core.QfcProject) -> Optional[caps.Caps]:
         """Return cached capabilities, if the QGIS project source has not changed.
@@ -165,10 +194,10 @@ class BaseAction(gws.base.action.Object):
         project = worker.user.require_project(pa.projectUid) if pa.projectUid else None
         qfc_project = gws.u.require(self.get_qfc_project(pa.qfcProjectUid, worker.user))
 
-        self.fs_cleanup_old_packages(qfc_project)
+        self.cleanup_old_packages(qfc_project)
 
         uid = dtx.to_basic_string(with_ms=True)
-        pkg_dir = self.fs_new_package_dir(qfc_project, uid)
+        pkg_dir = self.new_package_dir(qfc_project, uid)
         args = packager.Args(
             uid=uid,
             qfcProject=qfc_project,
@@ -176,7 +205,7 @@ class BaseAction(gws.base.action.Object):
             project=project,
             user=worker.user,
             packageDir=pkg_dir,
-            mapCacheDir=self.fs_project_cache_dir(qfc_project),
+            mapCacheDir=self.project_cache_dir(qfc_project),
             withBaseMap=True,
             withData=True,
             withMedia=True,
@@ -207,7 +236,7 @@ class BaseAction(gws.base.action.Object):
             project=project,
             user=user,
             packageDir=target_dir,
-            mapCacheDir=self.fs_project_cache_dir(qfc_project),
+            mapCacheDir=self.project_cache_dir(qfc_project),
             withBaseMap=True,
             withData=True,
             withMedia=True,
@@ -229,7 +258,7 @@ class BaseAction(gws.base.action.Object):
 
     ##
 
-    def fs_project_base_dir(self, qfc_project: core.QfcProject) -> str:
+    def project_base_dir(self, qfc_project: core.QfcProject) -> str:
         """Return the base directory of a QField project, creating it if needed.
 
         The directory is ``<VAR_DIR>/qfieldcloud/projects/<uid>``. Packages, caches
@@ -243,7 +272,7 @@ class BaseAction(gws.base.action.Object):
         """
         return gws.u.ensure_dir(f'{gws.c.VAR_DIR}/qfieldcloud/projects/{qfc_project.uid}')
 
-    def fs_latest_package_dir(self, qfc_project: core.QfcProject) -> Optional[str]:
+    def latest_package_dir(self, qfc_project: core.QfcProject) -> Optional[str]:
         """Return the directory of the latest complete package.
 
         Args:
@@ -252,13 +281,13 @@ class BaseAction(gws.base.action.Object):
         Returns:
             Directory path, or ``None`` if there is no complete package.
         """
-        base_dir = self.fs_project_base_dir(qfc_project)
+        base_dir = self.project_base_dir(qfc_project)
         for pkg in sorted(osx.find_directories(base_dir, deep=False), reverse=True):
             m = re.search(r'package_(\d+)', pkg)
             if m and gws.u.is_file(f'{pkg}/{packager.COMPLETE_FILE}'):
                 return pkg
 
-    def fs_new_package_dir(self, qfc_project: core.QfcProject, uid: str) -> str:
+    def new_package_dir(self, qfc_project: core.QfcProject, uid: str) -> str:
         """Create a directory for a new package.
 
         Args:
@@ -268,18 +297,18 @@ class BaseAction(gws.base.action.Object):
         Returns:
             Directory path.
         """
-        base_dir = self.fs_project_base_dir(qfc_project)
+        base_dir = self.project_base_dir(qfc_project)
         pkg_dir = gws.u.ensure_dir(f'{base_dir}/package_{uid}')
         return pkg_dir
 
-    def fs_cleanup_old_packages(self, qfc_project: core.QfcProject, keep_seconds: int = 3600):
+    def cleanup_old_packages(self, qfc_project: core.QfcProject, keep_seconds: int = 3600):
         """Remove package directories older than ``keep_seconds``.
 
         Args:
             qfc_project: QField project.
             keep_seconds: Maximum age in seconds.
         """
-        base_dir = self.fs_project_base_dir(qfc_project)
+        base_dir = self.project_base_dir(qfc_project)
         now = dtx.now().timestamp()
         for pkg in osx.find_directories(base_dir, deep=False):
             m = re.search(r'package_(\d+)', pkg)
@@ -287,10 +316,25 @@ class BaseAction(gws.base.action.Object):
                 continue
             t = osx.file_mtime(pkg)
             if now - t > keep_seconds:
-                gws.log.info(f'fs_cleanup_old_packages: removing old package: {pkg=}')
+                gws.log.info(f'cleanup_old_packages: removing old package: {pkg=}')
                 osx.rmdir(pkg)
 
-    def fs_project_cache_dir(self, qfc_project: core.QfcProject) -> str:
+    def latest_package_path_map(self, qfc_project: core.QfcProject) -> dict[str, str]:
+        """Return the path map of the latest package of a QField project.
+
+        Args:
+            qfc_project: QField project.
+
+        Returns:
+            Paths on disk by package file name, empty if there is no package.
+        """
+        d = self.latest_package_dir(qfc_project)
+        try:
+            return gws.lib.jsonx.from_path(f'{d}/{packager.PATH_MAP_FILE}')
+        except Exception:
+            return {}
+
+    def project_cache_dir(self, qfc_project: core.QfcProject) -> str:
         """Return the cache directory of a QField project, creating it if needed.
 
         Args:
@@ -299,49 +343,20 @@ class BaseAction(gws.base.action.Object):
         Returns:
             Directory path.
         """
-        base_dir = self.fs_project_base_dir(qfc_project)
+        base_dir = self.project_base_dir(qfc_project)
         return gws.u.ensure_dir(f'{base_dir}/cache')
 
-    def fs_project_deltas_dir(self, qfc_project: core.QfcProject) -> str:
-        """Return the deltas directory of a QField project, creating it if needed.
+    def deltas_db_path(self, qfc_project: core.QfcProject) -> str:
+        """Return the path of the delta database of a QField project.
 
         Args:
             qfc_project: QField project.
-
-        Returns:
-            Directory path.
-        """
-        base_dir = self.fs_project_base_dir(qfc_project)
-        return gws.u.ensure_dir(f'{base_dir}/deltas')
-
-    def fs_delta_payload_path(self, qfc_project: core.QfcProject, payload_id: str) -> str:
-        """Return the path of a stored delta payload.
-
-        Args:
-            qfc_project: QField project.
-            payload_id: Payload id.
 
         Returns:
             File path.
         """
-        d = self.fs_project_deltas_dir(qfc_project)
-        u = gws.u.to_uid(payload_id)
-        return f'{d}/{u}.json'
-
-    def fs_cleanup_old_deltas(self, qfc_project: core.QfcProject, keep_seconds: int = 3600):
-        """Remove stored delta payloads older than ``keep_seconds``.
-
-        Args:
-            qfc_project: QField project.
-            keep_seconds: Maximum age in seconds.
-        """
-        d = self.fs_project_deltas_dir(qfc_project)
-        now = dtx.now().timestamp()
-        for f in osx.find_files(d, deep=False):
-            t = osx.file_mtime(f)
-            if now - t > keep_seconds:
-                gws.log.info(f'fs_cleanup_old_deltas: removing old delta: {f=}')
-                osx.unlink(f)
+        base_dir = self.project_base_dir(qfc_project)
+        return f'{base_dir}/deltas.sqlite'
 
 
 ##

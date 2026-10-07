@@ -3,16 +3,16 @@
 from typing import Optional, cast
 
 import re
-import os
 import hashlib
 
 import gws
 import gws.lib.mime
 import gws.lib.jsonx
+import gws.lib.sqlitex
 import gws.lib.datetimex as dtx
 import gws.lib.osx as osx
 
-from . import core, packager, patcher, api, action_base
+from . import core, patcher, api, action_base, delta, auth
 
 
 def route(pattern: str):
@@ -24,6 +24,7 @@ def route(pattern: str):
     Returns:
         The decorator.
     """
+
     def decorator(fn):
         fn._route_pattern = pattern
         return fn
@@ -34,7 +35,7 @@ def route(pattern: str):
 class Handler:
     """Handler for a single QFieldCloud API request.
 
-    Finds the route for the request, authorizes the user and calls the route method.
+    Finds the route for the request, authenticates the user and calls the route method.
     The handler holds the state of the request only, persistent data is accessed via ``action``.
     """
 
@@ -56,12 +57,8 @@ class Handler:
     """GWS Project context."""
     qfcProject: core.QfcProject
     """QField Cloud Project context."""
-    user: gws.User
-    """Authenticated user."""
-    sess: gws.AuthSession
-    """Authentication session."""
-    token: str
-    """Authentication token."""
+    auth: auth.Result
+    """Authentication result: user, session and token."""
 
     def __init__(self, action: action_base.BaseAction):
         """Create a handler.
@@ -138,7 +135,7 @@ class Handler:
     )
 
     def _handle_route(self, fn) -> gws.ContentResponse:
-        """Read the request payload, authorize non-public routes, call the route method and convert its result to a response."""
+        """Read the request payload, authenticate non-public routes, call the route method and convert its result to a response."""
         if self.req.isApi:
             self.post = self.req.struct()
         elif self.req.isForm:
@@ -149,7 +146,7 @@ class Handler:
         gws.log.debug(f'API_REQUEST {self.apiRoute=} -> {fn.__name__} {self.parts=} {self.qs=}')
 
         if self.apiRoute not in self._public_routes:
-            self.authorize_from_token()
+            self.auth = self.action.authMethod.authenticate_from_token(self.req)
 
         res = fn()
 
@@ -173,8 +170,8 @@ class Handler:
     def on_post_auth_logout(self):
         """Log out, deleting the session."""
         am = self.action.root.app.authMgr
-        am.sessionMgr.delete(self.sess)
-        gws.log.debug(f'logout: {self.user.loginName=}')
+        am.sessionMgr.delete(self.auth.sess)
+        gws.log.debug(f'logout: {self.auth.user.loginName=}')
 
     @route('GET api/v1/auth/providers')
     def on_get_auth_providers(self) -> list[api.AuthProvider]:
@@ -255,19 +252,19 @@ class Handler:
         Raises:
             ``gws.AuthenticationError``: If the credentials are invalid.
         """
-        self.authorize_from_credentials(
+        self.auth = self.action.authMethod.authenticate_from_credentials(
             gws.Data(
                 username=self.post.get('username', ''),
                 password=self.post.get('password', ''),
             ),
+            self.req,
         )
-        am = self.action.root.app.authMgr
         return api.AuthToken(
-            token=self.token,
-            expires_at=dtx.to_iso_string(dtx.add(seconds=am.sessionMgr.lifeTime)),
-            username=self.user.loginName,
+            token=self.auth.token,
+            expires_at=dtx.to_iso_string(self.auth.expiresAt),
+            username=self.auth.user.loginName,
             type=api.UserType.person,
-            full_name=self.user.displayName,
+            full_name=self.auth.user.displayName,
             avatar_url='',
             email='',
             first_name='',
@@ -282,9 +279,9 @@ class Handler:
             User information.
         """
         return api.CompleteUser(
-            username=self.user.loginName,
+            username=self.auth.user.loginName,
             type=api.UserType.person,
-            full_name=self.user.displayName,
+            full_name=self.auth.user.displayName,
             avatar_url='',
             email='',
             first_name='',
@@ -300,8 +297,8 @@ class Handler:
         """
         limit = int(self.qs.get('limit', 100))
         offset = int(self.qs.get('offset', 0))
-        qps = self.action.get_qfc_projects(self.user)
-        return [_format_project(qp, self.user) for qp in qps[offset : offset + limit]]
+        qps = self.action.get_qfc_projects(self.auth.user)
+        return [_format_project(qp, self.auth.user) for qp in qps[offset : offset + limit]]
 
     @route('POST api/v1/projects')
     def on_post_projects(self):
@@ -323,7 +320,7 @@ class Handler:
             ``gws.NotFoundError``: If the QField project is not found.
         """
         self.set_qfc_project_from_parts()
-        return _format_project(self.qfcProject, self.user)
+        return _format_project(self.qfcProject, self.auth.user)
 
     @route('POST api/v1/jobs')
     def on_post_jobs(self) -> api.Job:
@@ -365,7 +362,7 @@ class Handler:
             ``gws.NotFoundError``: If the job is not found.
         """
         job_id = self.parts.get('job_id', '')
-        job = self.action.get_job(job_id, self.user)
+        job = self.action.get_job(job_id, self.auth.user)
         if not job:
             raise gws.NotFoundError(f'Job {job_id!r} not found')
         return _format_job(job)
@@ -386,7 +383,7 @@ class Handler:
         # @TODO do we need layers?
         # package_version = self.parts.get('package_version', '')
 
-        path_map = self.get_latest_package_path_map()
+        path_map = self.action.latest_package_path_map(self.qfcProject)
         return api.Package(
             files=_format_files(path_map),
             layers=[],
@@ -410,7 +407,7 @@ class Handler:
         self.set_qfc_project_from_parts()
 
         file_name = self.parts.get('file_name', '')
-        path_map = self.get_latest_package_path_map()
+        path_map = self.action.latest_package_path_map(self.qfcProject)
         for fname, p in path_map.items():
             if file_name == fname:
                 # QField resumes interrupted downloads with "Range: bytes=N-" and appends the body to its partial file.
@@ -435,7 +432,7 @@ class Handler:
             ``gws.NotFoundError``: If the QField project is not found.
         """
         self.set_qfc_project_from_parts()
-        path_map = self.get_latest_package_path_map()
+        path_map = self.action.latest_package_path_map(self.qfcProject)
         return _format_files(path_map)
 
     @route('GET api/v1/files/thumbnails/(?P<project_id>[^/]+)')
@@ -459,61 +456,108 @@ class Handler:
     def on_post_deltas(self):
         """Store a delta payload and apply its changes.
 
-        The payload is uploaded as a multipart file. After the patcher returns, all deltas of the payload are marked as applied.
+        The payload is uploaded as a multipart file. Deltas are identified by their content,
+        so a delta pushed again unchanged, also under another payload id, is not applied again.
+        The deltas that are new, or failed before, or have been pending for longer than
+        ``delta.PENDING_TIMEOUT``, are applied all together or not at all.
 
         Raises:
             ``gws.NotFoundError``: If the QField project is not found.
             ``gws.BadRequestError``: If the payload cannot be read.
+            ``core.DeltaApplyError``: If a delta is still being applied, or the deltas cannot be applied.
         """
         self.set_qfc_project_from_parts()
 
-        # deltas come as a multipart file upload
         try:
-            js = gws.lib.jsonx.from_string(self.post['file'].stream.read().decode('utf-8'))
-            payload = api.DeltasPayload(
-                deltas=js['deltas'],
-                files=js.get('files', []),
-                id=js['id'],
-                project=js['project'],
-                version=js['version'],
-            )
+            text = self.post['file'].stream.read().decode('utf-8')
+            payload = delta.parse_payload(text)
         except Exception as exc:
-            raise gws.BadRequestError(f'invalid delta file content: {exc}')
+            raise gws.BadRequestError(f'invalid delta file: {exc}')
 
-        self.store_delta_payload(payload)
+        user_name = self.auth.user.loginName
+        delta.cleanup(self.delta_db(), self.action.deltaLifeTime)
 
-        changes = []
+        uids = []
+        drs = []
+
         for d in payload.deltas:
-            new = d.get('new', {})
-            old = d.get('old', {})
-            chg = patcher.Change(
-                uid=d['uuid'],
-                type=d['method'],
-                layerUid=d['localLayerId'],
-                newAtts=new['attributes'] if new else {},
-                oldAtts=old['attributes'] if old else {},
-                wkt=new.get('geometry', ''),
+            uid = gws.u.sha256([user_name, d])
+            uids.append(uid)
+            dr = delta.get_one(self.delta_db(), uid, user_name)
+            if dr:
+                ds = delta.status(dr, payload.id)
+                if ds.status == api.DeltaStatusType.applied:
+                    continue
+                if ds.status == api.DeltaStatusType.pending:
+                    raise core.DeltaApplyError(f'changes {payload.id!r} are being applied, try again later')
+            drs.append(delta.new_record(uid, d, user_name))
+
+        delta.link_payload(self.delta_db(), payload.id, uids, user_name)
+        delta.store_all(self.delta_db(), drs)
+
+        if not drs:
+            gws.log.info(f'deltas {payload.id!r}: already applied')
+            return
+
+        try:
+            args = patcher.Args(
+                qfcProject=self.qfcProject,
+                caps=self.action.get_caps(self.qfcProject),
+                db=self.action.get_db_provider(self.qfcProject),
+                project=self.project,
+                user=self.auth.user,
+                baseDir='',
+                changes=delta.extract_changes(drs),
             )
-            changes.append(chg)
+            self.action.get_patcher().apply_changes(self.action.root, args)
+        except Exception as exc:
+            gws.log.exception(f'deltas {payload.id!r}: failed to apply')
+            delta.set_status_for_all(self.delta_db(), drs, api.DeltaStatusType.error, str(exc))
+            raise core.DeltaApplyError(f'changes {payload.id!r} could not be applied, see the server log') from exc
 
-        args = patcher.Args(
-            qfcProject=self.qfcProject,
-            caps=self.action.get_caps(self.qfcProject),
-            project=self.project,
-            user=self.user,
-            baseDir='',
-            changes=changes,
-        )
-        self.action.get_patcher().apply_changes(self.action.root, args)
+        delta.set_status_for_all(self.delta_db(), drs, api.DeltaStatusType.applied)
 
-        self.set_delta_payload_applied(payload.id)
+    @route('GET api/v1/deltas/(?P<project_id>[^/]+)')
+    def on_get_deltas(self) -> gws.ContentResponse:
+        """Return the deltas the user has sent for a QField project, newest first.
 
-    @route('GET api/v1/deltas/(?P<project_id>[^/]+)/(?P<payload_id>.+)')
-    def on_get_deltas(self) -> list[api.StoredDelta]:
-        """Return the stored deltas of a payload.
+        The list is paged by the ``limit`` and ``offset`` query parameters. If there are more deltas,
+        the response has an ``X-Next-Page`` header. The ``ordering`` parameter is ignored.
 
         Returns:
-            Stored deltas.
+            Delta statuses as JSON.
+
+        Raises:
+            ``gws.NotFoundError``: If the QField project is not found.
+            ``gws.BadRequestError``: If ``limit`` or ``offset`` is not a number.
+        """
+        self.set_qfc_project_from_parts()
+
+        try:
+            limit = int(self.qs.get('limit', 50))
+            offset = int(self.qs.get('offset', 0))
+        except ValueError as exc:
+            raise gws.BadRequestError(f'invalid paging parameters: {exc}')
+
+        rs = delta.get_history(self.delta_db(), self.auth.user.loginName, limit + 1, offset)
+        dss = [delta.status(dr, payload_id) for dr, payload_id in rs[:limit]]
+
+        headers = {}
+        if len(rs) > limit:
+            headers['X-Next-Page'] = str(offset + limit)
+
+        return gws.ContentResponse(
+            content=gws.lib.jsonx.to_string(dss),
+            mimeType=gws.lib.mime.JSON,
+            headers=headers,
+        )
+
+    @route('GET api/v1/deltas/(?P<project_id>[^/]+)/(?P<payload_id>.+)')
+    def on_get_deltas_in_payload(self) -> list[core.DeltaStatus]:
+        """Return the status of the deltas of a payload.
+
+        Returns:
+            Delta statuses.
 
         Raises:
             ``gws.NotFoundError``: If the QField project is not found.
@@ -521,21 +565,23 @@ class Handler:
         """
         self.set_qfc_project_from_parts()
 
-        # the content of the delta does not seem to matter much, only the ID and  status=applied
-        # see QField/src/core/qfieldcloud/qfieldcloudproject.cpp : getDeltaStatus()
-
         payload_id = self.parts.get('payload_id', '')
-        sds = self.get_delta_payload(payload_id)
-        if not sds:
+        drs = delta.get_for_payload(self.delta_db(), payload_id, self.auth.user.loginName)
+        dss = [delta.status(dr, payload_id) for dr in drs]
+        if not dss:
             raise gws.NotFoundError(f'delta {payload_id=} not found')
-        return sds
+        return dss
 
     @route('POST api/v1/files/(?P<project_id>[^/]+)/(?P<path>.+)')
-    def on_post_file(self):
+    def on_post_file(self) -> gws.ContentResponse:
         """Apply a file upload.
+
+        Returns:
+            An empty response with status 201.
 
         Raises:
             ``gws.NotFoundError``: If the QField project is not found.
+            ``gws.NotFoundError``: If no feature refers to the file.
             ``gws.BadRequestError``: If the upload cannot be read.
         """
         self.set_qfc_project_from_parts()
@@ -550,61 +596,16 @@ class Handler:
             qfcProject=self.qfcProject,
             caps=self.action.get_caps(self.qfcProject),
             project=self.project,
-            user=self.user,
+            user=self.auth.user,
             baseDir='',
             filePath=path,
             fileContent=fc,
         )
-        self.action.get_patcher().apply_upload(self.action.root, args)
+        if not self.action.get_patcher().apply_upload(self.action.root, args):
+            raise gws.NotFoundError(f'no feature found for {path!r}')
+        return gws.ContentResponse(status=201, content='')
 
     ##
-
-    def authorize_from_credentials(self, credentials: gws.Data):
-        """Authenticate a user and create a session.
-
-        Sets ``sess``, ``user`` and ``token``.
-
-        Args:
-            credentials: Data with ``username`` and ``password``.
-
-        Raises:
-            ``gws.AuthenticationError``: If the credentials are invalid.
-        """
-        am = self.action.root.app.authMgr
-        user = am.authenticate(self.action.method, credentials, self.req)
-        if not user:
-            raise gws.AuthenticationError('invalid username or password')
-        self.sess = am.sessionMgr.create(self.action.method, user)
-        self.user = user
-        self.token = self.sess.uid
-
-    def authorize_from_token(self):
-        """Authorize the request by the ``Authorization: Token ...`` header.
-
-        Sets ``sess``, ``user`` and ``token`` and touches the session.
-
-        Raises:
-            ``gws.AuthenticationError``: If the header is missing, or the token is invalid or belongs to another method.
-            ``gws.ForbiddenError``: If the method cannot be used in this context, e.g. without a secure connection.
-        """
-        h = self.req.header('Authorization', '')
-        m = re.match(r'^Token (.+)$', h)
-        if not m:
-            raise gws.AuthenticationError('token_auth: missing or invalid Authorization header')
-        token = m.group(1)
-        am = self.action.root.app.authMgr
-        if not am.can_use_method(self.req, self.action.method):
-            raise gws.ForbiddenError('token_auth: insecure_context')
-        sess = am.sessionMgr.get(token)
-        if not sess:
-            raise gws.AuthenticationError('token_auth: invalid or expired token')
-        if not sess.method or sess.method.uid != self.action.method.uid:
-            raise gws.AuthenticationError(f'token_auth: wrong method {sess.method=}')
-        self.sess = sess
-        self.user = sess.user
-        self.token = sess.uid
-        am.sessionMgr.touch(sess)
-        gws.log.debug(f'token_auth: ok: {self.token=} {self.user.uid=} {self.user.loginName=}')
 
     ##
 
@@ -617,7 +618,7 @@ class Handler:
         Raises:
             ``gws.NotFoundError``: If the project is not found or the user cannot use it.
         """
-        qp = self.action.get_qfc_project(uid, self.user)
+        qp = self.action.get_qfc_project(uid, self.auth.user)
         if not qp:
             raise gws.NotFoundError(f'project {uid!r} not found')
         self.qfcProject = qp
@@ -648,100 +649,25 @@ class Handler:
         )
         job = mgr.create_job(
             action_base.PackageWorker,
-            self.user,
+            self.auth.user,
             payload=gws.u.to_dict(p),
         )
         return mgr.schedule_job(job)
 
-    def get_latest_package_path_map(self) -> dict[str, str]:
-        """Return the path map of the latest package of the request's QField project.
+    def delta_db(self) -> gws.lib.sqlitex.Object:
+        """Return the delta database of the request's QField project.
 
         Returns:
-            Paths on disk by package file name, empty if there is no package.
+            Database wrapper.
         """
-        d = self.action.fs_latest_package_dir(self.qfcProject)
-        try:
-            return gws.lib.jsonx.from_path(f'{d}/{packager.PATH_MAP_FILE}')
-        except Exception:
-            return {}
 
-    ##
-
-    def store_delta_payload(self, payload: api.DeltasPayload):
-        """Store the deltas of a payload with the pending status.
-
-        Stored payloads older than an hour are removed first.
-
-        Args:
-            payload: Delta payload.
-        """
-        self.action.fs_cleanup_old_deltas(self.qfcProject)
-        sds = [
-            api.StoredDelta(
-                id=delta['uuid'],
-                deltafile_id=payload.id,
-                created_by=self.user.loginName,
-                created_at=dtx.to_iso_string(),
-                updated_at=dtx.to_iso_string(),
-                status='STATUS_PENDING',
-                client_id=delta['clientId'],
-                output=None,
-                last_status='pending',
-                last_feedback=None,
-                content=delta,
-            )
-            for delta in payload.deltas
-        ]
-        gws.lib.jsonx.to_path(
-            self.action.fs_delta_payload_path(self.qfcProject, payload.id),
-            sds,
+        return gws.lib.sqlitex.Object(
+            self.action.deltas_db_path(self.qfcProject),
+            init_ddl=delta.STORAGE_DDL,
         )
-
-    def set_delta_payload_applied(self, payload_id: str):
-        """Mark all stored deltas of a payload as applied.
-
-        Args:
-            payload_id: Payload id.
-        """
-        sds = self.get_delta_payload(payload_id)
-        if not sds:
-            return
-        for sd in sds:
-            sd.status = 'STATUS_APPLIED'
-            sd.last_status = 'applied'
-            sd.updated_at = dtx.to_iso_string()
-        gws.lib.jsonx.to_path(
-            self.action.fs_delta_payload_path(self.qfcProject, payload_id),
-            sds,
-        )
-
-    def get_delta_payload(self, payload_id: str) -> Optional[list[api.StoredDelta]]:
-        """Load the stored deltas of a payload.
-
-        Args:
-            payload_id: Payload id.
-
-        Returns:
-            Stored deltas, or ``None`` if not found, unreadable or stored by another user.
-        """
-        path = self.action.fs_delta_payload_path(self.qfcProject, payload_id)
-        if not os.path.exists(path):
-            gws.log.warning(f'stored delta {payload_id=}: not found: {path=}')
-            return
-        try:
-            sds = [api.StoredDelta(d) for d in gws.lib.jsonx.from_path(path)]
-        except Exception as exc:
-            gws.log.warning(f'stored delta {payload_id=}: failed to load {path=}: {exc}')
-            return
-        for sd in sds:
-            if sd.created_by != self.user.loginName:
-                gws.log.warning(f'stored delta {payload_id=}: user mismatch: {sd.created_by=} != {self.user.loginName=}')
-                return
-        return sds
 
 
 ##
-
 
 _DATE_CREATED = '2025-10-10T14:00:00'
 
