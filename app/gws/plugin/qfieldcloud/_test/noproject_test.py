@@ -8,7 +8,7 @@ import gws
 import gws.lib.jsonx
 import gws.test.util as u
 
-from gws.plugin.qfieldcloud import action as action_mod, core
+from gws.plugin.qfieldcloud import action as action_mod, action_base, core
 from gws.plugin.qfieldcloud._test import util as tu
 
 CONFIG = f"""
@@ -117,7 +117,7 @@ def _job_payload(root, url, token):
     res = u.http.post(root, url, json={'project_id': 'QFC_1', 'type': 'package'}, headers=_auth(token))
     assert res.status_code == 200
     job = root.app.jobMgr.get_job(res.json['id'])
-    return action_mod.WorkerPayload(gws.u.require(job).payload)
+    return action_base.WorkerPayload(gws.u.require(job).payload)
 
 
 def test_a_job_without_project_uid_has_no_project(root: gws.Root, token):

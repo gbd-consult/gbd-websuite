@@ -6,7 +6,9 @@ packaged according to the settings made with the QFieldSync QGIS plugin.
 
 .. rubric:: Submodules
 
-- ``action``: the ``qfieldcloud`` action. It dispatches API requests to route handlers, authenticates clients by token, runs packaging jobs, stores incoming deltas and manages the package and cache directories.
+- ``action``: the ``qfieldcloud`` action. It receives API requests and passes each one to a new request handler.
+- ``action_base``: the base class of the action. It holds the QField projects, caches their capabilities, creates packages (also in background jobs) and manages the package and cache directories.
+- ``action_handler``: the request handler. It dispatches an API request to a route method, authenticates the client by token and stores incoming deltas. It holds the state of a single request only and accesses persistent data via the action.
 - ``api``: data classes and enums mirroring the QFieldCloud API objects (``swagger.yaml``), plus a few objects used by the client that are not in the specification.
 - ``auth``: the ``qfieldcloud`` authorization method, created and registered by the action. It has the fixed uid ``gws.plugin.qfieldcloud.auth``.
 - ``caps``: reads the QFieldSync project and layer properties from the QGIS project and decides, per layer, whether it is packaged for editing, packaged as a base map or removed.
@@ -98,12 +100,14 @@ QField sends uploads in two steps: first, the file path is included along with t
 
 .. rubric:: Extending
 
-Override the packager and patcher classes to customize packaging and patching behavior.
-In your custom action class, override ``get_packager()`` and ``get_patcher()`` methods to return your custom classes.
+Override the packager, patcher and handler classes to customize packaging, patching and request handling.
+In your custom action class, override ``get_packager()``, ``get_patcher()`` and ``get_handler()`` methods to return your custom classes.
+Route methods of a custom handler are marked with the ``action_handler.route`` decorator.
 
 Example::
 
     import gws.plugin.qfieldcloud.action
+    import gws.plugin.qfieldcloud.action_handler
     import gws.plugin.qfieldcloud.patcher
 
     class MyPatcher(gws.plugin.qfieldcloud.patcher.Object):
@@ -111,13 +115,24 @@ Example::
             ...
             super().commit_operations_for_model(me, ops)
 
+    class MyHandler(gws.plugin.qfieldcloud.action_handler.Handler):
+        @gws.plugin.qfieldcloud.action_handler.route('GET api/v1/status')
+        def on_get_status(self):
+            ...
+            return super().on_get_status()
+
     class MyAction(gws.plugin.qfieldcloud.action.Object):
         def get_patcher(self):
             return MyPatcher()
+
+        def get_handler(self):
+            return MyHandler(self)
 """
 
 from . import (
     action,
+    action_base,
+    action_handler,
     packager,
     patcher,
     caps,
@@ -125,6 +140,8 @@ from . import (
 
 __all__ = [
     'action',
+    'action_base',
+    'action_handler',
     'packager',
     'patcher',
     'caps',

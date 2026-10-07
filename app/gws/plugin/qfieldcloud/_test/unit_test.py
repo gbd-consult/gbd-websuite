@@ -8,23 +8,23 @@ import gws.lib.datetimex as dtx
 import gws.lib.xmlx
 import gws.test.util as u
 
-from gws.plugin.qfieldcloud import action, caps, packager
+from gws.plugin.qfieldcloud import action_base, action_handler, caps, packager
 
 PART_SIZE = 8 * 1024 * 1024
 
 
 ##
-# action._get_md5sum_file
+# action_handler._get_md5sum_file
 
 
 def test_md5sum_small_file():
     b = b'hello world' * 100
-    assert action._get_md5sum_file(io.BytesIO(b)) == hashlib.md5(b).hexdigest()
+    assert action_handler._get_md5sum_file(io.BytesIO(b)) == hashlib.md5(b).hexdigest()
 
 
 def test_md5sum_exactly_one_part():
     b = b'x' * PART_SIZE
-    assert action._get_md5sum_file(io.BytesIO(b)) == hashlib.md5(b).hexdigest()
+    assert action_handler._get_md5sum_file(io.BytesIO(b)) == hashlib.md5(b).hexdigest()
 
 
 def test_md5sum_multipart():
@@ -33,7 +33,7 @@ def test_md5sum_multipart():
     sums = hashlib.md5(b[:PART_SIZE]).digest() + hashlib.md5(b[PART_SIZE:]).digest()
     expected = hashlib.md5(sums).hexdigest() + '-2'
 
-    assert action._get_md5sum_file(io.BytesIO(b)) == expected
+    assert action_handler._get_md5sum_file(io.BytesIO(b)) == expected
 
 
 def test_md5sum_multipart_exact_multiple():
@@ -42,18 +42,18 @@ def test_md5sum_multipart_exact_multiple():
     sums = hashlib.md5(b[:PART_SIZE]).digest() + hashlib.md5(b[PART_SIZE:]).digest()
     expected = hashlib.md5(sums).hexdigest() + '-2'
 
-    assert action._get_md5sum_file(io.BytesIO(b)) == expected
+    assert action_handler._get_md5sum_file(io.BytesIO(b)) == expected
 
 
 ##
-# action._format_files
+# action_handler._format_files
 
 
 def test_format_files(tmp_path):
     p = tmp_path / 'a.txt'
     p.write_bytes(b'12345')
 
-    fs = action._format_files({'a.txt': str(p)})
+    fs = action_handler._format_files({'a.txt': str(p)})
 
     assert len(fs) == 1
     assert fs[0].name == 'a.txt'
@@ -65,11 +65,11 @@ def test_format_files(tmp_path):
 
 
 def test_format_files_empty():
-    assert action._format_files({}) == []
+    assert action_handler._format_files({}) == []
 
 
 ##
-# action._format_job
+# action_handler._format_job
 
 
 def _job(state, payload=None):
@@ -91,31 +91,31 @@ def test_format_job_state_mapping():
         gws.JobState.cancel: 'pending',
     }
     for state, expected in m.items():
-        assert action._format_job(_job(state), None).status == expected
+        assert action_handler._format_job(_job(state)).status == expected
 
 
 def test_format_job_timestamps():
-    assert action._format_job(_job(gws.JobState.open), None).started_at is None
-    assert action._format_job(_job(gws.JobState.open), None).finished_at is None
+    assert action_handler._format_job(_job(gws.JobState.open)).started_at is None
+    assert action_handler._format_job(_job(gws.JobState.open)).finished_at is None
 
-    j = action._format_job(_job(gws.JobState.running), None)
+    j = action_handler._format_job(_job(gws.JobState.running))
     assert j.started_at is not None
     assert j.finished_at is None
 
-    j = action._format_job(_job(gws.JobState.complete), None)
+    j = action_handler._format_job(_job(gws.JobState.complete))
     assert j.finished_at is not None
 
 
 def test_format_job_reads_the_worker_payload():
     payload = gws.u.to_dict(
-        action.WorkerPayload(
+        action_base.WorkerPayload(
             actionUid='ACTION',
             jobType='package',
             qfcProjectUid='QFC_1',
             projectUid='PROJECT_1',
         )
     )
-    j = action._format_job(_job(gws.JobState.open, payload), None)
+    j = action_handler._format_job(_job(gws.JobState.open, payload))
 
     assert j.id == 'JOB_UID'
     assert j.type == 'package'
