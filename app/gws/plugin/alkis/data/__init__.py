@@ -13,8 +13,11 @@ Submodules:
   records, ``EnumPair`` code/text values, query objects
   (``FlurstueckQuery``, ``AdresseQuery`` and their options), the
   ``IndexStatus`` and the ``Reader`` interface for source data.
-- ``norbit6``: a ``Reader`` for source tables in the GeoInfoDok 6 layout
-  written by the norBIT ALKIS import.
+- ``norbit``: a ``Reader`` for source tables written by the norBIT ALKIS
+  import.
+- ``gid``: the GeoInfoDok schema used by the reader and the indexer,
+  ``geo_info_dok.gid6`` or ``geo_info_dok.gid7`` depending on
+  ``GWS_ALKIS_GID_VERSION`` (default ``7``).
 - ``indexer``: builds the index. It reads all relevant ALKIS object types
   through a ``Reader``, links them together in memory and writes the result
   into the index tables.

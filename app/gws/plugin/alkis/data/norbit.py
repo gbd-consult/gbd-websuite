@@ -1,4 +1,4 @@
-"""Read data from Norbit plugin tables (GeoInfoDok 6)."""
+"""Read data from Norbit plugin tables."""
 
 import gws
 import gws.base.database
@@ -6,17 +6,17 @@ import gws.lib.datetimex
 import gws.lib.sa as sa
 import gws.plugin.postgres.provider
 
-from .geo_info_dok import gid6 as gid
+from . import gid
 from . import types as dt
 
 
 class Object(dt.Reader):
-    """Reader for ALKIS source tables written by the norBIT ALKIS import (GeoInfoDok 6).
+    """Reader for ALKIS source tables written by the norBIT ALKIS import.
 
     There is one table per object type, named after the class in lower case,
     with one column per attribute. Struct attributes are stored in columns
     prefixed with the attribute name, lists are stored as arrays. The reader
-    converts each row into an instance of the ``gid6`` class, using a reader
+    converts each row into an instance of the ``gid`` class, using a reader
     method per attribute, chosen by the attribute type.
     """
 
@@ -30,6 +30,7 @@ class Object(dt.Reader):
 
         'AX_Lagebezeichnung': 'as_ax_lagebezeichnung',
         'AX_Buchung_HistorischesFlurstueck': 'as_ax_buchung_historischesflurstueck',
+        'AX_RelativeHoehe': 'as_ax_relativehoehe',
     }
     """Reader method names for basic and special attribute types."""
 
@@ -66,7 +67,7 @@ class Object(dt.Reader):
         """Return the reader method for an attribute.
 
         Args:
-            attr: Attribute metadata from the ``gid6`` schema.
+            attr: Attribute metadata from the ``gid`` schema.
 
         Returns:
             A bound reader method. Unknown types are read as strings.
@@ -291,6 +292,24 @@ class Object(dt.Reader):
             bb.buchungsblattbezirk = bz
             objs.append(bb)
         return objs
+
+    def as_ax_relativehoehe_list(self, cls, prop, r):
+        """Read a list of ``AX_RelativeHoehe`` structs.
+
+        Args:
+            cls: GeoInfoDok class of the attribute.
+            prop: Column name prefix of the struct attributes.
+            r: Table row as a dict.
+
+        Returns:
+            The ``hoehe`` of the first struct that has one, or ``None``.
+        """
+
+        # GeoInfoDok 7 'objekthoehe' is a list of heights with reference points,
+        # GeoInfoDok 6 has a single height, so we take the first one
+        for o in self.as_struct_list(cls, prop, r):
+            if o.hoehe is not None:
+                return o.hoehe
 
     ##
 

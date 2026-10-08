@@ -26047,7 +26047,7 @@ METADATA = {
                 "list": 1
             },
             {
-                "name": "gehoertAnteiligZu ",
+                "name": "gehoertAnteiligZu",
                 "title": "",
                 "type": "AX_Flurstueck",
                 "list": 1
@@ -26671,7 +26671,7 @@ METADATA = {
                 "list": 1
             },
             {
-                "name": "gehoertZu ",
+                "name": "gehoertZu",
                 "title": "",
                 "type": "AX_Gebaeude",
                 "list": 1
@@ -27636,7 +27636,7 @@ METADATA = {
                 "list": 0
             },
             {
-                "name": "zeigtAuf ",
+                "name": "zeigtAuf",
                 "title": "",
                 "type": "AX_Grenzpunkt",
                 "list": 0
@@ -28005,7 +28005,7 @@ METADATA = {
                 "list": 1
             },
             {
-                "name": "gehoertAnteiligZu ",
+                "name": "gehoertAnteiligZu",
                 "title": "",
                 "type": "AX_HistorischesFlurstueckOhneRaumbezug",
                 "list": 1
@@ -29601,13 +29601,13 @@ METADATA = {
                 "list": 0
             },
             {
-                "name": "hatVorgaenger ",
+                "name": "hatVorgaenger",
                 "title": "",
                 "type": "AX_Namensnummer",
                 "list": 1
             },
             {
-                "name": "bestehtAusRechtsverhaeltnissenZu ",
+                "name": "bestehtAusRechtsverhaeltnissenZu",
                 "title": "",
                 "type": "AX_Namensnummer",
                 "list": 0
@@ -30911,13 +30911,13 @@ METADATA = {
                 "list": 0
             },
             {
-                "name": "istExzentrumZu ",
+                "name": "istExzentrumZu",
                 "title": "",
                 "type": "AX_Schwerefestpunkt",
                 "list": 0
             },
             {
-                "name": "istZentrumZu ",
+                "name": "istZentrumZu",
                 "title": "",
                 "type": "AX_Schwerefestpunkt",
                 "list": 0

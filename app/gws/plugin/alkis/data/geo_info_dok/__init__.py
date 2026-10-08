@@ -16,7 +16,8 @@ Submodules:
   classes) and is used by the reader to choose attribute readers and by the
   indexer to find object types by category. Reading a missing attribute of
   a schema object returns ``None``.
-- ``gid7``: the same for GeoInfoDok 7. It is not used by the plugin yet.
+- ``gid7``: the same for GeoInfoDok 7. The plugin uses one of them, see
+  ``data.gid``.
 - ``generator``: a standalone script that creates ``gid6.py`` and
   ``gid7.py``. For version 6 it parses the Rational Rose ``.cat`` files
   ``Basisschema.cat`` and ``Fachschema.cat``, for version 7 the Enterprise

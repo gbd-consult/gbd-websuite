@@ -30,8 +30,8 @@ Submodules
   - ``data.index`` - the index object: index tables, status, address and
     parcel queries, serialization of entities.
   - ``data.indexer`` - builds the index from the source tables.
-  - ``data.norbit6`` - reads source tables in the Norbit (GeoInfoDok 6)
-    format.
+  - ``data.norbit`` - reads source tables in the Norbit format.
+  - ``data.gid`` - the GeoInfoDok schema in use, version 6 or 7.
   - ``data.exporter`` - exports parcels to CSV or GeoJSON.
   - ``data.geo_info_dok`` - the GeoInfoDok 6 and 7 schemas (generated) and
     the generator that creates them.

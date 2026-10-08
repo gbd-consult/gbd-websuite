@@ -1,9 +1,9 @@
 """Build the ALKIS index from source data."""
 
-from typing import Optional, Iterable
+from typing import Optional, Generic, TypeVar
+from collections.abc import Iterator
 
 import re
-from typing import Generic, TypeVar
 
 import shapely
 import shapely.strtree
@@ -13,19 +13,17 @@ import gws
 import gws.lib.osx
 import gws.lib.datetimex as dtx
 from gws.lib.cli import ProgressIndicator
-import gws.plugin.postgres.provider
 
 from . import types as dt
 from . import index
-from . import norbit6
-
-from .geo_info_dok import gid6 as gid
+from . import norbit
+from . import gid
 
 
 def run(ix: index.Object, data_schema: str, with_force=False):
     """Build the ALKIS index.
 
-    Reads the source tables with the norBIT GeoInfoDok 6 reader and writes
+    Reads the source tables with the norBIT reader and writes
     all index tables that do not have data yet. Does nothing if the index is
     already complete, unless ``with_force`` is set.
 
@@ -46,14 +44,14 @@ def run(ix: index.Object, data_schema: str, with_force=False):
     elif ix.status().complete:
         return
 
-    rdr = norbit6.Object(ix.db, schema=data_schema)
+    rdr = norbit.Object(ix.db, schema=data_schema)
     rr = _Runner(ix, rdr)
     rr.run()
 
 
 ##
 
-T = TypeVar("T")
+T = TypeVar('T')
 
 
 class _ObjectDict(Generic[T]):
@@ -146,7 +144,7 @@ class _ObjectDict(Generic[T]):
 
         return self.get_many(uids)
 
-    def __iter__(self) -> Iterable[T]:
+    def __iter__(self) -> Iterator[T]:
         yield from self.d.values()
 
     def __len__(self):
@@ -223,7 +221,6 @@ class _PlaceIndexer(_Indexer):
     https://de.wikipedia.org/wiki/Amtlicher_Gemeindeschl%C3%BCssel
     """
 
-
     empty1 = dt.EnumPair(code='0', text='')
     """Empty place value for one-digit codes."""
     empty2 = dt.EnumPair(code='00', text='')
@@ -298,10 +295,12 @@ class _PlaceIndexer(_Indexer):
         values = []
 
         for place in self.om.placeAll.values():
-            values.append(dict(
-                uid=place.uid,
-                data=index.serialize(place),
-            ))
+            values.append(
+                dict(
+                    uid=place.uid,
+                    data=index.serialize(place),
+                )
+            )
 
         self.write_table(index.TABLE_PLACE, values)
 
@@ -447,22 +446,24 @@ class _LageIndexer(_Indexer):
     Building geometries are not stored.
     """
 
-
     def collect(self):
         for ax in self.rr.read_flat(gid.AX_LagebezeichnungKatalogeintrag):
             self.om.catalog[self.lage_key(ax.schluessel)] = ax.bezeichnung
 
         for cls in (gid.AX_LagebezeichnungMitHausnummer, gid.AX_LagebezeichnungOhneHausnummer):
             for uid, axs in self.rr.read_grouped(cls):
-                self.om.Lage.add(uid, [
-                    _from_ax(
-                        dt.LageRecord,
-                        ax,
-                        strasse=self.strasse(ax),
-                        hausnummer=index.normalize_hausnummer(ax.hausnummer),
-                    )
-                    for ax in axs
-                ])
+                self.om.Lage.add(
+                    uid,
+                    [
+                        _from_ax(
+                            dt.LageRecord,
+                            ax,
+                            strasse=self.strasse(ax),
+                            hausnummer=index.normalize_hausnummer(ax.hausnummer),
+                        )
+                        for ax in axs
+                    ],
+                )
 
         # use the PTO (art=HNR) geometry for lage coordinates
         # PTO.dientZurDarstellungVon -> lage.uid
@@ -493,17 +494,20 @@ class _LageIndexer(_Indexer):
         atts = _meta_attributes(gid.METADATA['AX_Gebaeude'])
 
         for uid, axs in self.rr.read_grouped(gid.AX_Gebaeude):
-            self.om.Gebaeude.add(uid, [
-                _from_ax(
-                    dt.GebaeudeRecord,
-                    ax,
-                    name=', '.join(ax.name) if ax.name else None,
-                    amtlicheFlaeche=ax.grundflaeche or 0,
-                    props=self.rr.props_from(ax, atts),
-                    _zeigtAuf=ax.zeigtAuf,
-                )
-                for ax in axs
-            ])
+            self.om.Gebaeude.add(
+                uid,
+                [
+                    _from_ax(
+                        dt.GebaeudeRecord,
+                        ax,
+                        name=', '.join(ax.name) if ax.name else None,
+                        amtlicheFlaeche=ax.grundflaeche or 0,
+                        props=self.rr.props_from(ax, atts),
+                        _zeigtAuf=ax.zeigtAuf,
+                    )
+                    for ax in axs
+                ],
+            )
 
         for ge in self.om.Gebaeude:
             for r in ge.recs:
@@ -547,23 +551,27 @@ class _LageIndexer(_Indexer):
             A string of the key parts joined with commas.
         """
 
-        return _comma([
-            getattr(r, 'land'),
-            getattr(r, 'regierungsbezirk'),
-            getattr(r, 'kreis'),
-            getattr(r, 'gemeinde'),
-            getattr(r, 'lage'),
-        ])
+        return _comma(
+            [
+                getattr(r, 'land'),
+                getattr(r, 'regierungsbezirk'),
+                getattr(r, 'kreis'),
+                getattr(r, 'gemeinde'),
+                getattr(r, 'lage'),
+            ]
+        )
 
     def write(self):
         values = []
 
         for la in self.om.Lage:
-            values.append(dict(
-                uid=la.uid,
-                rc=len(la.recs),
-                data=index.serialize(la),
-            ))
+            values.append(
+                dict(
+                    uid=la.uid,
+                    rc=len(la.recs),
+                    data=index.serialize(la),
+                )
+            )
 
         self.write_table(index.TABLE_LAGE, values)
 
@@ -576,7 +584,6 @@ class _BuchungIndexer(_Indexer):
     Buchungsstellen.
     """
 
-
     buchungsblattkennzeichenMap: dict[str, dt.Buchungsblatt]
     """Buchungsblaetter by their identifier."""
 
@@ -586,43 +593,43 @@ class _BuchungIndexer(_Indexer):
 
     def collect(self):
         for uid, axs in self.rr.read_grouped(gid.AX_Anschrift):
-            self.om.Anschrift.add(uid, [
-                _from_ax(
-                    dt.AnschriftRecord,
-                    ax,
-                    ort=ax.ort_AmtlichesOrtsnamensverzeichnis or ax.ort_Post,
-                    plz=ax.postleitzahlPostzustellung,
-                    telefon=ax.telefon[0] if ax.telefon else None
-                )
-                for ax in axs
-            ])
+            self.om.Anschrift.add(
+                uid,
+                [
+                    _from_ax(
+                        dt.AnschriftRecord,
+                        ax,
+                        ort=ax.ort_AmtlichesOrtsnamensverzeichnis or ax.ort_Post,
+                        plz=ax.postleitzahlPostzustellung,
+                        telefon=ax.telefon[0] if ax.telefon else None,
+                    )
+                    for ax in axs
+                ],
+            )
 
         for uid, axs in self.rr.read_grouped(gid.AX_Person):
-            self.om.Person.add(uid, [
-                _from_ax(
-                    dt.PersonRecord,
-                    ax,
-                    anrede=ax.anrede.text if ax.anrede else None,
-                    _hat=ax.hat,
-                )
-                for ax in axs
-            ])
+            self.om.Person.add(
+                uid,
+                [
+                    _from_ax(
+                        dt.PersonRecord,
+                        ax,
+                        anrede=ax.anrede.text if ax.anrede else None,
+                        _hat=ax.hat,
+                    )
+                    for ax in axs
+                ],
+            )
 
         # AX_Person.hat -> [AX_Anschrift]
         for pe in self.om.Person:
             pe.anschriftList = self.om.Anschrift.get_from_ptr(pe, '_hat')
 
         for uid, axs in self.rr.read_grouped(gid.AX_Namensnummer):
-            self.om.Namensnummer.add(uid, [
-                _from_ax(
-                    dt.NamensnummerRecord,
-                    ax,
-                    anteil=_anteil(ax),
-                    _benennt=ax.benennt,
-                    _istBestandteilVon=ax.istBestandteilVon
-                )
-                for ax in axs
-            ])
+            self.om.Namensnummer.add(
+                uid,
+                [_from_ax(dt.NamensnummerRecord, ax, anteil=_anteil(ax), _benennt=ax.benennt, _istBestandteilVon=ax.istBestandteilVon) for ax in axs],
+            )
 
         # AX_Namensnummer.benennt -> AX_Person
         for nn in self.om.Namensnummer:
@@ -630,17 +637,20 @@ class _BuchungIndexer(_Indexer):
             nn.personList = self.om.Person.get_from_ptr(nn, '_benennt')
 
         for uid, axs in self.rr.read_grouped(gid.AX_Buchungsstelle):
-            self.om.Buchungsstelle.add(uid, [
-                _from_ax(
-                    dt.BuchungsstelleRecord,
-                    ax,
-                    anteil=_anteil(ax),
-                    _an=ax.an,
-                    _zu=ax.zu,
-                    _istBestandteilVon=ax.istBestandteilVon,
-                )
-                for ax in axs
-            ])
+            self.om.Buchungsstelle.add(
+                uid,
+                [
+                    _from_ax(
+                        dt.BuchungsstelleRecord,
+                        ax,
+                        anteil=_anteil(ax),
+                        _an=ax.an,
+                        _zu=ax.zu,
+                        _istBestandteilVon=ax.istBestandteilVon,
+                    )
+                    for ax in axs
+                ],
+            )
 
         for bs in self.om.Buchungsstelle:
             bs.laufendeNummer = bs.recs[-1].laufendeNummer
@@ -648,14 +658,17 @@ class _BuchungIndexer(_Indexer):
             bs.flurstueckskennzeichenList = []
 
         for uid, axs in self.rr.read_grouped(gid.AX_Buchungsblatt):
-            self.om.Buchungsblatt.add(uid, [
-                _from_ax(
-                    dt.BuchungsblattRecord,
-                    ax,
-                    buchungsblattbezirk=self.rr.place.get_buchungsblattbezirk(ax.buchungsblattbezirk),
-                )
-                for ax in axs
-            ])
+            self.om.Buchungsblatt.add(
+                uid,
+                [
+                    _from_ax(
+                        dt.BuchungsblattRecord,
+                        ax,
+                        buchungsblattbezirk=self.rr.place.get_buchungsblattbezirk(ax.buchungsblattbezirk),
+                    )
+                    for ax in axs
+                ],
+            )
 
         for bb in self.om.Buchungsblatt:
             bb.buchungsstelleList = []
@@ -712,11 +725,13 @@ class _BuchungIndexer(_Indexer):
         values = []
 
         for bb in self.om.Buchungsblatt:
-            values.append(dict(
-                uid=bb.uid,
-                rc=len(bb.recs),
-                data=index.serialize(bb),
-            ))
+            values.append(
+                dict(
+                    uid=bb.uid,
+                    rc=len(bb.recs),
+                    data=index.serialize(bb),
+                )
+            )
 
         self.write_table(index.TABLE_BUCHUNGSBLATT, values)
 
@@ -780,13 +795,7 @@ class _PartIndexer(_Indexer):
 
         _, key = dt.Part.KIND[kind]
         classes = [
-            getattr(gid, meta['name'])
-            for meta in gid.METADATA.values()
-            if (
-                    meta['kind'] == 'object'
-                    and meta['geom']
-                    and key + '/' in meta['key']
-            )
+            getattr(gid, meta['name']) for meta in gid.METADATA.values() if (meta['kind'] == 'object' and meta['geom'] and key + '/' in meta['key'])
         ]
 
         for cls in classes:
@@ -797,21 +806,24 @@ class _PartIndexer(_Indexer):
 
         Args:
             kind: Part kind.
-            cls: GeoInfoDok class from ``gid6``.
+            cls: GeoInfoDok class from ``gid``.
         """
 
         meta = gid.METADATA[cls.__name__]
         atts = _meta_attributes(meta)
 
         for uid, axs in self.rr.read_grouped(cls):
-            pa = self.om.Part.add(uid, [
-                _from_ax(
-                    dt.PartRecord,
-                    ax,
-                    props=self.rr.props_from(ax, atts),
-                )
-                for ax in axs
-            ])
+            pa = self.om.Part.add(
+                uid,
+                [
+                    _from_ax(
+                        dt.PartRecord,
+                        ax,
+                        props=self.rr.props_from(ax, atts),
+                    )
+                    for ax in axs
+                ],
+            )
             pa.kind = kind
             pa.name = dt.EnumPair(meta['uid'], meta['title'])
 
@@ -837,29 +849,32 @@ class _PartIndexer(_Indexer):
 
                 fs = self.fs_list[i]
 
-                part = parts_map.setdefault(fs.uid, dt.Part(
-                    uid=pa.uid,
-                    recs=[],
-                    kind=pa.kind,
-                    name=pa.name,
-                    fs=fs.uid,
-                ))
+                part = parts_map.setdefault(
+                    fs.uid,
+                    dt.Part(
+                        uid=pa.uid,
+                        recs=[],
+                        kind=pa.kind,
+                        name=pa.name,
+                        fs=fs.uid,
+                    ),
+                )
 
                 # computed area corrected with respect to FS's "amtlicheFlaeche"
-                part_area_corrected = round(
-                    fs.recs[-1].amtlicheFlaeche * (part_area / fs.recs[-1].geomFlaeche),
-                    2)
+                part_area_corrected = round(fs.recs[-1].amtlicheFlaeche * (part_area / fs.recs[-1].geomFlaeche), 2)
 
-                part.recs.append(dt.PartRecord(
-                    uid=r.uid,
-                    beginnt=r.beginnt,
-                    endet=r.endet,
-                    anlass=r.anlass,
-                    props=r.props,
-                    geomFlaeche=part_area,
-                    amtlicheFlaeche=part_area_corrected,
-                    isHistoric=r.endet is not None,
-                ))
+                part.recs.append(
+                    dt.PartRecord(
+                        uid=r.uid,
+                        beginnt=r.beginnt,
+                        endet=r.endet,
+                        anlass=r.anlass,
+                        props=r.props,
+                        geomFlaeche=part_area,
+                        amtlicheFlaeche=part_area_corrected,
+                        isHistoric=r.endet is not None,
+                    )
+                )
 
                 part.geom = shapely.wkb.dumps(part_geom, srid=self.ix.crs.srid, hex=True)
                 part.geomFlaeche = part_area
@@ -874,18 +889,20 @@ class _PartIndexer(_Indexer):
             geom = _pop(pa, 'geom')
             data = index.serialize(pa)
             pa.geom = geom
-            values.append(dict(
-                n=n,
-                fs=pa.fs,
-                uid=pa.uid,
-                beginnt=pa.recs[-1].beginnt,
-                endet=pa.recs[-1].endet,
-                kind=pa.kind,
-                name=pa.name.text,
-                parthistoric=pa.isHistoric,
-                data=data,
-                geom=geom,
-            ))
+            values.append(
+                dict(
+                    n=n,
+                    fs=pa.fs,
+                    uid=pa.uid,
+                    beginnt=pa.recs[-1].beginnt,
+                    endet=pa.recs[-1].endet,
+                    kind=pa.kind,
+                    name=pa.name.text,
+                    parthistoric=pa.isHistoric,
+                    data=data,
+                    geom=geom,
+                )
+            )
 
         self.write_table(index.TABLE_PART, values)
 
@@ -898,7 +915,6 @@ class _FsDataIndexer(_Indexer):
     Gemarkung or Gemeinde are skipped and counted in ``counts``. Also fills in
     the predecessor lists from the successor lists.
     """
-
 
     def __init__(self, runner: '_Runner'):
         super().__init__(runner)
@@ -919,7 +935,7 @@ class _FsDataIndexer(_Indexer):
             if not recs:
                 continue
             # For a historic FS, 'beginnt' is basically when the history beginnt
-            # (see comments for AX_HistorischesFlurstueck in gid6).
+            # (see comments for AX_HistorischesFlurstueck in gid).
             # we set F.endet=F.beginnt to designate this one as 'historic'
             for r in recs:
                 r.endet = r.beginnt
@@ -939,10 +955,7 @@ class _FsDataIndexer(_Indexer):
         # and mark each referenced FS as a "vorgaenger" FS
         # It is a M:N relation, therefore 'vorgaengerFlurstueckskennzeichen' is also an array
 
-        knz_to_fs = {
-            fs.flurstueckskennzeichen: fs
-            for fs in self.om.Flurstueck
-        }
+        knz_to_fs = {fs.flurstueckskennzeichen: fs for fs in self.om.Flurstueck}
         for fs in self.om.Flurstueck:
             nfs = fs.recs[-1].nachfolgerFlurstueckskennzeichen
             if not nfs:
@@ -974,7 +987,6 @@ class _FsDataIndexer(_Indexer):
             zaehler=_str(ax.flurstuecksnummer.zaehler),
             nenner=_str(ax.flurstuecksnummer.nenner),
             zustaendigeStelle=[self.rr.place.get_dienststelle(p) for p in (ax.zustaendigeStelle or [])],
-
             _weistAuf=ax.weistAuf,
             _zeigtAuf=ax.zeigtAuf,
             _istGebucht=ax.istGebucht,
@@ -1119,25 +1131,27 @@ class _FsDataIndexer(_Indexer):
             if not bb:
                 continue
             # create a fake historic Buchungstelle
-            bs_list.append(dt.Buchungsstelle(
-                uid=bb.uid + '_' + bu.laufendeNummerDerBuchungsstelle,
-                recs=[
-                    dt.BuchungsstelleRecord(
-                        endet=r.endet,
-                        laufendeNummer=bu.laufendeNummerDerBuchungsstelle,
-                        isHistoric=True,
-                    )
-                ],
-                buchungsblattUids=[bb.uid],
-                buchungsblattkennzeichenList=[bb.buchungsblattkennzeichen],
-                parentUids=[],
-                childUids=[],
-                fsUids=[],
-                parentkennzeichenList=[],
-                flurstueckskennzeichenList=[],
-                laufendeNummer=bu.laufendeNummerDerBuchungsstelle,
-                isHistoric=True,
-            ))
+            bs_list.append(
+                dt.Buchungsstelle(
+                    uid=bb.uid + '_' + bu.laufendeNummerDerBuchungsstelle,
+                    recs=[
+                        dt.BuchungsstelleRecord(
+                            endet=r.endet,
+                            laufendeNummer=bu.laufendeNummerDerBuchungsstelle,
+                            isHistoric=True,
+                        )
+                    ],
+                    buchungsblattUids=[bb.uid],
+                    buchungsblattkennzeichenList=[bb.buchungsblattkennzeichen],
+                    parentUids=[],
+                    childUids=[],
+                    fsUids=[],
+                    parentkennzeichenList=[],
+                    flurstueckskennzeichenList=[],
+                    laufendeNummer=bu.laufendeNummerDerBuchungsstelle,
+                    isHistoric=True,
+                )
+            )
 
         return bs_list
 
@@ -1203,13 +1217,15 @@ class _FsDataIndexer(_Indexer):
             for r, g in zip(fs.recs, geoms):
                 r.geom = g
 
-            values.append(dict(
-                uid=fs.uid,
-                rc=len(fs.recs),
-                fshistoric=fs.isHistoric,
-                data=data,
-                geom=geoms[-1],
-            ))
+            values.append(
+                dict(
+                    uid=fs.uid,
+                    rc=len(fs.recs),
+                    fshistoric=fs.isHistoric,
+                    data=data,
+                    geom=geoms[-1],
+                )
+            )
 
         self.write_table(index.TABLE_FLURSTUECK, values)
 
@@ -1254,64 +1270,62 @@ class _FsIndexIndexer(_Indexer):
             land=r.land.text,
             land_t=index.text_key(r.land.text),
             landcode=r.land.code,
-
             regierungsbezirk=r.regierungsbezirk.text,
             regierungsbezirk_t=index.text_key(r.regierungsbezirk.text),
             regierungsbezirkcode=r.regierungsbezirk.code,
-
             kreis=r.kreis.text,
             kreis_t=index.text_key(r.kreis.text),
             kreiscode=r.kreis.code,
-
             gemeinde=r.gemeinde.text,
             gemeinde_t=index.text_key(r.gemeinde.text),
             gemeindecode=r.gemeinde.code,
-
             gemarkung=r.gemarkung.text,
             gemarkung_t=index.text_key(r.gemarkung.text),
             gemarkungcode=r.gemarkung.code,
-
         )
 
-        self.entries[index.TABLE_INDEXFLURSTUECK].append(dict(
-            **base,
-            **places,
+        self.entries[index.TABLE_INDEXFLURSTUECK].append(
+            dict(
+                **base,
+                **places,
+                amtlicheflaeche=r.amtlicheFlaeche,
+                geomflaeche=r.geomFlaeche,
+                flurnummer=r.flurnummer,
+                zaehler=r.zaehler,
+                nenner=r.nenner,
+                flurstuecksfolge=r.flurstuecksfolge,
+                flurstueckskennzeichen=r.flurstueckskennzeichen,
+                x=r.x,
+                y=r.y,
+            )
+        )
 
-            amtlicheflaeche=r.amtlicheFlaeche,
-            geomflaeche=r.geomFlaeche,
-
-            flurnummer=r.flurnummer,
-            zaehler=r.zaehler,
-            nenner=r.nenner,
-            flurstuecksfolge=r.flurstuecksfolge,
-            flurstueckskennzeichen=r.flurstueckskennzeichen,
-
-            x=r.x,
-            y=r.y,
-        ))
-
-        self.entries[index.TABLE_INDEXGEOM].append(dict(
-            **base,
-            geomflaeche=r.geomFlaeche,
-            x=r.x,
-            y=r.y,
-            geom=r.geom,
-        ))
+        self.entries[index.TABLE_INDEXGEOM].append(
+            dict(
+                **base,
+                geomflaeche=r.geomFlaeche,
+                x=r.x,
+                y=r.y,
+                geom=r.geom,
+            )
+        )
 
         for la in fs.lageList:
             for la_r in la.recs:
-                self.entries[index.TABLE_INDEXLAGE].append(dict(
-                    **base,
-                    **places,
-                    lageuid=la_r.uid,
-                    lagehistoric=la_r.isHistoric,
-                    strasse=la_r.strasse,
-                    strasse_t=index.strasse_key(la_r.strasse),
-                    hausnummer=la_r.hausnummer,
-                    hausnummer_k=index.hausnummer_key(la_r.hausnummer),
-                    x=la.x or r.x,
-                    y=la.y or r.y,
-                ))
+                self.entries[index.TABLE_INDEXLAGE].append(
+                    dict(
+                        **base,
+                        **places,
+                        lageuid=la_r.uid,
+                        lagehistoric=la_r.isHistoric,
+                        strasse=la_r.strasse,
+                        strasse_t=index.strasse_key(la_r.strasse),
+                        hausnummer=la_r.hausnummer,
+                        hausnummer_k=index.hausnummer_key(la_r.hausnummer),
+                        x=la.x or r.x,
+                        y=la.y or r.y,
+                    )
+                )
 
         for bu in fs.buchungList:
             bb = self.rr.buchung.om.Buchungsblatt.get(bu.buchungsblattUid)
@@ -1319,12 +1333,14 @@ class _FsIndexIndexer(_Indexer):
                 continue
 
             for bb_r in bb.recs:
-                self.entries[index.TABLE_INDEXBUCHUNGSBLATT].append(dict(
-                    **base,
-                    buchungsblattuid=bb_r.uid,
-                    buchungsblattkennzeichen=bb_r.buchungsblattkennzeichen,
-                    buchungsblatthistoric=bu.isHistoric,
-                ))
+                self.entries[index.TABLE_INDEXBUCHUNGSBLATT].append(
+                    dict(
+                        **base,
+                        buchungsblattuid=bb_r.uid,
+                        buchungsblattkennzeichen=bb_r.buchungsblattkennzeichen,
+                        buchungsblatthistoric=bu.isHistoric,
+                    )
+                )
 
             pe_uids = set()
 
@@ -1334,15 +1350,17 @@ class _FsIndexIndexer(_Indexer):
                         continue
                     pe_uids.add(pe.uid)
                     for pe_r in pe.recs:
-                        self.entries[index.TABLE_INDEXPERSON].append(dict(
-                            **base,
-                            personuid=pe_r.uid,
-                            personhistoric=pe_r.isHistoric,
-                            name=pe_r.nachnameOderFirma,
-                            name_t=index.text_key(pe_r.nachnameOderFirma),
-                            vorname=pe_r.vorname,
-                            vorname_t=index.text_key(pe_r.vorname),
-                        ))
+                        self.entries[index.TABLE_INDEXPERSON].append(
+                            dict(
+                                **base,
+                                personuid=pe_r.uid,
+                                personhistoric=pe_r.isHistoric,
+                                name=pe_r.nachnameOderFirma,
+                                name_t=index.text_key(pe_r.nachnameOderFirma),
+                                vorname=pe_r.vorname,
+                                vorname_t=index.text_key(pe_r.vorname),
+                            )
+                        )
 
     def write(self):
         for table_id, values in self.entries.items():
@@ -1416,7 +1434,7 @@ class _Runner:
         """Read all source objects of a type.
 
         Args:
-            cls: GeoInfoDok class from ``gid6``.
+            cls: GeoInfoDok class from ``gid``.
 
         Returns:
             A list of objects.
@@ -1438,7 +1456,7 @@ class _Runner:
         """Read all source objects of a type, grouped by identifier.
 
         Args:
-            cls: GeoInfoDok class from ``gid6``.
+            cls: GeoInfoDok class from ``gid``.
 
         Returns:
             A list of ``(identifier, objects)`` tuples, objects sorted by start date.
@@ -1525,12 +1543,19 @@ def _anteil(ax):
 
 
 def _meta_attributes(meta):
-    """Return the attributes of a class that are known properties, sorted by title."""
+    """Return the attributes of a class, including inherited ones, that are known properties, sorted by title."""
 
-    return sorted(
-        [a for a in meta['attributes'] if a['name'] in dt.PROPS],
-        key=lambda a: a['title']
-    )
+    atts = {a['name']: a for a in _all_attributes(meta)}
+    return sorted([a for a in atts.values() if a['name'] in dt.PROPS], key=lambda a: a['title'])
+
+
+def _all_attributes(meta):
+    """Yield the attributes of a class and its superclasses, superclasses first."""
+
+    for sup in meta['supers']:
+        if sup in gid.METADATA:
+            yield from _all_attributes(gid.METADATA[sup])
+    yield from meta['attributes']
 
 
 def _geom_of(o):
@@ -1587,10 +1612,7 @@ def _natkey(v):
 
     if not v:
         return []
-    return [
-        '{:080d}'.format(int(digits)) if digits else chars.lower()
-        for digits, chars in re.findall(r'(\d+)|(\D+)', v.strip())
-    ]
+    return ['{:080d}'.format(int(digits)) if digits else chars.lower() for digits, chars in re.findall(r'(\d+)|(\D+)', v.strip())]
 
 
 def _comma(a):

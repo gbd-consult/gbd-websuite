@@ -110,13 +110,13 @@ Schema `alkis_test`. The header cells contain the column name and the column typ
 
 ## Table ax_gebaeude
 
-| gml_id character(16) | anlass varchar[] | beginnt character(20) | endet character(20)  | gebaeudefunktion integer | name varchar[] | grundflaeche double precision | anzahlderoberirdischengeschosse integer | baujahr integer[] | zeigtauf character(16)[] | wkb_geometry geometry(Geometry, 25832)                                                    |
-|----------------------|------------------|-----------------------|----------------------|--------------------------|----------------|-------------------------------|-----------------------------------------|-------------------|--------------------------|-------------------------------------------------------------------------------------------|
-| DEGEB00000000001     | {010101}         | 2020-01-01T00:00:00Z  | 2025-06-01T00:00:00Z | 1000                     | {Gebaeude1}    | 60                            | 1                                       | {2000}            | {DELMH00000000001}       | POLYGON((400010 5700010, 400020 5700010, 400020 5700020, 400010 5700020, 400010 5700010)) |
-| DEGEB00000000001     | {010102}         | 2025-06-01T00:00:00Z  |                      | 1000                     | {Gebaeude1}    | 80                            | 2                                       | {2000}            | {DELMH00000000001}       | POLYGON((400010 5700010, 400020 5700010, 400020 5700020, 400010 5700020, 400010 5700010)) |
-| DEGEB00000000002     | {010101, 300500} | 2020-01-01T00:00:00Z  | 2025-06-01T00:00:00Z | 2000                     |                | 30                            |                                         |                   | {DELMH00000000001}       | POLYGON((400030 5700030, 400035 5700030, 400035 5700036, 400030 5700036, 400030 5700030)) |
-| DEGEB00000000003     | {010101}         | 2020-01-01T00:00:00Z  | 2025-06-01T00:00:00Z | 1000                     |                |                               |                                         |                   | {DELMH00000000002}       | POLYGON((400110 5700010, 400130 5700010, 400130 5700030, 400110 5700030, 400110 5700010)) |
-| DEGEB00000000003     | {010102}         | 2025-06-01T00:00:00Z  |                      | 1010                     |                |                               |                                         |                   | {DELMH00000000002}       | POLYGON((400110 5700010, 400130 5700010, 400130 5700030, 400110 5700030, 400110 5700010)) |
+| gml_id character(16) | anlass varchar[] | beginnt character(20) | endet character(20)  | gebaeudefunktion integer | name varchar[] | grundflaeche double precision | anzahlderoberirdischengeschosse integer | baujahr integer[] | hoehe double precision[] | obererbezugspunkt integer[] | untererbezugspunkt integer[] | zeigtauf character(16)[] | wkb_geometry geometry(Geometry, 25832)                                                    |
+|----------------------|------------------|-----------------------|----------------------|--------------------------|----------------|-------------------------------|-----------------------------------------|-------------------|--------------------------|-----------------------------|------------------------------|--------------------------|-------------------------------------------------------------------------------------------|
+| DEGEB00000000001     | {010101}         | 2020-01-01T00:00:00Z  | 2025-06-01T00:00:00Z | 1000                     | {Gebaeude1}    | 60                            | 1                                       | {2000}            | {7.5, 9.0}               | {1000, 1100}                | {2000, 2000}                 | {DELMH00000000001}       | POLYGON((400010 5700010, 400020 5700010, 400020 5700020, 400010 5700020, 400010 5700010)) |
+| DEGEB00000000001     | {010102}         | 2025-06-01T00:00:00Z  |                      | 1000                     | {Gebaeude1}    | 80                            | 2                                       | {2000}            | {7.5, 9.0}               | {1000, 1100}                | {2000, 2000}                 | {DELMH00000000001}       | POLYGON((400010 5700010, 400020 5700010, 400020 5700020, 400010 5700020, 400010 5700010)) |
+| DEGEB00000000002     | {010101, 300500} | 2020-01-01T00:00:00Z  | 2025-06-01T00:00:00Z | 2000                     |                | 30                            |                                         |                   |                          |                             |                              | {DELMH00000000001}       | POLYGON((400030 5700030, 400035 5700030, 400035 5700036, 400030 5700036, 400030 5700030)) |
+| DEGEB00000000003     | {010101}         | 2020-01-01T00:00:00Z  | 2025-06-01T00:00:00Z | 1000                     |                |                               |                                         |                   |                          |                             |                              | {DELMH00000000002}       | POLYGON((400110 5700010, 400130 5700010, 400130 5700030, 400110 5700030, 400110 5700010)) |
+| DEGEB00000000003     | {010102}         | 2025-06-01T00:00:00Z  |                      | 1010                     |                |                               |                                         |                   |                          |                             |                              | {DELMH00000000002}       | POLYGON((400110 5700010, 400130 5700010, 400130 5700030, 400110 5700030, 400110 5700010)) |
 
 ## Table ax_anschrift
 
@@ -210,10 +210,10 @@ Schema `alkis_test`. The header cells contain the column name and the column typ
 
 ## Table ax_wohnbauflaeche
 
-| gml_id character(16) | anlass varchar[] | beginnt character(20) | endet character(20)  | wkb_geometry geometry(Geometry, 25832)                                                    | artderbebauung integer | name varchar    |
-|----------------------|------------------|-----------------------|----------------------|-------------------------------------------------------------------------------------------|------------------------|-----------------|
-| DEWOHN0000000001     | {010101}         | 2020-01-01T00:00:00Z  | 2025-06-01T00:00:00Z | POLYGON((400000 5700000, 400100 5700000, 400100 5700100, 400000 5700100, 400000 5700000)) | 2000                   | Wohnbauflaeche1 |
-| DEWOHN0000000001     | {010102}         | 2025-06-01T00:00:00Z  |                      | POLYGON((400000 5700000, 400200 5700000, 400200 5700100, 400000 5700100, 400000 5700000)) | 1000                   | Wohnbauflaeche1 |
+| gml_id character(16) | anlass varchar[] | beginnt character(20) | endet character(20)  | wkb_geometry geometry(Geometry, 25832)                                                    | artderbebauung integer | funktion integer | name varchar    |
+|----------------------|------------------|-----------------------|----------------------|-------------------------------------------------------------------------------------------|------------------------|------------------|-----------------|
+| DEWOHN0000000001     | {010101}         | 2020-01-01T00:00:00Z  | 2025-06-01T00:00:00Z | POLYGON((400000 5700000, 400100 5700000, 400100 5700100, 400000 5700100, 400000 5700000)) | 2000                   | 1200             | Wohnbauflaeche1 |
+| DEWOHN0000000001     | {010102}         | 2025-06-01T00:00:00Z  |                      | POLYGON((400000 5700000, 400200 5700000, 400200 5700100, 400000 5700100, 400000 5700000)) | 1000                   | 1200             | Wohnbauflaeche1 |
 
 ## Table ax_strassenverkehr
 
@@ -225,10 +225,10 @@ Schema `alkis_test`. The header cells contain the column name and the column typ
 
 ## Table ax_bodenschaetzung
 
-| gml_id character(16) | anlass varchar[] | beginnt character(20) | endet character(20)  | wkb_geometry geometry(Geometry, 25832)                                                    | ackerzahlodergruenlandzahl varchar | bodenzahlodergruenlandgrundzahl varchar | bodenart integer | nutzungsart integer | jahreszahl integer |
-|----------------------|------------------|-----------------------|----------------------|-------------------------------------------------------------------------------------------|------------------------------------|-----------------------------------------|------------------|---------------------|--------------------|
-| DEBOD00000000001     | {010101}         | 2020-01-01T00:00:00Z  | 2025-06-01T00:00:00Z | POLYGON((400200 5700000, 400250 5700000, 400250 5700100, 400200 5700100, 400200 5700000)) | 40                                 | 50                                      | 2100             | 1000                | 1950               |
-| DEBOD00000000001     | {010102}         | 2025-06-01T00:00:00Z  |                      | POLYGON((400200 5700000, 400250 5700000, 400250 5700100, 400200 5700100, 400200 5700000)) | 45                                 | 50                                      | 2100             | 1000                | 1950               |
+| gml_id character(16) | anlass varchar[] | beginnt character(20) | endet character(20)  | wkb_geometry geometry(Geometry, 25832)                                                    | ackerzahlodergruenlandzahl varchar | bodenzahlodergruenlandgrundzahl varchar | bodenart integer | nutzungsart integer | zustandsstufe integer | bodenstufe integer | klimastufe integer | wasserverhaeltnisse integer | entstehungsart integer[] | jahreszahl integer |
+|----------------------|------------------|-----------------------|----------------------|-------------------------------------------------------------------------------------------|------------------------------------|-----------------------------------------|------------------|---------------------|-----------------------|--------------------|--------------------|-----------------------------|--------------------------|--------------------|
+| DEBOD00000000001     | {010101}         | 2020-01-01T00:00:00Z  | 2025-06-01T00:00:00Z | POLYGON((400200 5700000, 400250 5700000, 400250 5700100, 400200 5700100, 400200 5700000)) | 40                                 | 50                                      | 2100             | 1000                | 1200                  | 2200               | 6100               | 7100                        | {1000}                   | 1950               |
+| DEBOD00000000001     | {010102}         | 2025-06-01T00:00:00Z  |                      | POLYGON((400200 5700000, 400250 5700000, 400250 5700100, 400200 5700100, 400200 5700000)) | 45                                 | 50                                      | 2100             | 1000                | 1200                  | 2200               | 6100               | 7100                        | {1000}                   | 1950               |
 
 ## Table ax_denkmalschutzrecht
 
@@ -619,7 +619,9 @@ geometry {"crs": "EPSG:4326", "geometry": {"type": "Polygon", "coordinates": [[[
 
 ## Export Flurstueck
 
-Exporter `EXPORT` (GeoJSON) with the fields `fs_uid`, `fs_nutzungList_name_text`, `fs_festlegungList_name_text`, `fs_bewertungList_name_text`.
+Exporter `EXPORT` (GeoJSON), the fields are listed in `action_test.create_root`.
+
+### Parts
 
 ```
 alkisExportFlurstueck {"exporterUid": "EXPORT", "findRequest": {"uids": ["DEFS000000000001", "DEFS000000000002", "DEFS000000000003"], "displayThemes": ["nutzung", "festlegung", "bewertung"]}}
@@ -628,6 +630,17 @@ export [
     {"uid": "DEFS000000000001", "nutzung": "Wohnbaufläche", "festlegung": "Denkmalschutzrecht", "bewertung": ""},
     {"uid": "DEFS000000000002", "nutzung": "Wohnbaufläche", "festlegung": "", "bewertung": ""},
     {"uid": "DEFS000000000003", "nutzung": "Straßenverkehr", "festlegung": "", "bewertung": "Bodenschätzung"}
+]
+```
+
+### Part and building properties
+
+```
+alkisExportFlurstueck {"exporterUid": "EXPORT_PROPS", "findRequest": {"uids": ["DEFS000000000001", "DEFS000000000003"], "displayThemes": ["nutzung", "bewertung", "gebaeude"]}}
+200
+export [
+    {"uid": "DEFS000000000001", "nutzung_funktion": "Parken", "bewertung_nutzungsart": "", "bewertung_bodenstufe": "", "bewertung_klimastufe": "", "bewertung_entstehungsart": "", "gebaeude_objekthoehe": "7.5", "gebaeude_geschosse": 2},
+    {"uid": "DEFS000000000003", "nutzung_funktion": "Gebäude- und Freifläche zu Verkehrsanlagen, Straße", "bewertung_nutzungsart": "Ackerland (A)", "bewertung_bodenstufe": "Bodenstufe (II)", "bewertung_klimastufe": "Klimastufe 8° C und darüber (a)", "bewertung_entstehungsart": "Diluvium (D)", "gebaeude_objekthoehe": "", "gebaeude_geschosse": ""}
 ]
 ```
 

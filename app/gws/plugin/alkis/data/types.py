@@ -614,16 +614,26 @@ class PartProps(Object):
     """Bahnkategorie."""
     bedeutung: list[EnumPair]
     """Bedeutung."""
+    befahrbarkeit: EnumPair
+    """Befahrbarkeit."""
     befestigung: EnumPair
     """Befestigung."""
     besondereFahrstreifen: EnumPair
     """Besondere Fahrstreifen."""
     besondereFunktion: EnumPair
     """Besondere Funktion."""
+    besondereVerkehrsbedeutung: EnumPair
+    """Besondere Verkehrsbedeutung."""
+    bezeichnung: list[str]
+    """Bezeichnung."""
     bodenart: EnumPair
     """Bodenart."""
+    bodenstufe: EnumPair
+    """Bodenstufe."""
     bodenzahlOderGruenlandgrundzahl: str
     """Bodenzahl oder Gruenlandgrundzahl."""
+    bodenzahlOderGruenlandgrundzahlGrabloch: str
+    """Bodenzahl oder Gruenlandgrundzahl (Grabloch)."""
     breiteDerFahrbahn: int
     """Breite der Fahrbahn."""
     breiteDesGewaessers: int
@@ -636,14 +646,22 @@ class PartProps(Object):
     """Datum-Anordnung."""
     datumBesitzeinweisung: str
     """Datum-Besitzeinweisung."""
+    datumDerLetztenUeberpruefung: str
+    """Datum der letzten Ueberpruefung."""
+    datumRechtskraeftig: str
+    """Datum-rechtskraeftig."""
     datumrechtskraeftig: str
     """Datum-rechtskraeftig."""
     elektrifizierung: EnumPair
     """Elektrifizierung."""
+    entstehungsart: list[EnumPair]
+    """Entstehungsart."""
     entstehungsartOderKlimastufeWasserverhaeltnisse: list[EnumPair]
     """Entstehungsart oder Klimastufe/Wasserverhaeltnisse."""
     fahrbahntrennung: EnumPair
     """Fahrbahntrennung."""
+    fahrtrichtung: bool
+    """Fahrtrichtung."""
     fliessrichtung: bool
     """Fliessrichtung."""
     foerdergut: EnumPair
@@ -664,20 +682,30 @@ class PartProps(Object):
     """Jahreszahl."""
     klassifizierung: EnumPair
     """Klassifizierung."""
+    klimastufe: EnumPair
+    """Klimastufe."""
     kulturart: EnumPair
     """Kulturart."""
     lagergut: EnumPair
     """Lagergut."""
-    markierung: EnumPair
+    markierung: list[EnumPair]
     """Markierung."""
     merkmal: EnumPair
     """Merkmal."""
     nummer: str
     """Nummer."""
+    nummerDerBahnstrecke: list[str]
+    """Nummer der Bahnstrecke."""
+    nummerDerLinie: list[str]
+    """Nummer der Linie."""
     nummerDerSchutzzone: str
     """Nummer der Schutzzone."""
     nummerDesSchutzgebietes: str
     """Nummer des Schutzgebietes."""
+    nutzung: list[EnumPair]
+    """Nutzung."""
+    nutzungsart: EnumPair
+    """Nutzungsart."""
     oberflaechenmaterial: EnumPair
     """Oberflaechenmaterial."""
     primaerenergie: EnumPair
@@ -686,10 +714,14 @@ class PartProps(Object):
     """Rechtszustand."""
     schifffahrtskategorie: EnumPair
     """Schifffahrtskategorie."""
+    seekennzahl: str
+    """Seekennzahl."""
     sonstigeAngaben: list[EnumPair]
     """Sonstige Angaben."""
-    spurweite: EnumPair
+    spurweite: list[EnumPair]
     """Spurweite."""
+    strassenschluessel: str
+    """Strassenschluessel."""
     tagesabschnittsnummer: str
     """Tagesabschnittsnummer."""
     tidemerkmal: EnumPair
@@ -702,12 +734,20 @@ class PartProps(Object):
     """Verkehrsbedeutung inneroertlich."""
     verkehrsbedeutungUeberoertlich: EnumPair
     """Verkehrsbedeutung ueberoertlich."""
+    verkehrsdienst: EnumPair
+    """Verkehrsdienst."""
+    wasserspiegelhoeheInStehendemGewaesser: int
+    """Wasserspiegelhoehe in stehendem Gewaesser."""
+    wasserverhaeltnisse: EnumPair
+    """Wasserverhaeltnisse."""
     widmung: EnumPair
     """Widmung."""
     zone: EnumPair
     """Zone."""
     zustand: EnumPair
     """Zustand."""
+    zustandsstufe: EnumPair
+    """Zustandsstufe."""
     zustandsstufeOderBodenstufe: EnumPair
     """Zustandsstufe oder Bodenstufe."""
 
@@ -727,12 +767,17 @@ PROPS = {
     'baujahr': 'Baujahr',
     'bauweise': 'Bauweise',
     'bedeutung': 'Bedeutung',
+    'befahrbarkeit': 'Befahrbarkeit',
     'befestigung': 'Befestigung',
     'beschaffenheit': 'Beschaffenheit',
     'besondereFahrstreifen': 'Besondere Fahrstreifen',
     'besondereFunktion': 'Besondere Funktion',
+    'besondereVerkehrsbedeutung': 'Besondere Verkehrsbedeutung',
+    'bezeichnung': 'Bezeichnung',
     'bodenart': 'Bodenart',
+    'bodenstufe': 'Bodenstufe',
     'bodenzahlOderGruenlandgrundzahl': 'Bodenzahl oder Grünlandgrundzahl',
+    'bodenzahlOderGruenlandgrundzahlGrabloch': 'Bodenzahl oder Grünlandgrundzahl (Grabloch)',
     'breiteDerFahrbahn': 'Breite der Fahrbahn',
     'breiteDesGewaessers': 'Breite des Gewässers',
     'breiteDesVerkehrsweges': 'Breite des Verkehrsweges',
@@ -742,11 +787,15 @@ PROPS = {
     'datumAbgabe': 'Datum-Abgabe',
     'datumAnordnung': 'Datum-Anordnung',
     'datumBesitzeinweisung': 'Datum-Besitzeinweisung',
+    'datumDerLetztenUeberpruefung': 'Datum der letzten Überprüfung',
+    'datumRechtskraeftig': 'Datum-rechtskräftig',
     'datumrechtskraeftig': 'Datum-rechtskräftig',
     'durchfahrtshoehe': 'Durchfahrtshöhe',
     'elektrifizierung': 'Elektrifizierung',
+    'entstehungsart': 'Entstehungsart',
     'entstehungsartOderKlimastufeWasserverhaeltnisse': 'Entstehungsart oder Klimastufe/Wasserverhältnisse',
     'fahrbahntrennung': 'Fahrbahntrennung',
+    'fahrtrichtung': 'Fahrtrichtung',
     'fliessrichtung': 'Fließrichtung',
     'foerdergut': 'Fördergut',
     'funktion': 'Funktion',
@@ -762,6 +811,7 @@ PROPS = {
     'internationaleBedeutung': 'Internationale Bedeutung',
     'jahreszahl': 'Jahreszahl',
     'klassifizierung': 'Klassifizierung',
+    'klimastufe': 'Klimastufe',
     'kulturart': 'Kulturart',
     'lageZurErdoberflaeche': 'Lage zur Erdoberfläche',
     'lagergut': 'Lagergut',
@@ -769,17 +819,23 @@ PROPS = {
     'merkmal': 'Merkmal',
     'name': 'Name',
     'nummer': 'Nummer',
+    'nummerDerBahnstrecke': 'Nummer der Bahnstrecke',
+    'nummerDerLinie': 'Nummer der Linie',
     'nummerDerSchutzzone': 'Nummer der Schutzzone',
     'nummerDesSchutzgebietes': 'Nummer des Schutzgebietes',
+    'nutzung': 'Nutzung',
+    'nutzungsart': 'Nutzungsart',
     'oberflaechenmaterial': 'Oberflächenmaterial',
     'objekthoehe': 'Objekthöhe',
     'primaerenergie': 'Primärenergie',
     'punktkennung': 'Punktkennung',
     'rechtszustand': 'Rechtszustand',
     'schifffahrtskategorie': 'Schifffahrtskategorie',
+    'seekennzahl': 'Seekennzahl',
     'sonstigeAngaben': 'Sonstige Angaben',
     'sonstigeEigenschaft': 'Sonstige Eigenschaft',
     'spurweite': 'Spurweite',
+    'strassenschluessel': 'Straßenschlüssel',
     'tagesabschnittsnummer': 'Tagesabschnittsnummer',
     'tidemerkmal': 'Tidemerkmal',
     'umbauterRaum': 'Umbauter Raum',
@@ -787,10 +843,14 @@ PROPS = {
     'veraenderungOhneRuecksprache': 'Veränderung ohne Rücksprache',
     'verkehrsbedeutungInneroertlich': 'Verkehrsbedeutung innerörtlich',
     'verkehrsbedeutungUeberoertlich': 'Verkehrsbedeutung überörtlich',
+    'verkehrsdienst': 'Verkehrsdienst',
+    'wasserspiegelhoeheInStehendemGewaesser': 'Wasserspiegelhöhe in stehendem Gewässer',
+    'wasserverhaeltnisse': 'Wasserverhältnisse',
     'weitereGebaeudefunktion': 'Weitere Gebäudefunktion',
     'widmung': 'Widmung',
     'zone': 'Zone',
     'zustand': 'Zustand',
+    'zustandsstufe': 'Zustandsstufe',
     'zustandsstufeOderBodenstufe': 'Zustandsstufe oder Bodenstufe',
 }
 

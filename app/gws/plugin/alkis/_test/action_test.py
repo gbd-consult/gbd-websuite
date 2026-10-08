@@ -83,6 +83,22 @@ def create_root() -> gws.Root:
                 ]
             }
         }
+        exporters+ {
+            uid "EXPORT_PROPS"
+            type "geojson"
+            models+ {
+                fields [
+                    { type "text" name "fs_uid" title "uid" }
+                    { type "text" name "fs_nutzungList_recs_props_funktion_text" title "nutzung_funktion" }
+                    { type "text" name "fs_bewertungList_recs_props_nutzungsart_text" title "bewertung_nutzungsart" }
+                    { type "text" name "fs_bewertungList_recs_props_bodenstufe_text" title "bewertung_bodenstufe" }
+                    { type "text" name "fs_bewertungList_recs_props_klimastufe_text" title "bewertung_klimastufe" }
+                    { type "text" name "fs_bewertungList_recs_props_entstehungsart_text" title "bewertung_entstehungsart" }
+                    { type "text" name "fs_gebaeudeList_recs_props_objekthoehe" title "gebaeude_objekthoehe" }
+                    { type "text" name "fs_gebaeudeList_recs_props_anzahlDerOberirdischenGeschosse" title "gebaeude_geschosse" }
+                ]
+            }
+        }
     '''
     access_cfg = '''
         eigentuemer.access "allow all"

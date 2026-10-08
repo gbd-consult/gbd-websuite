@@ -1,7 +1,7 @@
 """ALKIS test dataset.
 
-Creates a small ALKIS dataset in the norBIT table layout (GeoInfoDok 6),
-as read by ``gws.plugin.alkis.data.norbit6``. Table and column definitions
+Creates a small ALKIS dataset in the norBIT table layout (GeoInfoDok 7),
+as read by ``gws.plugin.alkis.data.norbit``. Table and column definitions
 follow the norBIT import, only the columns used by the reader are created.
 
 Most objects have two versions: a historic one (``endet`` set) and a current
@@ -354,12 +354,18 @@ _TESTS = [
         title='Export Flurstueck',
         command='alkisExportFlurstueck',
         view='export',
-        text='Exporter `EXPORT` (GeoJSON) with the fields `fs_uid`, `fs_nutzungList_name_text`, `fs_festlegungList_name_text`, `fs_bewertungList_name_text`.',
+        text='Exporter `EXPORT` (GeoJSON), the fields are listed in `action_test.create_root`.',
         groups=[
-            ('', [
+            ('Parts', [
                 dict(exporterUid='EXPORT', findRequest=dict(
                     uids=[_uid('fs', 1), _uid('fs', 2), _uid('fs', 3)],
                     displayThemes=['nutzung', 'festlegung', 'bewertung'],
+                )),
+            ]),
+            ('Part and building properties', [
+                dict(exporterUid='EXPORT_PROPS', findRequest=dict(
+                    uids=[_uid('fs', 1), _uid('fs', 3)],
+                    displayThemes=['nutzung', 'bewertung', 'gebaeude'],
                 )),
             ]),
         ],
@@ -879,6 +885,9 @@ def _ax_gebaeude():
         'grundflaeche': 'double precision',
         'anzahlderoberirdischengeschosse': 'integer',
         'baujahr': 'integer[]',
+        'hoehe': 'double precision[]',
+        'obererbezugspunkt': 'integer[]',
+        'untererbezugspunkt': 'integer[]',
         'gebaeudekennzeichen': 'varchar',
         'zeigtauf': 'character(16)[]',
         'wkb_geometry': _GEOM,
@@ -892,6 +901,9 @@ def _ax_gebaeude():
             grundflaeche=80,
             anzahlderoberirdischengeschosse=2,
             baujahr=[2000],
+            hoehe=[7.5, 9.0],
+            obererbezugspunkt=[1000, 1100],
+            untererbezugspunkt=[2000, 2000],
             zeigtauf=[_uid('lmh', 1)],
             wkb_geometry=_box(10, 10, 20, 20),
         ),
@@ -1314,6 +1326,7 @@ _PART_COLUMNS = {
 def _ax_wohnbauflaeche():
     cols = _PART_COLUMNS | {
         'artderbebauung': 'integer',
+        'funktion': 'integer',
         'zustand': 'integer',
         'name': 'varchar',
     }
@@ -1322,6 +1335,7 @@ def _ax_wohnbauflaeche():
             _uid('wohn', 1),
             old=dict(wkb_geometry=_box(0, 0, 100, 100), artderbebauung=2000),
             artderbebauung=1000,
+            funktion=1200,
             name='Wohnbauflaeche1',
             wkb_geometry=_box(0, 0, 200, 100),
         ),
@@ -1359,6 +1373,11 @@ def _ax_bodenschaetzung():
         'bodenzahlodergruenlandgrundzahl': 'varchar',
         'bodenart': 'integer',
         'nutzungsart': 'integer',
+        'zustandsstufe': 'integer',
+        'bodenstufe': 'integer',
+        'klimastufe': 'integer',
+        'wasserverhaeltnisse': 'integer',
+        'entstehungsart': 'integer[]',
         'jahreszahl': 'integer',
     }
     rows = [
@@ -1369,6 +1388,11 @@ def _ax_bodenschaetzung():
             bodenzahlodergruenlandgrundzahl='50',
             bodenart=2100,
             nutzungsart=1000,
+            zustandsstufe=1200,
+            bodenstufe=2200,
+            klimastufe=6100,
+            wasserverhaeltnisse=7100,
+            entstehungsart=[1000],
             jahreszahl=1950,
             wkb_geometry=_box(200, 0, 250, 100),
         ),

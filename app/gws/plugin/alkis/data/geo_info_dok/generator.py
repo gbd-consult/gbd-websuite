@@ -663,13 +663,13 @@ class Parser7(Parser):
                         "End_Object_ID": 3511,
                     """
                     if rec['SourceRole']:
-                        a = Node(name=rec['SourceRole'], doc=rec['SourceRoleNote'], type=so.name, pParent=eo)
+                        a = Node(name=rec['SourceRole'].strip(), doc=rec['SourceRoleNote'], type=so.name, pParent=eo)
                         self.set_cardinality_from_string(a, rec['SourceCard'])
                         eo.attributes.append(a)
                         self.nodes.append(a)
 
                     if rec['DestRole']:
-                        b = Node(name=rec['DestRole'], doc=rec['DestRoleNote'], type=eo.name, pParent=so)
+                        b = Node(name=rec['DestRole'].strip(), doc=rec['DestRoleNote'], type=eo.name, pParent=so)
                         so.attributes.append(b)
                         self.nodes.append(b)
 
