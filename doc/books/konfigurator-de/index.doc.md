@@ -3,7 +3,11 @@
 Der GBD Konfigurator ist die grafische Oberfläche zum Anzeigen und Bearbeiten der Konfiguration einer GBD WebSuite Installation. Die Oberfläche wird aus dem aktuell geladenen GWS Schema erzeugt. Dadurch erscheinen nur die Bereiche, Objekttypen und Eigenschaften, die von der verbundenen Installation unterstützt werden.
 
 Dieses Handbuch richtet sich an Administratoren und Projektverantwortliche. Es erklärt den Arbeitsbereich, die Navigation, die verfügbaren Editoren sowie den sicheren Umgang mit lokalen Änderungen, Projekten, JSON und Berechtigungen.
+%warn
+**Wichtiger Hinweis: Demonstrator-Version**
 
+Beim GBD WebSuite Konfigurator handelt es sich aktuell um einen reinen Demonstrator, der noch nicht für den produktiven Einsatz freigegeben ist. Wenn Sie Interesse daran haben, den Konfigurator einzusetzen, wenden Sie sich bitte an die [Geoinformatikbüro Dassau GmbH](https://www.gbd-consult.de/).
+%end
 %warn
 **Wichtig:** Eine Bearbeitung verändert zunächst nur den lokalen Entwurf im Browser. Erst nach dem abschließenden Bestätigen mit **Anwenden** wird die Konfiguration an den Server gesendet.
 %end
@@ -16,9 +20,9 @@ Für eine kontrollierte Änderung empfiehlt sich immer dieselbe Reihenfolge:
 2.  Den aktuellen Wert und die Beschreibung im Leitfaden prüfen.
 3.  Den Wert im passenden Editor bearbeiten.
 4.  Die lokalen Änderungen im Änderungsbereich kontrollieren.
-5.  Berechtigungen, Objekt-UIDs und mögliche Löschungen gesondert prüfen.
+5.  Objekt-UIDs, mögliche Löschungen und geänderte rohe ACL-Regeln in der Änderungsvorschau gesondert prüfen.
 6.  Die Konfiguration erst nach dieser Kontrolle auf den Server anwenden.
-7.  Den betroffenen Bereich anschließend erneut öffnen und das Ergebnis kontrollieren.
+7.  Den betroffenen Bereich anschließend erneut öffnen und das Ergebnis sowie die neu berechneten effektiven Berechtigungen kontrollieren.
 
 Nicht gespeicherte Änderungen bleiben im Browser als lokaler Entwurf sichtbar. Sie können einzeln oder vollständig verworfen werden, ohne den aktuellen Serverstand zu verändern.
 
@@ -40,7 +44,7 @@ Der Arbeitsbereich besteht aus mehreren dauerhaft miteinander verbundenen Bereic
 
 ## Einen Bereich auswählen ::
 
-Die Symbole am linken Rand öffnen die verfügbaren Hauptbereiche. Welche Einträge erscheinen, hängt von der geladenen Konfiguration und den Berechtigungen des angemeldeten Benutzers ab.
+Die Symbole am linken Rand öffnen die verfügbaren Hauptbereiche. Welche Einträge erscheinen, hängt von der geladenen Konfiguration und dem aktuell geladenen GWS-Schema ab.
 
 Nach der Auswahl eines Bereichs wird dessen Wurzel im Konfigurationsbaum geöffnet. Der Editor zeigt gleichzeitig das zugehörige Objekt an.
 
@@ -402,7 +406,7 @@ Für eine Regel werden typischerweise folgende Schritte ausgeführt:
 **Wichtig:** Die erste passende Regel entscheidet. Eine falsche Reihenfolge kann deshalb ein anderes Ergebnis erzeugen als erwartet.
 %end
 
-Änderungen an der App-Wurzel werden zusätzlich geprüft, damit notwendige Zugriffe nicht vollständig entzogen werden. Eine erkannte vollständige Aussperrung blockiert das Anwenden.
+Die Rolle `admin` besitzt unabhängig von den konfigurierten ACL-Regeln alle Rechte. Für andere Rollen führt der Konfigurator beim Anwenden keine zusätzliche Aussperrungsprüfung durch.
 
 ### Berechtigungsübersicht ::
 
@@ -417,7 +421,7 @@ Die Übersicht hilft bei folgenden Fragen:
 -   Welche Rechte wurden geerbt?
 -   An welcher Stelle geht ein zuvor vorhandener Zugriff verloren?
 
-Nach Änderungen an ACL Regeln sollte die Berechtigungsübersicht erneut geöffnet werden.
+Nach dem erfolgreichen Anwenden von Änderungen an ACL-Regeln sollte die Berechtigungsübersicht erneut geöffnet und anhand der neu berechneten effektiven Berechtigungen kontrolliert werden.
 
 ## Darstellung und responsive Nutzung
 
@@ -479,10 +483,6 @@ CRS, Koordinaten, Kartenquelle und notwendige Berechtigungen prüfen. Ungültige
 
 Lokale Änderungen entweder anwenden oder verwerfen und die Berechtigungsübersicht anschließend erneut öffnen.
 
-### Anwenden wird wegen Aussperrung blockiert ::
-
-Die Regeln an der App-Wurzel prüfen. Mindestens die für Administration und Wiederherstellung erforderlichen Rollen müssen weiterhin Zugriff besitzen.
-
 ## Empfohlener Arbeitsablauf
 
 1.  Fachlichen Bereich oder Projekt öffnen.
@@ -490,11 +490,11 @@ Die Regeln an der App-Wurzel prüfen. Mindestens die für Administration und Wie
 3.  Änderung im passenden Editor durchführen.
 4.  Betroffene Unterfelder und Pflichtfelder kontrollieren.
 5.  Lokalen Entwurf im Änderungsbereich prüfen.
-6.  Berechtigungen, UIDs und Löschungen gesondert prüfen.
+6.  Objekt-UIDs, Löschungen und geänderte rohe ACL-Regeln in der Änderungsvorschau gesondert prüfen.
 7.  Änderungen über **Aktualisieren** und **Anwenden** bestätigen.
 8.  Serverantwort abwarten.
 9.  Betroffenen Bereich erneut öffnen.
-10.  Ergebnis und Berechtigungsübersicht kontrollieren.
+10.  Ergebnis sowie – insbesondere nach ACL-Änderungen – die neu berechneten effektiven Berechtigungen kontrollieren.
 
 Dieser Ablauf reduziert das Risiko unbeabsichtigter Änderungen und macht auch umfangreiche Bearbeitungen nachvollziehbar.
 
