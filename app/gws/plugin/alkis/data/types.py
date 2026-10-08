@@ -968,9 +968,9 @@ class AdresseQuery(gws.Data):
     strasse: str
     """Street name."""
     hausnummer: str
-    """House number, or ``*`` for any non-empty house number. Requires ``strasse``."""
+    """House number, or ``*`` for any non-empty house number. With ``bisHausnummer``, the lower bound of a range. Requires ``strasse``."""
     bisHausnummer: str
-    """Upper bound for the house number, compared as a string. Requires ``strasse``."""
+    """Upper bound of a house number range, inclusive. House numbers are compared by number, then by suffix; a bound without a suffix includes all suffixes, e.g. ``5`` includes ``5z``. Requires ``strasse``."""
     hausnummerNotNull: bool
     """Whether only addresses with a house number are found. Requires ``strasse``."""
 

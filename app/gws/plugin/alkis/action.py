@@ -13,6 +13,7 @@ import gws.base.printer
 import gws.lib.shape
 import gws.base.storage
 import gws.config.util
+import gws.lib.crs
 import gws.lib.datetimex
 import gws.lib.sa as sa
 
@@ -335,7 +336,7 @@ class FindAdresseRequest(gws.Request):
     hausnummer: Optional[str]
     """House number."""
     bisHausnummer: Optional[str]
-    """Upper bound of a house number range."""
+    """Upper bound of a house number range, inclusive; ``hausnummer`` is the lower bound."""
     hausnummerNotNull: Optional[bool]
     """Return only addresses with a house number."""
 
@@ -561,14 +562,11 @@ class Object(gws.base.action.Object):
         elif self.ui.useExport:
             self.exporters.append(self.create_child(exporter.Object))
 
-    def activate(self):
-        def _load():
-            s = self.ix.status()
-            if s.missing:
-                self.root.config_warning(f'ALKIS: index not found in schema {self.indexSchema}')
-            return s
+        if self.ix.status().missing:
+            self.root.config_warning(f'ALKIS: index not found in schema {self.indexSchema}')
 
-        self.ixStatus = gws.u.get_server_global(f'gws.plugin.alkis.action.ixStatus.{self.indexSchema}', _load)
+    def activate(self):
+        self.ixStatus = gws.u.get_server_global(f'gws.plugin.alkis.action.ixStatus.{self.indexSchema}', self.ix.status)
 
     def props(self, user):
         if not self.ixStatus.basic:
@@ -628,7 +626,7 @@ class Object(gws.base.action.Object):
         """Search for addresses."""
 
         project = req.user.require_project(p.projectUid)
-        crs = p.get('crs') or project.map.bounds.crs
+        crs = gws.lib.crs.get(p.get('crs')) or project.map.bounds.crs
 
         ad_list, query = self.find_adresse_objects(req, p)
         if not ad_list:
@@ -664,7 +662,7 @@ class Object(gws.base.action.Object):
         """Search for parcels."""
 
         project = req.user.require_project(p.projectUid)
-        crs = p.get('crs') or project.map.bounds.crs
+        crs = gws.lib.crs.get(p.get('crs')) or project.map.bounds.crs
 
         fs_list, query = self.find_flurstueck_objects(req, p)
         if not fs_list:
@@ -747,7 +745,7 @@ class Object(gws.base.action.Object):
             fsList=fs_list,
             user=req.user,
             models=models,
-            path = gws.u.ephemeral_path('alkis_export'),
+            path=gws.u.ephemeral_path('alkis_export'),
         )
 
         exp.run(args)
@@ -772,7 +770,7 @@ class Object(gws.base.action.Object):
 
         print_request = p.printRequest
         print_request.projectUid = p.projectUid
-        crs = print_request.get('crs') or project.map.bounds.crs
+        crs = gws.lib.crs.get(print_request.get('crs')) or project.map.bounds.crs
 
         templates = [
             self.root.app.templateMgr.find_template('flurstueck.label', where=[self], user=req.user),
@@ -961,6 +959,7 @@ class Object(gws.base.action.Object):
 
         # "eigentuemer" implies "buchung"
         if want_eigentuemer and not want_buchung:
+            self._check_buchung_access(req, p.eigentuemerControlInput or '')
             options.withBuchung = True
             options.displayThemes.append(dt.DisplayTheme.buchung)
 

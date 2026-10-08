@@ -22,7 +22,7 @@ from . import norbit6
 from .geo_info_dok import gid6 as gid
 
 
-def run(ix: index.Object, data_schema: str, with_force=False, with_cache=False):
+def run(ix: index.Object, data_schema: str, with_force=False):
     """Build the ALKIS index.
 
     Reads the source tables with the norBIT GeoInfoDok 6 reader and writes
@@ -33,8 +33,6 @@ def run(ix: index.Object, data_schema: str, with_force=False, with_cache=False):
         ix: Index to build.
         data_schema: Schema with the ALKIS source tables.
         with_force: Drop all index tables before building.
-        with_cache: Cache source data and collected objects in the cache
-            directory and reuse them in later runs.
 
     Raises:
         ``gws.Error``: If the index schema does not exist.
@@ -49,7 +47,7 @@ def run(ix: index.Object, data_schema: str, with_force=False, with_cache=False):
         return
 
     rdr = norbit6.Object(ix.db, schema=data_schema)
-    rr = _Runner(ix, rdr, with_cache)
+    rr = _Runner(ix, rdr)
     rr.run()
 
 
@@ -178,12 +176,8 @@ class _Indexer:
     """Base class for indexers.
 
     An indexer collects entities of some kinds from the source data into its
-    object map and writes them into index tables. The object map can be cached
-    between runs.
+    object map and writes them into index tables.
     """
-
-    CACHE_KEY: str = ''
-    """Cache file name, caching is disabled if empty."""
 
     def __init__(self, runner: '_Runner'):
         """Create an indexer.
@@ -195,41 +189,6 @@ class _Indexer:
         self.rr = runner
         self.ix: index.Object = runner.ix
         self.om = _ObjectMap()
-
-    def load_or_collect(self):
-        """Load the object map from the cache, or collect it and store it in the cache."""
-
-        if not self.load_cache():
-            self.collect()
-            self.store_cache()
-
-    def load_cache(self):
-        """Load the object map from the cache.
-
-        Returns:
-            ``True`` if the object map was loaded.
-        """
-
-        if not self.rr.withCache or not self.CACHE_KEY:
-            return False
-        cpath = self.rr.cacheDir + '/' + self.CACHE_KEY
-        if not gws.u.is_file(cpath):
-            return False
-        om = gws.u.unserialize_from_path(cpath)
-        if not om:
-            return False
-        gws.log.info(f'ALKIS: use cache {self.CACHE_KEY!r}')
-        self.om = om
-        return True
-
-    def store_cache(self):
-        """Store the object map in the cache, if caching is enabled."""
-
-        if not self.rr.withCache or not self.CACHE_KEY:
-            return
-        cpath = self.rr.cacheDir + '/' + self.CACHE_KEY
-        gws.u.serialize_to_path(self.om, cpath)
-        gws.log.info(f'ALKIS: store cache {self.CACHE_KEY!r}')
 
     def collect(self):
         """Collect entities from the source data into the object map."""
@@ -264,7 +223,6 @@ class _PlaceIndexer(_Indexer):
     https://de.wikipedia.org/wiki/Amtlicher_Gemeindeschl%C3%BCssel
     """
 
-    CACHE_KEY = 'obj_place'
 
     empty1 = dt.EnumPair(code='0', text='')
     """Empty place value for one-digit codes."""
@@ -489,7 +447,6 @@ class _LageIndexer(_Indexer):
     Building geometries are not stored.
     """
 
-    CACHE_KEY = 'obj_lage'
 
     def collect(self):
         for ax in self.rr.read_flat(gid.AX_LagebezeichnungKatalogeintrag):
@@ -619,10 +576,13 @@ class _BuchungIndexer(_Indexer):
     Buchungsstellen.
     """
 
-    CACHE_KEY = 'obj_buchungsblatt'
 
-    buchungsblattkennzeichenMap: dict[str, dt.Buchungsblatt] = {}
+    buchungsblattkennzeichenMap: dict[str, dt.Buchungsblatt]
     """Buchungsblaetter by their identifier."""
+
+    def __init__(self, runner: '_Runner'):
+        super().__init__(runner)
+        self.buchungsblattkennzeichenMap = {}
 
     def collect(self):
         for uid, axs in self.rr.read_grouped(gid.AX_Anschrift):
@@ -769,20 +729,25 @@ class _PartIndexer(_Indexer):
     Intersections smaller than ``MIN_PART_AREA`` are skipped.
     """
 
-    CACHE_KEY = 'obj_part'
     MIN_PART_AREA = 1
     """Minimum area of an intersection."""
 
-    parts: list[dt.Part] = []
+    parts: list[dt.Part]
     """Computed parts."""
 
-    fs_list = []
+    fs_list: list[dt.Flurstueck]
     """Flurstuecke, in the order of ``fs_geom``."""
-    fs_geom = []
+    fs_geom: list
     """Most recent Flurstueck geometries."""
 
     stree: shapely.strtree.STRtree
     """Spatial index of ``fs_geom``."""
+
+    def __init__(self, runner: '_Runner'):
+        super().__init__(runner)
+        self.parts = []
+        self.fs_list = []
+        self.fs_geom = []
 
     def collect(self):
 
@@ -820,7 +785,7 @@ class _PartIndexer(_Indexer):
             if (
                     meta['kind'] == 'object'
                     and meta['geom']
-                    and re.search(key + r'/\w+/', meta['key'])
+                    and key + '/' in meta['key']
             )
         ]
 
@@ -934,7 +899,6 @@ class _FsDataIndexer(_Indexer):
     the predecessor lists from the successor lists.
     """
 
-    CACHE_KEY = 'obj_flurstueck'
 
     def __init__(self, runner: '_Runner'):
         super().__init__(runner)
@@ -1201,23 +1165,28 @@ class _FsDataIndexer(_Indexer):
         # Our task here, given F.istGebucht -> B, collect B's parents and children
         # These are Buchungsstellen that directly or indirectly mention the current Flurstück.
 
+        seen = {this_bs.uid}
         queue: list[dt.Buchungsstelle] = [this_bs]
         while queue:
             bs = queue.pop(0)
             bs_list.insert(0, bs)
-            for uid in bs.parentUids:
-                queue.append(self.rr.buchung.om.Buchungsstelle.get(uid))
+            for parent_bs in self.rr.buchung.om.Buchungsstelle.get_many(bs.parentUids):
+                if parent_bs.uid not in seen:
+                    seen.add(parent_bs.uid)
+                    queue.append(parent_bs)
 
         # remove this_bs
         bs_list.pop()
 
+        seen = {this_bs.uid}
         queue: list[dt.Buchungsstelle] = [this_bs]
         while queue:
             bs = queue.pop(0)
             bs_list.append(bs)
             # sort related (child) Buchungsstellen by their BB-Kennzeichen
-            child_bs_list = self.rr.buchung.om.Buchungsstelle.get_many(bs.childUids)
+            child_bs_list = [c for c in self.rr.buchung.om.Buchungsstelle.get_many(bs.childUids) if c.uid not in seen]
             child_bs_list.sort(key=_sortkey_buchungsstelle_by_bblatt)
+            seen.update(c.uid for c in child_bs_list)
             queue.extend(child_bs_list)
 
         # if len(bs_list) > 1:
@@ -1248,14 +1217,18 @@ class _FsDataIndexer(_Indexer):
 class _FsIndexIndexer(_Indexer):
     """Indexer for the flat search tables (``index*``)."""
 
-    entries = {
-        index.TABLE_INDEXFLURSTUECK: [],
-        index.TABLE_INDEXLAGE: [],
-        index.TABLE_INDEXBUCHUNGSBLATT: [],
-        index.TABLE_INDEXPERSON: [],
-        index.TABLE_INDEXGEOM: [],
-    }
+    entries: dict[str, list[dict]]
     """Rows by table id."""
+
+    def __init__(self, runner: '_Runner'):
+        super().__init__(runner)
+        self.entries = {
+            index.TABLE_INDEXFLURSTUECK: [],
+            index.TABLE_INDEXLAGE: [],
+            index.TABLE_INDEXBUCHUNGSBLATT: [],
+            index.TABLE_INDEXPERSON: [],
+            index.TABLE_INDEXGEOM: [],
+        }
 
     def collect(self):
         with ProgressIndicator(f'ALKIS: creating indexes', len(self.rr.fsdata.om.Flurstueck)) as progress:
@@ -1335,12 +1308,15 @@ class _FsIndexIndexer(_Indexer):
                     strasse=la_r.strasse,
                     strasse_t=index.strasse_key(la_r.strasse),
                     hausnummer=la_r.hausnummer,
+                    hausnummer_k=index.hausnummer_key(la_r.hausnummer),
                     x=la.x or r.x,
                     y=la.y or r.y,
                 ))
 
         for bu in fs.buchungList:
             bb = self.rr.buchung.om.Buchungsblatt.get(bu.buchungsblattUid)
+            if not bb:
+                continue
 
             for bb_r in bb.recs:
                 self.entries[index.TABLE_INDEXBUCHUNGSBLATT].append(dict(
@@ -1379,22 +1355,16 @@ class _FsIndexIndexer(_Indexer):
 class _Runner:
     """Runs all indexers in order and writes the index tables."""
 
-    def __init__(self, ix: index.Object, reader: dt.Reader, with_cache=False):
+    def __init__(self, ix: index.Object, reader: dt.Reader):
         """Create a runner.
 
         Args:
             ix: Index to build.
             reader: Source data reader.
-            with_cache: Whether to cache source data and collected objects.
         """
 
         self.ix: index.Object = ix
         self.reader: dt.Reader = reader
-
-        self.withCache = with_cache
-        self.cacheDir = gws.c.CACHE_DIR + '/alkis'
-        if self.withCache:
-            gws.u.ensure_dir(self.cacheDir)
 
         self.place = _PlaceIndexer(self)
         self.lage = _LageIndexer(self)
@@ -1409,20 +1379,20 @@ class _Runner:
         """Collect all data and write the index tables."""
 
         with ProgressIndicator(f'ALKIS: indexing'):
-            self.place.load_or_collect()
+            self.place.collect()
             self.memory_info()
 
-            self.buchung.load_or_collect()
+            self.buchung.collect()
             self.memory_info()
 
-            self.lage.load_or_collect()
+            self.lage.collect()
             self.memory_info()
 
-            self.fsdata.load_or_collect()
+            self.fsdata.collect()
             gws.log.info(f'ALKIS: fs counts: {self.fsdata.counts}')
             self.memory_info()
 
-            self.part.load_or_collect()
+            self.part.collect()
             self.memory_info()
 
             self.fsindex.collect()
@@ -1452,19 +1422,6 @@ class _Runner:
             A list of objects.
         """
 
-        cpath = self.cacheDir + '/flat_' + cls.__name__
-        if self.withCache and gws.u.is_file(cpath):
-            return gws.u.unserialize_from_path(cpath)
-
-        rs = self._read_flat(cls)
-        if self.withCache:
-            gws.u.serialize_to_path(rs, cpath)
-
-        return rs
-
-    def _read_flat(self, cls):
-        """Read all source objects of a type, without the cache."""
-
         cnt = self.reader.count(cls)
         if cnt <= 0:
             gws.log.warning(f'ALKIS: read {cls.__name__}: empty table')
@@ -1486,19 +1443,6 @@ class _Runner:
         Returns:
             A list of ``(identifier, objects)`` tuples, objects sorted by start date.
         """
-
-        cpath = self.cacheDir + '/grouped_' + cls.__name__
-        if self.withCache and gws.u.is_file(cpath):
-            return gws.u.unserialize_from_path(cpath)
-
-        rs = self._read_grouped(cls)
-        if self.withCache:
-            gws.u.serialize_to_path(rs, cpath)
-
-        return rs
-
-    def _read_grouped(self, cls):
-        """Read and group source objects of a type, without the cache."""
 
         cnt = self.reader.count(cls)
         if cnt <= 0:

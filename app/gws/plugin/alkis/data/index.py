@@ -39,7 +39,7 @@ class Object(gws.Node):
     with their related data.
     """
 
-    VERSION = '84'
+    VERSION = '85'
     """Index version, part of the table names."""
 
     TABLES_BASIC = [
@@ -89,9 +89,9 @@ class Object(gws.Node):
     """Column definitions by table id."""
 
     def __getstate__(self):
-        """Return the state for pickling, without the SQLAlchemy metadata."""
+        """Return the state for pickling, without the SQLAlchemy objects."""
 
-        return gws.u.omit(vars(self), 'saMeta')
+        return gws.u.omit(vars(self), 'saMeta', 'tables', 'columnDct')
 
     def configure(self):
         gws.config.util.configure_database_provider_for(self, ext_type='postgres')
@@ -99,10 +99,14 @@ class Object(gws.Node):
         self.schema = self.cfg('schema', default='public')
         self.excludeGemarkung = set(self.cfg('excludeGemarkung', default=[]))
         self.gemarkungFilter = set(self.cfg('gemarkungFilter', default=[]))
-        self.saMeta = sa.MetaData(schema=self.schema)
-        self.tables = {}
+        self._init_tables()
 
     def activate(self):
+        self._init_tables()
+
+    def _init_tables(self):
+        """Create the SQLAlchemy metadata and the column definitions of the index tables."""
+
         self.saMeta = sa.MetaData(schema=self.schema)
         self.tables = {}
 
@@ -193,6 +197,7 @@ class Object(gws.Node):
                 sa.Column('strasse', sa.Text, index=True),
                 sa.Column('strasse_t', sa.Text, index=True),
                 sa.Column('hausnummer', sa.Text, index=True),
+                sa.Column('hausnummer_k', sa.Text, index=True),
                 sa.Column('x', sa.Float, index=True),
                 sa.Column('y', sa.Float, index=True),
             ],
@@ -397,8 +402,8 @@ class Object(gws.Node):
     def strasse_list(self) -> list[dt.Strasse]:
         """Return all streets in the index.
 
-        Each distinct combination of Gemeinde, Gemarkung and street name is
-        returned once. The list is cached.
+        Each distinct combination of Gemeinde, Gemarkung and street name of
+        current Flurstuecke and Lage records is returned once. The list is cached.
 
         Returns:
             A list of streets.
@@ -418,7 +423,7 @@ class Object(gws.Node):
             indexlage.c.strasse,
         )
 
-        sel = sa.select(*cols).group_by(*cols)
+        sel = sa.select(*cols).where(~indexlage.c.fshistoric, ~indexlage.c.lagehistoric).group_by(*cols)
         if self.gemarkungFilter:
             sel = sel.where(indexlage.c.gemarkungcode.in_(self.gemarkungFilter))
 
@@ -655,7 +660,7 @@ class Object(gws.Node):
             if not has_lage:
                 raise gws.BadRequestError(f'hausnummer without strasse')
             if q.hausnummer == self.HAUSNUMMER_NOT_NULL_VALUE:
-                where.append(indexlage.c.hausnummer.is_not(None))
+                where.append(indexlage.c.hausnummer != '')
             else:
                 where.append(indexlage.c.hausnummer == normalize_hausnummer(q.hausnummer))
 
@@ -741,25 +746,30 @@ class Object(gws.Node):
                 has_strasse = True
                 where.append(w)
 
+        hausnummer_k = sa.collate(indexlage.c.hausnummer_k, 'C')
+
         if q.hausnummer:
             if not has_strasse:
                 raise gws.BadRequestError(f'hausnummer without strasse')
             if q.hausnummer == self.HAUSNUMMER_NOT_NULL_VALUE:
-                where.append(indexlage.c.hausnummer.is_not(None))
+                where.append(indexlage.c.hausnummer != '')
+            elif q.bisHausnummer:
+                where.append(hausnummer_k >= _hausnummer_key_or_error(q.hausnummer))
             else:
                 where.append(indexlage.c.hausnummer == normalize_hausnummer(q.hausnummer))
 
         if q.bisHausnummer:
             if not has_strasse:
                 raise gws.BadRequestError(f'hausnummer without strasse')
-            where.append(indexlage.c.hausnummer < normalize_hausnummer(q.bisHausnummer))
+            where.append(hausnummer_k <= _hausnummer_key_or_error(q.bisHausnummer, upper=True))
 
         if q.hausnummerNotNull:
             if not has_strasse:
                 raise gws.BadRequestError(f'hausnummer without strasse')
-            where.append(indexlage.c.hausnummer.is_not(None))
+            where.append(indexlage.c.hausnummer != '')
 
         if not qo.withHistorySearch:
+            where.append(~indexlage.c.fshistoric)
             where.append(~indexlage.c.lagehistoric)
 
         sel = sa.select(sa.distinct(indexlage.c.lageuid))
@@ -861,6 +871,9 @@ class Object(gws.Node):
             fs.lageList = self._remove_historic(fs.lageList, hd) if with_lage else []
             fs.gebaeudeList = self._remove_historic(fs.gebaeudeList, hd) if with_gebaeude else []
             fs.buchungList = self._remove_historic(fs.buchungList, hd) if with_buchung else []
+            for bu in fs.buchungList:
+                bu.recs = [ref for ref in bu.recs if self._remove_historic([ref.buchungsstelle], hd)]
+            fs.buchungList = [bu for bu in fs.buchungList if bu.recs]
 
             fs.bewertungList = []
             fs.festlegungList = []
@@ -886,7 +899,8 @@ class Object(gws.Node):
 
             for fs in fs_map.values():
                 for bu in fs.buchungList:
-                    bu.buchungsblatt = bb_map.get(bu.buchungsblattUid, hd)
+                    bu.buchungsblatt = bb_map.get(bu.buchungsblattUid)
+                fs.buchungList = [bu for bu in fs.buchungList if bu.buchungsblatt]
 
         if with_nutzung or with_festlegung or with_bewertung:
             tab = self.table(TABLE_PART)
@@ -1096,6 +1110,39 @@ def normalize_hausnummer(s):
     # "12 a" -> "12a"
     s = re.sub(r'\s+', '', s.strip())
     return s
+
+
+def hausnummer_key(s, upper=False):
+    """Create a sort key for a house number.
+
+    The key is the leading number, zero-padded to 6 digits, followed by the
+    lower-cased rest, e.g. ``000002b`` for ``2 B``. Keys sort by number first,
+    then by suffix, when compared bytewise (``COLLATE "C"``).
+
+    Args:
+        s: House number.
+        upper: Create the key for the upper bound of a range. A house number
+            without a suffix then gets a ``~`` suffix, which sorts after all
+            letters, so that the bound ``5`` includes ``5a`` to ``5z``.
+
+    Returns:
+        The key, or ``None`` if the house number does not start with a number.
+    """
+
+    m = re.match(r'(\d+)(.*)$', normalize_hausnummer(s).lower())
+    if not m:
+        return None
+    num, suffix = m.groups()
+    if upper and not suffix:
+        suffix = '~'
+    return f'{int(num):06d}{suffix}'
+
+
+def _hausnummer_key_or_error(s, upper=False):
+    k = hausnummer_key(s, upper)
+    if k is None:
+        raise gws.BadRequestError(f'invalid hausnummer {s!r}')
+    return k
 
 
 def make_fsnummer(r: dt.FlurstueckRecord):

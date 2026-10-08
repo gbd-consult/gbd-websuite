@@ -20,8 +20,6 @@ class CreateIndexParams(gws.CliParams):
     """Project uid."""
     force: bool = False
     """Drop and rebuild the index even if it is complete."""
-    cache: bool = False
-    """Use object cache."""
 
 
 class StatusParams(gws.CliParams):
@@ -85,7 +83,7 @@ class Object(gws.Node):
             return
 
         gws.log.info(f'indexing db={self.act.db.uid} dataSchema={self.act.dataSchema} indexSchema={self.act.indexSchema}')
-        indexer.run(self.act.ix, self.act.dataSchema, with_force=p.force, with_cache=p.cache)
+        indexer.run(self.act.ix, self.act.dataSchema, with_force=p.force)
 
     @gws.ext.command.cli('alkisStatus')
     def do_status(self, p: StatusParams):
