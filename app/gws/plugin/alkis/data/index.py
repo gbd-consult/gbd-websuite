@@ -1,6 +1,6 @@
 """ALKIS index tables: storage, search and loading of Flurstuecke and addresses."""
 
-from typing import Optional, Iterable
+from collections.abc import Iterable
 
 import re
 import datetime
@@ -9,12 +9,10 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 import gws
 import gws.lib.shape
-import gws.base.database
 import gws.config.util
 import gws.lib.crs
 import gws.plugin.postgres.provider
 import gws.lib.sa as sa
-from gws.lib.cli import ProgressIndicator
 
 from . import types as dt
 
@@ -345,18 +343,12 @@ class Object(gws.Node):
         tab = self.table(table_id)
         conn.execute(sa.text(f'DROP TABLE IF EXISTS {self.schema}.{tab.name}'))
 
-    def create_table(
-        self,
-        table_id: str,
-        values: list[dict],
-        progress: Optional[ProgressIndicator] = None,
-    ):
+    def create_table(self, table_id: str, values: list[dict]):
         """Create an index table and fill it with rows.
 
         Args:
             table_id: Table id.
             values: Rows as dicts of column names and values.
-            progress: Progress indicator, updated after all rows are inserted.
         """
 
         tab = self.table(table_id)
@@ -365,11 +357,6 @@ class Object(gws.Node):
             self.saMeta.create_all(conn.saConn, tables=[tab])
             if values:
                 conn.execute(sa.insert(tab), values)
-
-        if not values:
-            return
-        if progress:
-            progress.update(len(values))
 
     ##
 
@@ -717,7 +704,7 @@ class Object(gws.Node):
         if not qo.withHistorySearch:
             where.append(~indexfs.c.fshistoric)
 
-        sel = sa.select(sa.distinct(indexfs.c.fs))
+        sel = sa.select(indexfs.c.fs).distinct()
 
         for tab, cond in join:
             sel = sel.join(tab, cond)
@@ -772,7 +759,7 @@ class Object(gws.Node):
             where.append(~indexlage.c.fshistoric)
             where.append(~indexlage.c.lagehistoric)
 
-        sel = sa.select(sa.distinct(indexlage.c.lageuid))
+        sel = sa.select(indexlage.c.lageuid).distinct()
 
         sel = sel.where(*where)
 

@@ -203,8 +203,8 @@ class _Indexer:
 
         if self.ix.has_table(table_id):
             return
-        with ProgressIndicator(f'ALKIS: write {table_id!r}', len(values)) as progress:
-            self.ix.create_table(table_id, values, progress)
+        with ProgressIndicator(f'ALKIS: write {table_id!r}'):
+            self.ix.create_table(table_id, values)
 
     def write(self):
         """Write the collected entities into the index tables."""

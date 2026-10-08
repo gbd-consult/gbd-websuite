@@ -1,5 +1,6 @@
 import json
 import re
+import unittest.mock
 
 import gws
 import gws.lib.jsonx
@@ -122,8 +123,9 @@ def create_root() -> gws.Root:
 
     root = u.gws_root(cfg)
 
-    for uid in 'ACTION_A', 'ACTION_C':
-        indexer.run(root.get(uid).ix, data.SCHEMA, with_force=True)
+    with unittest.mock.patch.object(indexer, 'ProgressIndicator'):
+        for uid in 'ACTION_A', 'ACTION_C':
+            indexer.run(root.get(uid).ix, data.SCHEMA, with_force=True)
 
     return root
 
