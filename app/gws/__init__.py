@@ -2078,8 +2078,8 @@ class StyleValues(Data):
 
     point_size: int
     """Diameter of point geometries in pixels."""
-    icon: str
-    """Icon for point geometries. After parsing, a ``gws.lib.style.icon.ParsedIcon`` object."""
+    icon: Optional['XmlElement']
+    """Icon for point geometries, the normalized SVG element."""
 
     offset_x: int
     """Horizontal offset of the drawn geometry in pixels."""

@@ -359,9 +359,14 @@ def real_manifest_path(manifest_path: str) -> str:
 
     Returns:
         The manifest path, or an empty string.
+
+    Raises:
+        ``gws.Error``: If an explicit or ``GWS_MANIFEST`` path does not exist.
     """
     p = manifest_path or gws.env.GWS_MANIFEST
     if p:
+        if not gws.u.is_file(p):
+            raise gws.Error(f'manifest not found: {p!r}')
         return p
     for p in _DEFAULT_MANIFEST_PATHS:
         if gws.u.is_file(p):

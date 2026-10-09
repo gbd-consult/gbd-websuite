@@ -37,7 +37,7 @@ class GetFeaturesRequest(gws.Request):
     shapes: Optional[list[gws.ShapeProps]]
     """Search shapes, combined into one."""
     tolerance: Optional[str]
-    """Search tolerance. Not used, the helper applies a fixed tolerance of 10 pixels."""
+    """Search tolerance, e.g. ``10px`` or ``5m``. A number without a unit is in pixels. 10 pixels by default."""
 
 
 class GetFeaturesResponse(gws.Response):
@@ -54,8 +54,6 @@ class GetRelatableFeaturesRequest(gws.Request):
     """Uid of the model that has the field."""
     fieldName: str
     """Name of the related field."""
-    extent: Optional[gws.Extent]
-    """Search extent. Not used."""
     keyword: Optional[str]
     """Search keyword."""
 

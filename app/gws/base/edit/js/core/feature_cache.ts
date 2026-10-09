@@ -41,8 +41,6 @@ export class FeatureCache {
             modelUid: field.model.uid,
             fieldName: field.name,
             keyword: searchText || '',
-            extent: cc.map.bbox,
-
         });
         let features = cc.app.modelRegistry.featureListFromProps(res.features);
         let key = 'field:' + field.uid;

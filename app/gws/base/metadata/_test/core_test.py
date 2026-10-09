@@ -3,6 +3,12 @@ import gws.base.metadata.core as mdc
 import gws.test.util as u
 
 
+def test_new_sets_language_codes():
+    md = mdc.new()
+    assert md.language3 == 'eng'
+    assert md.languageBib == 'eng'
+
+
 def test_from_dict():
     data = {'title': 'Test Title', 'abstract': 'Test Abstract', 'keywords': ['bbb', 'aaa'], 'language': 'en'}
 

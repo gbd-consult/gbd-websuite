@@ -256,13 +256,16 @@ def new() -> gws.Metadata:
     """Create an empty metadata object.
 
     The list values ``keywords``, ``isoTopicCategories`` and ``metaLinks``
-    are empty lists, all other values are unset.
+    are empty lists, ``language3`` and ``languageBib`` are set for the default
+    language ``en``, all other values are unset.
 
     Returns:
         A new metadata object.
     """
 
-    return _new()
+    md = _new()
+    _fix_language(md)
+    return md
 
 
 def from_dict(d: dict) -> gws.Metadata:

@@ -1348,7 +1348,7 @@ def get_cached_object(name: str, life_time: int, init_fn):
     """Get an object from the object cache, creating it if needed.
 
     The object is pickled in ``const.OBJECT_CACHE_DIR`` and created under a server lock.
-    A cached object older than ``life_time``, or a falsy one, is created again.
+    A cached object older than ``life_time``, or ``None``, is created again.
     Load and store errors are logged and ignored.
 
     Args:
@@ -1378,12 +1378,12 @@ def get_cached_object(name: str, life_time: int, init_fn):
                 log.exception(f'get_cached_object {uid!r} LOAD ERROR')
 
     obj = _get()
-    if obj:
+    if obj is not None:
         return obj
 
     with server_lock(uid):
         obj = _get()
-        if obj:
+        if obj is not None:
             return obj
 
         obj = init_fn()

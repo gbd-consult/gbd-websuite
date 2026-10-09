@@ -16,6 +16,7 @@ import gws.gis.render
 import gws.lib.image
 import gws.lib.jsonx
 import gws.lib.mime
+import gws.lib.uom
 
 from . import api
 
@@ -101,6 +102,8 @@ class Object(gws.Node):
         if p.shapes:
             shapes = [gws.lib.shape.from_props(s) for s in p.shapes]
             search.shape = shapes[0] if len(shapes) == 1 else shapes[0].union(shapes[1:])
+        if p.tolerance:
+            search.tolerance = gws.lib.uom.parse(p.tolerance, gws.Uom.px)
         if p.resolution:
             search.resolution = p.resolution
         if p.keyword:

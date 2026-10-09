@@ -108,7 +108,7 @@ class Object(gws.Client):
 
         add = self.cfg('addElements', default=[])
         remove = self.cfg('removeElements', default=[])
-        elements = list(app_client.elements)
+        elements = [e.config for e in app_client.elements]
 
         for c in add:
             n = self._find_element(elements, c.tag)
