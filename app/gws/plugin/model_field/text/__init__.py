@@ -27,6 +27,7 @@ from typing import Optional, cast
 
 import gws
 import gws.base.database.model
+import gws.base.database.util
 import gws.base.model.scalar_field
 import gws.lib.sa as sa
 
@@ -67,34 +68,12 @@ class Object(gws.base.model.scalar_field.Object):
     def before_select(self, mc):
         super().before_select(mc)
 
-        kw = mc.search.keyword
-        ts = self.textSearch
-
-        if not kw or not ts or (ts.minLength and len(kw) < ts.minLength):
+        if not self.textSearch:
             return
 
         model = cast(gws.base.database.model.Object, self.model)
         col = sa.cast(model.column(self.name), sa.String)
 
-        if ts.type == gws.TextSearchType.exact:
-            mc.dbSelect.keywordWhere.append(col == kw)
-            return
-
-        if ts.type == gws.TextSearchType.any:
-            kw = '%' + _escape_like(kw) + '%'
-        elif ts.type == gws.TextSearchType.begin:
-            kw = _escape_like(kw) + '%'
-        elif ts.type == gws.TextSearchType.end:
-            kw = '%' + _escape_like(kw)
-        elif ts.type == gws.TextSearchType.like:
-            pass
-
-        if ts.caseSensitive:
-            mc.dbSelect.keywordWhere.append(col.like(kw, escape='\\'))
-        else:
-            mc.dbSelect.keywordWhere.append(col.ilike(kw, escape='\\'))
-
-
-def _escape_like(s, escape='\\'):
-    """Escape the ``LIKE`` wildcards and the escape character in a string."""
-    return s.replace(escape, escape + escape).replace('%', escape + '%').replace('_', escape + '_')
+        cond = gws.base.database.util.text_search_clause(col, mc.search.keyword, self.textSearch)
+        if cond is not None:
+            mc.dbSelect.keywordWhere.append(cond)

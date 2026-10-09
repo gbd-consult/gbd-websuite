@@ -12,6 +12,7 @@ import gws.lib.shape
 import gws.config.util
 import gws.lib.crs
 import gws.plugin.postgres.provider
+import gws.base.database.util
 import gws.lib.sa as sa
 
 from . import types as dt
@@ -622,7 +623,7 @@ class Object(gws.Node):
             ws = []
 
             for s in q.buchungsblattkennzeichenList:
-                w = text_search_clause(
+                w = gws.base.database.util.text_search_clause(
                     indexbuchungsblatt.c.buchungsblattkennzeichen,
                     s,
                     qo.buchungsblattSearchOptions,
@@ -634,7 +635,7 @@ class Object(gws.Node):
                 where.append(sa.or_(*ws))
 
         if q.strasse:
-            w = text_search_clause(
+            w = gws.base.database.util.text_search_clause(
                 indexlage.c.strasse_t,
                 strasse_key(q.strasse),
                 qo.strasseSearchOptions,
@@ -652,7 +653,7 @@ class Object(gws.Node):
                 where.append(indexlage.c.hausnummer == normalize_hausnummer(q.hausnummer))
 
         if q.personName:
-            w = text_search_clause(indexperson.c.name_t, text_key(q.personName), qo.nameSearchOptions)
+            w = gws.base.database.util.text_search_clause(indexperson.c.name_t, text_key(q.personName), qo.nameSearchOptions)
             if w is not None:
                 has_person = True
                 where.append(w)
@@ -660,7 +661,7 @@ class Object(gws.Node):
         if q.personVorname:
             if not has_person:
                 raise gws.BadRequestError(f'personVorname without personName')
-            w = text_search_clause(indexperson.c.vorname_t, text_key(q.personVorname), qo.nameSearchOptions)
+            w = gws.base.database.util.text_search_clause(indexperson.c.vorname_t, text_key(q.personVorname), qo.nameSearchOptions)
             if w is not None:
                 where.append(w)
 
@@ -724,7 +725,7 @@ class Object(gws.Node):
         has_strasse = False
 
         if q.strasse:
-            w = text_search_clause(
+            w = gws.base.database.util.text_search_clause(
                 indexlage.c.strasse_t,
                 strasse_key(q.strasse),
                 qo.strasseSearchOptions,
@@ -1210,55 +1211,6 @@ def parse_fsnummer(s):
     if not m:
         return None
     return gws.u.compact(m.groupdict())
-
-
-def text_search_clause(column, val, tso: gws.TextSearchOptions):
-    """Create a where clause that matches a column against a search string.
-
-    Args:
-        column: Column to match.
-        val: Search string.
-        tso: Text search options. Without options, the value is matched exactly.
-
-    Returns:
-        A clause, or ``None`` if the value is empty or shorter than the minimum length.
-    """
-
-    # @TODO merge with model_field/text
-
-    if val is None:
-        return
-
-    val = str(val).strip()
-    if len(val) == 0:
-        return
-
-    if not tso:
-        return column == val
-
-    if tso.minLength and len(val) < tso.minLength:
-        return
-
-    if tso.type == gws.TextSearchType.exact:
-        return column == val
-
-    if tso.type == gws.TextSearchType.any:
-        val = '%' + _escape_like(val) + '%'
-    if tso.type == gws.TextSearchType.begin:
-        val = _escape_like(val) + '%'
-    if tso.type == gws.TextSearchType.end:
-        val = '%' + _escape_like(val)
-
-    if tso.caseSensitive:
-        return column.like(val, escape='\\')
-
-    return column.ilike(val, escape='\\')
-
-
-def _escape_like(s, escape='\\'):
-    """Escape special characters for a LIKE pattern."""
-
-    return s.replace(escape, escape + escape).replace('%', escape + '%').replace('_', escape + '_')
 
 
 ##

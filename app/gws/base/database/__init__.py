@@ -27,6 +27,8 @@ Submodules
   finder.
 - ``auth_provider`` - the base authorization provider that checks users with
   SQL queries.
+- ``util`` - ``text_search_clause``, which turns a search string and
+  ``gws.TextSearchOptions`` into a where clause.
 
 Providers and connections
 -------------------------
