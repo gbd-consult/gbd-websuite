@@ -167,3 +167,27 @@ def test_parse_extent_list_with_unit():
     assert uom.parse_extent([1, 2, 3, 4, 'mm']) == (1.0, 2.0, 3.0, 4.0, 'mm')
 
 
+
+
+def test_extent_to_px():
+    ppi = 123
+    assert uom.extent_to_px((1, 2, 3, 4, gws.Uom.mm), ppi) == (
+        uom.mm_to_px(1, ppi), uom.mm_to_px(2, ppi), uom.mm_to_px(3, ppi), uom.mm_to_px(4, ppi), gws.Uom.px)
+    assert uom.extent_to_px((1, 2, 3, 4, gws.Uom.px), ppi) == (1, 2, 3, 4, gws.Uom.px)
+
+
+def test_extent_to_px_invalid_unit():
+    with u.raises(ValueError):
+        uom.extent_to_px((1, 2, 3, 4, gws.Uom.m), 123)
+
+
+def test_extent_to_mm():
+    ppi = 123
+    assert uom.extent_to_mm((1, 2, 3, 4, gws.Uom.px), ppi) == (
+        uom.px_to_mm(1, ppi), uom.px_to_mm(2, ppi), uom.px_to_mm(3, ppi), uom.px_to_mm(4, ppi), gws.Uom.mm)
+    assert uom.extent_to_mm((1, 2, 3, 4, gws.Uom.mm), ppi) == (1, 2, 3, 4, gws.Uom.mm)
+
+
+def test_extent_to_mm_invalid_unit():
+    with u.raises(ValueError):
+        uom.extent_to_mm((1, 2, 3, 4, gws.Uom.m), 123)

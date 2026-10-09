@@ -23,6 +23,18 @@ def test_get_unknown():
     assert crs.get('FOOBAR') is None
 
 
+def test_is_valid():
+    assert crs.is_valid('EPSG:3857')
+    assert crs.is_valid(4326)
+
+
+def test_is_valid_invalid():
+    assert not crs.is_valid('')
+    assert not crs.is_valid(None)
+    assert not crs.is_valid('EPSG:0')
+    assert not crs.is_valid('FOOBAR')
+
+
 def test_get_by_epsg():
     assert str(crs.get('EPSG:3857')) == '<crs:3857>'
     assert crs.get('EPSG:3857') == crs.WEBMERCATOR
@@ -110,6 +122,11 @@ def test_require():
 def test_require_exception():
     with u.raises(crs.Error):
         crs.require('FOOBAR')
+
+
+def test_require_exception_reason():
+    with u.raises(crs.Error, match='unknown srid'):
+        crs.require('EPSG:0')
 
 
 # --- CRS object properties ---

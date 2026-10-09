@@ -292,6 +292,11 @@ def test_unary_plus():
     assert result == ['=', [cql.Node.NAME, 'value'], [cql.Node.INT, 5]]
 
 
+def test_unary_minus():
+    result = cql.parse('value = -a')
+    assert result == ['=', [cql.Node.NAME, 'value'], [cql.Node.NEG, [cql.Node.NAME, 'a']]]
+
+
 def test_nested_arithmetic():
     result = cql.parse('result = (a + b) * c')
     assert result == ['=', [cql.Node.NAME, 'result'], ['*', ['+', [cql.Node.NAME, 'a'], [cql.Node.NAME, 'b']], [cql.Node.NAME, 'c']]]

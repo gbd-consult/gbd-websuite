@@ -317,7 +317,25 @@ def get(crs_name: Optional[gws.CrsName]) -> Optional[gws.Crs]:
     """
     if not crs_name:
         return None
-    return _get_crs(crs_name)
+    crs, err = _get_crs(crs_name)
+    if err:
+        gws.log.warning(err)
+    return crs
+
+
+def is_valid(crs_name: Optional[gws.CrsName]) -> bool:
+    """Check if a CRS name or SRID refers to a supported CRS, without logging.
+
+    Args:
+        crs_name: CRS name in any supported format, or an SRID.
+
+    Returns:
+        ``True`` if ``get`` would return a CRS.
+    """
+    if not crs_name:
+        return False
+    crs, _ = _get_crs(crs_name)
+    return crs is not None
 
 
 def parse(crs_name: gws.CrsName) -> tuple[gws.CrsFormat, Optional[gws.Crs]]:
@@ -333,7 +351,10 @@ def parse(crs_name: gws.CrsName) -> tuple[gws.CrsFormat, Optional[gws.Crs]]:
     fmt, srid = _parse(crs_name)
     if not fmt:
         return gws.CrsFormat.none, None
-    return fmt, _get_crs(srid)
+    crs, err = _get_crs(srid)
+    if err:
+        gws.log.warning(err)
+    return fmt, crs
 
 
 def require(crs_name: gws.CrsName) -> gws.Crs:
@@ -348,9 +369,9 @@ def require(crs_name: gws.CrsName) -> gws.Crs:
     Raises:
         ``Error``: If the name cannot be parsed or refers to an unknown or unsupported CRS.
     """
-    crs = _get_crs(crs_name)
+    crs, err = _get_crs(crs_name)
     if not crs:
-        raise Error(f'invalid CRS {crs_name!r}')
+        raise Error(err)
     return crs
 
 
@@ -413,40 +434,37 @@ def _best_match(crs, supported_crs):
 ##
 
 
-def _get_crs(crs_name):
+def _get_crs(crs_name) -> tuple[Optional[gws.Crs], str]:
     if crs_name in _obj_cache:
         return _obj_cache[crs_name]
 
     fmt, srid = _parse(crs_name)
     if not fmt:
-        gws.log.warning(f'CRS: cannot parse {crs_name!r}')
-        _obj_cache[crs_name] = None
-        return None
+        res = None, f'CRS: cannot parse {crs_name!r}'
+        _obj_cache[crs_name] = res
+        return res
 
     if srid in _obj_cache:
         _obj_cache[crs_name] = _obj_cache[srid]
         return _obj_cache[srid]
 
-    obj = _get_new_crs(srid)
-    _obj_cache[crs_name] = _obj_cache[srid] = obj
-    return obj
+    res = _load_crs(srid)
+    _obj_cache[crs_name] = _obj_cache[srid] = res
+    return res
 
 
-def _get_new_crs(srid):
+def _load_crs(srid) -> tuple[Optional[gws.Crs], str]:
     pp = _pyproj_crs_object(srid)
     if not pp:
-        _warnings[srid] = f'CRS: unknown srid {srid!r}'
-        return None
+        return None, f'CRS: unknown srid {srid!r}'
 
     au = _axis_and_unit(pp)
     if not au:
-        _warnings[srid] = f'CRS: unsupported srid {srid!r}'
-        return None
+        return None, f'CRS: unsupported srid {srid!r}'
 
     axis, uom = au
     if uom not in (gws.Uom.m, gws.Uom.deg):
-        _warnings[srid] = f'CRS: unsupported unit {uom!r} for {srid!r}'
-        return None
+        return None, f'CRS: unsupported unit {uom!r} for {srid!r}'
 
     return _make_crs(srid, pp, axis, uom)
 
@@ -598,8 +616,7 @@ def _make_crs(srid, pp, axis, uom):
         try:
             crs.proj4text = pp.to_proj4()
         except pyproj.exceptions.CRSError:
-            gws.log.error(f'CRS: cannot convert {srid!r} to proj4')
-            return None
+            return None, f'CRS: cannot convert {srid!r} to proj4'
 
     crs.wkt = pp.to_wkt()
 
@@ -651,8 +668,7 @@ def _make_crs(srid, pp, axis, uom):
 
     b = _bbox(d)
     if not b:
-        _warnings[srid] = f'CRS: no bbox for {crs.srid!r}'
-        return
+        return None, f'CRS: no bbox for {crs.srid!r}'
 
     crs.wgsExtent = (
         b['west_longitude'],
@@ -665,7 +681,7 @@ def _make_crs(srid, pp, axis, uom):
 
     crs.wgsMaxExtent = _wgs_max_extent(pp, crs.wgsExtent)
 
-    return crs
+    return crs, ''
 
 
 def _wgs_max_extent(pp, wgs_extent):
@@ -793,12 +809,10 @@ def _unparse(srid, fmt):
 
 
 _obj_cache: dict = {
-    WGS84.srid: WGS84,
-    WEBMERCATOR.url: WEBMERCATOR,
+    WGS84.srid: (WGS84, ''),
+    WEBMERCATOR.url: (WEBMERCATOR, ''),
 }
 
 _pyproj_cache: dict = {}
 
 _transformer_cache: dict = {}
-
-_warnings: dict = {}

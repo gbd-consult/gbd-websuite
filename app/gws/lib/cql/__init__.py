@@ -35,6 +35,7 @@ Node types are listed in ``Node``, operators and other keyword sets in ``C``.
 Literal nodes carry a python value: ``['INT', 10]``, ``['DATE', datetime.date(...)]``.
 A ``NAME`` node carries the dot-separated parts of a property name: ``a.b`` is
 ``['NAME', 'a', 'b']``. The operators ``<>`` and ``!=`` are both emitted as ``<>``.
+Unary minus is emitted as ``NEG``: ``-a`` is ``['NEG', ['NAME', 'a']]``.
 
 Function calls come in two flavours. Names the standard knows about (``C.FUNCTIONS``)
 are checked for arity and emitted lowercased as ``FUNCTION``, everything else is

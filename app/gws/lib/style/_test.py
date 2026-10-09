@@ -1,5 +1,8 @@
 """Tests for the style module."""
 
+import base64
+import urllib.parse
+
 import gws
 import gws.lib.style as style
 import gws.test.util as u
@@ -148,6 +151,33 @@ def test_parse_untrusted():
     opt = style.parser.Options(trusted=False, strict=True, imageDirs=())
     with u.raises(Exception):
         style.icon.parse(url, opt)
+
+
+_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><circle cx="5" cy="5" r="4"/></svg>'
+
+
+def test_parse_data_url_utf8():
+    opt = style.parser.Options(trusted=False, strict=True, imageDirs=())
+    icon = style.icon.parse('data:image/svg+xml;utf8,' + _SVG, opt)
+    assert icon.svg.get('width') == '10'
+
+
+def test_parse_data_url_utf8_percent_encoded():
+    opt = style.parser.Options(trusted=False, strict=True, imageDirs=())
+    icon = style.icon.parse('data:image/svg+xml;utf8,' + urllib.parse.quote(_SVG), opt)
+    assert icon.svg.get('width') == '10'
+
+
+def test_parse_data_url_base64():
+    opt = style.parser.Options(trusted=False, strict=True, imageDirs=())
+    icon = style.icon.parse('data:image/svg+xml;base64,' + base64.b64encode(_SVG.encode('utf8')).decode('utf8'), opt)
+    assert icon.svg.get('width') == '10'
+
+
+def test_parse_data_url_invalid_base64():
+    opt = style.parser.Options(trusted=False, strict=True, imageDirs=())
+    with u.raises(style.icon.Error):
+        style.icon.parse('data:image/svg+xml;base64,PHN2Zz4!!!', opt)
 
 
 # tests for parser

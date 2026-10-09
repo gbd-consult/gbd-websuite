@@ -476,7 +476,7 @@ class Engine(gws.lib.vendor.jump.Engine):
     template while it renders.
     """
 
-    pageMargin: list[int] = []
+    pageMargin: Optional[gws.UomExtent] = None
     """Page margins set by ``@page``."""
     pageSize: gws.UomSize = []
     """Page size set by ``@page``."""
@@ -506,7 +506,8 @@ class Engine(gws.lib.vendor.jump.Engine):
             _scalar(kw, 'width', int, self.template.pageSize[0]),
             _scalar(kw, 'height', int, self.template.pageSize[1]),
             gws.Uom.mm)
-        self.pageMargin = _list(kw, 'margin', int, 4, self.template.pageMargin)
+        m = _list(kw, 'margin', int, 4)
+        self.pageMargin = (*m, gws.Uom.mm) if m else self.template.pageMargin
 
     def def_map(self, **kw):
         """Handle the ``@map`` command.

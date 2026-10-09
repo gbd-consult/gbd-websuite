@@ -96,6 +96,9 @@ class Object(gws.ServerManager):
         if self.config.withMapproxy is not None:
             self.root.config_warning('"server.withMapproxy" is deprecated and ignored')
 
+        if self.config.withMonitor and not self.config.withSpool:
+            raise gws.ConfigurationError('"server.withMonitor" requires "server.withSpool"')
+
         self.configure_environment()
         self.configure_templates()
 

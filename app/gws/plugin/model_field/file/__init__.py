@@ -27,7 +27,6 @@ Example::
 from typing import Optional, cast
 
 import gws
-import gws.base.database.model
 import gws.base.model.field
 import gws.lib.image
 import gws.lib.mime
@@ -116,44 +115,33 @@ class Object(gws.base.model.field.Object):
 
     attributeType = gws.AttributeType.file
 
-    contentColumn: Optional[sa.Column] = None
-    """Column for the file content."""
-    pathColumn: Optional[sa.Column] = None
-    """Column for the file path."""
-    nameColumn: Optional[sa.Column] = None
-    """Column for the file name."""
-
-    def __getstate__(self):
-        return gws.u.omit(vars(self), 'cols')
+    contentColumnName: str = ''
+    """Name of the column for the file content."""
+    pathColumnName: str = ''
+    """Name of the column for the file path."""
+    nameColumnName: str = ''
+    """Name of the column for the file name."""
 
     def post_configure(self):
         self.configure_columns()
 
-    def activate(self):
-        self.configure_columns()
-
     def configure_columns(self):
-        """Resolve the configured content, path and name columns of the model.
-
-        The columns are SQLAlchemy objects. They are resolved after configuration
-        and again on activation.
+        """Check the configured content, path and name columns of the model and store their names.
 
         Raises:
             ``gws.ConfigurationError``: If neither ``contentColumn`` nor ``pathColumn`` is set,
                 or the model has no primary key.
         """
-        model = cast(gws.base.database.model.Object, self.model)
-
         p = self.cfg('contentColumn')
-        self.contentColumn = model.column(p) if p else None
+        self.contentColumnName = self.model.column(p).name if p else ''
 
         p = self.cfg('pathColumn')
-        self.pathColumn = model.column(p) if p else None
+        self.pathColumnName = self.model.column(p).name if p else ''
 
         p = self.cfg('nameColumn')
-        self.nameColumn = model.column(p) if p else None
+        self.nameColumnName = self.model.column(p).name if p else ''
 
-        if self.contentColumn is None and self.pathColumn is None:
+        if not self.contentColumnName and not self.pathColumnName:
             raise gws.ConfigurationError('contentColumn or pathColumn must be set')
 
         if not self.model.uidName:
@@ -191,10 +179,10 @@ class Object(gws.base.model.field.Object):
         fv = cast(FileValue, feature.get(self.name))
         if not fv:
             return
-        if self.contentColumn is not None:
-            feature.record.attributes[self.contentColumn.name] = fv.content
-        if self.nameColumn is not None:
-            feature.record.attributes[self.nameColumn.name] = fv.name
+        if self.contentColumnName:
+            feature.record.attributes[self.contentColumnName] = fv.content
+        if self.nameColumnName:
+            feature.record.attributes[self.nameColumnName] = fv.name
 
     # @TODO merge with scalar_field?
 
@@ -311,22 +299,24 @@ class Object(gws.base.model.field.Object):
         if not mc.user.can_read(self):
             return
 
-        if self.contentColumn is None:
+        if not self.contentColumnName:
             # @TODO serve files stored in the filesystem
             return
+
+        content_col = self.model.column(self.contentColumnName)
 
         search = gws.SearchQuery(uids=[feature_uid])
         if preview:
             # for small files, fetch content md5 and content, for big files only md5
             search.extraColumns = [
-                sa.func.md5(self.contentColumn).label(f'{self.name}_preview_md5'),
+                sa.func.md5(content_col).label(f'{self.name}_preview_md5'),
                 sa.case(
-                    (sa.func.length(self.contentColumn) < _PREVIEW_BIG_FILE_SIZE, self.contentColumn),
+                    (sa.func.length(content_col) < _PREVIEW_BIG_FILE_SIZE, content_col),
                     else_=sa.null(),
                 ).label(f'{self.name}_preview_content'),
             ]
         else:
-            search.extraColumns = [self.contentColumn]
+            search.extraColumns = [content_col]
 
         features = self.model.find_features(search, mc)
         if not features:
@@ -362,7 +352,7 @@ class Object(gws.base.model.field.Object):
             if content is None:
                 # big file
                 search = gws.SearchQuery(uids=[feature.uid()])
-                search.extraColumns = [self.contentColumn]
+                search.extraColumns = [content_col]
                 features = self.model.find_features(search, mc)
                 if not features:
                     raise gws.NotFoundError(f'file preview: no feature {feature.uid()!r}')
@@ -412,12 +402,12 @@ class Object(gws.base.model.field.Object):
         """
         cs = []
 
-        if self.contentColumn is not None:
-            cs.append(sa.func.length(self.contentColumn).label(f'{self.name}_length'))
-        if self.pathColumn is not None:
-            cs.append(self.pathColumn)
-        if self.nameColumn is not None:
-            cs.append(self.nameColumn)
+        if self.contentColumnName:
+            cs.append(sa.func.length(self.model.column(self.contentColumnName)).label(f'{self.name}_length'))
+        if self.pathColumnName:
+            cs.append(self.model.column(self.pathColumnName))
+        if self.nameColumnName:
+            cs.append(self.model.column(self.nameColumnName))
 
         return cs
 
@@ -433,13 +423,13 @@ class Object(gws.base.model.field.Object):
         """
         d = {}
 
-        if self.contentColumn is not None:
+        if self.contentColumnName:
             d['size'] = attributes.get(f'{self.name}_length')
-            d['content'] = attributes.get(self.contentColumn.name)
-        if self.pathColumn is not None:
-            d['path'] = attributes.get(self.pathColumn.name)
-        if self.nameColumn is not None:
-            d['name'] = attributes.get(self.nameColumn.name)
+            d['content'] = attributes.get(self.contentColumnName)
+        if self.pathColumnName:
+            d['path'] = attributes.get(self.pathColumnName)
+        if self.nameColumnName:
+            d['name'] = attributes.get(self.nameColumnName)
 
         if d:
             return FileValue(**d)

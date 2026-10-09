@@ -71,7 +71,7 @@ Besides the start, ``control`` supports these workflows:
   the configuration and log the report
 
 The spool server loads the stored configuration and starts the monitor, if
-``withMonitor`` is set. A uWSGI timer calls the monitor every few seconds. When watched files change, or when an object calls
+``withMonitor`` is set. ``withMonitor`` therefore requires ``withSpool``. A uWSGI timer calls the monitor every few seconds. When watched files change, or when an object calls
 ``schedule_reload``, the monitor configures and stores the configuration (on
 a reconfigure) and reloads the web and spool backends. It does not rewrite the
 server configs and does not reload NGINX.

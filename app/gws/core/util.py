@@ -489,6 +489,21 @@ def to_float(x) -> float:
         return 0.0
 
 
+def clamp(x, lo, hi):
+    """Limit a value to a range.
+
+    Args:
+        x: A value.
+        lo: Lower bound.
+        hi: Upper bound.
+
+    Returns:
+        ``lo`` if the value is less than ``lo``, ``hi`` if it is greater than ``hi``, otherwise the value.
+    """
+
+    return max(lo, min(x, hi))
+
+
 def to_str(x, encodings: list[str] = None) -> str:
     """Convert a value to a string.
 
@@ -795,9 +810,11 @@ def split_uid(joined_uid: str) -> tuple[str, str]:
         joined_uid: Joined uid.
 
     Returns:
-        A tuple of the parent uid and the object uid. If there is no delimiter, the object uid is empty.
+        A tuple of the parent uid and the object uid. If there is no delimiter, the parent uid is empty.
     """
-    p, _, u = joined_uid.partition(UID_DELIMITER)
+    p, sep, u = joined_uid.partition(UID_DELIMITER)
+    if not sep:
+        return '', joined_uid
     return p, u
 
 

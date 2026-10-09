@@ -126,11 +126,14 @@ def intersection(*exts: gws.Extent) -> Optional[gws.Extent]:
         *exts: Extents.
 
     Returns:
-        An extent, or ``None`` if the extents do not intersect or none are given.
+        An extent, or ``None`` if the extents do not intersect.
+
+    Raises:
+        ``gws.Error``: If no extents are given.
     """
 
     if not exts:
-        return
+        raise gws.Error('no extents given')
 
     res = (-math.inf, -math.inf, math.inf, math.inf)
 
@@ -263,7 +266,13 @@ def union(*exts: gws.Extent) -> gws.Extent:
 
     Returns:
         An extent.
+
+    Raises:
+        ``gws.Error``: If no extents are given.
     """
+
+    if not exts:
+        raise gws.Error('no extents given')
 
     ext = exts[0]
     for e in exts:

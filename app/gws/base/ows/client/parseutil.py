@@ -281,7 +281,7 @@ def supported_crs(layer_el: gws.XmlElement, extra_crs_ids: list[str] = None) -> 
 
     crsids.update(extra_crs_ids or [])
 
-    return gws.u.compact(gws.lib.crs.get(s) for s in crsids)
+    return [gws.lib.crs.require(s) for s in crsids if gws.lib.crs.is_valid(s)]
 
 
 ##

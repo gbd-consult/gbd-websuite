@@ -3,7 +3,7 @@
 This package wraps common operating system tasks used throughout GWS:
 
 - running external commands (``run``, ``run_nowait``),
-- file system operations (``unlink``, ``rename``, ``copy``, ``mkdir``, ``rmdir``, ``touch``, ``chown``),
+- file system operations (``unlink``, ``rename``, ``copy``, ``rmdir``, ``touch``, ``chown``),
 - file information (``file_mtime``, ``file_age``, ``file_size``, ``file_checksum``),
 - searching directories (``find_files``, ``find_directories``),
 - path manipulation (``parse_path``, ``abs_path``, ``rel_path``, ``abs_web_path``),
@@ -18,7 +18,6 @@ Example::
     import gws.lib.osx
 
     out = gws.lib.osx.run(['gdalinfo', '--version'])
-    gws.lib.osx.mkdir('/tmp/gws/data')
     for path in gws.lib.osx.find_files('/data/projects', ext='json'):
         print(path, gws.lib.osx.file_size(path))
 """
@@ -199,21 +198,6 @@ def copy(src: _Path, dst: _Path, user: int = None, group: int = None):
     """
     shutil.copyfile(src, dst)
     os.chown(dst, user or gws.c.UID, group or gws.c.GID)
-
-
-def mkdir(path: _Path, mode: int = 0o755, user: int = None, group: int = None):
-    """Create a directory, including missing parent directories.
-
-    Does nothing if the directory already exists.
-
-    Args:
-        path: Path to a directory.
-        mode: Directory creation mode.
-        user: Directory user. Currently not used.
-        group: Directory group. Currently not used.
-    """
-
-    os.makedirs(path, mode, exist_ok=True)
 
 
 def rmdir(path: _Path) -> bool:

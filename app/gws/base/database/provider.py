@@ -330,7 +330,6 @@ class Object(gws.DatabaseProvider):
         col = gws.ColumnDescription(
             columnIndex=0,
             comment=str(sa_col.comment or ''),
-            default=sa_col.default,
             geometrySrid=0,
             geometryType='',
             isAutoincrement=bool(sa_col.autoincrement),

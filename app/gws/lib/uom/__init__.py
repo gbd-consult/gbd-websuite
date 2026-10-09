@@ -123,11 +123,11 @@ def mm_to_px(x: _number, ppi: int) -> float:
     return x * (ppi / MM_PER_IN)
 
 
-def to_px(xu: gws.UomValue, ppi: int) -> gws.UomValue:
+def to_px(v: gws.UomValue, ppi: int) -> gws.UomValue:
     """Convert a value with a unit to pixels.
 
     Args:
-        xu: Value in ``px`` or ``mm``.
+        v: Value in ``px`` or ``mm``.
         ppi: Pixels per inch.
 
     Returns:
@@ -136,33 +136,33 @@ def to_px(xu: gws.UomValue, ppi: int) -> gws.UomValue:
     Raises:
         ``ValueError``: If the unit is not ``px`` or ``mm``.
     """
-    x, u = xu
+    x, u = v
     if u == gws.Uom.px:
-        return xu
+        return v
     if u == gws.Uom.mm:
         return mm_to_px(x, ppi), gws.Uom.px
     raise ValueError(f'invalid unit {u!r}')
 
 
-def size_mm_to_px(xy: gws.Size, ppi: int) -> gws.Size:
+def size_mm_to_px(s: gws.Size, ppi: int) -> gws.Size:
     """Convert a size in millimetres to pixels.
 
     Args:
-        xy: Size in millimetres.
+        s: Size in millimetres.
         ppi: Pixels per inch.
 
     Returns:
         Size in pixels.
     """
-    x, y = xy
+    x, y = s
     return mm_to_px(x, ppi), mm_to_px(y, ppi)
 
 
-def size_to_px(xyu: gws.UomSize, ppi: int) -> gws.UomSize:
+def size_to_px(s: gws.UomSize, ppi: int) -> gws.UomSize:
     """Convert a size with a unit to pixels.
 
     Args:
-        xyu: Size in ``px`` or ``mm``.
+        s: Size in ``px`` or ``mm``.
         ppi: Pixels per inch.
 
     Returns:
@@ -171,11 +171,38 @@ def size_to_px(xyu: gws.UomSize, ppi: int) -> gws.UomSize:
     Raises:
         ``ValueError``: If the unit is not ``px`` or ``mm``.
     """
-    x, y, u = xyu
+    x, y, u = s
     if u == gws.Uom.px:
-        return xyu
+        return s
     if u == gws.Uom.mm:
         return mm_to_px(x, ppi), mm_to_px(y, ppi), gws.Uom.px
+    raise ValueError(f'invalid unit {u!r}')
+
+
+def extent_to_px(ext: gws.UomExtent, ppi: int) -> gws.UomExtent:
+    """Convert an extent with a unit to pixels.
+
+    Args:
+        ext: Extent in ``px`` or ``mm``.
+        ppi: Pixels per inch.
+
+    Returns:
+        Extent in pixels.
+
+    Raises:
+        ``ValueError``: If the unit is not ``px`` or ``mm``.
+    """
+    a, b, c, d, u = ext
+    if u == gws.Uom.px:
+        return ext
+    if u == gws.Uom.mm:
+        return (
+            mm_to_px(a, ppi),
+            mm_to_px(b, ppi),
+            mm_to_px(c, ppi),
+            mm_to_px(d, ppi),
+            gws.Uom.px,
+        )
     raise ValueError(f'invalid unit {u!r}')
 
 
@@ -195,11 +222,11 @@ def px_to_mm(x: _number, ppi: int) -> float:
     return x * (MM_PER_IN / ppi)
 
 
-def to_mm(xu: gws.UomValue, ppi: int) -> gws.UomValue:
+def to_mm(v: gws.UomValue, ppi: int) -> gws.UomValue:
     """Convert a value with a unit to millimetres.
 
     Args:
-        xu: Value in ``mm`` or ``px``.
+        v: Value in ``mm`` or ``px``.
         ppi: Pixels per inch.
 
     Returns:
@@ -208,33 +235,33 @@ def to_mm(xu: gws.UomValue, ppi: int) -> gws.UomValue:
     Raises:
         ``ValueError``: If the unit is not ``mm`` or ``px``.
     """
-    x, u = xu
+    x, u = v
     if u == gws.Uom.mm:
-        return xu
+        return v
     if u == gws.Uom.px:
         return px_to_mm(x, ppi), gws.Uom.mm
     raise ValueError(f'invalid unit {u!r}')
 
 
-def size_px_to_mm(xy: gws.Size, ppi: int) -> gws.Size:
+def size_px_to_mm(s: gws.Size, ppi: int) -> gws.Size:
     """Convert a size in pixels to millimetres.
 
     Args:
-        xy: Size in pixels.
+        s: Size in pixels.
         ppi: Pixels per inch.
 
     Returns:
         Size in millimetres.
     """
-    x, y = xy
+    x, y = s
     return px_to_mm(x, ppi), px_to_mm(y, ppi)
 
 
-def size_to_mm(xyu: gws.UomSize, ppi: int) -> gws.UomSize:
+def size_to_mm(s: gws.UomSize, ppi: int) -> gws.UomSize:
     """Convert a size with a unit to millimetres.
 
     Args:
-        xyu: Size in ``mm`` or ``px``.
+        s: Size in ``mm`` or ``px``.
         ppi: Pixels per inch.
 
     Returns:
@@ -243,26 +270,53 @@ def size_to_mm(xyu: gws.UomSize, ppi: int) -> gws.UomSize:
     Raises:
         ``ValueError``: If the unit is not ``mm`` or ``px``.
     """
-    x, y, u = xyu
+    x, y, u = s
     if u == gws.Uom.mm:
-        return xyu
+        return s
     if u == gws.Uom.px:
         return px_to_mm(x, ppi), px_to_mm(y, ppi), gws.Uom.mm
     raise ValueError(f'invalid unit {u!r}')
 
 
-def to_str(xu: gws.UomValue) -> str:
+def extent_to_mm(ext: gws.UomExtent, ppi: int) -> gws.UomExtent:
+    """Convert an extent with a unit to millimetres.
+
+    Args:
+        ext: Extent in ``mm`` or ``px``.
+        ppi: Pixels per inch.
+
+    Returns:
+        Extent in millimetres.
+
+    Raises:
+        ``ValueError``: If the unit is not ``mm`` or ``px``.
+    """
+    a, b, c, d, u = ext
+    if u == gws.Uom.mm:
+        return ext
+    if u == gws.Uom.px:
+        return (
+            px_to_mm(a, ppi),
+            px_to_mm(b, ppi),
+            px_to_mm(c, ppi),
+            px_to_mm(d, ppi),
+            gws.Uom.mm,
+        )
+    raise ValueError(f'invalid unit {u!r}')
+
+
+def to_str(v: gws.UomValue) -> str:
     """Convert a value with a unit to a string.
 
     Whole numbers are written without a decimal part.
 
     Args:
-        xu: Value with a unit.
+        v: Value with a unit.
 
     Returns:
         A string like ``5mm``.
     """
-    x, u = xu
+    x, u = v
     sx = str(int(x)) if (x % 1 == 0) else str(x)
     return sx + str(u)
 
@@ -283,7 +337,7 @@ _unit_re = re.compile(r"""(?x)
 """)
 
 
-def parse(val: str | int | float | tuple | list, default_unit: gws.Uom = None) -> gws.UomValue:
+def parse(val: str | float | tuple | list, default_unit: gws.Uom = None) -> gws.UomValue:
     """Parse a value with a unit.
 
     Args:
@@ -338,14 +392,15 @@ def parse_point(val: str | tuple | list) -> gws.UomPoint:
     v = gws.u.to_list(val)
 
     if len(v) == 3:
-        v = [f'{v[0]}{v[2]}', f'{v[1]}{v[2]}']
+        x, y, u = v
+        v = [f'{x}{u}', f'{y}{u}']
 
     if len(v) == 2:
-        n1, u1 = parse(v[0])
-        n2, u2 = parse(v[1])
+        x, u1 = parse(v[0])
+        y, u2 = parse(v[1])
         if u1 != u2:
             raise ValueError(f'invalid point units: {u1!r} != {u2!r}')
-        return n1, n2, u1
+        return x, y, u1
 
     raise ValueError(f'invalid point: {val!r}')
 
@@ -366,18 +421,20 @@ def parse_extent(val: str | tuple | list) -> gws.UomExtent:
     v = gws.u.to_list(val)
 
     if len(v) == 5:
+        a, b, c, d, u = v
         v = [
-            f'{v[0]}{v[4]}',
-            f'{v[1]}{v[4]}',
-            f'{v[2]}{v[4]}',
-            f'{v[3]}{v[4]}',
+            f'{a}{u}',
+            f'{b}{u}',
+            f'{c}{u}',
+            f'{d}{u}',
         ]
 
     if len(v) == 4:
-        n1, u1 = parse(v[0])
-        n2, u2 = parse(v[1])
-        n3, u3 = parse(v[2])
-        n4, u4 = parse(v[3])
+        a, b, c, d = v
+        n1, u1 = parse(a)
+        n2, u2 = parse(b)
+        n3, u3 = parse(c)
+        n4, u4 = parse(d)
         if u1 != u2 or u1 != u3 or u1 != u4:
             raise ValueError(f'invalid extent units: {u1!r} != {u2!r} != {u3!r} != {u4!r}')
         return n1, n2, n3, n4, u1

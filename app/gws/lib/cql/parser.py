@@ -42,6 +42,7 @@ class Node:
     IS_NULL = 'IS_NULL'
     LIKE = 'LIKE'
     NAME = 'NAME'
+    NEG = 'NEG'
     NOT = 'NOT'
     NOT_BETWEEN = 'NOT_BETWEEN'
     NOT_IN = 'NOT_IN'
@@ -423,7 +424,7 @@ class _Parser:
             op = self.pop().value
             e = self.parse_unary_expression()
             if op == '-':
-                return ['-', e]
+                return [Node.NEG, e]
             return e
         return self.parse_postfix_expression()
 

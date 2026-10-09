@@ -5836,8 +5836,6 @@ class ColumnDescription(Data):
     """The index of the column within the table."""
     comment: str
     """Column comment or description provided in the database metadata."""
-    default: str
-    """The default value assigned to the column, if any."""
     geometrySrid: int
     """The Spatial Reference Identifier (SRID) for geometry columns."""
     geometryType: GeometryType

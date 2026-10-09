@@ -4,6 +4,7 @@ from typing import Optional
 
 import base64
 import re
+import urllib.parse
 
 import gws
 import gws.lib.net
@@ -89,7 +90,7 @@ def parse(val: str, opts) -> Optional[ParsedIcon]:
 
 def _get_bytes(val, opts) -> Optional[bytes]:
     if val.startswith('data:'):
-        return _decode_data_url(val, opts)
+        return _decode_data_url(val)
 
     # if not trusted, looks in provided public dirs
 
@@ -123,15 +124,15 @@ _PREFIXES = [
 ]
 
 
-def _decode_data_url(val, trusted) -> Optional[bytes]:
+def _decode_data_url(val) -> Optional[bytes]:
     for pfx in _PREFIXES:
         if val.startswith(pfx):
             s = val[len(pfx):]
             try:
                 if 'base64' in pfx:
-                    return base64.standard_b64decode(s)
+                    return base64.b64decode(s, validate=True)
                 else:
-                    return s.encode('utf8')
+                    return urllib.parse.unquote(s).encode('utf8')
             except Exception as exc:
                 raise Error('decode error', val) from exc
 

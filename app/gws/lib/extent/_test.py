@@ -67,7 +67,8 @@ def test_intersection_empty():
 
 
 def test_intersection_no_args():
-    assert not extent.intersection()
+    with u.raises(gws.Error):
+        extent.intersection()
 
 
 def test_center():
@@ -101,7 +102,7 @@ def test_union():
 
 
 def test_union_empty():
-    with u.raises(Exception):
+    with u.raises(gws.Error):
         extent.union()
 
 

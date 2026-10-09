@@ -208,7 +208,7 @@ class Object:
             if fld.extType != 'file':
                 continue
             fld = cast(file_field.Object, fld)
-            if fld.nameColumn is None:
+            if not fld.nameColumnName:
                 continue
             uid = self.find_uid_for_path(me, fld, path, mc)
             if not uid:
@@ -216,7 +216,7 @@ class Object:
             gws.log.debug(f'commit_upload: found feature: model={me.gpName}: {fld.name=} {uid=} {path=} ')
 
             with me.model.db.begin() as conn:
-                sql = me.model.table().update().where(me.model.uid_equals(uid)).values({fld.contentColumn: content})
+                sql = me.model.table().update().where(me.model.uid_equals(uid)).values({fld.contentColumnName: content})
                 conn.execute(sql)
 
             return True
@@ -242,7 +242,7 @@ class Object:
             Primary key of the feature, or ``None`` if not found.
         """
         with me.model.db.begin() as conn:
-            sel = me.model.table().select().with_only_columns(me.model.uid_column()).where(ff.nameColumn == path)
+            sel = me.model.table().select().with_only_columns(me.model.uid_column()).where(me.model.column(ff.nameColumnName) == path)
             rec = conn.fetch_first(sel)
             if rec:
                 return rec[me.model.uidName]

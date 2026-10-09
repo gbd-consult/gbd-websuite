@@ -85,7 +85,7 @@ class Config(gws.Config):
     withMapproxy: Optional[bool]
     """Run the MapProxy server, ignored. (deprecated in 8.5)"""
     withMonitor: bool = True
-    """Run the monitor."""
+    """Run the monitor. The monitor runs in the spool server and requires ``withSpool``."""
 
     templates: Optional[list[gws.ext.config.template]]
     """Templates for the nginx, uWSGI and syslog configs and the start script."""

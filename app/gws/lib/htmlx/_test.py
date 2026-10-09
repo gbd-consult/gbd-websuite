@@ -56,7 +56,7 @@ def test_render_to_png_with_page_size(tmp_path):
 def test_render_to_png_with_margin(tmp_path):
     html_content = "<html><body><h1>Test PNG</h1></body></html>"
     out_path = str(tmp_path / "output.png")
-    page_margin = [10, 10, 10, 10]
+    page_margin = (10, 10, 10, 10, gws.Uom.px)
     result = htmlx.render_to_png(html_content, out_path, page_margin=page_margin)
 
     assert Path(out_path).exists(), "PNG file was not created with margins"

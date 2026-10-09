@@ -192,6 +192,17 @@ class SqlBuilder(Builder):
             raise BuildError(f'CQL: unknown column {args[0]!r}')
         return col
 
+    def build_neg(self, args):
+        """Build a negation.
+
+        Args:
+            args: A list with the operand node.
+
+        Returns:
+            The negated expression.
+        """
+        return -self.build(args[0])
+
     def build_array(self, args):
         """Build an array.
 

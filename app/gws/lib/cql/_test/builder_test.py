@@ -130,6 +130,9 @@ def test_comparison(table, src, expected):
         ('a_int ^ 2 = 400', [2]),
         ('a_int + a_float = 11.5', [1]),
         ('a_int * 2 > 40', [3]),
+        ('-a_int = -20', [2]),
+        ('a_int > -a_int', [1, 2, 3]),
+        ('0 - a_int = -(a_int)', [1, 2, 3]),
     ],
 )
 def test_arithmetic(table, src, expected):

@@ -51,6 +51,7 @@ Example::
 
 
 import gws
+import gws.lib.crs
 import gws.lib.extent
 import gws.lib.image
 import gws.lib.svg
@@ -76,7 +77,8 @@ def map_view_from_center(
 ) -> gws.MapView:
     """Create a map view from a center point and a scale.
 
-    The extent is computed from the size in mm, assuming that the CRS units are meters.
+    The extent is computed from the size in mm. For a geographic CRS, meters are converted
+    to degrees with ``gws.lib.crs.METERS_PER_DEGREE``.
 
     Args:
         size: Map size in mm or pixels.
@@ -149,8 +151,9 @@ def _map_view(
         view.center = center
         view.scale = scale
 
-        # @TODO assuming projection units are 'm'
         projection_units_per_mm = scale / 1000.0
+        if crs.isGeographic:
+            projection_units_per_mm /= gws.lib.crs.METERS_PER_DEGREE
         size = view.mmSize[0] * projection_units_per_mm, view.mmSize[1] * projection_units_per_mm
         bbox = gws.lib.extent.from_center(center, size)
         view.bounds = gws.Bounds(crs=crs, extent=bbox)

@@ -110,22 +110,23 @@ class Object(gws.base.job.worker.Object):
 
         self.tri.locale = gws.lib.intl.locale(self.request.localeUid, self.tri.project.localeUids)
         self.tri.crs = gws.lib.crs.get(self.request.crs) or self.project.map.bounds.crs
-        self.tri.dpi = int(min(gws.gis.render.MAX_DPI, max(self.request.dpi or 0, gws.lib.uom.OGC_SCREEN_PPI)))
-        self.tri.maps = [self.prepare_map(self.tri, m) for m in (self.request.maps or [])]
 
         if self.request.type == 'template':
             self.printer = cast(gws.Printer, self.user.require(self.request.printerUid, gws.ext.object.printer))
             self.template = self.printer.template
             dpis = [ql.dpi for ql in self.printer.qualityLevels if ql.dpi]
             max_dpi = max(dpis) if dpis else gws.lib.uom.OGC_SCREEN_PPI
-            self.tri.dpi = int(max(gws.lib.uom.OGC_SCREEN_PPI, min(self.tri.dpi, max_dpi)))
+            self.tri.dpi = int(gws.u.clamp(self.request.dpi or 0, gws.lib.uom.OGC_SCREEN_PPI, min(gws.gis.render.MAX_DPI, max_dpi)))
         else:
+            self.tri.dpi = int(gws.u.clamp(self.request.dpi or 0, gws.lib.uom.OGC_SCREEN_PPI, gws.gis.render.MAX_DPI))
             mm = gws.lib.uom.size_px_to_mm(self.request.outputSize, gws.lib.uom.OGC_SCREEN_PPI)
             px = gws.lib.uom.size_mm_to_px(mm, self.tri.dpi)
             self.template = self.root.create_temporary(
                 gws.ext.object.template,
                 type='map',
                 pageSize=(px[0], px[1], gws.Uom.px))
+
+        self.tri.maps = [self.prepare_map(self.tri, m) for m in (self.request.maps or [])]
 
         extra = dict(
             project=self.project,

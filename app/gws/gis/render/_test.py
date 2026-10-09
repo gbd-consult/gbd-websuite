@@ -1,5 +1,7 @@
 """Tests for the render module."""
 
+import pytest
+
 import gws
 import gws.test.util as u
 import gws.gis.render as render
@@ -48,6 +50,16 @@ def test_map_view_from_bbox_geographic():
     rotation = 0
     res = 1.0 / 400.0
     assert render.map_view_from_bbox(size, bbox, crs, dpi, rotation).scale == int(res * gws.lib.crs.METERS_PER_DEGREE / gws.lib.uom.OGC_M_PER_PX)
+
+
+def test_map_view_from_center_geographic():
+    size = (100.0, 50.0, gws.Uom.mm)
+    center = (10.0, 50.0)
+    crs = gws.lib.crs.WGS84
+    view = render.map_view_from_center(size, center, crs, 96, 1000)
+    w = 100 * 1000 / 1000 / gws.lib.crs.METERS_PER_DEGREE
+    h = 50 * 1000 / 1000 / gws.lib.crs.METERS_PER_DEGREE
+    assert view.bounds.extent == pytest.approx((10.0 - w / 2, 50.0 - h / 2, 10.0 + w / 2, 50.0 + h / 2))
 
 
 def test_render_map_mm_bbox():

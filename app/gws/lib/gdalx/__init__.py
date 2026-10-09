@@ -128,30 +128,31 @@ def gdal_config(options: dict):
 
 def open_raster(
     path: str,
-    mode: str = 'r',
     driver: str = '',
     default_crs: Optional[gws.Crs] = None,
     options: dict = None,
 ) -> 'RasterDataSet':
-    """Open a raster data set.
+    """Open a raster data set for reading.
+
+    Raster data sets are read-only. To write a raster, use ``RasterDataSet.save_as``
+    or ``RasterDataSet.warp_to_path``.
 
     Args:
         path: File path.
-        mode: ``r`` (read), ``a`` (update) or ``w`` (create).
         driver: Driver name. If omitted, the driver is chosen by the path extension.
         default_crs: CRS to use if the data set has none, web mercator by default.
-        options: Driver-specific open or creation options.
+        options: Driver-specific open options.
 
     Returns:
         The raster data set.
 
     Raises:
-        ``Error``: If the mode is invalid, no suitable raster driver is found, or the data set cannot be opened or created.
+        ``Error``: If no suitable raster driver is found or the data set cannot be opened.
     """
 
     dso = _DataSetOptions(
         path=path,
-        mode=mode,
+        mode='r',
         driver=driver,
         defaultCrs=default_crs,
         gdalOpts=options or {},
@@ -295,8 +296,6 @@ def _open(dso: _DataSetOptions, need_raster):
         gd = drv.CreateDataSource(dso.path, _option_list(dso.gdalOpts))
         if gd is None:
             raise Error(f'cannot create {dso.path!r}')
-        if need_raster:
-            return RasterDataSet(dso, gd)
         return VectorDataSet(dso, gd)
 
     flags = gdal.OF_VERBOSE_ERROR

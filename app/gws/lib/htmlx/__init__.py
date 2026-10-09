@@ -38,8 +38,7 @@ def render_to_pdf(html: str, out_path: str, page_size: gws.UomSize = None, page_
         html: HTML content.
         out_path: Path of the PDF file to create.
         page_size: Page size, converted to mm. A4 portrait by default.
-        page_margin: Page margins (top, right, bottom, left). The values are passed to
-            ``wkhtmltopdf`` as millimetres, the unit is not converted. No margins by default.
+        page_margin: Page margins (top, right, bottom, left), converted to mm. No margins by default.
 
     Returns:
         The output path.
@@ -47,7 +46,9 @@ def render_to_pdf(html: str, out_path: str, page_size: gws.UomSize = None, page_
     Raises:
         ``gws.lib.osx.Error``: If the command fails.
     """
-    mar = page_margin or (0, 0, 0, 0, gws.Uom.mm)
+    mar = (0, 0, 0, 0, gws.Uom.mm)
+    if page_margin:
+        mar = gws.lib.uom.extent_to_mm(page_margin, gws.lib.uom.PDF_DPI)
 
     # Page sizes need to be in mm.
     psz = (210, 297, gws.Uom.mm)
@@ -86,7 +87,7 @@ def render_to_pdf(html: str, out_path: str, page_size: gws.UomSize = None, page_
     return out_path
 
 
-def render_to_png(html: str, out_path: str, page_size: gws.UomSize = None, page_margin: list[int] = None) -> str:
+def render_to_png(html: str, out_path: str, page_size: gws.UomSize = None, page_margin: gws.UomExtent = None) -> str:
     """Render an HTML string to a PNG image with ``wkhtmltoimage``.
 
     The image has a transparent background.
@@ -95,7 +96,8 @@ def render_to_png(html: str, out_path: str, page_size: gws.UomSize = None, page_
         html: HTML content.
         out_path: Path of the PNG file to create.
         page_size: Image size, converted to pixels at ``gws.lib.uom.PDF_DPI``. If set, the image is cropped to this size.
-        page_margin: Margins in pixels (top, right, bottom, left), applied as a body style.
+        page_margin: Margins (top, right, bottom, left), converted to pixels at ``gws.lib.uom.PDF_DPI``
+            and applied as a body style.
 
     Returns:
         The output path.
@@ -104,7 +106,7 @@ def render_to_png(html: str, out_path: str, page_size: gws.UomSize = None, page_
         ``gws.lib.osx.Error``: If the command fails.
     """
     if page_margin:
-        mar = page_margin
+        mar = gws.lib.uom.extent_to_px(page_margin, gws.lib.uom.PDF_DPI)
         html = f"""
             <body style="margin:{mar[0]}px {mar[1]}px {mar[2]}px {mar[3]}px">
                 {html}

@@ -239,7 +239,7 @@ class Object(gws.base.action.Object):
         try:
             lro = layer.render(lri)
             if lro and lro.content:
-                return gws.lib.mime.PNG, lro.content
+                return _mime_type(layer), lro.content
         except Exception:
             gws.log.exception()
 
@@ -283,7 +283,7 @@ class Object(gws.base.action.Object):
         #     path = path.replace('{z}', str(p.z))
         #     gws.gis.cache.store_in_web_cache(path, content)
 
-        return gws.lib.mime.PNG, content
+        return _mime_type(layer), content
 
     def _get_legend(self, req: gws.WebRequester, p: GetLegendRequest):
         """Render a legend and return the MIME type and the content."""
@@ -328,3 +328,9 @@ class Object(gws.base.action.Object):
         )
 
         return [f.model.feature_to_view_props(f, mc) for f in features]
+
+
+def _mime_type(layer: gws.Layer) -> str:
+    if layer.imageFormat and layer.imageFormat.mimeTypes:
+        return layer.imageFormat.mimeTypes[0]
+    return gws.lib.mime.PNG
