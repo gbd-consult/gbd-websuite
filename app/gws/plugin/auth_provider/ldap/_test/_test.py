@@ -57,6 +57,13 @@ def root():
                     key "/tmp/ldap.key"
                 }
             }
+            providers+ {
+                uid "ldap_case"
+                type 'ldap'
+                url 'ldap://cldap:389/dc=example,dc=com?UID'
+                bindDN 'cn=admin,dc=example,dc=com'
+                bindPassword 'gispass'
+            }
         }
     """
 
@@ -72,6 +79,14 @@ def test_authenticate_valid_user(root: gws.Root):
     prv = am.providers[0]
     usr = prv.authenticate(am.methods[0], gws.Data(username='b', password='bpass'))
     assert usr is not None
+    assert usr.loginName == 'b'
+    assert usr.localUid == 'b'
+
+
+def test_authenticate_login_attribute_case(root: gws.Root):
+    am = root.app.authMgr
+    prv = am.get_provider('ldap_case')
+    usr = prv.authenticate(am.methods[0], gws.Data(username='b', password='bpass'))
     assert usr.loginName == 'b'
     assert usr.localUid == 'b'
 

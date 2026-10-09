@@ -59,7 +59,7 @@ import gws.base.auth
 import gws.lib.net
 
 
-class UserSpec(gws.Data):
+class UserRule(gws.Data):
     """Rule that assigns GWS roles to LDAP accounts."""
 
     roles: list[str]
@@ -93,7 +93,7 @@ class Config(gws.base.auth.provider.Config):
     """Password for the bind DN."""
     displayNameFormat: Optional[gws.FormatStr]
     """Format string for the user's display name."""
-    users: list[UserSpec]
+    users: list[UserRule]
     """Rules that assign GWS roles to LDAP accounts."""
     timeout: gws.Duration = '30'
     """Network timeout for LDAP connections."""
@@ -125,7 +125,7 @@ class Object(gws.base.auth.provider.Object):
     """Password for the bind DN."""
     displayNameFormat: str
     """Format string for the display name, empty if none."""
-    users: list[UserSpec]
+    userRules: list[UserRule]
     """Rules that assign roles to accounts."""
 
     def configure(self):
@@ -136,7 +136,7 @@ class Object(gws.base.auth.provider.Object):
         self.bindPassword = self.cfg('bindPassword', default='')
         self.displayNameFormat = self.cfg('displayNameFormat', default='')
         self.ssl = self.cfg('ssl')
-        self.users = self.cfg('users', default=[])
+        self.userRules = self.cfg('users', default=[])
 
         proto = 'ldaps' if self.ssl else 'ldap'
         p = gws.lib.net.parse_url(self.cfg('url'))
@@ -187,9 +187,8 @@ class Object(gws.base.auth.provider.Object):
 
         # check for AD disabled accounts
         uac = str(rec.get('userAccountControl', ''))
-        if uac and uac.isdigit():
-            if int(uac) & _MS_ACCOUNTDISABLE:
-                raise gws.ForbiddenError('ACCOUNTDISABLE flag set')
+        if uac and uac.isdigit() and (int(uac) & _MS_ACCOUNTDISABLE):
+            raise gws.ForbiddenError('ACCOUNTDISABLE flag set')
 
         try:
             conn.simple_bind_s(rec['dn'], password)
@@ -198,7 +197,7 @@ class Object(gws.base.auth.provider.Object):
             raise gws.AuthenticationError(f'wrong password for {username!r}')
         except ldap.LDAPError as exc:
             gws.log.exception()
-            raise gws.ForbiddenError(f'LDAP error {exc.__class__.__name__}') from exc
+            raise gws.ForbiddenError(f'LDAP error {exc!r}') from exc
 
     def _make_user(self, conn, rec):
         """Create a user from an LDAP entry."""
@@ -208,7 +207,11 @@ class Object(gws.base.auth.provider.Object):
         if not user_rec.get('displayName') and self.displayNameFormat:
             user_rec['displayName'] = gws.u.format_map(self.displayNameFormat, rec)
 
-        login = user_rec.pop(self.loginAttribute, '')
+        login = ''
+        for k in list(user_rec):
+            if k.lower() == self.loginAttribute.lower():
+                login = user_rec.pop(k)
+                break
         user_rec['localUid'] = user_rec['loginName'] = login
 
         return gws.base.auth.user.from_record(self, user_rec)
@@ -218,18 +221,21 @@ class Object(gws.base.auth.provider.Object):
         user_dn = rec['dn']
         roles = set()
 
-        for u in self.users:
-            if u.get('matches'):
-                for dct in self._find(conn, u.matches):
-                    if dct['dn'] == user_dn:
-                        roles.update(u.roles)
+        for u in self.userRules:
+            if u.get('matches') and self._matches(conn, user_dn, u.matches):
+                roles.update(u.roles)
 
-            if u.get('memberOf'):
-                for dct in self._find(conn, u.memberOf):
-                    if _is_member_of(dct, user_dn):
-                        roles.update(u.roles)
+            if u.get('memberOf') and self._find(conn, _member_filter(u.memberOf, user_dn)):
+                roles.update(u.roles)
 
         return sorted(roles)
+
+    def _matches(self, conn, dn, flt):
+        try:
+            res = conn.search_s(dn, ldap.SCOPE_BASE, flt)
+            return bool(res)
+        except ldap.NO_SUCH_OBJECT:
+            return False
 
     def _find(self, conn, flt):
         """Search below the base DN and return the entries as dicts."""
@@ -270,10 +276,9 @@ class Object(gws.base.auth.provider.Object):
             # see https://www.python-ldap.org/faq.html#usage
             conn.set_option(ldap.OPT_REFERRALS, 0)
 
-        if self.bindDN:
-            conn.simple_bind_s(self.bindDN, self.bindPassword)
-
         try:
+            if self.bindDN:
+                conn.simple_bind_s(self.bindDN, self.bindPassword)
             yield conn
         finally:
             conn.unbind_s()
@@ -296,21 +301,26 @@ def _as_dict(data):
 
 def _make_filter(filter_dict):
     """Create an AND filter that matches the given attribute values."""
-    conds = ''.join(
-        '({}={})'.format(
-            ldap.filter.escape_filter_chars(k, 1),
-            ldap.filter.escape_filter_chars(v, 1),
-        )
-        for k, v in filter_dict.items()
-    )
-    return '(&' + conds + ')'
+    conds = []
+    for k, v in filter_dict.items():
+        conds.append(f'({k}={_escape(v)})')
+    return '(&' + ''.join(conds) + ')'
 
 
-def _is_member_of(group_dict, user_dn):
-    """Check if a DN is listed as a member of a group entry."""
-    for key in 'member', 'members', 'uniqueMember':
-        if key in group_dict and user_dn in group_dict[key]:
-            return True
+def _member_filter(group_filter, user_dn):
+    """Build a filter for groups that match ``group_filter`` and list ``user_dn`` as a member.
+
+    The server evaluates the membership, so this also works for Active Directory groups
+    whose member list exceeds ``MaxValRange`` and is returned in ranges.
+    """
+    if not group_filter.startswith('('):
+        group_filter = f'({group_filter})'
+    dn = _escape(user_dn)
+    return f'(&{group_filter}(|(member={dn})(members={dn})(uniqueMember={dn})))'
+
+
+def _escape(s):
+    return ldap.filter.escape_filter_chars(s, 1)
 
 
 # https://support.microsoft.com/en-us/help/305144
