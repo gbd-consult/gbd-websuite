@@ -169,6 +169,31 @@ class Object(gws.base.edit.helper.Object):
 
     ##
 
+    def select_text(self, sql: str, **kwargs) -> list[dict]:
+        """Execute a textual SELECT statement on the accounts database.
+
+        Args:
+            sql: SQL statement with ``:name`` bind parameters.
+            **kwargs: Bind parameters.
+
+        Returns:
+            A list of rows as dicts.
+        """
+
+        with self.adminModel.db.begin() as conn:
+            return conn.fetch_all(sql, **kwargs)
+
+    def execute_text(self, sql: str, **kwargs):
+        """Execute a textual statement on the accounts database in a transaction.
+
+        Args:
+            sql: SQL statement with ``:name`` bind parameters.
+            **kwargs: Bind parameters.
+        """
+
+        with self.adminModel.db.begin() as conn:
+            conn.execute(sql, kwargs)
+
     def get_account_by_id(self, uid: str) -> Optional[dict]:
         """Find an account by its primary key.
 
@@ -184,7 +209,7 @@ class Object(gws.base.edit.helper.Object):
             SELECT * FROM {self.adminModel.tableName}
             WHERE {self.adminModel.uidName}=:uid
         """
-        rs = self.adminModel.db.select_text(sql, uid=uid)
+        rs = self.select_text(sql, uid=uid)
         return rs[0] if rs else None
 
     def get_account_by_credentials(self, credentials: gws.Data, expected_status: Optional[core.Status] = None) -> Optional[dict]:
@@ -219,7 +244,7 @@ class Object(gws.base.edit.helper.Object):
             WHERE
                 {self.usernameColumn} = :username
         """
-        rs = self.adminModel.db.select_text(sql, username=username, password=password)
+        rs = self.select_text(sql, username=username, password=password)
 
         if not rs:
             gws.log.warning(f'get_account_by_credentials: {username=} not found')
@@ -270,7 +295,7 @@ class Object(gws.base.edit.helper.Object):
             WHERE
                 {core.Columns.tc} = :tc
         """
-        rs = self.adminModel.db.select_text(sql, tc=tc)
+        rs = self.select_text(sql, tc=tc)
 
         if not rs:
             gws.log.warning(f'get_account_by_tc: {tc=} not found')
@@ -321,7 +346,7 @@ class Object(gws.base.edit.helper.Object):
             WHERE
                 {self.adminModel.uidName} = :uid
         """
-        self.adminModel.db.execute_text(sql, password=password, uid=self.get_uid(account))
+        self.execute_text(sql, password=password, uid=self.get_uid(account))
 
     def validate_password(self, password: str) -> bool:
         """Check if a password is acceptable.
@@ -372,7 +397,7 @@ class Object(gws.base.edit.helper.Object):
             WHERE
                 {self.adminModel.uidName} = :uid
         """
-        self.adminModel.db.execute_text(sql, mfa_uid=mfa_uid, uid=self.get_uid(account))
+        self.execute_text(sql, mfa_uid=mfa_uid, uid=self.get_uid(account))
 
     def mfa_options(self, account: dict) -> list[MfaOption]:
         """Get the MFA methods available to an account.
@@ -410,7 +435,7 @@ class Object(gws.base.edit.helper.Object):
             WHERE
                 {self.adminModel.uidName} = :uid
         """
-        self.adminModel.db.execute_text(sql, secret=secret, uid=self.get_uid(account))
+        self.execute_text(sql, secret=secret, uid=self.get_uid(account))
 
         return secret
 
@@ -452,7 +477,7 @@ class Object(gws.base.edit.helper.Object):
             WHERE
                 {self.adminModel.uidName} = :uid
         """
-        self.adminModel.db.execute_text(sql, status=status, uid=self.get_uid(account))
+        self.execute_text(sql, status=status, uid=self.get_uid(account))
 
     def reset(self, account: dict):
         """Reset an account.
@@ -477,7 +502,7 @@ class Object(gws.base.edit.helper.Object):
             WHERE
                 {self.adminModel.uidName} = :uid
         """
-        self.adminModel.db.execute_text(sql, status=core.Status.new, uid=self.get_uid(account))
+        self.execute_text(sql, status=core.Status.new, uid=self.get_uid(account))
 
         if self.onboardingUrl:
             self.send_onboarding_email(account)
@@ -522,7 +547,7 @@ class Object(gws.base.edit.helper.Object):
             WHERE
                 {self.adminModel.uidName} = :uid
         """
-        self.adminModel.db.execute_text(sql, tc=tc, time=gws.u.stime(), category=category, uid=self.get_uid(account))
+        self.execute_text(sql, tc=tc, time=gws.u.stime(), category=category, uid=self.get_uid(account))
 
         return tc
 
@@ -543,7 +568,7 @@ class Object(gws.base.edit.helper.Object):
             WHERE
                 {self.adminModel.uidName} = :uid
         """
-        self.adminModel.db.execute_text(sql, uid=self.get_uid(account))
+        self.execute_text(sql, uid=self.get_uid(account))
 
     def invalidate_tc(self, tc: str):
         """Remove a temporary code from all accounts that have it.
@@ -562,7 +587,7 @@ class Object(gws.base.edit.helper.Object):
             WHERE
                 {core.Columns.tc} = :tc
         """
-        self.adminModel.db.execute_text(sql, tc=tc)
+        self.execute_text(sql, tc=tc)
 
     ##
 

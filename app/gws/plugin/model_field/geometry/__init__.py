@@ -24,10 +24,10 @@ from typing import Optional, cast
 
 import gws
 import gws.base.database.model
+import gws.base.database.util
 import gws.base.model.scalar_field
 import gws.lib.shape
 import gws.lib.crs
-import gws.lib.sa as sa
 
 
 @gws.ext.config.modelField('geometry')
@@ -128,12 +128,9 @@ class Object(gws.base.model.scalar_field.Object):
             shape = gws.lib.shape.from_bounds(mc.search.bounds)
 
         if shape:
-            shape = shape.transformed_to(self.geometryCrs)
-
             model = cast(gws.base.database.model.Object, self.model)
             col = model.column(self.name)
-
-            mc.dbSelect.geometryWhere.append(sa.func.st_intersects(col, sa.cast(shape.to_ewkb_hex(), sa.geo.Geometry())))
+            mc.dbSelect.geometryWhere.append(gws.base.database.util.shape_intersects_clause(col, shape, self.geometryCrs))
 
     def raw_to_python(self, feature, value, mc):
         # here, value is a geosa WKBElement

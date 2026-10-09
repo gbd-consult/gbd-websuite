@@ -219,14 +219,6 @@ class Object(gws.DatabaseProvider):
         tab = self._sa_table(table)
         return tab is not None and column_name in tab.columns
 
-    def select_text(self, sql, **kwargs):
-        with self.begin() as conn:
-            return [gws.u.to_dict(r) for r in conn.execute(sa.text(sql), kwargs)]
-
-    def execute_text(self, sql, **kwargs):
-        with self.begin() as conn:
-            return conn.execute(sa.text(sql), kwargs)
-
     SA_TO_ATTR = {
         # common: sqlalchemy.sql.sqltypes
         'BIGINT': gws.AttributeType.int,

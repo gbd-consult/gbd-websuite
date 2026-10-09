@@ -48,3 +48,19 @@ def text_search_clause(column, value: Optional[str], tso: Optional[gws.TextSearc
         return column.endswith(value, autoescape=True) if cs else column.iendswith(value, autoescape=True)
 
     return column.like(value, escape='\\') if cs else column.ilike(value, escape='\\')
+
+
+def shape_intersects_clause(column, shape: gws.Shape, crs: gws.Crs) -> sa.ColumnElement:
+    """Create a where clause that matches geometries intersecting a shape.
+
+    Args:
+        column: Geometry column expression.
+        shape: Shape to intersect with.
+        crs: CRS of the column. The shape is transformed to it.
+
+    Returns:
+        An ``ST_Intersects`` clause.
+    """
+
+    ewkb = shape.transformed_to(crs).to_ewkb_hex()
+    return sa.func.st_intersects(column, sa.cast(ewkb, sa.geo.Geometry()))

@@ -1,5 +1,7 @@
 import gws
 import gws.base.database.util as util
+import gws.lib.crs
+import gws.lib.shape
 import gws.lib.sa as sa
 import sqlalchemy.dialects.postgresql
 
@@ -52,3 +54,12 @@ def test_case_sensitive():
 def test_like_uses_pattern():
     sql = _sql(util.text_search_clause(_col, 'a%c', _tso(gws.TextSearchType.like)))
     assert sql == "name ILIKE 'a%%c' ESCAPE '\\'"
+
+
+def test_shape_intersects_clause_transforms_shape():
+    shape = gws.lib.shape.from_xy(10, 50, gws.lib.crs.WGS84)
+    compiled = util.shape_intersects_clause(sa.column('geom'), shape, gws.lib.crs.WEBMERCATOR).compile(
+        dialect=sqlalchemy.dialects.postgresql.dialect())
+    assert str(compiled).startswith('ST_Intersects(geom, ')
+    ewkb = shape.transformed_to(gws.lib.crs.WEBMERCATOR).to_ewkb_hex()
+    assert ewkb in compiled.params.values()

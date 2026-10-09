@@ -6268,34 +6268,6 @@ class DatabaseProvider(Node):
             The bounds, or ``None`` if the table has no geometry or no data.
         """
 
-    def select_text(self, sql: str, **kwargs) -> list[dict]:
-        """Execute a textual SELECT statement.
-
-        Args:
-            sql: SQL statement with ``:name`` bind parameters.
-            **kwargs: Bind parameters.
-
-        Returns:
-            A list of rows as dicts.
-
-        Raises:
-            ``sqlalchemy.exc.SQLAlchemyError``: On database errors.
-        """
-
-    def execute_text(self, sql: str, **kwargs) -> 'sqlalchemy.CursorResult':
-        """Execute a textual statement in a transaction, see ``begin``.
-
-        Args:
-            sql: SQL statement with ``:name`` bind parameters.
-            **kwargs: Bind parameters.
-
-        Returns:
-            The result.
-
-        Raises:
-            ``sqlalchemy.exc.SQLAlchemyError``: On database errors.
-        """
-
     def schema_names(self) -> list[str]:
         """Return the names of the schemas in the database.
 

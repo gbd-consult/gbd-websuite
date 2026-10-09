@@ -63,21 +63,3 @@ def test_has_column(db):
     assert db.has_column('s1.tab1', 'id') is True
     assert db.has_column('s1.tab1', 'a') is True
     assert db.has_column('s1.tab1', 'missing') is False
-
-
-def test_select_text(db):
-    with db.begin() as conn:
-        conn.execute('truncate s1.tab1')
-        conn.execute("insert into s1.tab1 (id, a) values (1, 'hello'), (2, 'world')")
-
-    rows = db.select_text('select id, a from s1.tab1 order by id')
-    assert rows == [{'id': 1, 'a': 'hello'}, {'id': 2, 'a': 'world'}]
-
-
-def test_execute_text(db):
-    with db.begin() as conn:
-        conn.execute('truncate s1.tab1')
-
-    db.execute_text("insert into s1.tab1 (id, a) values (99, 'z')")
-    rows = db.select_text('select id, a from s1.tab1')
-    assert rows == [{'id': 99, 'a': 'z'}]

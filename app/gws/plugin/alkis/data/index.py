@@ -667,15 +667,7 @@ class Object(gws.Node):
 
         if q.shape:
             has_geom = True
-            where.append(
-                sa.func.st_intersects(
-                    indexgeom.c.geom,
-                    sa.cast(
-                        q.shape.transformed_to(self.crs).to_ewkb_hex(),
-                        sa.geo.Geometry(),
-                    ),
-                )
-            )
+            where.append(gws.base.database.util.shape_intersects_clause(indexgeom.c.geom, q.shape, self.crs))
 
         join = []
 

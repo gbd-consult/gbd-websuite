@@ -137,15 +137,16 @@ class Object(gws.base.database.provider.Object):
 
         gcs = getattr(self, '_geometry_columns_cache', None)
         if not gcs:
-            gcs = self.select_text(f'''
-                SELECT  
-                    f_table_schema,
-                    f_table_name,
-                    f_geometry_column,
-                    type,
-                    srid
-                FROM public.geometry_columns
-            ''')
+            with self.begin() as conn:
+                gcs = conn.fetch_all('''
+                    SELECT
+                        f_table_schema,
+                        f_table_name,
+                        f_geometry_column,
+                        type,
+                        srid
+                    FROM public.geometry_columns
+                ''')
             setattr(self, '_geometry_columns_cache', gcs)
 
         for gc in gcs:
