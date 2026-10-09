@@ -688,29 +688,6 @@ def to_uid(x) -> str:
     return x.strip('_')
 
 
-def to_lines(txt: str, comment: str = None) -> list[str]:
-    """Convert a multiline string into a list of strings.
-
-    Args:
-        txt: A string.
-        comment: Comment marker. If given, everything from the marker to the end of the line is removed.
-
-    Returns:
-        A list of stripped, non-empty lines.
-    """
-
-    ls = []
-
-    for s in txt.splitlines():
-        if comment and comment in s:
-            s = s.split(comment)[0]
-        s = s.strip()
-        if s:
-            ls.append(s)
-
-    return ls
-
-
 ##
 
 

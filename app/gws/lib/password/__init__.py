@@ -18,11 +18,12 @@ Example::
     pw = gws.lib.password.generate(min_len=12, max_len=16, min_digit=2)
 """
 
-import base64
 import hashlib
 import hmac
 import random
 import string
+
+import gws.lib.text
 
 
 def compare(a: str, b: str) -> bool:
@@ -52,7 +53,7 @@ def encode(password: str, algo: str = 'sha512') -> str:
 
     salt = _random_string(8)
     h = _pbkdf2(password, salt, algo)
-    return '$'.join(['', algo, salt, base64.urlsafe_b64encode(h).decode('utf8')])
+    return '$'.join(['', algo, salt, gws.lib.text.to_base64(h, url_safe=True)])
 
 
 def check(password: str, encoded: str) -> bool:
@@ -68,9 +69,9 @@ def check(password: str, encoded: str) -> bool:
 
     try:
         _, algo, salt, hs = str(encoded).split('$')
-        h1 = base64.urlsafe_b64decode(hs)
+        h1 = gws.lib.text.from_base64(hs, url_safe=True)
         h2 = _pbkdf2(password, salt, algo)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, gws.lib.text.Error):
         return False
 
     return hmac.compare_digest(h1, h2)

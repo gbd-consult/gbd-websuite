@@ -19,9 +19,7 @@ Example::
     png = img.to_bytes(gws.lib.mime.PNG, {'mode': 'P'})
 """
 
-import base64
 import io
-import re
 from typing import Optional, cast
 
 import PIL.Image
@@ -33,6 +31,7 @@ import qrcode.constants
 
 import gws
 import gws.lib.mime
+import gws.lib.text
 
 # https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.open
 # up to ~4 GB RGBA images
@@ -131,7 +130,7 @@ def from_path(path: str) -> 'Image':
         return from_bytes(fp.read())
 
 
-_DATA_URL_RE = r'data:image/(png|gif|jpeg|jpg);base64,'
+_DATA_URL_MIME_TYPES = {gws.lib.mime.PNG, gws.lib.mime.GIF, gws.lib.mime.JPEG}
 
 
 def from_data_url(url: str) -> 'Image':
@@ -148,11 +147,13 @@ def from_data_url(url: str) -> 'Image':
     Raises:
         ``Error``: If the URL is not a supported data URL or the image cannot be loaded.
     """
-    m = re.match(_DATA_URL_RE, url)
-    if not m:
-        raise Error(f'invalid data url')
-    r = base64.standard_b64decode(url[m.end() :])
-    return from_bytes(r)
+    try:
+        mime_type, content = gws.lib.text.parse_data_url(url)
+    except gws.lib.text.Error as exc:
+        raise Error('invalid data url') from exc
+    if gws.lib.mime.get(mime_type) not in _DATA_URL_MIME_TYPES:
+        raise Error('invalid data url')
+    return from_bytes(content)
 
 
 def from_array(arr: np.ndarray) -> 'Image':
@@ -385,12 +386,11 @@ class Image(gws.Image):
             return fp.getvalue()
 
     def to_base64(self, mime_type=None, options=None):
-        b = base64.standard_b64encode(self.to_bytes(mime_type, options))
-        return b.decode('ascii')
+        return gws.lib.text.to_base64(self.to_bytes(mime_type, options))
 
     def to_data_url(self, mime_type=None, options=None):
         mime_type = mime_type or gws.lib.mime.PNG
-        return f'data:{mime_type};base64,' + self.to_base64(mime_type, options)
+        return gws.lib.text.to_data_url(self.to_bytes(mime_type, options), mime_type)
 
     def to_path(self, path, mime_type=None, options=None):
         with open(path, 'wb') as fp:

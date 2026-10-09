@@ -1,13 +1,13 @@
 """Base OWS service provider."""
 
 from typing import Optional
-import base64
 
 import gws
 import gws.lib.crs
 import gws.gis.source
 import gws.lib.net
 import gws.lib.mime
+import gws.lib.text
 
 from . import request
 
@@ -208,9 +208,8 @@ class Object(gws.OwsServiceProvider):
                 args.params[name] = val
 
         if self.authorization and self.authorization.type == 'basic':
-            b = base64.encodebytes(
-                gws.u.to_bytes(self.authorization.username) + b':' + gws.u.to_bytes(self.authorization.password))
-            args.headers['Authorization'] = 'Basic ' + gws.u.to_str(b).strip()
+            b = gws.lib.text.to_base64(f"{self.authorization.username or ''}:{self.authorization.password or ''}")
+            args.headers['Authorization'] = 'Basic ' + b
 
         return args
 

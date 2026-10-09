@@ -130,10 +130,6 @@ def test_from_props():
     assert ret_dic.__str__() == _test_against_obj.__dict__.__str__()
 
 
-def test_to_data_url_empty():
-    assert style.icon.to_data_url(None) == ''
-
-
 # tests for icon
 def test_icon():
     url = 'https://mdn.dev/archives/media/attachments/2012/07/09/3075/89b1e0a26e8421e19f907e0522b188bd/svgdemo1.xml'

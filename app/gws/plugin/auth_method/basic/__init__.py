@@ -20,11 +20,10 @@ Example::
 
 from typing import Optional
 
-import base64
-
 import gws
 import gws.base.auth
 import gws.base.web
+import gws.lib.text
 
 
 @gws.ext.config.authMethod('basic')
@@ -76,8 +75,8 @@ class Object(gws.base.auth.method.Object):
             return
 
         try:
-            b = gws.u.to_str(base64.decodebytes(gws.u.to_bytes(a[1])))
-        except ValueError:
+            b = gws.u.to_str(gws.lib.text.from_base64(a[1]))
+        except gws.lib.text.Error:
             return
 
         c = b.split(':', 1)

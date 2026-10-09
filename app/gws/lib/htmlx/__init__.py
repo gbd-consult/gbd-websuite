@@ -15,6 +15,7 @@ import html
 
 import gws
 import gws.lib.osx
+import gws.lib.text
 import gws.lib.uom
 
 
@@ -65,19 +66,19 @@ def render_to_pdf(html: str, out_path: str, page_size: gws.UomSize = None, page_
         'ignore',
         '--enable-local-file-access',
         '--dpi',
-        _int_str(gws.lib.uom.PDF_DPI),
+        gws.lib.text.to_int_str(gws.lib.uom.PDF_DPI),
         '--margin-top',
-        _int_str(mar[0]),
+        gws.lib.text.to_int_str(mar[0]),
         '--margin-right',
-        _int_str(mar[1]),
+        gws.lib.text.to_int_str(mar[1]),
         '--margin-bottom',
-        _int_str(mar[2]),
+        gws.lib.text.to_int_str(mar[2]),
         '--margin-left',
-        _int_str(mar[3]),
+        gws.lib.text.to_int_str(mar[3]),
         '--page-width',
-        _int_str(psz[0]),
+        gws.lib.text.to_int_str(psz[0]),
         '--page-height',
-        _int_str(psz[1]),
+        gws.lib.text.to_int_str(psz[1]),
         'page',
         out_path + '.html',
         out_path,
@@ -124,13 +125,13 @@ def render_to_png(html: str, out_path: str, page_size: gws.UomSize = None, page_
         cmd.extend(
             [
                 '--width',
-                _int_str(w),
+                gws.lib.text.to_int_str(w),
                 '--height',
-                _int_str(h),
+                gws.lib.text.to_int_str(h),
                 '--crop-w',
-                _int_str(w),
+                gws.lib.text.to_int_str(w),
                 '--crop-h',
-                _int_str(h),
+                gws.lib.text.to_int_str(h),
             ]
         )
 
@@ -147,8 +148,4 @@ def render_to_png(html: str, out_path: str, page_size: gws.UomSize = None, page_
 
     gws.lib.osx.run(cmd)
     return out_path
-
-
-def _int_str(x) -> str:
-    return str(int(x))
 

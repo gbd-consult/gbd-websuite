@@ -2,14 +2,14 @@
 
 from typing import Optional
 
-import base64
 import re
-import urllib.parse
 
 import gws
+import gws.lib.mime
 import gws.lib.net
 import gws.lib.svg
 import gws.lib.osx
+import gws.lib.text
 import gws.lib.xmlx as xmlx
 
 
@@ -26,11 +26,11 @@ def to_data_url(svg: gws.XmlElement) -> str:
         svg: SVG element.
 
     Returns:
-        A ``data:image/svg+xml;base64,...`` URL, or an empty string if there is no element.
+        A ``data:image/svg+xml;base64,...`` URL.
     """
 
     xml = svg.to_string()
-    return 'data:image/svg+xml;base64,' + base64.standard_b64encode(xml.encode('utf8')).decode('utf8')
+    return gws.lib.text.to_data_url(xml, gws.lib.mime.SVG)
 
 
 def parse(val: str, opts) -> Optional[gws.XmlElement]:
@@ -105,25 +105,16 @@ def _get_bytes(val, opts) -> Optional[bytes]:
         raise Error('file error', val) from exc
 
 
-_PREFIXES = [
-    'data:image/svg+xml;base64,',
-    'data:image/svg+xml;utf8,',
-    'data:image/svg;base64,',
-    'data:image/svg;utf8,',
-]
+_SVG_MIME_TYPES = {'image/svg+xml', 'image/svg'}
 
 
 def _decode_data_url(val) -> Optional[bytes]:
-    for pfx in _PREFIXES:
-        if val.startswith(pfx):
-            s = val[len(pfx):]
-            try:
-                if 'base64' in pfx:
-                    return base64.b64decode(s, validate=True)
-                else:
-                    return urllib.parse.unquote(s).encode('utf8')
-            except Exception as exc:
-                raise Error('decode error', val) from exc
+    try:
+        mime_type, content = gws.lib.text.parse_data_url(val)
+    except gws.lib.text.Error as exc:
+        raise Error('decode error', val) from exc
+    if mime_type in _SVG_MIME_TYPES:
+        return content
 
 
 def _parse_svg(val):

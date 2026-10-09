@@ -18,6 +18,7 @@ sys.path.insert(0, LOCAL_APP_DIR)
 import gws
 import gws.lib.cli as cli
 import gws.lib.inifile as inifile
+import gws.lib.text
 
 USAGE = """
 GWS test runner
@@ -426,7 +427,7 @@ def service_postgres():
     """
 
     ep = write_exec(f'{base}/config/postgres_entrypoint', _POSTGRESQL_ENTRYPOINT)
-    cf = write_file(f'{base}/config/postgresql.conf', dedent(conf))
+    cf = write_file(f'{base}/config/postgresql.conf', gws.lib.text.dedent(conf))
 
     ensure_dir(f'{base}/postgres')
 
@@ -620,16 +621,6 @@ def split_list(val):
     if isinstance(val, list):
         return val
     return [s.strip() for s in re.split(r'[,\n]', val) if s.strip()]
-
-
-def dedent(text):
-    lines = text.split('\n')
-    ind = 100_000
-    for ln in lines:
-        n = len(ln.lstrip())
-        if n > 0:
-            ind = min(ind, len(ln) - n)
-    return '\n'.join(ln[ind:] for ln in lines)
 
 
 ##

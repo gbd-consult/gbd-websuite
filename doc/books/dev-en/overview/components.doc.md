@@ -86,6 +86,7 @@ The server code is the package `gws` in `app/gws`. Each package links to its API
 | <% pyapi('gws.lib.sqlitex') %> | A wrapper around the SQLite driver. |
 | <% pyapi('gws.lib.style') %> | Feature styles: parsing CSS-like style values and icons. |
 | <% pyapi('gws.lib.svg') %> | Building SVG fragments from shapes and styles. |
+| <% pyapi('gws.lib.text') %> | Text utilities: base64, data URLs, indentation and lines. |
 | <% pyapi('gws.lib.uom') %> | Units of measure: pixels, millimeters, scales and resolutions. |
 | <% pyapi('gws.lib.watcher') %> | File system watcher used by the monitor. |
 | <% pyapi('gws.lib.xmlx') %> | XML parsing, building and serialization, with namespace handling. |

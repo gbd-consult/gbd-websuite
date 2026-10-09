@@ -45,6 +45,7 @@ import json
 import urllib.parse
 
 import gws
+import gws.lib.text
 
 _SNIPPETS = []
 
@@ -90,14 +91,14 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.prepare(self.rfile.read(content_length))
 
         if self.path == '/__add':
-            _SNIPPETS.insert(0, _dedent(self.text))
+            _SNIPPETS.insert(0, gws.lib.text.dedent(self.text))
             return self.end('ok')
         if self.path == '/__del':
             _SNIPPETS[::] = []
             return self.end('ok')
         if self.path == '/__set':
             _SNIPPETS[::] = []
-            _SNIPPETS.insert(0, _dedent(self.text))
+            _SNIPPETS.insert(0, gws.lib.text.dedent(self.text))
             return self.end('ok')
 
         return self.run_snippets()
@@ -162,18 +163,6 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
 
         self.wfile.write(body)
-
-
-def _dedent(s):
-    ls = [p.rstrip() for p in s.split('\n')]
-    ind = 100_000
-
-    for ln in ls:
-        n = len(ln.lstrip())
-        if n > 0:
-            ind = min(ind, len(ln) - n)
-
-    return '\n'.join(ln[ind:] for ln in ls)
 
 
 def _indent(s):
