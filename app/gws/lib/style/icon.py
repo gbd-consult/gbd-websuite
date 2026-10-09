@@ -19,30 +19,21 @@ class Error(gws.Error):
     pass
 
 
-class ParsedIcon(gws.Data):
-    """A parsed icon."""
-
-    svg: gws.XmlElement
-    """The normalized SVG element."""
-
-
-def to_data_url(icon: ParsedIcon) -> str:
-    """Convert a parsed icon to a base64 data URL.
+def to_data_url(svg: gws.XmlElement) -> str:
+    """Convert an SVG icon to a base64 data URL.
 
     Args:
-        icon: Parsed icon.
+        svg: SVG element.
 
     Returns:
-        A ``data:image/svg+xml;base64,...`` URL, or an empty string if the icon has no SVG.
+        A ``data:image/svg+xml;base64,...`` URL, or an empty string if there is no element.
     """
 
-    if icon.svg:
-        xml = icon.svg.to_string()
-        return 'data:image/svg+xml;base64,' + base64.standard_b64encode(xml.encode('utf8')).decode('utf8')
-    return ''
+    xml = svg.to_string()
+    return 'data:image/svg+xml;base64,' + base64.standard_b64encode(xml.encode('utf8')).decode('utf8')
 
 
-def parse(val: str, opts) -> Optional[ParsedIcon]:
+def parse(val: str, opts) -> Optional[gws.XmlElement]:
     """Load and parse an SVG icon.
 
     The value can be wrapped in CSS ``url(...)`` and quotes. It is resolved as follows:
@@ -58,7 +49,7 @@ def parse(val: str, opts) -> Optional[ParsedIcon]:
         opts: Parser options (``gws.lib.style.parser.Options``).
 
     Returns:
-        The parsed icon, or ``None`` if the value is empty or does not contain an SVG.
+        The normalized SVG element, or ``None`` if the value is empty or does not contain an SVG.
 
     Raises:
         ``Error``: If the value is untrusted, cannot be loaded or decoded, or the SVG is invalid.
@@ -78,9 +69,7 @@ def parse(val: str, opts) -> Optional[ParsedIcon]:
         return
 
     if bs.startswith(b'<'):
-        svg = _parse_svg(bs.decode('utf8'))
-        if svg:
-            return ParsedIcon(svg=svg)
+        return _parse_svg(bs.decode('utf8'))
 
     # @TODO other icon formats?
 

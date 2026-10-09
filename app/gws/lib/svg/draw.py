@@ -85,7 +85,7 @@ def shape_to_fragment(shape: gws.Shape, view: gws.MapView, label: str = None, st
 
     icon = None
 
-    if with_geometry and sv.icon:
+    if with_geometry and sv.icon is not None:
         res = _parse_icon(sv.icon, view.dpi)
         if res:
             icon_el, w, h = res
@@ -480,13 +480,10 @@ def _label_text(cx, cy, label, sv: gws.StyleValues) -> gws.XmlElement:
 # @TODO options for icon positioning
 
 
-def _parse_icon(icon, dpi) -> Optional[tuple[gws.XmlElement, float, float]]:
+def _parse_icon(svg: gws.XmlElement, dpi) -> Optional[tuple[gws.XmlElement, float, float]]:
     # see lib.style.icon
 
-    svg: Optional[gws.XmlElement] = None
-    if gws.u.is_data_object(icon):
-        svg = icon.svg
-    if not svg:
+    if not isinstance(svg, gws.XmlElement):
         return
 
     w = svg.get('width')

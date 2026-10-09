@@ -37,7 +37,6 @@ _test_against_dict = {
     'marker_stroke_width': 0,
     'offset_x': 0,
     'offset_y': 0,
-    'parsed_icon': None,
     'point_size': 10,
     'stroke': None,
     'stroke_dasharray': [],
@@ -85,7 +84,7 @@ _values = {'fill': None,
            'label_stroke_miterlimit': 0,
            'label_stroke_width': 0,
            'point_size': 10,
-           'icon': None, 'parsed_icon': None,
+           'icon': None,
            'offset_x': 0, 'offset_y': 0,
            'marker_fill': 'rgb(255,90,33)',
            'label_fill': 'foo'}
@@ -132,8 +131,7 @@ def test_from_props():
 
 
 def test_to_data_url_empty():
-    icon = style.icon.ParsedIcon()
-    assert style.icon.to_data_url(icon) == ''
+    assert style.icon.to_data_url(None) == ''
 
 
 # tests for icon
@@ -143,7 +141,7 @@ def test_icon():
     icon = style.icon.parse(url, opt)
     url2 = style.icon.to_data_url(icon)
     icon2 = style.icon.parse(url2, opt)
-    assert icon2.svg.to_dict() == icon.svg.to_dict()
+    assert icon2.to_dict() == icon.to_dict()
 
 
 def test_parse_untrusted():
@@ -159,19 +157,19 @@ _SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><circle c
 def test_parse_data_url_utf8():
     opt = style.parser.Options(trusted=False, strict=True, imageDirs=())
     icon = style.icon.parse('data:image/svg+xml;utf8,' + _SVG, opt)
-    assert icon.svg.get('width') == '10'
+    assert icon.get('width') == '10'
 
 
 def test_parse_data_url_utf8_percent_encoded():
     opt = style.parser.Options(trusted=False, strict=True, imageDirs=())
     icon = style.icon.parse('data:image/svg+xml;utf8,' + urllib.parse.quote(_SVG), opt)
-    assert icon.svg.get('width') == '10'
+    assert icon.get('width') == '10'
 
 
 def test_parse_data_url_base64():
     opt = style.parser.Options(trusted=False, strict=True, imageDirs=())
     icon = style.icon.parse('data:image/svg+xml;base64,' + base64.b64encode(_SVG.encode('utf8')).decode('utf8'), opt)
-    assert icon.svg.get('width') == '10'
+    assert icon.get('width') == '10'
 
 
 def test_parse_data_url_invalid_base64():

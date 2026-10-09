@@ -9,6 +9,7 @@ from . import parser, icon
 
 # parsing depends on whenever the context is `trusted` (=config) or not (=request)
 
+
 def from_dict(d: dict, opts: parser.Options = None) -> 'Object':
     """Create a style object from a dict.
 
@@ -58,7 +59,8 @@ def from_config(cfg: gws.Config, opts: parser.Options = None) -> 'Object':
     """
     return from_dict(
         gws.u.to_dict(cfg),
-        opts or parser.Options(trusted=True, strict=True))
+        opts or parser.Options(trusted=True, strict=True),
+    )
 
 
 def from_props(props: gws.Props, opts: parser.Options = None) -> 'Object':
@@ -73,7 +75,8 @@ def from_props(props: gws.Props, opts: parser.Options = None) -> 'Object':
     """
     return from_dict(
         gws.u.to_dict(props),
-        opts or parser.Options(trusted=False, strict=False))
+        opts or parser.Options(trusted=False, strict=False),
+    )
 
 
 ##
@@ -91,7 +94,6 @@ class Config(gws.Config):
 
 
 class Props(gws.Props):
-
     cssSelector: Optional[str]
     """CSS selector"""
     values: Optional[dict]
@@ -114,14 +116,10 @@ class Object(gws.Style):
         self.values = values
 
     def props(self, user):
-        ico = self.values.icon
-        if ico and isinstance(ico, icon.ParsedIcon):
-            ico = icon.to_data_url(ico)
-        else:
-            # NB if icon is not parsed, don't give it back
-            ico = ''
-
+        values = self.values
+        if self.values.icon:
+            values = gws.u.merge(self.values, icon=icon.to_data_url(self.values.icon))
         return Props(
             cssSelector=self.cssSelector or '',
-            values=gws.u.merge(self.values, icon=ico),
+            values=values,
         )

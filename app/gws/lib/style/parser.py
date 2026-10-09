@@ -136,7 +136,6 @@ _DEFAULTS: dict = dict(
 
     point_size=10,
     icon=None,
-    parsed_icon=None,
 
     offset_x=0,
     offset_y=0,
