@@ -97,8 +97,8 @@ class Config(gws.Config):
 _DEPRECATED_OPTIONS = {
     'resolutions': '"zoom.scales"',
     'initResolution': '"zoom.initScale" or "zoom.initLevel"',
-    'minResolution': '"zoom.minScale" or "zoom.minLevel"',
-    'maxResolution': '"zoom.maxScale" or "zoom.maxLevel"',
+    'minResolution': '"zoom.minScale" or "zoom.maxLevel"',
+    'maxResolution': '"zoom.maxScale" or "zoom.minLevel"',
 }
 
 

@@ -41,13 +41,5 @@ class IndexConfig(gws.Config):
     """Database table for the GekoS index."""
     crs: gws.CrsName
     """CRS for GekoS data."""
-    crs: gws.CrsName
-    """CRS for GekoS data."""
     dbUid: Optional[str]
     """UID of the database provider for the index table."""
-    sources: list[SourceConfig]
-    """gek-online sources to load records from."""
-    position: Optional[PositionConfig]
-    """Position correction for points."""
-    tableName: str
-    """Database table for the GekoS index."""

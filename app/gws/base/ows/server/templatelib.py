@@ -312,12 +312,12 @@ def meta_links_nested(ta: server.TemplateArgs, md: gws.Metadata):
         md: Metadata.
 
     Yields:
-        Generators of XML elements, one for each link.
+        XML elements, one for each link.
     """
 
     if md.metaLinks:
         for ml in md.metaLinks:
-            yield meta_url_nested(ta, ml, 'MetadataURL')
+            yield from meta_url_nested(ta, ml, 'MetadataURL')
 
 
 def meta_url_nested(ta: server.TemplateArgs, ml: gws.MetadataLink, name: str):
@@ -352,12 +352,12 @@ def meta_links_simple(ta: server.TemplateArgs, md: gws.Metadata):
         md: Metadata.
 
     Yields:
-        Generators of XML elements, one for each link.
+        XML elements, one for each link.
     """
 
     if md.metaLinks:
         for ml in md.metaLinks:
-            yield meta_url_simple(ta, ml, 'MetadataURL')
+            yield from meta_url_simple(ta, ml, 'MetadataURL')
 
 
 def meta_url_simple(ta: server.TemplateArgs, ml: gws.MetadataLink, name: str):

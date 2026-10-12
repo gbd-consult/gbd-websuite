@@ -4,6 +4,7 @@ from typing import Optional
 
 import gws
 import gws.base.action
+import gws.base.legend
 import gws.lib.bounds
 import gws.lib.crs
 import gws.lib.extent
@@ -13,8 +14,6 @@ import gws.lib.intl
 import gws.lib.jsonx
 import gws.lib.mime
 import gws.lib.uom
-
-LEGEND_IMAGE_FORMAT = gws.ImageFormat(name='png', mimeTypes=['image/png'], options={})
 
 
 @gws.ext.config.action('map')
@@ -290,8 +289,8 @@ class Object(gws.base.action.Object):
         layer = req.user.require_layer(p.layerUid)
         lro = layer.render_legend()
         if lro and lro.image:
-            mime_type = LEGEND_IMAGE_FORMAT.mimeTypes[0]
-            return mime_type, lro.image.to_bytes(mime_type, LEGEND_IMAGE_FORMAT.options)
+            mime_type = gws.base.legend.IMAGE_FORMAT.mimeTypes[0]
+            return mime_type, lro.image.to_bytes(mime_type, gws.base.legend.IMAGE_FORMAT.options)
         return self._empty_pixel
 
     def _get_features(self, req: gws.WebRequester, p: GetFeaturesRequest) -> list[gws.FeatureProps]:

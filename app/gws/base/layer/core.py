@@ -10,6 +10,7 @@ import gws.lib.extent
 import gws.gis.source
 import gws.gis.zoom
 import gws.base.metadata
+import gws.base.legend
 import gws.lib.mime
 import gws.lib.image
 import gws.gis.cache
@@ -82,7 +83,7 @@ class Config(gws.ConfigWithAccess):
     zoomExtent: Optional[gws.Extent]
     """Extent to zoom to when zooming to the layer."""
     extentBuffer: Optional[int]
-    """Buffer around the layer extent."""
+    """Ignored. (deprecated in 8.5)"""
     finders: Optional[list[gws.ext.config.finder]]
     """Search providers for the layer's features."""
     grid: Optional[dict]
@@ -172,6 +173,8 @@ class Object(gws.Layer):
     def configure(self):
         if self.cfg('grid') is not None:
             self.root.config_warning('"layer.grid" is deprecated and ignored')
+        if self.cfg('extentBuffer') is not None:
+            self.root.config_warning('"layer.extentBuffer" is deprecated and ignored')
 
         self.clientOptions = self.cfg('clientOptions') or gws.Data()
         self.cssSelector = self.cfg('cssSelector')
@@ -419,7 +422,8 @@ class Object(gws.Layer):
         if kind == 'tile':
             return gws.u.action_url_path('mapGetTile', layerUid=self.uid) + '/z/{z}/x/{x}/y/{y}' + url_path_suffix
         if kind == 'legend':
-            return gws.u.action_url_path('mapGetLegend', layerUid=self.uid) + url_path_suffix
+            legend_ext = gws.lib.mime.extension_for(gws.base.legend.IMAGE_FORMAT.mimeTypes[0])
+            return gws.u.action_url_path('mapGetLegend', layerUid=self.uid) + '/gws.' + legend_ext
         if kind == 'features':
             return gws.u.action_url_path('mapGetFeatures', layerUid=self.uid)
         raise gws.Error(f'invalid argument {kind=}')

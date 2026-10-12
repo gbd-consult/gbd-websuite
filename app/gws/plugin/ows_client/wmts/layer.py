@@ -160,7 +160,7 @@ class Object(gws.base.layer.image.Object):
     def configure_style(self):
         """Select the style of the active source layer.
 
-        The style is the one named by the ``styleName`` configuration value, else
+        The style is the one named by the ``style`` configuration value, else
         the default style of the source layer, else a style named ``default``.
 
         Returns:
@@ -169,7 +169,7 @@ class Object(gws.base.layer.image.Object):
         Raises:
             ``gws.Error``: If the configured style does not exist.
         """
-        p = self.cfg('styleName')
+        p = self.cfg('style')
         if p:
             for style in self.activeLayer.styles:
                 if style.name == p:

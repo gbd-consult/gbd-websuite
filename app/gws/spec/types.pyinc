@@ -14,13 +14,17 @@ class ApplicationManifest(Data):
     The manifest is JSON; lines starting with ``//`` or ``#`` are ignored.
     """
 
+    uid: Optional[str]
+    """Application identifier."""
+    release: Optional[str]
+    """Application release version."""
     excludePlugins: Optional[list[str]]
     """Names of the core plugins that should be deactivated."""
     plugins: Optional[list[ApplicationManifestPlugin]]
     """Custom plugins."""
     locales: list[str]
     """Locale names supported by this application."""
-    tsConfig: list[str]
+    tsConfig: str
     """Path to ``tsconfig.json``."""
     withFallbackConfig: bool = False
     """Use a minimal fallback configuration."""

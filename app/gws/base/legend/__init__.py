@@ -33,9 +33,14 @@ A legend type in a plugin::
             return gws.base.legend.combine_outputs(lros, self.options)
 """
 
+import gws
+
 from .core import (
     Config,
     Object,
     Props,
     combine_outputs,
 )
+
+IMAGE_FORMAT = gws.ImageFormat(name='png', mimeTypes=['image/png'], options={})
+"""Image format of rendered legends, served by ``mapGetLegend``."""

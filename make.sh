@@ -38,7 +38,7 @@ Commands:
     doc-dev-server      - start the Doc dev server
     doc-markdown        - build the Docs as Markdown
     image               - build docker images
-    package             - create an Application tarball
+    package             - create an Application package directory
     spec                - build the Specs
     test                - run tests
 
@@ -162,13 +162,13 @@ case $COMMAND in
     codegen && $PYTHON $BASE_DIR/install/image.py $@
     ;;
   package)
-    codegen && $PYTHON $BASE_DIR/install/package.py $@
+    codegen && $PYTHON $BASE_DIR/install/package.py $MANIFEST_OPT $@
     ;;
   spec)
     codegen $@
     ;;
   test)
-    codegen && $PYTHON $TEST_RUNNER $@
+    codegen && $PYTHON $TEST_RUNNER $MANIFEST_OPT $@
     ;;
 
   *)

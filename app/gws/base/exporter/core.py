@@ -49,7 +49,7 @@ class Object(gws.Exporter):
 
     def configure(self):
         self.title = self.cfg('title')
-        self.targetType = self.cfg('targetType')
+        self.target = self.cfg('target')
         self.targetPath = self.cfg('targetPath')
         self.withNoGeometry = self.cfg('withNoGeometry')
         self.withMixedGeometry = self.cfg('withMixedGeometry')
