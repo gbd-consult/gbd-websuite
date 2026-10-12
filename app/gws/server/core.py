@@ -96,5 +96,5 @@ class Config(gws.Config):
     """Shell or Python script to run before configuring the server."""
     postConfigure: str = ''
     """Shell or Python script to run after the server has been configured."""
-    timeZone: str = 'Europe/Berlin'
-    """Time zone of the server."""
+    timeZone: Optional[str]
+    """Time zone of the server, ignored, set the ``TZ`` environment variable instead. (deprecated in 8.5)"""

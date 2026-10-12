@@ -67,6 +67,7 @@ UBUNTU_VERSION = '26.04'
 MAPSERVER_VERSION = '8.6.6'
 VENDOR = 'gbdconsult'
 DESCRIPTION = 'GWS Server'
+DEFAULT_TIME_ZONE = 'Europe/Berlin'
 
 # wkhtmltopdf, see https://github.com/wkhtmltopdf/packaging/releases
 # we need the 'patched' version, which is not available as an OS package
@@ -251,6 +252,7 @@ class Builder(Base):
         __("RUN find / -path '*__pycache__*' -delete")
 
         __('ENV LANG=C.UTF-8')
+        __(f'ENV TZ={DEFAULT_TIME_ZONE}')
         __('ENV PATH="/gws-app/bin:/usr/local/bin:${PATH}"')
 
         __('CMD ["/gws-app/bin/gws", "server", "start"]')

@@ -333,7 +333,7 @@ def make_std_env():
         'PYTHONDONTWRITEBYTECODE': '1',
         'GWS_UID': OPTIONS.get('runner.uid'),
         'GWS_GID': OPTIONS.get('runner.gid'),
-        'GWS_TIMEZONE': OPTIONS.get('service.gws.time_zone', 'Etc/UTC'),
+        'TZ': OPTIONS.get('service.gws.time_zone', 'Etc/UTC'),
         'PGSERVICEFILE': f'{base}/config/pg_service.conf',
     }
 
@@ -352,8 +352,6 @@ _GWS_ENTRYPOINT = """
 
 groupadd --gid $GWS_GID g_$GWS_GID
 useradd  --create-home --uid $GWS_UID --gid $GWS_GID u_$GWS_UID
-
-ln -fs /usr/share/zoneinfo/$GWS_TIMEZONE /etc/localtime
 
 sleep infinity
 """

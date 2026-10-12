@@ -5,27 +5,16 @@ import gws.lib.datetimex as dx
 import gws.test.util as u
 
 
-def test_set_local_time_zone():
-    # @TODO We must be root to do that, but the tests are run from the gws user.
-    if True:
-        return
+def test_local_time_zone_from_env(monkeypatch):
+    monkeypatch.setattr(dx, '_ZI_CACHE', {k: v for k, v in dx._ZI_CACHE.items() if k})
+    monkeypatch.setenv('TZ', 'Asia/Kamchatka')
+    assert str(dx.time_zone('')) == 'Asia/Kamchatka'
 
-    dat = '2001-02-03T11:22:33'
-    cmd = f'date --date="{dat}" --iso-8601="seconds"'
 
-    # preserve the configured tz
-    orig_dt = u.exec(cmd)
-    orig_tz = u.exec('readlink /etc/localtime')
-
-    dx.set_local_time_zone('America/Detroit')
-    assert u.exec(cmd) == f'{dat}-05:00'  # EST (UTC-5)
-
-    dx.set_local_time_zone('Asia/Kamchatka')
-    assert u.exec(cmd) == f'{dat}+12:00'  # PETT (UTC+12)
-
-    # restore
-    u.exec(f'ln -fs {orig_tz} /etc/localtime')
-    assert u.exec(cmd) == orig_dt
+def test_local_time_zone_from_invalid_env(monkeypatch):
+    monkeypatch.setattr(dx, '_ZI_CACHE', {k: v for k, v in dx._ZI_CACHE.items() if k})
+    monkeypatch.setenv('TZ', 'invalid_1')
+    assert dx.time_zone('') == dx.UTC
 
 
 def test_time_zone():

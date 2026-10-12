@@ -6,7 +6,7 @@ stock ``datetime.datetime`` objects, and all returned objects are timezone-aware
 
 Functions in this package fall into these groups:
 
-- time zones: ``time_zone``, ``is_valid_time_zone``, ``set_local_time_zone``,
+- time zones: ``time_zone``, ``is_valid_time_zone``,
 - constructors and parsers: ``new``, ``now``, ``today``, ``parse``, ``from_string``, ``from_iso_string``, ``from_timestamp`` and others,
 - formatters: ``to_iso_string``, ``to_iso_date_string``, ``to_basic_string``, ``to_string`` and others,
 - converters: ``to_timestamp``, ``to_millis``, ``to_utc``, ``to_local``, ``to_time_zone``,
@@ -29,11 +29,8 @@ When a function accepts a date or time argument, it is converted to a datetime a
 Parsers (``parse``, ``from_string`` etc.) attach the given time zone to naive input,
 and a parsed date becomes midnight in that time zone.
 
-When running in a docker container, there are several ways to set up the local time zone:
-
-- by setting the config variable ``server.timeZone`` (see ``gws.config.parser``),
-- by setting the ``TZ`` environment variable,
-- by mounting a host zone info file to ``/etc/localtime``.
+The local time zone is taken from the ``TZ`` environment variable, or, if it is not set,
+from the ``/etc/localtime`` symlink. In a docker container, set ``TZ`` (the GWS image defaults to ``Europe/Berlin``).
 
 Example::
 
@@ -62,7 +59,6 @@ import pendulum.parsing
 import pendulum.parsing.exceptions
 
 import gws
-import gws.lib.osx
 
 
 class Error(gws.Error):
@@ -99,34 +95,11 @@ def is_valid_time_zone(tz: str) -> bool:
     return tz in _ZI_CACHE or tz in _ZI_ALL
 
 
-def set_local_time_zone(tz: str):
-    """Set the local time zone for the system.
-
-    The time zone is set by linking ``/etc/localtime`` to the zone info file,
-    which requires root privileges. Nothing is done if the time zone is already set.
-
-    Args:
-        tz: Time zone string, like ``Europe/Berlin``.
-
-    Raises:
-        ``Error``: If the time zone is invalid, or the process is not running as root.
-    """
-    new_zi = time_zone(tz)
-    cur_zi = _zone_info_from_localtime()
-
-    gws.log.debug(f'set_local_time_zone: cur={cur_zi} new={new_zi}')
-
-    if new_zi == cur_zi:
-        return
-    _set_localtime_from_zone_info(new_zi)
-
-    gws.log.debug(f'set_local_time_zone: cur={_zone_info_from_localtime()}')
-
-
 def time_zone(tz: str = '') -> zoneinfo.ZoneInfo:
     """Get a ZoneInfo object for the specified time zone.
 
-    The local time zone is determined from ``/etc/localtime``; if that fails, UTC is assumed.
+    The local time zone is determined from the ``TZ`` environment variable or from ``/etc/localtime``;
+    if that fails, UTC is assumed.
 
     Args:
         tz: Time zone string, like ``Europe/Berlin``. An empty string means the local time zone.
@@ -142,16 +115,21 @@ def time_zone(tz: str = '') -> zoneinfo.ZoneInfo:
         return _ZI_CACHE[tz]
 
     if not tz:
-        _ZI_CACHE[''] = _zone_info_from_localtime()
+        _ZI_CACHE[''] = _local_zone_info()
         return _ZI_CACHE['']
 
     return _zone_info_from_string(tz)
 
 
-def _set_localtime_from_zone_info(zi):
-    if os.getuid() != 0:
-        raise Error('cannot set timezone, must be root')
-    gws.lib.osx.run(['ln', '-fs', f'/usr/share/zoneinfo/{zi}', '/etc/localtime'])
+def _local_zone_info():
+    tz = os.environ.get('TZ', '').lstrip(':')
+    if not tz:
+        return _zone_info_from_localtime()
+    try:
+        return _zone_info_from_string(tz)
+    except Error:
+        gws.log.warning(f'time zone: TZ={tz!r} invalid, assuming UTC')
+        return UTC
 
 
 def _zone_info_from_localtime():
@@ -161,6 +139,9 @@ def _zone_info_from_localtime():
         p = os.readlink(a)
     except FileNotFoundError:
         gws.log.warning(f'time zone: {a!r} not found, assuming UTC')
+        return UTC
+    except OSError:
+        gws.log.warning(f'time zone: {a!r} is not a symlink, assuming UTC')
         return UTC
 
     m = re.search(r'zoneinfo/(.+)$', p)
@@ -194,12 +175,6 @@ def _zone_info_from_tzinfo(tzinfo: dt.tzinfo):
         return _zone_info_from_string(s)
     except Error:
         pass
-
-
-# init from the env variable right now
-
-if 'TZ' in os.environ:
-    _set_localtime_from_zone_info(_zone_info_from_string(os.environ['TZ']))
 
 
 # Constructors

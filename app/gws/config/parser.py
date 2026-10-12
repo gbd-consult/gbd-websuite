@@ -114,19 +114,12 @@ def read_from_path(path: str, ctx: gws.ConfigContext) -> Optional[dict]:
 
 
 def _parse_app_dict(dct: dict, path, pp: '_Parser'):
-    """Set the time zone, parse the application config and collect all project configs."""
+    """Parse the application config and collect all project configs."""
     dct = gws.u.to_dict(dct)
     if not isinstance(dct, dict):
         _register_error(pp.ctx, f'app config must be a dict', path=path)
         return
 
-    # the timezone must be set before everything else
-    tz = dct.get('server', {}).get('timeZone', '')
-    if tz:
-        if gws.lib.datetimex.is_valid_time_zone(tz):
-            gws.lib.datetimex.set_local_time_zone(tz)
-        else:
-            _register_error(pp.ctx, f'invalid time zone: {tz!r}', path=path)
     gws.log.info(f'local time zone="{gws.lib.datetimex.time_zone()}"')
 
     # remove 'projects' from the config, parse them later on

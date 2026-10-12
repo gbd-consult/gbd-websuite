@@ -84,7 +84,6 @@ Example::
         web { workers 8 maxRequestLength 50 }
         log { level "DEBUG" }
         qgis { host "qgis" port 80 }
-        timeZone "Europe/Berlin"
     }
 
 Example::

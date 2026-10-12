@@ -221,7 +221,6 @@ def app_is_running(srv):
 
 _FALLBACK_CONFIG = gws.Config(
     server=gws.Config(
-        timeZone="Europe/Berlin",
         withMonitor=False,
         withSpool=False,
         withWeb=True,

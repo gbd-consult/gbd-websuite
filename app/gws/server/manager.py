@@ -95,6 +95,8 @@ class Object(gws.ServerManager):
             self.root.config_warning('"server.mapproxy" is deprecated and ignored')
         if self.config.withMapproxy is not None:
             self.root.config_warning('"server.withMapproxy" is deprecated and ignored')
+        if self.config.timeZone is not None:
+            self.root.config_warning('"server.timeZone" is deprecated and ignored, set the "TZ" environment variable')
 
         if self.config.withMonitor and not self.config.withSpool:
             raise gws.ConfigurationError('"server.withMonitor" requires "server.withSpool"')
