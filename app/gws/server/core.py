@@ -91,10 +91,6 @@ class Config(gws.Config):
     """Templates for the nginx, uWSGI and syslog configs and the start script."""
 
     autoRun: str = ''
-    """Shell command to run before the server start. (deprecated in 8.2)"""
-    preConfigure: str = ''
-    """Shell or Python script to run before configuring the server."""
-    postConfigure: str = ''
-    """Shell or Python script to run after the server has been configured."""
+    """Shell command to run before the server start, ignored. (deprecated in 8.2)"""
     timeZone: Optional[str]
     """Time zone of the server, ignored, set the ``TZ`` environment variable instead. (deprecated in 8.5)"""

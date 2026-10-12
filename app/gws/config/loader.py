@@ -51,7 +51,6 @@ class Object:
         raw_config=None,
         fallback_config=None,
         with_spec_cache=False,
-        hooks=None,
     ):
         """Create a loader.
 
@@ -62,7 +61,6 @@ class Object:
             raw_config: Configuration dict, used instead of the configuration file.
             fallback_config: Configuration used when the main configuration fails.
             with_spec_cache: Read and write the specs cache.
-            hooks: List of ``(event, fn)`` pairs, see ``configure``.
         """
         self.tm1 = _time_and_memory()
 
@@ -79,7 +77,6 @@ class Object:
         self.rawConfig = raw_config
         self.fallbackConfig = fallback_config
         self.withSpecCache = with_spec_cache
-        self.hooks = hooks or []
         self.specs = specs
 
         self.config = None
@@ -87,10 +84,6 @@ class Object:
 
     def configure(self) -> gws.ConfigResult:
         """Parse the configuration and create the root object.
-
-        Hooks are called with the loader object at the events ``preConfigure``,
-        ``postConfigure`` (around parsing), ``preInitialize`` and ``postInitialize``
-        (around creating the root). Exceptions in hooks are recorded as errors.
 
         If no root can be created, the fallback config is used, provided the
         manifest sets ``withFallbackConfig``. If there are errors and the manifest
@@ -102,16 +95,9 @@ class Object:
         if not self._init_specs():
             return self._result()
 
-        self._run_hook('preConfigure')
-        if not self.config:
-            self.config = self._create_config()
-        self._run_hook('postConfigure')
-
+        self.config = self._create_config()
         if self.config:
-            self._run_hook('preInitialize')
-            if not self.root:
-                self.root = self._create_root(self.config)
-            self._run_hook('postInitialize')
+            self.root = self._create_root(self.config)
 
         if not self.root and self.ctx.specs.manifest.withFallbackConfig and self.fallbackConfig:
             gws.log.warning(f'using fallback config')
@@ -179,16 +165,6 @@ class Object:
                 self.ctx.warnings.append(gws.ConfigErrorInfo(cw))
         return root
 
-    def _run_hook(self, event):
-        for evt, fn in self.hooks:
-            if event != evt:
-                continue
-            try:
-                fn(self)
-            except Exception as exc:
-                gws.log.exception()
-                self._error(exc)
-
     def _error(self, exc):
         cei = gws.ConfigErrorInfo(message=str(exc))
         if exc.__cause__:
@@ -212,7 +188,6 @@ def configure(
     raw_config: dict | gws.Data = None,
     fallback_config: dict | gws.Data = None,
     with_spec_cache=False,
-    hooks: list = None,
 ) -> gws.ConfigResult:
     """Parse the configuration and create the root object.
 
@@ -223,7 +198,6 @@ def configure(
         raw_config: Configuration dict, used instead of the configuration file.
         fallback_config: Configuration used when the main configuration fails.
         with_spec_cache: Read and write the specs cache.
-        hooks: List of ``(event, fn)`` pairs, see ``Object.configure``.
 
     Returns:
         The configuration result. Its ``root`` is ``None`` if configuration failed.
@@ -236,7 +210,6 @@ def configure(
         raw_config,
         fallback_config,
         with_spec_cache,
-        hooks,
     )
     return ldr.configure()
 

@@ -62,7 +62,7 @@ def configure_and_store(manifest_path='', config_path='', is_starting=False):
     Args:
         manifest_path: Path to the application manifest.
         config_path: Path to the configuration file.
-        is_starting: True on the server start, runs the ``server.autoRun`` command before initialization.
+        is_starting: True on the server start.
 
     Returns:
         The configured root object.
@@ -83,7 +83,7 @@ def configure(manifest_path='', config_path='', is_starting=False):
     Args:
         manifest_path: Path to the application manifest.
         config_path: Path to the configuration file.
-        is_starting: True on the server start, runs the ``server.autoRun`` command before initialization.
+        is_starting: True on the server start.
 
     Returns:
         The configured root object.
@@ -91,21 +91,10 @@ def configure(manifest_path='', config_path='', is_starting=False):
     Raises:
         ``gws.ConfigurationError``: If the configuration fails.
     """
-    def _pre_init(ld: gws.config.loader.Object):
-        autorun = gws.u.get(ld.config, 'server.autoRun')
-        if autorun:
-            gws.log.info(f'AUTORUN: {autorun!r}')
-            gws.lib.osx.run(autorun, echo=True)
-
-    hooks = []
-    if is_starting:
-        hooks.append(['preInitialize', _pre_init])
-
     cr = gws.config.configure(
         manifest_path=manifest_path,
         config_path=config_path,
         fallback_config=_FALLBACK_CONFIG,
-        hooks=hooks,
     )
     gws.config.log_report(cr)
     if not cr.root:
