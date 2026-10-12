@@ -32,6 +32,9 @@ GWS_WEB_WORKERS = os.getenv('GWS_WEB_WORKERS')
 GWS_SPOOL_WORKERS = os.getenv('GWS_SPOOL_WORKERS')
 """Number of spool workers to start."""
 
+GWS_EXTRA_CA_BUNDLE = os.getenv('GWS_EXTRA_CA_BUNDLE')
+"""PEM file with CA certificates to trust in addition to the system certificates, read by ``bin/gws``."""
+
 GWS_ALKIS_GID_VERSION = os.getenv('GWS_ALKIS_GID_VERSION')
 """GeoInfoDok version of the ALKIS source data, ``6`` or ``7`` (default)."""
 

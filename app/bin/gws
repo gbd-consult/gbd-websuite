@@ -56,11 +56,29 @@ ensure_var_dir_ownership() {
   chown -R "$GWS_UID:$GWS_GID" "$GWS_VAR_DIR"
 }
 
+setup_ca_bundle() {
+  if [ -z "$GWS_EXTRA_CA_BUNDLE" ]; then
+    return
+  fi
+  local bundle="$GWS_VAR_DIR/config/ca-bundle.crt"
+  mkdir -p "$GWS_VAR_DIR/config"
+  if ! { cat /etc/ssl/certs/ca-certificates.crt && echo && cat "$GWS_EXTRA_CA_BUNDLE"; } > "$bundle.$$"; then
+    rm -f "$bundle.$$"
+    echo "GWS_EXTRA_CA_BUNDLE: cannot read $GWS_EXTRA_CA_BUNDLE" >&2
+    exit 1
+  fi
+  mv -f "$bundle.$$" "$bundle"
+  export SSL_CERT_FILE="$bundle"
+  export CURL_CA_BUNDLE="$bundle"
+  export LDAPTLS_CACERT="$bundle"
+}
+
 
 ###########################################################################
 
 ensure_temp_dir
 ensure_var_dir
+setup_ca_bundle
 
 # docker entrypoint
 

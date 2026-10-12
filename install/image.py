@@ -253,6 +253,7 @@ class Builder(Base):
 
         __('ENV LANG=C.UTF-8')
         __(f'ENV TZ={DEFAULT_TIME_ZONE}')
+        __('ENV CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt')
         __('ENV PATH="/gws-app/bin:/usr/local/bin:${PATH}"')
 
         __('CMD ["/gws-app/bin/gws", "server", "start"]')

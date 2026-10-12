@@ -31,7 +31,6 @@ import re
 import requests
 import requests.adapters
 import urllib.parse
-import certifi
 
 import gws
 import gws.lib.osx
@@ -540,8 +539,8 @@ def http_request(url, **kwargs) -> HTTPResponse:
     """Send an HTTP request.
 
     Failures are logged and returned as a response with ``ok`` set to ``False``, they do not raise.
-    By default, the connect and read timeouts are 60 seconds, certificates are verified with ``certifi``,
-    and a GBD WebSuite ``User-Agent`` header is sent.
+    By default, the connect and read timeouts are 60 seconds, a GBD WebSuite ``User-Agent`` header is sent,
+    and certificates are verified with the ``requests`` default (``REQUESTS_CA_BUNDLE``, ``CURL_CA_BUNDLE`` or ``certifi``).
 
     Args:
         url: Request URL.
@@ -594,9 +593,6 @@ def _http_request(method, url, kwargs) -> HTTPResponse:
     """Send a request with default options and wrap the result in an ``HTTPResponse``."""
 
     kwargs['stream'] = False
-
-    if 'verify' not in kwargs:
-        kwargs['verify'] = certifi.where()
 
     timeout = kwargs.get('timeout', (_DEFAULT_CONNECT_TIMEOUT, _DEFAULT_READ_TIMEOUT))
     if isinstance(timeout, (int, float)):
