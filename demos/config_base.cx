@@ -9,6 +9,7 @@
     display "tile"
     withCache false
     provider.url "https://geoservices.gbd-consult.de/xyz/light/{{z}}/{{x}}/{{y}}.png?key=gwsdemo"
+    provider.maxLevel 22
     @# provider.url "https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png"
     metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
 @end
