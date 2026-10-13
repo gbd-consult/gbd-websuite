@@ -186,7 +186,7 @@ def test_files_are_written(tmp_path):
     po = _package(_root('syncFiles+ { field "photo_file" }'), tmp_path)
 
     for name, content in [('DCIM/file_1.jpg', b'content_1'), ('DCIM/sub/file_2.jpg', b'content_2'), ('file_3.jpg', b'content_3')]:
-        path = str(tmp_path / 'cache/files_qm_qfc_poi' / name)
+        path = str(tmp_path / 'cache/files_qm_qfc_poi' / name.replace('/', '_'))
         assert po.pathMap[name] == path
         assert gws.u.read_file_b(path) == content
         assert not os.path.exists(tmp_path / name)
@@ -198,7 +198,7 @@ def test_files_are_written(tmp_path):
 def test_cached_files_are_reused_while_the_size_matches(tmp_path):
     root = _root('syncFiles+ { field "photo_file" }')
     cache_dir = gws.u.ensure_dir(str(tmp_path / 'cache'))
-    path = f'{cache_dir}/files_qm_qfc_poi/DCIM/file_1.jpg'
+    path = f'{cache_dir}/files_qm_qfc_poi/DCIM_file_1.jpg'
 
     _insert_pois([('DCIM/file_1.jpg', b'content_1')])
     _package(root, tmp_path / 'package_1', mapCacheDir=cache_dir)

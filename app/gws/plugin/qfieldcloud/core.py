@@ -118,6 +118,10 @@ class QfcProject(gws.Node):
         if len(found) != 1:
             raise gws.ConfigurationError(f'syncFiles: expected one file field {cfg.field!r}, found {len(found)}')
         fld = found[0]
+        if not fld.cfg('contentColumn'):
+            raise gws.ConfigurationError(f'syncFiles: file field {cfg.field!r} has no contentColumn')
+        if not fld.cfg('nameColumn') and not cfg.useBlob:
+            raise gws.ConfigurationError(f'syncFiles: file field {cfg.field!r} has no nameColumn')
         return SyncFile(
             model=fld.model,
             field=fld,

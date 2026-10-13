@@ -144,7 +144,10 @@ class Object:
             can_write = self.user.can_write(model) and not caps_mod.is_locked(le.props, 'attribute_editing')
             can_delete = self.user.can_delete(model) and not caps_mod.is_locked(le.props, 'feature_deletion')
             can_geom = (
-                self.user.can_write(model) and geom_field is not None and self.user.can_write(geom_field) and not caps_mod.is_locked(le.props, 'geometry_editing')
+                self.user.can_write(model)
+                and geom_field is not None
+                and self.user.can_write(geom_field)
+                and not caps_mod.is_locked(le.props, 'geometry_editing')
             )
 
         set_props = {
@@ -202,8 +205,6 @@ class Object:
                 rel_dir = d.split('/')[-1]
             for p in osx.find_files(d):
                 self.pathMap[rel_dir + '/' + osx.rel_path(p, d)] = p
-
-    #
 
     def get_features_for_layer(self, le: caps_mod.LayerEntry) -> list[gws.Feature]:
         """Read the features of an ``edit`` layer.
@@ -269,7 +270,11 @@ class Object:
 
         contents = {}
         if blob_fields:
-            contents = self.load_file_contents(me, list(blob_fields.values()), features)
+            contents = self.load_file_contents(
+                me,
+                list(blob_fields.values()),
+                [fe.uid() for fe in features],
+            )
 
         gp_layer = ds.create_layer(
             me.gpName,
@@ -307,72 +312,82 @@ class Object:
             le: Layer entry.
         """
         me = le.modelEntry
-        
-        file_fields = []
-        
+
+        file_fields = {}
+
         for sf in self.qfcProject.syncFiles:
             if sf.model == me.model and self.user.can_read(sf.field) and not sf.useBlob:
-                file_fields.append(sf.field)
-        
+                name = core.gp_field_name(sf.field.nameColumnName)
+                file_fields[name] = sf.field
+
         if not file_fields:
             return
 
         cache_dir = gws.u.ensure_dir(f'{self.args.mapCacheDir}/files_{me.gpName}')
         pending = {}
+        pending_uids = set()
 
         for fe in self.get_features_for_layer(le):
-            for fld in file_fields:
+            for fld in file_fields.values():
                 fv = cast(file_field.FileValue, fe.get(fld.name))
                 if not fv or not fv.name or not fv.size:
                     continue
-                if fv.name.startswith('/') or '..' in fv.name.split('/'):
+                if fv.name.startswith('/') or '..' in fv.name:
                     gws.log.warning(f'{self.uid}: write_files: invalid path {fv.name!r} in {me.gpName!r}')
                     continue
                 if fv.name in self.pathMap or fv.name in pending:
                     continue
-                path = f'{cache_dir}/{fv.name}'
+                path = f'{cache_dir}/{fv.name.replace("/", "_")}'
                 if osx.file_size(path) == fv.size:
                     self.pathMap[fv.name] = path
                     continue
-                pending[fv.name] = (fe, fld)
+                pending[fv.name] = (fe, fld, path)
+                pending_uids.add(fe.uid())
 
         if not pending:
             return
 
-        fs = {fe.uid(): fe for fe, _ in pending.values()}
-        contents = self.load_file_contents(me, file_fields, list(fs.values()))
+        contents = self.load_file_contents(
+            me,
+            list(file_fields.values()),
+            list(pending_uids),
+        )
 
-        for name, (fe, fld) in pending.items():
+        for name, (fe, fld, path) in pending.items():
             fv = contents.get(fe.uid(), {}).get(fld.name)
             if not fv or not fv.content:
                 continue
-            path = f'{cache_dir}/{name}'
             gws.u.write_file_b(path, fv.content)
             self.pathMap[name] = path
 
-    def load_file_contents(self, me: caps_mod.ModelEntry, fields: list[file_field.Object], features: list[gws.Feature]) -> dict[str, dict]:
+    def load_file_contents(
+        self,
+        me: caps_mod.ModelEntry,
+        fields: list[file_field.Object],
+        uids: list[gws.FeatureUid],
+    ) -> dict[str, dict]:
         """Read the content of file fields.
 
         Args:
             me: Model entry.
             fields: File fields of the model.
-            features: Features to read the content for.
+            uids: Feature UIDs to read the content for.
 
         Returns:
             File values with content, by field name, by feature uid as a string.
         """
-        if not features:
+        if not uids:
             return {}
         q = gws.SearchQuery(
-            uids=[fe.uid() for fe in features],
+            uids=uids,
             extraColumns=[me.model.column(fld.contentColumnName) for fld in fields],
         )
         mc = gws.ModelContext(user=self.user, project=self.project, op=gws.ModelOperation.read)
-        
+
         res = {}
         for fe in me.model.find_features(q, mc):
             res[fe.uid()] = {fld.name: fe.get(fld.name) for fld in fields}
-        
+
         return res
 
     ##
