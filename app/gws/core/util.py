@@ -247,6 +247,7 @@ def pick(x, *keys):
     Returns:
         A new object of the same type, or an empty dict if ``x`` is of another type.
     """
+
     def _pick(d):
         r = {}
         for k in keys:
@@ -271,6 +272,7 @@ def omit(x, *keys):
     Returns:
         A new object of the same type, or an empty dict if ``x`` is of another type.
     """
+
     def _omit(d):
         r = {}
         for k, v in d.items():
@@ -935,6 +937,18 @@ def write_debug_file(path: str, s: str | bytes):
         log.debug(f'error writing debug {path=} {exc=}')
 
 
+def basename(path):
+    """Return the base name of a path.
+
+    Args:
+        path: A path.
+
+    Returns:
+        The base name.
+    """
+    return os.path.basename(path)
+
+
 def dirname(path):
     """Return the directory part of a path.
 
@@ -1070,8 +1084,21 @@ def ephemeral_cleanup(force=False):
 
     cutoff = ts - _ephemeral_state['max_age']
     cmd = [
-        'find', const.EPHEMERAL_DIR, '-mindepth', '1',
-        '!', '-newermt', f'@{cutoff}', '(', '-type', 'f', '-o', '-type', 'd', '-empty', ')',
+        'find',
+        const.EPHEMERAL_DIR,
+        '-mindepth',
+        '1',
+        '!',
+        '-newermt',
+        f'@{cutoff}',
+        '(',
+        '-type',
+        'f',
+        '-o',
+        '-type',
+        'd',
+        '-empty',
+        ')',
         '-delete',
     ]
     return subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -1094,6 +1121,7 @@ def random_string(size: int) -> str:
 
 class _FormatMapDefault:
     """Mapping for ``str.format_map`` that returns a default for missing or ``None`` values."""
+
     def __init__(self, d, default):
         self.d = d
         self.default = default
@@ -1129,6 +1157,7 @@ def sha256(x) -> str:
     Returns:
         The hex digest.
     """
+
     def _bytes(x):
         if is_bytes(x):
             return bytes(x)
@@ -1321,6 +1350,7 @@ def get_ephemeral_content(name: str, init_fn) -> bytes:
         write_file_b(path, b)
         return b
 
+
 def get_cached_object(name: str, life_time: int, init_fn):
     """Get an object from the object cache, creating it if needed.
 
@@ -1429,6 +1459,7 @@ class LockBusyError(Exception):
 
 class _FileLock:
     """Inter-process lock based on ``flock`` on a file in ``const.LOCKS_DIR``."""
+
     _PAUSE = 0.05
 
     def __init__(self, uid, timeout):
