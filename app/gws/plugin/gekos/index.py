@@ -86,7 +86,7 @@ class Object(gws.Node):
     def _load(self, source: core.SourceConfig):
         """Load the records of a gek-online source as dicts."""
 
-        res = gws.lib.net.http_request(source.url, params=dict(source.params or {}), verify=False)
+        res = gws.lib.net.http_request(source.url, params=dict(source.params or {}))
         res.raise_if_failed()
         xml = gws.lib.xmlx.from_string((res.text or '').strip(), gws.XmlOptions(removeNamespaces=True))
 
