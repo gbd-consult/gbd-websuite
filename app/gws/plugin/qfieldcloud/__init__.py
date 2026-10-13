@@ -107,6 +107,26 @@ If a Model supports file uploads, it should contain a virtual file field with ``
 
 QField sends uploads in two steps: first, the file path is included along with the feature changes in the delta payload. Later, the actual file content is uploaded in a separate request. The plugin matches the file content to the respective feature based on the ``nameColumn`` value and writes it into ``contentColumn``. If no feature refers to the file, the upload is answered with status 404, and QField drops the file.
 
+.. rubric:: File downloads
+
+Uploaded files stay on the server unless the file field is listed in ``syncFiles``. A listed field is sent to every user who can read it::
+
+    projects+ {
+        ...
+        syncFiles+ { field "virtual_photo" }
+        syncFiles+ { field "virtual_scan" useBlob true }
+    }
+
+The field name must match exactly one file field in the project models.
+
+By default, the content is written into the package as a file, under the path stored in the ``nameColumn``. The QGIS layer needs an "Attachment" widget on the ``nameColumn``.
+
+With ``useBlob``, the content is written into the GeoPackage, into a binary column named after the ``contentColumn``. QField sends all attributes of a feature back with every change of the feature, so the blob is transferred again on each edit. QField cannot display binary columns directly; an HTML widget in the QGIS form can show an image as a data URL::
+
+    <img src=expression.evaluate("'data:image/jpeg;base64,' || to_base64(scan_content)")>
+
+New files are still taken through an "Attachment" widget on the ``nameColumn`` and uploaded as described above.
+
 .. rubric:: Extending
 
 Override the packager, patcher and handler classes to customize packaging, patching and request handling.

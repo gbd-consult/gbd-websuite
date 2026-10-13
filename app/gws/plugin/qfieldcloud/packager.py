@@ -2,8 +2,10 @@
 
 from typing import cast, Optional
 
+import os
+
 import gws
-from gws.base.metadata.core import props
+import gws.plugin.model_field.file as file_field
 import gws.lib.gdalx
 import gws.lib.jsonx
 import gws.lib.image
@@ -165,7 +167,7 @@ class Object:
         )
 
     def write_data(self):
-        """Write the features of each ``edit`` layer into a GeoPackage file."""
+        """Write the features of each ``edit`` layer into a GeoPackage file, and the files of ``syncFiles`` fields without ``useBlob``."""
         for le in self.layerMap.values():
             if le.action != caps_mod.LayerAction.edit:
                 continue
@@ -175,6 +177,7 @@ class Object:
             self.pathMap[le.dataSourceFileName] = path
             with gws.lib.gdalx.open_vector(path, 'w') as ds:
                 self.write_features(le, ds)
+            self.write_files(le)
 
     def write_base_map(self):
         """Render all ``baseMap`` layers."""
@@ -234,6 +237,7 @@ class Object:
         """Write the features of a layer into a GeoPackage layer.
 
         Only fields of simple types that the user can read are written. A field named ``fid`` is written as ``fid_gws``, because GDAL uses ``fid`` internally.
+        The content of ``syncFiles`` fields with ``useBlob`` that the user can read is written into a binary column named after the ``contentColumn``.
 
         Args:
             le: Layer entry.
@@ -255,6 +259,18 @@ class Object:
             columns[name] = f.attributeType
             field_names[name] = f.name
 
+        blob_fields = {}
+        for sf in self.qfcProject.syncFiles:
+            if sf.model != me.model or not sf.useBlob or not self.user.can_read(sf.field):
+                continue
+            name = core.gp_field_name(sf.field.contentColumnName)
+            columns[name] = gws.AttributeType.bytes
+            blob_fields[name] = sf.field
+
+        contents = {}
+        if blob_fields:
+            contents = self.load_file_contents(me, list(blob_fields.values()), features)
+
         gp_layer = ds.create_layer(
             me.gpName,
             columns=columns,
@@ -264,18 +280,100 @@ class Object:
         )
 
         records = []
-        for feat in features:
+        for fe in features:
             rec = gws.FeatureRecord(
-                attributes={name: feat.get(field_name) for name, field_name in field_names.items()},
-                shape=feat.shape(),
+                attributes={name: fe.get(field_name) for name, field_name in field_names.items()},
+                shape=fe.shape(),
                 meta={},
             )
+            for name, fld in blob_fields.items():
+                fv = contents.get(fe.uid(), {}).get(fld.name)
+                rec.attributes[name] = fv.content if fv else None
             records.append(rec)
 
         with ds.transaction():
             gp_layer.insert(records)
 
         gws.log.debug(f'{self.uid}: {self.qfcProject.uid}::{me.gpName!r} END write_features, count={gp_layer.count()}')
+
+    def write_files(self, le: caps_mod.LayerEntry):
+        """Write the content of ``syncFiles`` fields without ``useBlob`` into the package.
+
+        Each file is added to the package under the path stored in the ``nameColumn``.
+        Files are stored in the map cache directory and reused while their size matches the size of the content in the database.
+        Fields the user cannot read, empty files, and absolute paths or paths with ``..`` are skipped.
+
+        Args:
+            le: Layer entry.
+        """
+        me = le.modelEntry
+        
+        file_fields = []
+        
+        for sf in self.qfcProject.syncFiles:
+            if sf.model == me.model and self.user.can_read(sf.field) and not sf.useBlob:
+                file_fields.append(sf.field)
+        
+        if not file_fields:
+            return
+
+        cache_dir = gws.u.ensure_dir(f'{self.args.mapCacheDir}/files_{me.gpName}')
+        pending = {}
+
+        for fe in self.get_features_for_layer(le):
+            for fld in file_fields:
+                fv = cast(file_field.FileValue, fe.get(fld.name))
+                if not fv or not fv.name or not fv.size:
+                    continue
+                if fv.name.startswith('/') or '..' in fv.name.split('/'):
+                    gws.log.warning(f'{self.uid}: write_files: invalid path {fv.name!r} in {me.gpName!r}')
+                    continue
+                if fv.name in self.pathMap or fv.name in pending:
+                    continue
+                path = f'{cache_dir}/{fv.name}'
+                if osx.file_size(path) == fv.size:
+                    self.pathMap[fv.name] = path
+                    continue
+                pending[fv.name] = (fe, fld)
+
+        if not pending:
+            return
+
+        fs = {fe.uid(): fe for fe, _ in pending.values()}
+        contents = self.load_file_contents(me, file_fields, list(fs.values()))
+
+        for name, (fe, fld) in pending.items():
+            fv = contents.get(fe.uid(), {}).get(fld.name)
+            if not fv or not fv.content:
+                continue
+            path = f'{cache_dir}/{name}'
+            gws.u.write_file_b(path, fv.content)
+            self.pathMap[name] = path
+
+    def load_file_contents(self, me: caps_mod.ModelEntry, fields: list[file_field.Object], features: list[gws.Feature]) -> dict[str, dict]:
+        """Read the content of file fields.
+
+        Args:
+            me: Model entry.
+            fields: File fields of the model.
+            features: Features to read the content for.
+
+        Returns:
+            File values with content, by field name, by feature uid as a string.
+        """
+        if not features:
+            return {}
+        q = gws.SearchQuery(
+            uids=[fe.uid() for fe in features],
+            extraColumns=[me.model.column(fld.contentColumnName) for fld in fields],
+        )
+        mc = gws.ModelContext(user=self.user, project=self.project, op=gws.ModelOperation.read)
+        
+        res = {}
+        for fe in me.model.find_features(q, mc):
+            res[fe.uid()] = {fld.name: fe.get(fld.name) for fld in fields}
+        
+        return res
 
     ##
 
