@@ -62,15 +62,36 @@ def _add_fid_layer(root_el: gws.XmlElement):
             root_el.require('projectlayers').append(gws.lib.xmlx.from_string(xml))
 
 
-@u.fixture(scope='module')
-def root():
+def _create_tables():
     tu.create_tables()
     u.pg.create('qfc.fid_pk', {
         'fid': 'int primary key',
         'name': 'text',
         'geom': 'geometry(Point,3857)',
     })
-    yield u.gws_root(CONFIG, QGS_PATH=repr(tu.qgs_path('patcher', _add_fid_layer)), DB_PROVIDER=tu.db_provider_config())
+
+
+@u.fixture(scope='module')
+def root():
+    _create_tables()
+    yield u.gws_root(
+        CONFIG,
+        QGS_PATH=repr(tu.qgs_path('patcher', _add_fid_layer)),
+        DB_PROVIDER=tu.db_provider_config(),
+    )
+
+
+@u.fixture(scope='module')
+def locked_root():
+    def patch(root_el):
+        tu.set_layer_prop(root_el, 'poi_L1', 'is_attribute_editing_locked', 'true', 'bool')
+
+    _create_tables()
+    yield u.gws_root(
+        CONFIG,
+        QGS_PATH=repr(tu.qgs_path('patcher_qgis', patch)),
+        DB_PROVIDER=tu.db_provider_config(),
+    )
 
 
 @u.fixture(autouse=True)
@@ -78,6 +99,7 @@ def clean():
     u.pg.insert('qfc.poi', [])
     u.pg.insert('qfc.note', [])
     u.pg.insert('qfc.fid_pk', [])
+    u.pg.insert('qfc.district', [])
     yield
 
 
@@ -346,3 +368,50 @@ def test_upload_for_a_model_without_a_file_field(root: gws.Root):
     # qfc.note has an auto-created model with no file field
     ok = _upload(root, 'nothing.jpg', b'IMAGE-BYTES')
     assert ok is False
+
+
+##
+# QGIS permissions
+
+
+def test_qgis_locked_create_is_rejected(root: gws.Root):
+    # district_L2 is fully locked in the QGIS project
+    with u.raises(gws.ForbiddenError):
+        _apply(root, _change('create', 'district_L2', new={'id': 1, 'name': 'new'}))
+
+    assert u.pg.rows('SELECT id FROM qfc.district') == []
+
+
+def test_qgis_locked_delete_is_rejected(root: gws.Root):
+    u.pg.insert('qfc.district', [{'id': 1, 'name': 'one'}])
+
+    with u.raises(gws.ForbiddenError):
+        _apply(root, _change('delete', 'district_L2', old={'id': 1}))
+
+    assert u.pg.rows('SELECT id FROM qfc.district') == [(1,)]
+
+
+def test_qgis_locked_attribute_editing_is_rejected(locked_root: gws.Root):
+    u.pg.insert('qfc.poi', [{'id': 1, 'name': 'old'}])
+
+    with u.raises(gws.ForbiddenError):
+        _apply(locked_root, _change('patch', old={'id': 1}, new={'name': 'updated'}))
+
+    assert _poi() == [(1, 'old', None)]
+
+
+def test_qgis_unlocked_geometry_editing_is_applied(locked_root: gws.Root):
+    u.pg.insert('qfc.poi', [{'id': 1, 'name': 'x', 'geom': tu.point(1, 1)}])
+
+    ok = _apply(locked_root, _change('patch', old={'id': 1}, wkt='POINT(750000 6650000)'))
+
+    assert ok is True
+    rows = u.pg.rows('SELECT ST_X(geom), ST_Y(geom) FROM qfc.poi')
+    u.check.close(rows[0], (750000, 6650000), abs_tol=0.001)
+
+
+def test_qgis_unlocked_create_is_applied(locked_root: gws.Root):
+    ok = _apply(locked_root, _change('create', new={'id': 1, 'name': 'new'}))
+
+    assert ok is True
+    assert _poi() == [(1, 'new', None)]

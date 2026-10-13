@@ -8,7 +8,7 @@ import gws.lib.datetimex as dtx
 import gws.lib.xmlx
 import gws.test.util as u
 
-from gws.plugin.qfieldcloud import action_base, action_handler, caps, packager
+from gws.plugin.qfieldcloud import action_base, action_handler, caps, packager, patcher
 
 PART_SIZE = 8 * 1024 * 1024
 
@@ -225,8 +225,7 @@ def test_copy_dirs_relative_without_qgis_path_are_dropped():
 
 
 def test_replace_vars():
-    po = packager.Object()
-    po.user = gws.Data(authToken='TOKEN', loginName='LOGIN', displayName='DISPLAY')
+    po = _packager(gws.Data(authToken='TOKEN', loginName='LOGIN', displayName='DISPLAY'))
 
     s = po.replace_vars('a {user.authToken} b {user.loginName} c {user.displayName} d')
     assert s == 'a TOKEN b LOGIN c DISPLAY d'
@@ -477,7 +476,7 @@ def test_transformer_writes_layer_properties():
         dataSource='./qm_a.gpkg|layername=qm_a',
         dataProvider='ogr',
         readOnly=True,
-        properties={
+        setProps={
             'QFieldSync/is_feature_addition_locked': True,
             'QFieldSync/is_feature_deletion_locked': False,
             'QFieldSync/is_geometry_locked': None,
@@ -525,7 +524,7 @@ def test_transformer_adds_custom_properties():
         dataSource='./qm_a.gpkg|layername=qm_a',
         dataProvider='ogr',
         readOnly=False,
-        properties={'QFieldSync/is_feature_addition_locked': True},
+        setProps={'QFieldSync/is_feature_addition_locked': True},
     )
     root_el = _transform(
         """
@@ -560,21 +559,34 @@ def _user(create=False, write=False, delete=False):
     )
 
 
+def _packager(user):
+    po = packager.Object()
+    po.user = user
+    return po
+
+
+_GEOM_FIELD = gws.Data(name='geom')
+
+
+def _model(is_editable=True, uid_name='id'):
+    return gws.Data(isEditable=is_editable, uidName=uid_name, geometryName='geom', field=lambda name: _GEOM_FIELD)
+
+
 def _user_entry(user, is_editable=True, uid_name='id'):
-    model = gws.Data(isEditable=is_editable, uidName=uid_name)
+    model = _model(is_editable, uid_name)
     le = caps.LayerEntry(
         action=caps.LayerAction.edit,
         qgisId='A',
         modelEntry=caps.ModelEntry(model=model),
+        props=caps.LayerProps(),
     )
-    po = packager.Object()
-    po.user = user
+    po = _packager(user)
     return po.layer_entry_for_user(le)
 
 
 def _locks(le):
     return {
-        name: le.properties[f'QFieldSync/is_{name}_locked']
+        name: le.setProps[f'QFieldSync/is_{name}_locked']
         for name in ('feature_addition', 'attribute_editing', 'geometry_editing', 'feature_deletion')
     }
 
@@ -637,9 +649,8 @@ def test_user_entry_locks_geometry_if_geometry_field_is_not_writable():
         can_write=lambda obj: obj is not geom_field,
         can_delete=lambda obj: True,
     )
-    le = caps.LayerEntry(action=caps.LayerAction.edit, qgisId='A', modelEntry=caps.ModelEntry(model=model))
-    po = packager.Object()
-    po.user = user
+    le = caps.LayerEntry(action=caps.LayerAction.edit, qgisId='A', modelEntry=caps.ModelEntry(model=model), props=caps.LayerProps())
+    po = _packager(user)
 
     le = po.layer_entry_for_user(le)
 
@@ -652,41 +663,156 @@ def test_user_entry_locks_geometry_if_geometry_field_is_not_writable():
     }
 
 
-def test_user_entry_disables_lock_expressions_and_removes_deprecated_lock():
+def test_user_entry_keeps_lock_expressions_and_removes_deprecated_lock():
     le = _user_entry(_user(create=True, write=True, delete=True))
 
     for name in ('feature_addition', 'attribute_editing', 'geometry_editing', 'feature_deletion'):
-        assert le.properties[f'QFieldSync/is_{name}_locked_expression_active'] is False
+        assert f'QFieldSync/is_{name}_locked_expression_active' not in le.setProps
+        assert f'QFieldSync/{name}_locked_expression' not in le.setProps
 
-    assert le.properties['QFieldSync/is_geometry_locked'] is None
-    assert le.properties['QFieldSync/is_geometry_locked_expression_active'] is None
-    assert le.properties['QFieldSync/geometry_locked_expression'] is None
+    assert le.setProps['QFieldSync/is_geometry_locked'] is None
+    assert le.setProps['QFieldSync/is_geometry_locked_expression_active'] is None
+    assert le.setProps['QFieldSync/geometry_locked_expression'] is None
 
 
 def test_user_entry_source_primary_key():
-    assert _user_entry(_user(), uid_name='id').properties['QFieldSync/sourceDataPrimaryKeys'] == 'id'
-    assert _user_entry(_user(), uid_name='fid').properties['QFieldSync/sourceDataPrimaryKeys'] == 'fid_gws'
-    assert 'QFieldSync/sourceDataPrimaryKeys' not in _user_entry(_user(), uid_name='').properties
+    assert _user_entry(_user(), uid_name='id').setProps['QFieldSync/sourceDataPrimaryKeys'] == 'id'
+    assert _user_entry(_user(), uid_name='fid').setProps['QFieldSync/sourceDataPrimaryKeys'] == 'fid_gws'
+    assert 'QFieldSync/sourceDataPrimaryKeys' not in _user_entry(_user(), uid_name='').setProps
 
 
 def test_user_entry_is_a_copy():
     le = caps.LayerEntry(
         action=caps.LayerAction.edit,
         qgisId='A',
-        modelEntry=caps.ModelEntry(model=gws.Data(isEditable=True, uidName='id')),
+        modelEntry=caps.ModelEntry(model=_model()),
+        props=caps.LayerProps(),
     )
-    po = packager.Object()
-    po.user = _user()
+    po = _packager(_user())
     le2 = po.layer_entry_for_user(le)
 
     assert le2 is not le
     assert le2.qgisId == 'A'
     assert le.readOnly is None
-    assert le.properties is None
+    assert le.setProps is None
 
 
 def test_user_entry_other_actions_are_unchanged():
     le = caps.LayerEntry(action=caps.LayerAction.baseMap, qgisId='A')
-    po = packager.Object()
-    po.user = _user()
+    po = _packager(_user())
     assert po.layer_entry_for_user(le) is le
+
+
+##
+# QGIS permissions
+
+
+def _qgis_entry(read_only=False, **locks):
+    return caps.LayerEntry(
+        action=caps.LayerAction.edit,
+        qgisId='A',
+        modelEntry=caps.ModelEntry(model=_model()),
+        readOnly=read_only,
+        props=caps.LayerProps(**locks),
+    )
+
+
+def test_user_entry_combines_qgis_locks():
+    po = _packager(_user(create=True, write=True))
+    le = po.layer_entry_for_user(_qgis_entry(is_feature_addition_locked=True))
+
+    assert le.readOnly is False
+    assert _locks(le) == {
+        'feature_addition': True,
+        'attribute_editing': False,
+        'geometry_editing': False,
+        'feature_deletion': True,
+    }
+
+
+def test_user_entry_is_read_only_if_all_locked_in_qgis():
+    po = _packager(_user(create=True, write=True, delete=True))
+    le = po.layer_entry_for_user(_qgis_entry(
+        is_feature_addition_locked=True,
+        is_attribute_editing_locked=True,
+        is_geometry_editing_locked=True,
+        is_feature_deletion_locked=True,
+    ))
+
+    assert le.readOnly is True
+    assert all(_locks(le).values())
+
+
+def test_user_entry_of_read_only_qgis_layer():
+    po = _packager(_user(create=True, write=True, delete=True))
+    le = po.layer_entry_for_user(_qgis_entry(read_only=True))
+
+    assert le.readOnly is True
+    assert all(_locks(le).values())
+
+
+def test_user_entry_ignores_qgis_locks_with_expressions():
+    po = _packager(_user(create=True, write=True, delete=True))
+    le = po.layer_entry_for_user(_qgis_entry(
+        is_feature_addition_locked=True,
+        is_feature_addition_locked_expression_active=True,
+        is_attribute_editing_locked=True,
+        is_attribute_editing_locked_expression_active=True,
+        is_geometry_editing_locked=True,
+        is_geometry_editing_locked_expression_active=True,
+        is_feature_deletion_locked=True,
+        is_feature_deletion_locked_expression_active=True,
+    ))
+
+    assert le.readOnly is False
+    assert not any(_locks(le).values())
+
+
+def test_is_locked():
+    props = caps.LayerProps(
+        is_feature_addition_locked=True,
+        is_attribute_editing_locked=True,
+        is_attribute_editing_locked_expression_active=True,
+        is_geometry_editing_locked=False,
+    )
+    assert caps.is_locked(props, 'feature_addition') is True
+    assert caps.is_locked(props, 'attribute_editing') is False
+    assert caps.is_locked(props, 'geometry_editing') is False
+    assert caps.is_locked(props, 'feature_deletion') is False
+
+
+##
+# patcher.Object.is_locked_in_qgis
+
+
+def _is_locked_in_qgis(change_type, read_only=False, new=None, wkt='', **locks):
+    le = caps.LayerEntry(action=caps.LayerAction.edit, readOnly=read_only, props=caps.LayerProps(**locks))
+    cc = patcher.Change(type=change_type, newAtts=new or {}, oldAtts={}, wkt=wkt)
+    return patcher.Object().is_locked_in_qgis(le, cc)
+
+
+def test_patcher_locks_by_change_type():
+    assert _is_locked_in_qgis('create', is_feature_addition_locked=True) is True
+    assert _is_locked_in_qgis('create', is_feature_deletion_locked=True) is False
+    assert _is_locked_in_qgis('delete', is_feature_deletion_locked=True) is True
+    assert _is_locked_in_qgis('delete', is_feature_addition_locked=True) is False
+
+
+def test_patcher_locks_patch_by_attributes_and_geometry():
+    assert _is_locked_in_qgis('patch', new={'a': 1}, is_attribute_editing_locked=True) is True
+    assert _is_locked_in_qgis('patch', wkt='POINT(1 1)', is_attribute_editing_locked=True) is False
+    assert _is_locked_in_qgis('patch', wkt='POINT(1 1)', is_geometry_editing_locked=True) is True
+    assert _is_locked_in_qgis('patch', new={'a': 1}, is_geometry_editing_locked=True) is False
+
+
+def test_patcher_locks_read_only_layer():
+    assert _is_locked_in_qgis('create', read_only=True) is True
+    assert _is_locked_in_qgis('patch', read_only=True, new={'a': 1}) is True
+
+
+def test_patcher_ignores_locks_with_expressions():
+    assert _is_locked_in_qgis(
+        'create',
+        is_feature_addition_locked=True,
+        is_feature_addition_locked_expression_active=True,
+    ) is False

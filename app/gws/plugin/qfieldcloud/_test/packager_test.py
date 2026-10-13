@@ -241,19 +241,19 @@ def test_write_qgis_project(root: gws.Root, tmp_path):
     assert root_el.textof('properties/Paths/Absolute') == 'false'
 
 
-def test_write_qgis_project_replaces_qgis_locks(root: gws.Root, tmp_path):
+def test_write_qgis_project_keeps_qgis_locks(root: gws.Root, tmp_path):
     _package(root, tmp_path, withQgis=True)
 
     root_el = gws.lib.xmlx.from_path(str(tmp_path / 'QFC_1.qgs'))
     el = next(el for el in root_el.findall('.//maplayer') if el.textof('id') == 'district_L2')
 
-    # district_L2 is fully locked in the QGIS project, the system user may do everything
+    # district_L2 is fully locked in the QGIS project, although the system user may do everything
     opts = {o.get('name'): o.get('value') for o in el.findall('customproperties/Option/Option')}
-    assert opts['QFieldSync/is_feature_addition_locked'] == 'false'
-    assert opts['QFieldSync/is_attribute_editing_locked'] == 'false'
-    assert opts['QFieldSync/is_geometry_editing_locked'] == 'false'
-    assert opts['QFieldSync/is_feature_deletion_locked'] == 'false'
-    assert el.get('readOnly') == '0'
+    assert opts['QFieldSync/is_feature_addition_locked'] == 'true'
+    assert opts['QFieldSync/is_attribute_editing_locked'] == 'true'
+    assert opts['QFieldSync/is_geometry_editing_locked'] == 'true'
+    assert opts['QFieldSync/is_feature_deletion_locked'] == 'true'
+    assert el.get('readOnly') == '1'
 
 
 def test_write_qgis_project_keeps_the_source(root: gws.Root, tmp_path):

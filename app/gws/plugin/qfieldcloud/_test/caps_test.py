@@ -70,6 +70,28 @@ def test_locked_layer_is_exported(root: gws.Root):
     assert cs.layerMap['district_L2'].action == caps.LayerAction.edit
 
 
+def test_qgis_locks_are_collected(root: gws.Root):
+    cs = _caps(root)
+
+    # district_L2 is fully locked in the QGIS project, poi_L1 is not
+    for name in ('feature_addition', 'attribute_editing', 'geometry_editing', 'feature_deletion'):
+        assert cs.layerMap['district_L2'].props.get(f'is_{name}_locked') is True
+        assert cs.layerMap['poi_L1'].props.get(f'is_{name}_locked') is not True
+
+
+def test_read_only_flag_is_collected(root: gws.Root):
+    def patch(root_el):
+        for el in root_el.findall('projectlayers/maplayer'):
+            if el.textof('id') == 'poi_L1':
+                el.set('readOnly', '1')
+
+    le = _caps(_root(tu.qgs_path('caps_read_only', patch))).layerMap['poi_L1']
+    assert le.action == caps.LayerAction.edit
+    assert le.readOnly is True
+
+    assert _caps(root).layerMap['poi_L1'].readOnly is False
+
+
 def test_sql_filter_is_extracted(root: gws.Root):
     cs = _caps(root)
     assert cs.layerMap['note_L3'].sqlFilter == '"kind" = \'a\''

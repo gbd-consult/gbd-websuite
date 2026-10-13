@@ -3,6 +3,7 @@
 from typing import cast, Optional
 
 import gws
+from gws.base.metadata.core import props
 import gws.lib.gdalx
 import gws.lib.jsonx
 import gws.lib.image
@@ -116,9 +117,10 @@ class Object:
     def layer_entry_for_user(self, le: caps_mod.LayerEntry) -> caps_mod.LayerEntry:
         """Create a copy of an ``edit`` layer entry with the read-only flag and custom properties for the user.
 
-        Operations the user may not perform on the model are locked in QField,
-        the lock settings of the QGIS project are replaced.
+        Operations the user may not perform on the model are locked in QField.
         Geometry editing is also locked if the user may not write the geometry field.
+        Operations locked in the QGIS project, or all operations if the layer is read-only there, are locked as well.
+        Locks controlled by an expression in the QGIS project are not considered, the expressions are kept as is.
         If all operations are locked, the layer is read-only.
 
         Args:
@@ -131,33 +133,35 @@ class Object:
             return le
 
         model = le.modelEntry.model
-        can_create = model.isEditable and self.user.can_create(model)
-        can_write = model.isEditable and self.user.can_write(model)
-        can_delete = model.isEditable and self.user.can_delete(model)
         geom_field = model.field(model.geometryName) if model.geometryName else None
-        can_write_geom = can_write and (not geom_field or self.user.can_write(geom_field))
 
-        props = {
+        if not model.isEditable or le.readOnly:
+            can_create = can_write = can_delete = can_geom = False
+        else:
+            can_create = self.user.can_create(model) and not caps_mod.is_locked(le.props, 'feature_addition')
+            can_write = self.user.can_write(model) and not caps_mod.is_locked(le.props, 'attribute_editing')
+            can_delete = self.user.can_delete(model) and not caps_mod.is_locked(le.props, 'feature_deletion')
+            can_geom = (
+                self.user.can_write(model) and geom_field is not None and self.user.can_write(geom_field) and not caps_mod.is_locked(le.props, 'geometry_editing')
+            )
+
+        set_props = {
             'QFieldSync/is_feature_addition_locked': not can_create,
-            'QFieldSync/is_feature_addition_locked_expression_active': False,
             'QFieldSync/is_attribute_editing_locked': not can_write,
-            'QFieldSync/is_attribute_editing_locked_expression_active': False,
-            'QFieldSync/is_geometry_editing_locked': not can_write_geom,
-            'QFieldSync/is_geometry_editing_locked_expression_active': False,
+            'QFieldSync/is_geometry_editing_locked': not can_geom,
             'QFieldSync/is_feature_deletion_locked': not can_delete,
-            'QFieldSync/is_feature_deletion_locked_expression_active': False,
             'QFieldSync/is_geometry_locked': None,
             'QFieldSync/is_geometry_locked_expression_active': None,
             'QFieldSync/geometry_locked_expression': None,
         }
 
         if model.uidName:
-            props['QFieldSync/sourceDataPrimaryKeys'] = core.gp_field_name(model.uidName)
+            set_props['QFieldSync/sourceDataPrimaryKeys'] = core.gp_field_name(model.uidName)
 
         return caps_mod.LayerEntry(
             vars(le),
-            readOnly=not (can_create or can_write or can_delete),
-            properties=props,
+            readOnly=not (can_create or can_write or can_geom or can_delete),
+            setProps=set_props,
         )
 
     def write_data(self):
@@ -469,7 +473,7 @@ class QgisXmlTransformer:
 
             if le.action == caps_mod.LayerAction.edit:
                 el.set('readOnly', '1' if le.readOnly else '0')
-                self.update_custom_properties(el, le.properties or {})
+                self.update_custom_properties(el, le.setProps or {})
 
     def update_custom_properties(self, layer_el: gws.XmlElement, props: dict):
         """Set or remove custom properties of a map layer.

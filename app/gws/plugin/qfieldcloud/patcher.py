@@ -252,6 +252,7 @@ class Object:
 
         The ``fid_gws`` attribute is renamed back to ``fid`` (see the packager).
         For creations, an automatic primary key is removed from the attributes.
+        Changes locked in the QGIS project are rejected.
 
         Args:
             cc: Change.
@@ -259,12 +260,16 @@ class Object:
         Raises:
             ``gws.Error``: If the layer is not found or not editable, the geometry field is not found,
                 or the feature to update or delete does not exist.
+            ``gws.ForbiddenError``: If the change is locked in the QGIS project.
         """
         le = self.caps.layerMap.get(cc.layerUid)
         if not le:
             raise gws.Error(f'layer not found: {cc.layerUid!r}')
         if le.action != caps_mod.LayerAction.edit:
             raise gws.Error(f'unsupported layer action: {cc.layerUid!r} {le.action!r}')
+
+        if self.is_locked_in_qgis(le, cc):
+            raise gws.ForbiddenError(f'{cc.type}: locked in QGIS: {le.qgisId=}')
 
         me = le.modelEntry
         pk_name = me.model.uidName
@@ -307,6 +312,29 @@ class Object:
             feat = me.model.feature_from_props(gws.FeatureProps(attributes=atts), mc)
             ops.append(Operation(type=gws.ModelOperation.update, feature=feat))
             return
+
+    def is_locked_in_qgis(self, le: caps_mod.LayerEntry, cc: Change) -> bool:
+        """Check if a change is locked in the QGIS project.
+
+        Args:
+            le: Layer entry.
+            cc: Change.
+
+        Returns:
+            ``True`` if the layer is read-only or the operation of the change is locked without an expression.
+        """
+        if le.readOnly:
+            return True
+        if cc.type == ChangeType.create:
+            return caps_mod.is_locked(le.props, 'feature_addition')
+        if cc.type == ChangeType.delete:
+            return caps_mod.is_locked(le.props, 'feature_deletion')
+        if cc.type == ChangeType.patch:
+            if cc.newAtts and caps_mod.is_locked(le.props, 'attribute_editing'):
+                return True
+            if cc.wkt and caps_mod.is_locked(le.props, 'geometry_editing'):
+                return True
+        return False
 
     def get_feature(self, me: caps_mod.ModelEntry, pk: str) -> gws.Feature | None:
         """Read a feature by its primary key.

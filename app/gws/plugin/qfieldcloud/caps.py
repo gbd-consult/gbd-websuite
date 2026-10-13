@@ -83,6 +83,22 @@ class LayerProps(gws.Data):
     """Naming rules for attachments."""
     cloud_action: str
     """Cloud action: ``offline``, ``no_action`` or ``remove``."""
+    is_feature_addition_locked: bool
+    """Whether feature addition is locked."""
+    is_feature_addition_locked_expression_active: bool
+    """Whether the feature addition lock is controlled by an expression."""
+    is_attribute_editing_locked: bool
+    """Whether attribute editing is locked."""
+    is_attribute_editing_locked_expression_active: bool
+    """Whether the attribute editing lock is controlled by an expression."""
+    is_geometry_editing_locked: bool
+    """Whether geometry editing is locked."""
+    is_geometry_editing_locked_expression_active: bool
+    """Whether the geometry editing lock is controlled by an expression."""
+    is_feature_deletion_locked: bool
+    """Whether feature deletion is locked."""
+    is_feature_deletion_locked_expression_active: bool
+    """Whether the feature deletion lock is controlled by an expression."""
     photo_naming: dict
     """Naming rules for photos."""
     relationship_maximum_visible: dict
@@ -131,8 +147,8 @@ class LayerEntry(gws.Data):
     modelEntry: ModelEntry
     """Model entry, for ``edit`` layers."""
     readOnly: bool
-    """Whether the layer is read-only in the packaged project."""
-    properties: dict
+    """Whether the layer is read-only, in the QGIS project or, for a user, in the packaged project."""
+    setProps: dict
     """Custom properties to set in the packaged project, ``None`` values remove the property."""
     sqlFilter: str
     """SQL filter (subset string) of the layer."""
@@ -377,6 +393,7 @@ class Parser:
 
         return LayerEntry(
             action=LayerAction.edit,
+            readOnly=sl.isReadOnly is True,
             sqlFilter=sl.dataSource.get('sql', ''),
             props=props,
         )
@@ -523,6 +540,21 @@ class Parser:
 
 
 ##
+
+
+def is_locked(props: LayerProps, name: str) -> bool:
+    """Check if an operation is locked in the QGIS project.
+
+    A lock controlled by an expression is evaluated by QField only and is not considered locked.
+
+    Args:
+        props: QFieldSync layer properties.
+        name: QField lock name: ``feature_addition``, ``attribute_editing``, ``geometry_editing`` or ``feature_deletion``.
+
+    Returns:
+        ``True`` if the operation is locked.
+    """
+    return props.get(f'is_{name}_locked') is True and props.get(f'is_{name}_locked_expression_active') is not True
 
 
 def _dict_to_data(d: dict, t: gws.Data):
