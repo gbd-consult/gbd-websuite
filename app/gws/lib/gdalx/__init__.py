@@ -4,7 +4,7 @@ This package provides a thin layer over the GDAL Python bindings (``osgeo.gdal``
 for reading and writing raster and vector data sets.
 
 Data sets are opened with ``open_raster`` or ``open_vector``, or created in memory
-from an image with ``open_from_image``. If no driver name is given, the driver is chosen
+from an image with ``open_from_image`` or from encoded image bytes with ``open_from_bytes``. If no driver name is given, the driver is chosen
 by the file extension. Data sets are context managers that flush and close themselves on exit.
 
 - ``RasterDataSet`` reads a raster into a ``gws.Image``, reports its size and bounds,
@@ -246,6 +246,53 @@ def open_from_image(
     return RasterDataSet(dso, gd)
 
 
+def open_from_bytes(content: bytes, bounds: gws.Bounds) -> 'RasterDataSet':
+    """Create a raster data set from an encoded image.
+
+    The image is kept in GDAL's memory file system and decoded only when the data set is read.
+    Paletted images are expanded to RGBA.
+
+    Args:
+        content: Encoded image, in any format GDAL can read.
+        bounds: Bounds of the image.
+
+    Returns:
+        The raster data set.
+
+    Raises:
+        ``Error``: If the image cannot be opened.
+    """
+
+    gdal.UseExceptions()
+
+    uid = gws.u.random_string(32)
+    src_path = f'/vsimem/{uid}.img'
+    vrt_path = f'/vsimem/{uid}.vrt'
+
+    gdal.FileFromMemBuffer(src_path, content)
+
+    try:
+        src = gdal.Open(src_path)
+    except RuntimeError as exc:
+        gdal.Unlink(src_path)
+        raise Error('cannot open image') from exc
+
+    ext = bounds.extent
+    opts = dict(
+        format='VRT',
+        outputBounds=[ext[0], ext[3], ext[2], ext[1]],
+        outputSRS=bounds.crs.epsg,
+    )
+    if src.GetRasterBand(1).GetColorTable():
+        opts['rgbExpand'] = 'rgba'
+
+    gd = gdal.Translate(vrt_path, src, **opts)
+    src = None
+
+    dso = _DataSetOptions(path=vrt_path, memPaths=[src_path, vrt_path])
+    return RasterDataSet(dso, gd)
+
+
 ##
 
 
@@ -279,6 +326,8 @@ class _DataSetOptions(gws.Data):
     """Return geometries as EWKT instead of shapes."""
     gdalOpts: dict
     """Driver-specific options."""
+    memPaths: list[str]
+    """Files in GDAL's memory file system, removed on close."""
 
 
 def _open(dso: _DataSetOptions, need_raster):
@@ -352,6 +401,8 @@ class _DataSet:
         """Flush the data set and release it."""
         self.gdDataset.FlushCache()
         setattr(self, 'gdDataset', None)
+        for p in self.dso.memPaths or []:
+            gdal.Unlink(p)
 
     def crs(self) -> Optional[gws.Crs]:
         """Get the CRS of the data set.
