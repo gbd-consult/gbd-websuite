@@ -74,3 +74,15 @@ class QfcProject(gws.Node):
         self.thumbnail = self.cfg('thumbnail') or ''
 
 
+def gp_field_name(name: str) -> str:
+    """GeoPackage column name for a model field name. ``fid`` is renamed to ``fid_gws``, because GDAL uses it internally."""
+    if name.lower() == 'fid':
+        return 'fid_gws'
+    return name
+
+
+def db_field_name(name: str) -> str:
+    """Model field name for a GeoPackage column name, the reverse of ``gp_field_name``."""
+    if name == 'fid_gws':
+        return 'fid'
+    return name

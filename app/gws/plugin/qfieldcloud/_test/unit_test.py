@@ -245,7 +245,7 @@ def _entry(action_, **kwargs):
 
 
 def _transform(xml: str, layer_map: dict) -> gws.XmlElement:
-    po = gws.Data(uid='TEST', caps=caps.Caps(layerMap=layer_map))
+    po = gws.Data(uid='TEST', layerMap=layer_map)
     root_el = gws.lib.xmlx.from_string(xml)
     packager.QgisXmlTransformer().run(po, root_el)
     return root_el
@@ -469,3 +469,224 @@ def test_transformer_adds_relative_paths_property():
     root_el = _transform('<qgis><layer-tree-group/></qgis>', {})
     assert root_el.textof('properties/Paths/Absolute') == 'false'
     assert root_el.require('properties/Paths/Absolute').get('type') == 'bool'
+
+
+def test_transformer_writes_layer_properties():
+    le = caps.LayerEntry(
+        action=caps.LayerAction.edit,
+        dataSource='./qm_a.gpkg|layername=qm_a',
+        dataProvider='ogr',
+        readOnly=True,
+        properties={
+            'QFieldSync/is_feature_addition_locked': True,
+            'QFieldSync/is_feature_deletion_locked': False,
+            'QFieldSync/is_geometry_locked': None,
+            'QFieldSync/sourceDataPrimaryKeys': 'id',
+        },
+    )
+    root_el = _transform(
+        """
+            <qgis>
+                <layer-tree-group>
+                    <layer-tree-layer id="A"/>
+                </layer-tree-group>
+                <projectlayers>
+                    <maplayer readOnly="0">
+                        <id>A</id><datasource>pg</datasource><provider>postgres</provider>
+                        <customproperties>
+                            <Option type="Map">
+                                <Option name="QFieldSync/attachment_naming" type="QString" value="{}"/>
+                                <Option name="QFieldSync/is_feature_addition_locked" type="bool" value="false"/>
+                                <Option name="QFieldSync/is_geometry_locked" type="bool" value="true"/>
+                            </Option>
+                        </customproperties>
+                    </maplayer>
+                </projectlayers>
+            </qgis>
+        """,
+        {'A': le},
+    )
+
+    el = root_el.require('.//maplayer')
+    assert el.get('readOnly') == '1'
+
+    opts = {o.get('name'): (o.get('type'), o.get('value')) for o in el.findall('customproperties/Option/Option')}
+    assert opts == {
+        'QFieldSync/attachment_naming': ('QString', '{}'),
+        'QFieldSync/is_feature_addition_locked': ('bool', 'true'),
+        'QFieldSync/is_feature_deletion_locked': ('bool', 'false'),
+        'QFieldSync/sourceDataPrimaryKeys': ('QString', 'id'),
+    }
+
+
+def test_transformer_adds_custom_properties():
+    le = caps.LayerEntry(
+        action=caps.LayerAction.edit,
+        dataSource='./qm_a.gpkg|layername=qm_a',
+        dataProvider='ogr',
+        readOnly=False,
+        properties={'QFieldSync/is_feature_addition_locked': True},
+    )
+    root_el = _transform(
+        """
+            <qgis>
+                <layer-tree-group>
+                    <layer-tree-layer id="A"/>
+                </layer-tree-group>
+                <projectlayers>
+                    <maplayer><id>A</id><datasource>pg</datasource><provider>postgres</provider></maplayer>
+                </projectlayers>
+            </qgis>
+        """,
+        {'A': le},
+    )
+
+    el = root_el.require('.//maplayer')
+    assert el.get('readOnly') == '0'
+    assert el.require('customproperties/Option').get('type') == 'Map'
+    opts = {o.get('name'): o.get('value') for o in el.findall('customproperties/Option/Option')}
+    assert opts == {'QFieldSync/is_feature_addition_locked': 'true'}
+
+
+##
+# packager.Object.layer_entry_for_user
+
+
+def _user(create=False, write=False, delete=False):
+    return gws.Data(
+        can_create=lambda obj: create,
+        can_write=lambda obj: write,
+        can_delete=lambda obj: delete,
+    )
+
+
+def _user_entry(user, is_editable=True, uid_name='id'):
+    model = gws.Data(isEditable=is_editable, uidName=uid_name)
+    le = caps.LayerEntry(
+        action=caps.LayerAction.edit,
+        qgisId='A',
+        modelEntry=caps.ModelEntry(model=model),
+    )
+    po = packager.Object()
+    po.user = user
+    return po.layer_entry_for_user(le)
+
+
+def _locks(le):
+    return {
+        name: le.properties[f'QFieldSync/is_{name}_locked']
+        for name in ('feature_addition', 'attribute_editing', 'geometry_editing', 'feature_deletion')
+    }
+
+
+def test_user_entry_all_allowed():
+    le = _user_entry(_user(create=True, write=True, delete=True))
+
+    assert le.readOnly is False
+    assert _locks(le) == {
+        'feature_addition': False,
+        'attribute_editing': False,
+        'geometry_editing': False,
+        'feature_deletion': False,
+    }
+
+
+def test_user_entry_write_only():
+    le = _user_entry(_user(write=True))
+
+    assert le.readOnly is False
+    assert _locks(le) == {
+        'feature_addition': True,
+        'attribute_editing': False,
+        'geometry_editing': False,
+        'feature_deletion': True,
+    }
+
+
+def test_user_entry_delete_only():
+    le = _user_entry(_user(delete=True))
+
+    assert le.readOnly is False
+    assert _locks(le) == {
+        'feature_addition': True,
+        'attribute_editing': True,
+        'geometry_editing': True,
+        'feature_deletion': False,
+    }
+
+
+def test_user_entry_nothing_allowed_is_read_only():
+    le = _user_entry(_user())
+
+    assert le.readOnly is True
+    assert all(_locks(le).values())
+
+
+def test_user_entry_non_editable_model_is_read_only():
+    le = _user_entry(_user(create=True, write=True, delete=True), is_editable=False)
+
+    assert le.readOnly is True
+    assert all(_locks(le).values())
+
+
+def test_user_entry_locks_geometry_if_geometry_field_is_not_writable():
+    geom_field = gws.Data(name='geom')
+    model = gws.Data(isEditable=True, uidName='id', geometryName='geom', field=lambda name: geom_field)
+    user = gws.Data(
+        can_create=lambda obj: True,
+        can_write=lambda obj: obj is not geom_field,
+        can_delete=lambda obj: True,
+    )
+    le = caps.LayerEntry(action=caps.LayerAction.edit, qgisId='A', modelEntry=caps.ModelEntry(model=model))
+    po = packager.Object()
+    po.user = user
+
+    le = po.layer_entry_for_user(le)
+
+    assert le.readOnly is False
+    assert _locks(le) == {
+        'feature_addition': False,
+        'attribute_editing': False,
+        'geometry_editing': True,
+        'feature_deletion': False,
+    }
+
+
+def test_user_entry_disables_lock_expressions_and_removes_deprecated_lock():
+    le = _user_entry(_user(create=True, write=True, delete=True))
+
+    for name in ('feature_addition', 'attribute_editing', 'geometry_editing', 'feature_deletion'):
+        assert le.properties[f'QFieldSync/is_{name}_locked_expression_active'] is False
+
+    assert le.properties['QFieldSync/is_geometry_locked'] is None
+    assert le.properties['QFieldSync/is_geometry_locked_expression_active'] is None
+    assert le.properties['QFieldSync/geometry_locked_expression'] is None
+
+
+def test_user_entry_source_primary_key():
+    assert _user_entry(_user(), uid_name='id').properties['QFieldSync/sourceDataPrimaryKeys'] == 'id'
+    assert _user_entry(_user(), uid_name='fid').properties['QFieldSync/sourceDataPrimaryKeys'] == 'fid_gws'
+    assert 'QFieldSync/sourceDataPrimaryKeys' not in _user_entry(_user(), uid_name='').properties
+
+
+def test_user_entry_is_a_copy():
+    le = caps.LayerEntry(
+        action=caps.LayerAction.edit,
+        qgisId='A',
+        modelEntry=caps.ModelEntry(model=gws.Data(isEditable=True, uidName='id')),
+    )
+    po = packager.Object()
+    po.user = _user()
+    le2 = po.layer_entry_for_user(le)
+
+    assert le2 is not le
+    assert le2.qgisId == 'A'
+    assert le.readOnly is None
+    assert le.properties is None
+
+
+def test_user_entry_other_actions_are_unchanged():
+    le = caps.LayerEntry(action=caps.LayerAction.baseMap, qgisId='A')
+    po = packager.Object()
+    po.user = _user()
+    assert po.layer_entry_for_user(le) is le

@@ -269,11 +269,7 @@ class Object:
         me = le.modelEntry
         pk_name = me.model.uidName
 
-        atts = dict(cc.newAtts)
-
-        # see notes in packager.py about fid/fid_gws
-        if 'fid_gws' in atts:
-            atts['fid'] = atts.pop('fid_gws')
+        atts = {core.db_field_name(k): v for k, v in cc.newAtts.items()}
 
         if cc.wkt:
             geom = me.model.geometryName
@@ -294,7 +290,7 @@ class Object:
 
         if cc.type == ChangeType.delete:
             mc = gws.ModelContext(op=gws.ModelOperation.delete, user=self.user, project=self.project)
-            pk = cc.oldAtts.get(pk_name, '')
+            pk = cc.oldAtts.get(core.gp_field_name(pk_name), '')
             feat = self.get_feature(me, pk)
             if not feat:
                 raise gws.Error(f'delete: not found: {pk=} {me.gpName=} {le.qgisId=}')
@@ -302,7 +298,7 @@ class Object:
             return
 
         if cc.type == ChangeType.patch:
-            pk = cc.oldAtts.get(pk_name, '')
+            pk = cc.oldAtts.get(core.gp_field_name(pk_name), '')
             feat = self.get_feature(me, pk)
             if not feat:
                 raise gws.Error(f'update: not found: {pk=} {me.gpName=} {le.qgisId=}')

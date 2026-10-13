@@ -3,6 +3,7 @@
 from typing import cast
 
 import gws
+import gws.lib.xmlx
 import gws.test.util as u
 
 from gws.plugin.qfieldcloud import action as action_mod, patcher
@@ -46,16 +47,37 @@ CONFIG = """
 """
 
 
+def _add_fid_layer(root_el: gws.XmlElement):
+    # a copy of poi_L1 for a table whose primary key is "fid"
+    for el in root_el.findall('layer-tree-group/layer-tree-layer'):
+        if el.get('id') == 'poi_L1':
+            xml = el.to_string().replace('poi_L1', 'fid_L10')
+            root_el.require('layer-tree-group').append(gws.lib.xmlx.from_string(xml))
+    for el in root_el.findall('projectlayers/maplayer'):
+        if el.textof('id') == 'poi_L1':
+            xml = el.to_string()
+            xml = xml.replace('poi_L1', 'fid_L10')
+            xml = xml.replace("key='id'", "key='fid'")
+            xml = xml.replace('"qfc"."poi"', '"qfc"."fid_pk"')
+            root_el.require('projectlayers').append(gws.lib.xmlx.from_string(xml))
+
+
 @u.fixture(scope='module')
 def root():
     tu.create_tables()
-    yield u.gws_root(CONFIG, QGS_PATH=repr(tu.qgs_path('patcher')), DB_PROVIDER=tu.db_provider_config())
+    u.pg.create('qfc.fid_pk', {
+        'fid': 'int primary key',
+        'name': 'text',
+        'geom': 'geometry(Point,3857)',
+    })
+    yield u.gws_root(CONFIG, QGS_PATH=repr(tu.qgs_path('patcher', _add_fid_layer)), DB_PROVIDER=tu.db_provider_config())
 
 
 @u.fixture(autouse=True)
 def clean():
     u.pg.insert('qfc.poi', [])
     u.pg.insert('qfc.note', [])
+    u.pg.insert('qfc.fid_pk', [])
     yield
 
 
@@ -160,6 +182,34 @@ def test_delete(root: gws.Root):
 
     assert ok is True
     assert _poi() == [(2, 'two', None)]
+
+
+def test_update_with_fid_primary_key(root: gws.Root):
+    u.pg.insert('qfc.fid_pk', [{'fid': 1, 'name': 'old'}])
+
+    ok = _apply(root, _change('patch', 'fid_L10', old={'fid_gws': 1, 'name': 'old'}, new={'name': 'updated'}))
+
+    assert ok is True
+    assert u.pg.rows('SELECT fid, name FROM qfc.fid_pk') == [(1, 'updated')]
+
+
+def test_delete_with_fid_primary_key(root: gws.Root):
+    u.pg.insert('qfc.fid_pk', [
+        {'fid': 1, 'name': 'one'},
+        {'fid': 2, 'name': 'two'},
+    ])
+
+    ok = _apply(root, _change('delete', 'fid_L10', old={'fid_gws': 1}))
+
+    assert ok is True
+    assert u.pg.rows('SELECT fid, name FROM qfc.fid_pk') == [(2, 'two')]
+
+
+def test_create_with_fid_primary_key(root: gws.Root):
+    ok = _apply(root, _change('create', 'fid_L10', new={'fid_gws': 5, 'name': 'new'}))
+
+    assert ok is True
+    assert u.pg.rows('SELECT fid, name FROM qfc.fid_pk') == [(5, 'new')]
 
 
 def test_several_changes_in_one_call(root: gws.Root):

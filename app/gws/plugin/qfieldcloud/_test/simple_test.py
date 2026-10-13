@@ -126,7 +126,6 @@ def test_offline_layers_use_the_created_models(root: gws.Root):
 
     # a fully locked layer is exported as well
     assert cs.layerMap['district_L2'].action == caps.LayerAction.edit
-    assert cs.layerMap['district_L2'].readOnly is True
 
 
 ##

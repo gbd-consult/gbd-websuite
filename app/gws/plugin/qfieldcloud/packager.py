@@ -70,6 +70,8 @@ class Object:
     """Packager arguments."""
     caps: caps_mod.Caps
     """Capabilities of the QField project."""
+    layerMap: dict[str, caps_mod.LayerEntry]
+    """Layer entries for the user, by QGIS layer id."""
 
     def create_package(self, root: gws.Root, args: Args):
         """Create a package.
@@ -87,6 +89,7 @@ class Object:
         self.project = self.args.project
         self.user = self.args.user
         self.caps = args.caps
+        self.layerMap = {uid: self.layer_entry_for_user(le) for uid, le in self.caps.layerMap.items()}
 
         if self.args.withData:
             self.write_data()
@@ -110,9 +113,56 @@ class Object:
             '1',
         )
 
+    def layer_entry_for_user(self, le: caps_mod.LayerEntry) -> caps_mod.LayerEntry:
+        """Create a copy of an ``edit`` layer entry with the read-only flag and custom properties for the user.
+
+        Operations the user may not perform on the model are locked in QField,
+        the lock settings of the QGIS project are replaced.
+        Geometry editing is also locked if the user may not write the geometry field.
+        If all operations are locked, the layer is read-only.
+
+        Args:
+            le: Layer entry.
+
+        Returns:
+            Layer entry for the user. Other layer entries are returned unchanged.
+        """
+        if le.action != caps_mod.LayerAction.edit:
+            return le
+
+        model = le.modelEntry.model
+        can_create = model.isEditable and self.user.can_create(model)
+        can_write = model.isEditable and self.user.can_write(model)
+        can_delete = model.isEditable and self.user.can_delete(model)
+        geom_field = model.field(model.geometryName) if model.geometryName else None
+        can_write_geom = can_write and (not geom_field or self.user.can_write(geom_field))
+
+        props = {
+            'QFieldSync/is_feature_addition_locked': not can_create,
+            'QFieldSync/is_feature_addition_locked_expression_active': False,
+            'QFieldSync/is_attribute_editing_locked': not can_write,
+            'QFieldSync/is_attribute_editing_locked_expression_active': False,
+            'QFieldSync/is_geometry_editing_locked': not can_write_geom,
+            'QFieldSync/is_geometry_editing_locked_expression_active': False,
+            'QFieldSync/is_feature_deletion_locked': not can_delete,
+            'QFieldSync/is_feature_deletion_locked_expression_active': False,
+            'QFieldSync/is_geometry_locked': None,
+            'QFieldSync/is_geometry_locked_expression_active': None,
+            'QFieldSync/geometry_locked_expression': None,
+        }
+
+        if model.uidName:
+            props['QFieldSync/sourceDataPrimaryKeys'] = core.gp_field_name(model.uidName)
+
+        return caps_mod.LayerEntry(
+            vars(le),
+            readOnly=not (can_create or can_write or can_delete),
+            properties=props,
+        )
+
     def write_data(self):
         """Write the features of each ``edit`` layer into a GeoPackage file."""
-        for le in self.caps.layerMap.values():
+        for le in self.layerMap.values():
             if le.action != caps_mod.LayerAction.edit:
                 continue
             if le.dataSourceFileName in self.pathMap:
@@ -125,7 +175,7 @@ class Object:
     def write_base_map(self):
         """Render all ``baseMap`` layers."""
         # @TODO options for flattened base maps
-        for le in self.caps.layerMap.values():
+        for le in self.layerMap.values():
             if le.action == caps_mod.LayerAction.baseMap:
                 self.write_base_map_layer(le)
 
@@ -179,7 +229,7 @@ class Object:
     def write_features(self, le: caps_mod.LayerEntry, ds: gws.lib.gdalx.VectorDataSet):
         """Write the features of a layer into a GeoPackage layer.
 
-        Only fields of simple types are written. A field named ``fid`` is written as ``fid_gws``, because GDAL uses ``fid`` internally.
+        Only fields of simple types that the user can read are written. A field named ``fid`` is written as ``fid_gws``, because GDAL uses ``fid`` internally.
 
         Args:
             le: Layer entry.
@@ -195,10 +245,9 @@ class Object:
         for f in me.model.fields:
             if f.attributeType not in self._SUPPORTED_ATTRIBUTE_TYPES:
                 continue
-            # FID field needs to be renamed, because GDAL uses it internally
-            name = f.name
-            if f.name.lower() == 'fid':
-                name = 'fid_gws'
+            if not self.user.can_read(f):
+                continue
+            name = core.gp_field_name(f.name)
             columns[name] = f.attributeType
             field_names[name] = f.name
 
@@ -393,7 +442,7 @@ class QgisXmlTransformer:
     def update_layer_tree(self):
         """Update the data source of layer tree entries, or mark them for removal."""
         for el in self.root.findall('.//layer-tree-layer'):
-            le = self.po.caps.layerMap.get(el.get('id'))
+            le = self.po.layerMap.get(el.get('id'))
             if not le:
                 continue
 
@@ -407,7 +456,7 @@ class QgisXmlTransformer:
     def update_map_layers(self):
         """Update the data source of map layers, or mark them for removal."""
         for el in self.root.findall('.//maplayer'):
-            le = self.po.caps.layerMap.get(el.textof('id'))
+            le = self.po.layerMap.get(el.textof('id'))
             if not le:
                 continue
 
@@ -418,24 +467,35 @@ class QgisXmlTransformer:
             el.require('datasource').text = le.dataSource
             el.require('provider').text = le.dataProvider
 
-            # @TODO do we need to change properties at all?
-            #
-            # if le.action == caps_mod.LayerAction.edit:
-            #     cp = el.find('customproperties')
-            #     if cp:
-            #         el.remove(cp)
-            #     opt = el.add('customproperties').add('Option', type='Map')
+            if le.action == caps_mod.LayerAction.edit:
+                el.set('readOnly', '1' if le.readOnly else '0')
+                self.update_custom_properties(el, le.properties or {})
 
-            #     opt.add('Option', type='QString', name='QFieldSync/action', value='offline')
-            #     opt.add('Option', type='QString', name='QFieldSync/attachment_naming', value='{}')
-            #     opt.add('Option', type='QString', name='QFieldSync/photo_naming', value='{}')
-            #     opt.add('Option', type='QString', name='QFieldSync/sourceDataPrimaryKeys', value='fid')
+    def update_custom_properties(self, layer_el: gws.XmlElement, props: dict):
+        """Set or remove custom properties of a map layer.
 
-            #     if le.action == caps_mod.LayerAction.edit:
-            #         if le.readOnly:
-            #             opt.add('Option', type='bool', name='QFieldSync/is_geometry_locked', value='true')
-            #         else:
-            #             opt.add('Option', type='bool', name='isOfflineEditable', value='true')
+        Args:
+            layer_el: Map layer element.
+            props: Property values by name, ``None`` removes the property.
+        """
+        cp = layer_el.find('customproperties')
+        if cp is None:
+            cp = layer_el.add('customproperties')
+        opt_map = cp.find('Option')
+        if opt_map is None:
+            opt_map = cp.add('Option', type='Map')
+
+        for opt in opt_map.findall('Option'):
+            if opt.get('name') in props:
+                opt_map.remove(opt)
+
+        for name, val in props.items():
+            if val is None:
+                continue
+            if isinstance(val, bool):
+                opt_map.add('Option', name=name, type='bool', value='true' if val else 'false')
+            else:
+                opt_map.add('Option', name=name, type='QString', value=str(val))
 
     def update_referenced_layers(self):
         """Update the data source in relations that reference ``edit`` layers."""
@@ -455,7 +515,7 @@ class QgisXmlTransformer:
 
             ref_id = el.get('referencedLayer')
 
-            le = self.po.caps.layerMap.get(ref_id)
+            le = self.po.layerMap.get(ref_id)
             if not le or le.action != caps_mod.LayerAction.edit:
                 gws.log.warning(f'{self.po.uid}: relation: referenced layer not found: {ref_id!r}')
                 continue
@@ -491,7 +551,7 @@ class QgisXmlTransformer:
             if not ref_id:
                 continue
 
-            le = self.po.caps.layerMap.get(ref_id)
+            le = self.po.layerMap.get(ref_id)
             if not le or le.action != caps_mod.LayerAction.edit:
                 gws.log.warning(f'{self.po.uid}: editWidget: referenced layer not found: {ref_id!r}')
                 continue

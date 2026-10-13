@@ -81,24 +81,8 @@ class LayerProps(gws.Data):
     """QFieldSync layer action."""
     attachment_naming: dict
     """Naming rules for attachments."""
-    attribute_editing_locked_expression: str
-    """Expression that locks attribute editing."""
     cloud_action: str
     """Cloud action: ``offline``, ``no_action`` or ``remove``."""
-    feature_addition_locked_expression: str
-    """Expression that locks feature addition."""
-    feature_deletion_locked_expression: str
-    """Expression that locks feature deletion."""
-    geometry_editing_locked_expression: str
-    """Expression that locks geometry editing."""
-    is_attribute_editing_locked: bool
-    """Whether attribute editing is locked."""
-    is_feature_addition_locked: bool
-    """Whether feature addition is locked."""
-    is_feature_deletion_locked: bool
-    """Whether feature deletion is locked."""
-    is_geometry_editing_locked: bool
-    """Whether geometry editing is locked."""
     photo_naming: dict
     """Naming rules for photos."""
     relationship_maximum_visible: dict
@@ -147,7 +131,9 @@ class LayerEntry(gws.Data):
     modelEntry: ModelEntry
     """Model entry, for ``edit`` layers."""
     readOnly: bool
-    """Whether all editing is locked in QFieldSync."""
+    """Whether the layer is read-only in the packaged project."""
+    properties: dict
+    """Custom properties to set in the packaged project, ``None`` values remove the property."""
     sqlFilter: str
     """SQL filter (subset string) of the layer."""
     dataSourceFileName: str
@@ -384,13 +370,6 @@ class Parser:
         Returns:
             Layer entry.
         """
-        read_only = (
-            props.is_attribute_editing_locked
-            and props.is_geometry_editing_locked
-            and props.is_feature_addition_locked
-            and props.is_feature_deletion_locked
-        )
-
         table_name = sl.dataSource.get('table')
         if not table_name or table_name.startswith('(') or table_name.upper().startswith('SELECT '):
             gws.log.warning(f'layer {sl.sourceId!r}: no table name')
@@ -398,7 +377,6 @@ class Parser:
 
         return LayerEntry(
             action=LayerAction.edit,
-            readOnly=read_only,
             sqlFilter=sl.dataSource.get('sql', ''),
             props=props,
         )
@@ -468,7 +446,7 @@ class Parser:
     def create_model_entry_for_layer(self, le: LayerEntry):
         """Assign a model entry to an ``edit`` layer.
 
-        If no model is found, or the layer is editable but the model is not, the layer gets the ``remove`` action.
+        If no model is found, the layer gets the ``remove`` action.
 
         Args:
             le: Layer entry.
@@ -478,10 +456,6 @@ class Parser:
         me = self.model_entry_for_source_layer(le.sourceLayer)
         if not me:
             gws.log.warning(f'layer {le.qgisId!r}: no model')
-            le.action = LayerAction.remove
-            return
-        if not le.readOnly and not me.model.isEditable:
-            gws.log.warning(f'layer {le.qgisId!r}: table {me.tableName!r} is not editable')
             le.action = LayerAction.remove
             return
         le.modelEntry = me

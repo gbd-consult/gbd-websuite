@@ -5,6 +5,7 @@ from typing import cast
 import os
 
 import gws
+import gws.base.auth.user
 import gws.lib.gdalx
 import gws.lib.jsonx
 import gws.lib.xmlx
@@ -36,7 +37,7 @@ CONFIG = """
                     permissions.edit "allow all"
                     fields+ { name "id"          type "integer" }
                     fields+ { name "name"        type "text" }
-                    fields+ { name "district_id" type "integer" }
+                    fields+ { name "district_id" type "integer" permissions.read "allow role_1, deny all" }
                     fields+ { name "geom"        type "geometry" }
                     fields+ {
                         type "file"
@@ -151,6 +152,23 @@ def test_write_data_renames_the_fid_column(root: gws.Root, tmp_path):
     assert fids == [111, 222]
 
 
+def test_write_data_skips_unreadable_fields(root: gws.Root, tmp_path):
+    u.pg.insert('qfc.poi', _poi_rows())
+
+    user = gws.base.auth.user.AuthorizedUser(None, roles=[gws.c.ROLE_ALL, gws.c.ROLE_USER])
+    _package(root, tmp_path, withData=True, user=user)
+
+    with gws.lib.gdalx.open_vector(str(tmp_path / 'qm_qfc_poi.gpkg')) as ds:
+        la = ds.require_layer('qm_qfc_poi')
+        desc = la.describe()
+        recs = la.get_all()
+
+    # district_id can be read by role_1 only
+    assert 'district_id' not in desc.columnMap
+    assert 'name' in desc.columnMap
+    assert len(recs) == 3
+
+
 def test_write_data_writes_each_table_once(root: gws.Root, tmp_path):
     u.pg.insert('qfc.poi', _poi_rows())
 
@@ -221,6 +239,21 @@ def test_write_qgis_project(root: gws.Root, tmp_path):
             assert el.textof('provider') == 'ogr'
 
     assert root_el.textof('properties/Paths/Absolute') == 'false'
+
+
+def test_write_qgis_project_replaces_qgis_locks(root: gws.Root, tmp_path):
+    _package(root, tmp_path, withQgis=True)
+
+    root_el = gws.lib.xmlx.from_path(str(tmp_path / 'QFC_1.qgs'))
+    el = next(el for el in root_el.findall('.//maplayer') if el.textof('id') == 'district_L2')
+
+    # district_L2 is fully locked in the QGIS project, the system user may do everything
+    opts = {o.get('name'): o.get('value') for o in el.findall('customproperties/Option/Option')}
+    assert opts['QFieldSync/is_feature_addition_locked'] == 'false'
+    assert opts['QFieldSync/is_attribute_editing_locked'] == 'false'
+    assert opts['QFieldSync/is_geometry_editing_locked'] == 'false'
+    assert opts['QFieldSync/is_feature_deletion_locked'] == 'false'
+    assert el.get('readOnly') == '0'
 
 
 def test_write_qgis_project_keeps_the_source(root: gws.Root, tmp_path):

@@ -55,7 +55,6 @@ def test_offline_postgres_layer(root: gws.Root):
     le = cs.layerMap['poi_L1']
 
     assert le.action == caps.LayerAction.edit
-    assert le.readOnly is not True
     assert le.modelEntry.gpName == 'qm_qfc_poi'
     assert le.modelEntry.tableName == 'qfc.poi'
 
@@ -66,12 +65,9 @@ def test_layers_sharing_a_table_share_a_model(root: gws.Root):
     assert cs.layerMap['basemap_L9'].action == caps.LayerAction.baseMap
 
 
-def test_locked_layer_is_read_only(root: gws.Root):
+def test_locked_layer_is_exported(root: gws.Root):
     cs = _caps(root)
-    le = cs.layerMap['district_L2']
-
-    assert le.action == caps.LayerAction.edit
-    assert le.readOnly is True
+    assert cs.layerMap['district_L2'].action == caps.LayerAction.edit
 
 
 def test_sql_filter_is_extracted(root: gws.Root):
@@ -207,25 +203,13 @@ def test_configured_model_is_used():
     assert le.modelEntry.model.uid == 'MODEL_POI'
 
 
-def test_read_only_layer_may_use_a_non_editable_model():
+def test_layer_may_use_a_non_editable_model():
     root = _root(tu.qgs_path('caps_models'), _CONFIGURED_MODELS)
     cs = _caps(root)
 
-    # district_L2 is fully locked, so a non-editable model is acceptable
     le = cs.layerMap['district_L2']
     assert le.action == caps.LayerAction.edit
     assert le.modelEntry.model.uid == 'MODEL_DISTRICT'
-
-
-def test_writable_layer_with_a_non_editable_model_is_removed():
-    def patch(root_el):
-        for name in ('is_attribute_editing_locked', 'is_feature_addition_locked', 'is_feature_deletion_locked', 'is_geometry_editing_locked'):
-            tu.set_layer_prop(root_el, 'district_L2', name, 'false', 'bool')
-
-    root = _root(tu.qgs_path('caps_unlocked', patch), _CONFIGURED_MODELS)
-    cs = _caps(root)
-
-    assert cs.layerMap['district_L2'].action == caps.LayerAction.remove
 
 
 ##
