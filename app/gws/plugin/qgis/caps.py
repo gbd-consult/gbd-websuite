@@ -334,6 +334,7 @@ def _map_layer(layer_el: gws.XmlElement, caps: Caps, use_layer_ids: bool) -> gws
     sl.dataSource = _map_layer_datasource(layer_el)
     sl.opacity = _parse_float(layer_el.textof('layerOpacity') or '1')
     sl.isQueryable = layer_el.textof('flags/Identifiable') == '1'
+    sl.isReadOnly = layer_el.get('readOnly') == '1'
     sl.properties = _parse_properties(layer_el.find('customproperties'))
 
     uid = layer_el.textof('id')

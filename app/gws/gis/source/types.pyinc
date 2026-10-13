@@ -43,6 +43,8 @@ class SourceLayer(Data):
     """The layer can be rendered as an image."""
     isQueryable: bool
     """The layer can be queried for features."""
+    isReadOnly: bool
+    """The layer has the readOnly flag set."""
     isVisible: bool
     """The layer is visible by default."""
 
