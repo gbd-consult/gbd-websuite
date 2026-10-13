@@ -38,8 +38,8 @@ class Args(gws.Data):
     """User the package is created for."""
     packageDir: str
     """Directory to write the package into."""
-    mapCacheDir: str
-    """Directory for cached base map images."""
+    cacheDir: str
+    """Directory for cached base maps and ``syncFiles`` content."""
     withBaseMap: bool
     """Render base maps."""
     withData: bool
@@ -323,7 +323,7 @@ class Object:
         if not file_fields:
             return
 
-        cache_dir = gws.u.ensure_dir(f'{self.args.mapCacheDir}/files_{me.gpName}')
+        cache_dir = gws.u.ensure_dir(f'{self.args.cacheDir}/files_{me.gpName}')
         pending = {}
         pending_uids = set()
 
@@ -414,13 +414,13 @@ class Object:
             gws.log.warning(f'{self.uid}: write_base_map_layer: invalid zoom level {max_zoom=}')
             max_zoom = 20
 
-        cache_path = f'{self.args.mapCacheDir}/{max_zoom}_{le.dataSourceFileName}'
+        cache_path = f'{self.args.cacheDir}/{max_zoom}_{le.dataSourceFileName}'
         age = osx.file_age(cache_path)
         ttl = self.qfcProject.mapCacheLifeTime
-        gws.log.debug(f'{self.uid}: write_base_map_layer: {le.qgisId}: {cache_path=} {ttl=}/{age=}')
+        cache_ok = ttl > 0 and (0 < age < ttl)
+        gws.log.debug(f'{self.uid}: write_base_map_layer: {le.qgisId}: {cache_path=} {ttl=}/{age=} {cache_ok=}')
 
-        if ttl > 0 and (0 < age < ttl):
-            gws.log.debug(f'{self.uid}: write_base_map_layer: CACHED!')
+        if cache_ok:
             self.pathMap[le.dataSourceFileName] = cache_path
             return
 
@@ -430,9 +430,12 @@ class Object:
         resolution = gws.lib.grid.resolution_for_level(gws.lib.grid.for_crs(bounds.crs), max_zoom)
 
         w, h = gws.lib.extent.size(bounds.extent)
-        px_size = (w / resolution, h / resolution, gws.Uom.px)
+        px_size = (gws.u.to_rounded_int(w / resolution), gws.u.to_rounded_int(h / resolution), gws.Uom.px)
 
         gws.log.debug(f'{self.uid}: write_base_map_layer: {max_zoom=} {resolution=} {px_size=} {bounds=}')
+
+        if px_size[0] * px_size[1] > gws.lib.image.MAX_PIXELS:
+            raise gws.Error(f'{self.uid}: write_base_map_layer: base map too large: {px_size[0]}x{px_size[1]} at zoom {max_zoom}')
 
         flat_layer = cast(
             gws.Layer,
@@ -462,10 +465,11 @@ class Object:
             view=mv,
         )
 
-        lro = gws.u.require(flat_layer.render(lri))
-        img = gws.lib.image.from_bytes(lro.content).convert('RGBA')
-
-        with gws.lib.gdalx.open_from_image(img, bounds) as src:
+        lro = flat_layer.render(lri)
+        if not lro:
+            raise gws.Error(f'{self.uid}: write_base_map_layer: failed to render layer {flat_layer.uid}')
+        
+        with gws.lib.gdalx.open_from_bytes(lro.content, bounds) as src:
             src.save_as(cache_path)
 
         self.pathMap[le.dataSourceFileName] = cache_path

@@ -148,7 +148,7 @@ def test_the_package_contains_the_data(root: gws.Root, tmp_path):
         project=root.app.project('PROJECT_1'),
         user=root.app.authMgr.systemUser,
         packageDir=str(tmp_path),
-        mapCacheDir=gws.u.ensure_dir(str(tmp_path) + '/cache'),
+        cacheDir=gws.u.ensure_dir(str(tmp_path) + '/cache'),
         withBaseMap=False,
         withData=True,
         withMedia=False,

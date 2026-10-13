@@ -59,7 +59,7 @@ def _render(root, cache_dir):
         project=root.app.project('PROJECT_1'),
         user=root.app.authMgr.systemUser,
         packageDir=str(cache_dir),
-        mapCacheDir=gws.u.ensure_dir(str(cache_dir) + '/cache'),
+        cacheDir=gws.u.ensure_dir(str(cache_dir) + '/cache'),
         withBaseMap=True,
         withData=False,
         withMedia=False,

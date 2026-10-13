@@ -73,7 +73,7 @@ def _package(root, out_dir, **args) -> packager.Args:
         project=root.app.project('PROJECT_1'),
         user=root.app.authMgr.systemUser,
         packageDir=str(out_dir),
-        mapCacheDir=gws.u.ensure_dir(str(out_dir) + '/cache'),
+        cacheDir=gws.u.ensure_dir(str(out_dir) + '/cache'),
         withBaseMap=False,
         withData=False,
         withMedia=False,

@@ -80,7 +80,7 @@ def _package(root, out_dir, **args) -> packager.Object:
         project=root.app.project('PROJECT_1'),
         user=root.app.authMgr.systemUser,
         packageDir=str(out_dir),
-        mapCacheDir=gws.u.ensure_dir(str(out_dir) + '/cache'),
+        cacheDir=gws.u.ensure_dir(str(out_dir) + '/cache'),
         withBaseMap=False,
         withData=True,
         withMedia=False,
@@ -201,16 +201,16 @@ def test_cached_files_are_reused_while_the_size_matches(tmp_path):
     path = f'{cache_dir}/files_qm_qfc_poi/DCIM_file_1.jpg'
 
     _insert_pois([('DCIM/file_1.jpg', b'content_1')])
-    _package(root, tmp_path / 'package_1', mapCacheDir=cache_dir)
+    _package(root, tmp_path / 'package_1', cacheDir=cache_dir)
     assert gws.u.read_file_b(path) == b'content_1'
 
     _insert_pois([('DCIM/file_1.jpg', b'content_2')])
-    po = _package(root, tmp_path / 'package_2', mapCacheDir=cache_dir)
+    po = _package(root, tmp_path / 'package_2', cacheDir=cache_dir)
     assert po.pathMap['DCIM/file_1.jpg'] == path
     assert gws.u.read_file_b(path) == b'content_1'
 
     _insert_pois([('DCIM/file_1.jpg', b'content_33')])
-    po = _package(root, tmp_path / 'package_3', mapCacheDir=cache_dir)
+    po = _package(root, tmp_path / 'package_3', cacheDir=cache_dir)
     assert po.pathMap['DCIM/file_1.jpg'] == path
     assert gws.u.read_file_b(path) == b'content_33'
 
