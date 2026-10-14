@@ -3,20 +3,23 @@
 Defines constants for the MIME types used in the application (``PNG``, ``JSON``, ``GML3``
 and so on) and functions to normalize MIME types and to map them to and from file extensions.
 
-``get`` accepts a MIME type, a content type with parameters, a known alias (e.g.
-``application/vnd.ogc.gml`` or ``image/jpg``) or a file extension, and returns a normalized
-MIME type. Lookups that are not covered by the built-in tables fall back to the standard
-``mimetypes`` module.
+All MIME types in the application go through ``get``. It accepts a MIME type in any spelling
+(case, spaces, quoted parameter values), a content type with parameters, a known alias (e.g.
+``application/vnd.ogc.gml`` or ``image/png8``) or a file extension, and returns the normalized
+MIME type with its parameters: lower case, ``"; "`` between parameters, known types and aliases
+mapped to the constants of this module (``application/gml+xml; version=3``). ``get_base`` returns
+it without parameters. Lookups that are not covered by the built-in tables fall back to the
+standard ``mimetypes`` module; unknown MIME types give an empty string.
 
 Example::
 
-    gws.lib.mime.get('image/jpg')                   # 'image/jpeg'
-    gws.lib.mime.get('png')                         # 'image/png'
-    gws.lib.mime.for_path('/data/report.pdf')       # 'application/pdf'
-    gws.lib.mime.extension_for(gws.lib.mime.JPEG)   # 'jpeg'
+    gws.lib.mime.get('image/jpg')  # 'image/jpeg'
+    gws.lib.mime.get('png')  # 'image/png'
+    gws.lib.mime.get('image/png8')  # 'image/png; mode=8bit'
+    gws.lib.mime.get_base('image/png8')  # 'image/png'
+    gws.lib.mime.for_path('/data/report.pdf')  # 'application/pdf'
+    gws.lib.mime.extension_for(gws.lib.mime.JPEG)  # 'jpeg'
 """
-
-from typing import Optional
 
 import mimetypes
 
@@ -25,82 +28,74 @@ CSS = 'text/css'
 CSV = 'text/csv'
 DOC = 'application/msword'
 DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+FORM = 'application/x-www-form-urlencoded'
 GEOJSON = 'application/geo+json'
 GIF = 'image/gif'
 GML = 'application/gml+xml'
-GML2 = 'application/gml+xml;version=2'
-GML3 = 'application/gml+xml;version=3'
+GML2 = 'application/gml+xml; version=2'
+GML3 = 'application/gml+xml; version=3'
+GML32 = 'application/gml+xml; version=3.2'
+GPKG = 'application/geopackage+sqlite3'
 GZIP = 'application/gzip'
 HTML = 'text/html'
 JPEG = 'image/jpeg'
-JS = 'application/javascript'
+JPEG2000 = 'image/jp2'
+JS = 'text/javascript'
 JSON = 'application/json'
 KML = 'application/vnd.google-earth.kml+xml'
+KMZ = 'application/vnd.google-earth.kmz'
+MSGPACK = 'application/msgpack'
+MULTIPART = 'multipart/form-data'
+MVT = 'application/vnd.mapbox-vector-tile'
 PDF = 'application/pdf'
 PNG = 'image/png'
+PNG8 = 'image/png; mode=8bit'
+PNG24 = 'image/png; mode=32bit'
 PPT = 'application/vnd.ms-powerpoint'
 PPTX = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
 SVG = 'image/svg+xml'
-TTF = 'application/x-font-ttf'
+TIFF = 'image/tiff'
+TTF = 'font/ttf'
 TXT = 'text/plain'
 WEBP = 'image/webp'
+WOFF2 = 'font/woff2'
 XLS = 'application/vnd.ms-excel'
 XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 XML = 'text/xml'
 ZIP = 'application/zip'
 
 
-_common = {
-    BIN,
-    CSS,
-    CSV,
-    DOC,
-    DOCX,
-    GEOJSON,
-    GIF,
-    GML,
-    GML2,
-    GML3,
-    GZIP,
-    HTML,
-    JPEG,
-    JS,
-    JSON,
-    KML,
-    PDF,
-    PNG,
-    PPT,
-    PPTX,
-    SVG,
-    TTF,
-    TXT,
-    XLS,
-    XLSX,
-    XML,
-    ZIP,
-}
+_common = {globals()[k] for k in list(globals()) if k.isupper()}
 
 _common_extensions = {
     'css': CSS,
     'csv': CSV,
     'doc': DOC,
     'docx': DOCX,
+    'geojson': GEOJSON,
     'gif': GIF,
     'gml': GML,
     'gml2': GML2,
+    'gpkg': GPKG,
     'html': HTML,
     'jpeg': JPEG,
     'jpg': JPEG,
     'js': JS,
     'json': JSON,
     'kml': KML,
+    'kmz': KMZ,
+    'mvt': MVT,
     'pdf': PDF,
     'png': PNG,
     'ppt': PPT,
     'pptx': PPTX,
     'svg': SVG,
+    'tif': TIFF,
+    'tiff': TIFF,
     'ttf': TTF,
     'txt': TXT,
+    'webp': WEBP,
+    'woff2': WOFF2,
     'xls': XLS,
     'xlsx': XLSX,
     'xml': XML,
@@ -108,54 +103,118 @@ _common_extensions = {
 }
 
 _aliases = {
-    'application/vnd.ogc.gml': GML2,
-    'application/vnd.ogc.gml/3.1.1': GML,
     'application/gml:3': GML,
-    'application/xml;subtype=gml/2': GML2,
-    'application/xml;subtype=gml/3': GML,
     'application/html': HTML,
+    'application/javascript': JS,
+    'application/json; subtype=geojson': GEOJSON,
+    'application/vnd.geo+json': GEOJSON,
+    'application/vnd.ogc.csw_xml': XML,
+    'application/vnd.ogc.gml': GML2,
+    'application/vnd.ogc.gml/3.1.1': GML3,
+    'application/vnd.ogc.se_xml': XML,
+    'application/vnd.ogc.wms_xml': XML,
+    'application/x-font-ttf': TTF,
     'application/x-gzip': GZIP,
     'application/x-pdf': PDF,
-    'image/jpg': JPEG,
-    'text/xhtml': HTML,
+    'application/x-protobuf': MVT,
     'application/xml': XML,
+    'application/xml; subtype=gml/2': GML2,
+    'application/xml; subtype=gml/3': GML,
+    'application/xml; subtype=gml/3.1.1': GML3,
+    'image/geotiff': TIFF,
+    'image/jpg': JPEG,
+    'image/png32': PNG24,
+    'image/png8': PNG8,
+    'image/svg': SVG,
+    'text/xhtml': HTML,
+    'text/xml; subtype=gml/3.1.1': GML3,
 }
 
 
-def get(mt: str) -> Optional[str]:
-    """Return the normalized MIME type.
+def get(mt: str) -> str:
+    """Return the normalized MIME type, keeping its parameters.
+
+    Known types and aliases are mapped to the constants of this module (``image/png8`` to ``PNG8``).
+    Other parameters are kept: ``text/html;Charset=utf-8`` gives ``text/html; charset=utf-8``.
 
     Args:
-        mt: MIME type, content type, alias or file extension. Case and spaces are ignored.
+        mt: MIME type in any spelling, content type, alias or file extension.
 
     Returns:
-        The normalized MIME type, or ``None`` if it is unknown.
+        The normalized MIME type, or an empty string if it is unknown.
     """
 
     if not mt:
-        return None
-
-    mt = mt.strip().replace(' ', '').lower()
+        return ''
 
     s = _get_quick(mt)
     if s:
         return s
 
-    for s, m in _aliases.items():
-        if mt.startswith(s):
-            return m
+    mt = _normalize(mt)
 
-    if ';' in mt:
-        p = mt.partition(';')
-        s = _get_quick(p[0].strip())
+    s = _get_quick(mt)
+    if s:
+        return s
+
+    base, sep, params = mt.partition('; ')
+
+    if sep:
+        s = _get_quick(base)
         if s:
-            return s
+            return s if ';' in s else s + '; ' + params
+        if mimetypes.guess_extension(base):
+            return mt
+        return ''
 
     if '/' in mt and mimetypes.guess_extension(mt):
         return mt
 
     t, _ = mimetypes.guess_type('x.' + mt)
-    return t
+    if t:
+        return t
+
+    return ''
+
+
+def get_base(mt: str) -> str:
+    """Return the normalized MIME type without parameters.
+
+    Parameters are removed before and after the lookup, so that unknown parameters
+    do not make a known type unknown.
+
+    Example::
+
+        get_base('image/png8')  # 'image/png'
+        get_base('application/vnd.ogc.gml')  # 'application/gml+xml'
+
+    Args:
+        mt: MIME type in any spelling, content type, alias or file extension.
+
+    Returns:
+        The normalized MIME type without parameters, or an empty string if it is unknown.
+    """
+
+    b = mt.split(';')[0]
+    b = get(b.strip())
+    return b.split(';')[0]
+
+
+def _normalize(mt: str) -> str:
+    """Spell a MIME type canonically (RFC 9110, 8.3.1): lower-case names, no quotes, ``"; "`` between parameters."""
+
+    parts = mt.split(';')
+    res = [parts[0].replace(' ', '').lower()]
+    for p in parts[1:]:
+        name, _, value = p.partition('=')
+        name = name.strip().lower()
+        if not name:
+            continue
+        value = value.strip()
+        if len(value) >= 2 and value[0] == '"' and value[-1] == '"':
+            value = value[1:-1]
+        res.append(f'{name}={value}')
+    return '; '.join(res)
 
 
 def _get_quick(mt):

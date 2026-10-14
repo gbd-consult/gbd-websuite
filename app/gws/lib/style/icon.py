@@ -105,15 +105,12 @@ def _get_bytes(val, opts) -> Optional[bytes]:
         raise Error('file error', val) from exc
 
 
-_SVG_MIME_TYPES = {'image/svg+xml', 'image/svg'}
-
-
 def _decode_data_url(val) -> Optional[bytes]:
     try:
         mime_type, content = gws.lib.text.parse_data_url(val)
     except gws.lib.text.Error as exc:
         raise Error('decode error', val) from exc
-    if mime_type in _SVG_MIME_TYPES:
+    if gws.lib.mime.get_base(mime_type) == gws.lib.mime.SVG:
         return content
 
 
