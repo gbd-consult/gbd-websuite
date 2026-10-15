@@ -64,10 +64,10 @@ Jede Webseite erhält zwei Regeln, die auf die mitgelieferten Startseiten führe
 | `^/_/webPage/name/home$` | `/` | `true` |
 | `^/_/webPage/name/project/projectUid/([a-z0-9_-]+)` | `/project/$1` | `true` |
 
-Diese Regeln werden **vor** Ihre eigenen einsortiert und gewinnen damit gegen sie. Ob eine Standardregel bereits vorhanden ist, prüft die WebSuite über einen **zeichengenauen Vergleich des Musters** — nicht darüber, ob Ihre Regel dieselben Adressen abdeckt.
+Diese Regeln werden **hinter** Ihre eigenen angehängt und greifen nur, wo keine Ihrer Regeln passt, in beiden Richtungen. Eine eigene Regel für `/project/…` geht der Standardregel also vor. Eine Standardregel, deren Muster zeichengleich bereits in Ihren Regeln steht, fügt die WebSuite nicht noch einmal hinzu.
 
 %warn
-Ein Muster, das dasselbe leistet, aber anders geschrieben ist, verhindert die Standardregel **nicht**. `^/project/([a-z0-9_.-]+)` unterscheidet sich als Zeichenkette von `^/project/([a-z0-9_-]+)(?=/@|$)`; die Standardregel wird zusätzlich eingefügt, steht davor und beantwortet die Anfrage. Das Symptom ist eine Projektseite, die unerwartet die eingebaute Vorlage zeigt statt Ihrer eigenen. Entweder übernehmen Sie das Muster zeichengleich, oder Sie schalten die Standardregeln ab.
+Eine eigene Regel mit sehr allgemeinem Muster, etwa `^/(.*)`, fängt auch die Startseite und die Projektseiten ab, bevor die Standardregeln zum Zug kommen.
 %end
 
 Mit `withDefaultRewriteRules false` unterbleibt das Hinzufügen vollständig — der richtige Weg, wenn Sie eine Konfiguration aus einer älteren Version übernehmen, deren Adressen bereits vollständig von Hand gesetzt sind.
