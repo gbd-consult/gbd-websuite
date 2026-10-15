@@ -173,7 +173,7 @@ class Object(gws.WebSite):
             patterns = set(r.pattern for r in self.rewriteRules)
             for c in DEFAULT_REWRITE_RULES:
                 if c.pattern not in patterns:
-                    self.rewriteRules.insert(0, c)
+                    self.rewriteRules.append(c)
 
     def url_for(self, req, path, mode, **params):
         if gws.lib.net.is_abs_url(path):
