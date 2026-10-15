@@ -23,6 +23,16 @@ print(json.dumps(dict(
 '''
 
 
+class _Handler(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, *args):
+        pass
+
+
+class _Server(http.server.HTTPServer):
+    def handle_error(self, request, client_address):
+        pass
+
+
 @u.fixture(scope='module')
 def ca(tmp_path_factory):
     d = tmp_path_factory.mktemp('ca')
@@ -39,8 +49,8 @@ def ca(tmp_path_factory):
 
     ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     ctx.load_cert_chain(f'{d}/srv.pem', f'{d}/srv.key')
-    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(d))
-    srv = http.server.HTTPServer(('localhost', 0), handler)
+    handler = functools.partial(_Handler, directory=str(d))
+    srv = _Server(('localhost', 0), handler)
     srv.socket = ctx.wrap_socket(srv.socket, server_side=True)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
 
