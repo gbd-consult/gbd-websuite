@@ -23,7 +23,7 @@ import gws.lib.font
 import gws.server.manager
 import gws.server.monitor
 
-DEFAULT_LOCALE = ['en_CA']
+DEFAULT_LOCALE = ['de_DE']
 
 DEFAULT_TEMPLATE_SUBJECTS = [
     'application.home',

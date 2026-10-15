@@ -5,7 +5,7 @@ locale-aware formatters for dates, times and numbers.
 
 ``locale`` finds a locale by a language or locale name (``de`` or ``de_DE``), optionally
 restricted to a list of allowed locale uids, and falls back to the first allowed locale
-or to the default locale ``en_CA`` (English with metric units). ``formatters`` returns a
+or to the default locale ``de_DE``. ``formatters`` returns a
 ``DateFormatter``, ``TimeFormatter`` and ``NumberFormatter`` for a locale. Locales and
 formatters are cached per application.
 
@@ -25,14 +25,14 @@ import pycountry
 import gws
 import gws.lib.datetimex
 
-_DEFAULT_UID = 'en_CA'  # English with metric units
+_DEFAULT_UID = 'de_DE'
 
 
 # NB in the following code, `name` is a locale or language name (`de` or `de_DE`), `uid` is strictly a uid (`de_DE`)
 
 
 def default_locale():
-    """Return the default locale ``en_CA``.
+    """Return the default locale ``de_DE``.
 
     Returns:
         A Locale object.
