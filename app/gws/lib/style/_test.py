@@ -46,7 +46,7 @@ _test_against_dict = {
     'stroke_miterlimit': 0,
     'stroke_width': 0,
     'with_geometry': 'all',
-    'with_label': 'all',
+    'with_label': 'none',
 }
 
 _values = {'fill': None,
@@ -65,7 +65,7 @@ _values = {'fill': None,
            'marker_stroke_miterlimit': 0,
            'marker_stroke_width': 0,
            'with_geometry': 'all',
-           'with_label': 'all',
+           'with_label': 'none',
            'label_align': 'center',
            'label_font_family': 'sans-serif',
            'label_font_size': 12,

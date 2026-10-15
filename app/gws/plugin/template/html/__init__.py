@@ -40,7 +40,7 @@ map, or of the given layers::
 
     @legend (
         number="<optional, index of the map, 0 by default>"
-        layers="<optional, space separated list of layer UIDs>"
+        layers="<optional, comma separated list of layer UIDs>"
     )
 
 The ``@header`` and ``@footer`` block commands, which define headers and

@@ -167,8 +167,7 @@ class Object(gws.OwsService):
         """
 
         self.metadata = gws.base.metadata.from_args(
-            self.project.metadata if self.project else None,
-            self.root.app.metadata,
+            self.project.metadata if self.project else self.root.app.metadata,
             self.cfg('metadata'),
         )
         return True

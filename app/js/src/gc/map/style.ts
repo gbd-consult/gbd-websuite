@@ -18,6 +18,7 @@ export const DEFAULT_VALUES: types.Dict = {
     label_min_scale: 0,
     label_placement: 'middle',
     label_stroke_linejoin: 'round',
+    point_size: 10,
 };
 
 
@@ -297,7 +298,7 @@ export class Style extends BaseStyle {
 
                 if (sv.point_size) {
                     this.cache.pointImage = new ol.style.Circle(compact({
-                        fill, stroke, radius: this.values.point_size >> 1
+                        fill, stroke, radius: sv.point_size >> 1
                     }))
                 }
             }

@@ -114,7 +114,7 @@ _DEFAULTS: dict = dict(
     marker_stroke_width=0,
 
     with_geometry='all',
-    with_label='all',
+    with_label='none',
 
     label_align='center',
     label_font_family='sans-serif',

@@ -101,7 +101,7 @@ class Object(gws.Node):
         return rs
 
     def _transform(self, recs, instance_name):
-        """Add uids and point geometries to records, skipping duplicate uids."""
+        """Add uids and point geometries to records, skipping records without coordinates or ``ObjectID`` and duplicate uids."""
 
         recs2 = []
         points = set()
@@ -109,6 +109,10 @@ class Object(gws.Node):
 
         for rec in recs:
             if 'X' not in rec or 'Y' not in rec:
+                continue
+
+            if 'ObjectID' not in rec:
+                gws.log.warning(f'record without ObjectID ignored in {instance_name=}')
                 continue
 
             xy = self._free_point(

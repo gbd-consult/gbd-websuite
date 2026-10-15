@@ -10,7 +10,7 @@ class Config(gws.Config):
     secure: bool = True
     """Accept credentials only over HTTPS."""
     allowInsecureFrom: Optional[list[str]]
-    """IP addresses allowed to use this method without HTTPS."""
+    """IP addresses allowed to use this method without HTTPS. Not supported by the ``web`` method."""
 
 
 class Object(gws.AuthMethod):
