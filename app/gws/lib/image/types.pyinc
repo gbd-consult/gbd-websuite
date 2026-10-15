@@ -138,7 +138,7 @@ class Image:
             The image.
         """
 
-    def to_bytes(self, mime_type: Optional[str] = None, options: Optional[dict] = None) -> bytes:
+    def to_bytes(self, mime: Optional[MimeType] = None, options: Optional[dict] = None) -> bytes:
         """Encode the image.
 
         The ``options`` dict can contain any PIL save option
@@ -152,41 +152,41 @@ class Image:
         when an RGBA image is saved as JPEG (default is white).
 
         Args:
-            mime_type: MIME type of the output, PNG by default.
+            mime: MIME type of the output, PNG by default.
             options: Encoding options.
 
         Returns:
             The encoded image.
         """
 
-    def to_base64(self, mime_type: Optional[str] = None, options: Optional[dict] = None) -> str:
+    def to_base64(self, mime: Optional[MimeType] = None, options: Optional[dict] = None) -> str:
         """Encode the image as a base64 string.
 
         Args:
-            mime_type: MIME type of the output, PNG by default.
+            mime: MIME type of the output, PNG by default.
             options: Encoding options, as in ``to_bytes``.
 
         Returns:
             The base64 encoded image.
         """
 
-    def to_data_url(self, mime_type: Optional[str] = None, options: Optional[dict] = None) -> str:
+    def to_data_url(self, mime: Optional[MimeType] = None, options: Optional[dict] = None) -> str:
         """Encode the image as a base64 data URL.
 
         Args:
-            mime_type: MIME type of the output, PNG by default.
+            mime: MIME type of the output, PNG by default.
             options: Encoding options, as in ``to_bytes``.
 
         Returns:
             A ``data:`` URL.
         """
 
-    def to_path(self, path: str, mime_type: Optional[str] = None, options: Optional[dict] = None) -> str:
+    def to_path(self, path: str, mime: Optional[MimeType] = None, options: Optional[dict] = None) -> str:
         """Encode the image and save it to a file.
 
         Args:
             path: File path.
-            mime_type: MIME type of the output, PNG by default.
+            mime: MIME type of the output, PNG by default.
             options: Encoding options, as in ``to_bytes``.
 
         Returns:

@@ -196,13 +196,13 @@ class OwsServiceProvider(Node):
             The operation, or ``None`` if the service does not support it.
         """
 
-    def get_features(self, args: 'SearchQuery', source_layers: list['SourceLayer'], mime_type: str = '') -> list['FeatureRecord']:
+    def get_features(self, args: 'SearchQuery', source_layers: list['SourceLayer'], mime: MimeType = '') -> list['FeatureRecord']:
         """Search for features in the given source layers.
 
         Args:
             args: Search query.
             source_layers: Source layers to search.
-            mime_type: Response MIME type to request, the default of the operation if empty.
+            mime: Response MIME type to request, the default of the operation if empty.
 
         Returns:
             Found feature records.

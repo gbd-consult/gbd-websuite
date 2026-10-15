@@ -30,9 +30,9 @@ def calls(monkeypatch):
     return calls
 
 
-def _get_features(p, mime_type=''):
+def _get_features(p, mime=''):
     search = gws.SearchQuery(bounds=gws.Bounds(crs=CRS_3857, extent=(0, 0, 100, 100)))
-    return p.get_features(search, [gws.SourceLayer(name='layer_1')], mime_type)
+    return p.get_features(search, [gws.SourceLayer(name='layer_1')], mime)
 
 
 def test_get_features_default_mime_type(calls):

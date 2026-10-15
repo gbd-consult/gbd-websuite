@@ -312,12 +312,12 @@ class Object(gws.OwsService):
         fn = getattr(self, sr.operation.handlerName)
         return fn(sr)
 
-    def get_template(self, sr: request.Object, mime_type: str = '') -> Optional[gws.Template]:
+    def get_template(self, sr: request.Object, mime: gws.MimeType = '') -> Optional[gws.Template]:
         """Find a template for the given service request.
 
         Args:
             sr: Service request.
-            mime_type: Output mime type.
+            mime: Output mime type.
 
         Returns:
             The template, or ``None`` if not found.
@@ -327,17 +327,17 @@ class Object(gws.OwsService):
             f'ows.{sr.operation.verb}',
             where=[self, sr.project],
             user=sr.req.user,
-            mime_type=mime_type,
+            mime=mime,
         )
 
-    def template_response(self, sr: request.Object, mime_type: str = '', **kwargs) -> gws.ContentResponse:
+    def template_response(self, sr: request.Object, mime: gws.MimeType = '', **kwargs) -> gws.ContentResponse:
         """Render a template for the given service request.
 
         If no template is found for the mime type, the XML template is used.
 
         Args:
             sr: Service request.
-            mime_type: Output mime type.
+            mime: Output mime type.
             **kwargs: Additional template arguments.
 
         Returns:
@@ -347,12 +347,12 @@ class Object(gws.OwsService):
             ``error.InvalidFormat``: If there is no XML template either.
         """
 
-        tpl = self.get_template(sr, mime_type=mime_type)
+        tpl = self.get_template(sr, mime=mime)
         if not tpl:
             # OGC 06-042, 7.2.3.1
             # If the request specifies a format not supported by the server, the server shall respond with the default text/xml format.
-            gws.log.debug(f'no template: {sr.operation.verb=} {mime_type=}')
-            if mime_type == gws.lib.mime.XML:
+            gws.log.debug(f'no template: {sr.operation.verb=} {mime=}')
+            if mime == gws.lib.mime.XML:
                 raise error.InvalidFormat()
             return self.template_response(sr, gws.lib.mime.XML, **kwargs)
 
@@ -382,13 +382,13 @@ class Object(gws.OwsService):
         xml = el.to_string(opts)
         return gws.ContentResponse(mimeType=gws.lib.mime.XML, content=xml)
 
-    def image_response(self, sr: request.Object, img: Optional[gws.Image], mime_type: str) -> gws.ContentResponse:
+    def image_response(self, sr: request.Object, img: Optional[gws.Image], mime: gws.MimeType) -> gws.ContentResponse:
         """Create an image response, encoded with the options of the matching image format.
 
         Args:
             sr: Service request.
             img: Image, or ``None`` for an empty pixel.
-            mime_type: Output mime type.
+            mime: Output mime type.
 
         Returns:
             The image response.
@@ -397,17 +397,17 @@ class Object(gws.OwsService):
             ``error.InvalidFormat``: If the mime type is not supported.
         """
 
-        ifmt = self.find_image_format(mime_type)
+        ifmt = self.find_image_format(mime)
         if img:
-            gws.log.debug(f'image_response: {img.mode()=} {img.size()=} {mime_type=} {ifmt.options}')
-        content = img.to_bytes(mime_type, ifmt.options) if img else gws.lib.image.empty_pixel(mime_type)
-        return gws.ContentResponse(mimeType=mime_type, content=content)
+            gws.log.debug(f'image_response: {img.mode()=} {img.size()=} {mime=} {ifmt.options}')
+        content = img.to_bytes(mime, ifmt.options) if img else gws.lib.image.empty_pixel(mime)
+        return gws.ContentResponse(mimeType=mime, content=content)
 
-    def find_image_format(self, mime_type: str) -> gws.ImageFormat:
+    def find_image_format(self, mime: gws.MimeType) -> gws.ImageFormat:
         """Find an image format by mime type.
 
         Args:
-            mime_type: Mime type. If empty, the first format is returned.
+            mime: Mime type. If empty, the first format is returned.
 
         Returns:
             The image format.
@@ -416,14 +416,14 @@ class Object(gws.OwsService):
             ``error.InvalidFormat``: If the mime type is not supported.
         """
 
-        if not mime_type:
+        if not mime:
             return self.imageFormats[0]
         for f in self.imageFormats:
-            if mime_type in f.mimeTypes:
+            if mime in f.mimeTypes:
                 return f
         raise error.InvalidFormat()
 
-    def render_legend(self, sr: request.Object, lcs: list[core.LayerCaps], mime_type: str) -> gws.ContentResponse:
+    def render_legend(self, sr: request.Object, lcs: list[core.LayerCaps], mime: gws.MimeType) -> gws.ContentResponse:
         """Render a combined legend for the given layers.
 
         The response is cached per layer set and mime type.
@@ -431,14 +431,14 @@ class Object(gws.OwsService):
         Args:
             sr: Service request.
             lcs: Layer caps.
-            mime_type: Output mime type.
+            mime: Output mime type.
 
         Returns:
             The image response.
         """
 
         uids = [lc.layer.uid for lc in lcs]
-        cache_key = 'gws.base.ows.server.legend.' + gws.u.sha256(uids) + mime_type
+        cache_key = 'gws.base.ows.server.legend.' + gws.u.sha256(uids) + mime
 
         def _get():
             legend = cast(
@@ -450,7 +450,7 @@ class Object(gws.OwsService):
                 ),
             )
             lro = legend.render()
-            return self.image_response(sr, lro.image if lro else None, mime_type)
+            return self.image_response(sr, lro.image if lro else None, mime)
 
         return gws.u.get_app_global(cache_key, _get)
 

@@ -315,20 +315,20 @@ class Object(gws.base.template.Object):
         """
         self.notify(tri, 'finalize_print')
 
-        mime_type = tri.mimeOut
-        if not mime_type and self.mimeTypes:
-            mime_type = self.mimeTypes[0]
-        if not mime_type:
-            mime_type = gws.lib.mime.HTML
+        mime = tri.mimeOut
+        if not mime and self.mimeTypes:
+            mime = self.mimeTypes[0]
+        if not mime:
+            mime = gws.lib.mime.HTML
 
-        if mime_type == gws.lib.mime.HTML:
-            return gws.ContentResponse(mimeType=mime_type, content=html.lstrip())
+        if mime == gws.lib.mime.HTML:
+            return gws.ContentResponse(mimeType=mime, content=html.lstrip())
 
-        if mime_type == gws.lib.mime.PDF:
+        if mime == gws.lib.mime.PDF:
             res_path = self.finalize_pdf(tri, html, args, main_engine)
             return gws.ContentResponse(contentPath=res_path)
 
-        if mime_type == gws.lib.mime.PNG:
+        if mime == gws.lib.mime.PNG:
             res_path = self.finalize_png(tri, html, args, main_engine)
             return gws.ContentResponse(contentPath=res_path)
 

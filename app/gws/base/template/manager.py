@@ -15,31 +15,31 @@ TEMPLATE_TYPES = {
 class Object(gws.TemplateManager):
     """Template manager."""
 
-    def find_templates(self, subjects, where, user=None, mime_type=None):
-        return gws.u.compact(self.find_template(s, where, user, mime_type) for s in subjects)
+    def find_templates(self, subjects, where, user=None, mime=None):
+        return gws.u.compact(self.find_template(s, where, user, mime) for s in subjects)
 
-    def find_template(self, subject, where, user=None, mime_type=None):
+    def find_template(self, subject, where, user=None, mime=None):
         for obj in where:
             if not obj:
                 continue
-            p = self._find(subject, obj, user, mime_type)
+            p = self._find(subject, obj, user, mime)
             if p:
                 gws.log.debug(f'find_template: found {subject=} {obj=}')
                 return p
 
-        p = self._find(subject, self.root.app, user, mime_type)
+        p = self._find(subject, self.root.app, user, mime)
         if p:
             gws.log.debug(f'find_template: found {subject=} APP')
             return p
 
-    def _find(self, subject, obj, user, mime_type):
+    def _find(self, subject, obj, user, mime):
         """Return the first matching template of an object."""
         for tpl in getattr(obj, 'templates', []):
             if tpl.subject != subject:
                 continue
             if user and not user.can_use(tpl):
                 continue
-            if mime_type and tpl.mimeTypes and mime_type not in tpl.mimeTypes:
+            if mime and tpl.mimeTypes and mime not in tpl.mimeTypes:
                 continue
             return tpl
 

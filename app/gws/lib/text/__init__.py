@@ -62,18 +62,18 @@ def from_base64(x: str | bytes, url_safe: bool = False) -> bytes:
         raise Error('invalid base64') from exc
 
 
-def to_data_url(content: str | bytes, mime_type: str) -> str:
+def to_data_url(content: str | bytes, mime: gws.MimeType) -> str:
     """Create a base64 data URL.
 
     Args:
         content: Content, a string is encoded as UTF-8.
-        mime_type: MIME type of the content.
+        mime: MIME type of the content.
 
     Returns:
-        A ``data:<mime_type>;base64,...`` URL.
+        A ``data:<mime>;base64,...`` URL.
     """
 
-    return f'data:{mime_type};base64,' + to_base64(content)
+    return f'data:{mime};base64,' + to_base64(content)
 
 
 def parse_data_url(url: str) -> tuple[str, bytes]:
@@ -97,12 +97,12 @@ def parse_data_url(url: str) -> tuple[str, bytes]:
         raise Error('invalid data url')
 
     params = [p.strip().lower() for p in m.group(1).split(';')]
-    mime_type = params[0] or 'text/plain'
+    mime = params[0] or 'text/plain'
     payload = url[m.end():]
 
     if len(params) > 1 and params[-1] == 'base64':
-        return mime_type, from_base64(payload)
-    return mime_type, urllib.parse.unquote_to_bytes(payload)
+        return mime, from_base64(payload)
+    return mime, urllib.parse.unquote_to_bytes(payload)
 
 
 def dedent(text: str) -> str:

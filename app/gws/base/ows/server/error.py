@@ -79,13 +79,13 @@ class Error(gws.Error):
             ),
         )
 
-    def to_image_response(self, mime_type='image/png') -> gws.ContentResponse:
+    def to_image_response(self, mime: gws.MimeType = gws.lib.mime.PNG) -> gws.ContentResponse:
         """Create an image response for this error.
 
         The image is a single error pixel.
 
         Args:
-            mime_type: Image mime type.
+            mime: Image mime type.
 
         Returns:
             The image response.
@@ -93,8 +93,8 @@ class Error(gws.Error):
 
         return gws.ContentResponse(
             status=self.status,
-            mimeType=mime_type,
-            content=gws.lib.image.error_pixel(mime_type),
+            mimeType=mime,
+            content=gws.lib.image.error_pixel(mime),
         )
 
 

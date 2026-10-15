@@ -22,7 +22,7 @@ def _opts(image_format):
 
 
 def _grabber(image_format, calls=None):
-    prov = gws.Data(get_map=lambda bounds, w, h, params, mime_type: calls.append((params, mime_type)) or b'png_1')
+    prov = gws.Data(get_map=lambda bounds, w, h, params, mime: calls.append((params, mime)) or b'png_1')
     return grabber.Object(_opts(image_format), provider=prov, params={'LAYERS': ['layer_1']})
 
 

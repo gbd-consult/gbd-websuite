@@ -93,20 +93,20 @@ def format_from_config(cfg: FormatConfig) -> gws.ImageFormat:
     name = cfg.get('name') or ''
     std = _FORMATS.get(name)
 
-    mts = []
-    for mt in cfg.get('mimeTypes') or (std.mimeTypes if std else []):
-        s = gws.lib.mime.get(mt)
-        if not s:
-            gws.log.warning(f'image format {name!r}: unknown MIME type {mt!r} ignored')
+    mimes = []
+    for s in cfg.get('mimeTypes') or (std.mimeTypes if std else []):
+        mime = gws.lib.mime.get(s)
+        if not mime:
+            gws.log.warning(f'image format {name!r}: unknown MIME type {s!r} ignored')
             continue
-        mts.append(s)
-    if not mts:
+        mimes.append(mime)
+    if not mimes:
         raise Error(f'unknown image format {name!r}')
 
     options = cfg.get('options')
     if options is None:
         options = std.options if std else {}
-    return gws.ImageFormat(name=name, mimeTypes=mts, options=dict(gws.u.to_dict(options)))
+    return gws.ImageFormat(name=name, mimeTypes=mimes, options=dict(gws.u.to_dict(options)))
 
 
 def best_mime_type(ifo: gws.ImageFormat, supported: list[str]) -> str:
@@ -124,9 +124,9 @@ def best_mime_type(ifo: gws.ImageFormat, supported: list[str]) -> str:
         The selected MIME type, or an empty string if none matches.
     """
 
-    for mt in sorted(supported, key=len, reverse=True):
-        if mt in ifo.mimeTypes:
-            return mt
+    for mime in sorted(supported, key=len, reverse=True):
+        if mime in ifo.mimeTypes:
+            return mime
 
     return ''
 
@@ -222,10 +222,10 @@ def from_data_url(url: str) -> 'Image':
         ``Error``: If the URL is not a supported data URL or the image cannot be loaded.
     """
     try:
-        mime_type, content = gws.lib.text.parse_data_url(url)
+        mime, content = gws.lib.text.parse_data_url(url)
     except gws.lib.text.Error as exc:
         raise Error('invalid data url') from exc
-    if gws.lib.mime.get_base(mime_type) not in _DATA_URL_MIME_TYPES:
+    if gws.lib.mime.get_base(mime) not in _DATA_URL_MIME_TYPES:
         raise Error('invalid data url')
     return from_bytes(content)
 
@@ -246,13 +246,13 @@ def from_array(arr: np.ndarray) -> 'Image':
     return _new(img)
 
 
-def from_svg(xmlstr: str, size: gws.Size, mime_type=None) -> 'Image':
+def from_svg(xmlstr: str, size: gws.Size, mime: Optional[gws.MimeType] = None) -> 'Image':
     """Create an image from an SVG document. Not implemented.
 
     Args:
         xmlstr: SVG source.
         size: Image size ``(width, height)``.
-        mime_type: MIME type.
+        mime: MIME type.
 
     Returns:
         An image object.
@@ -264,7 +264,7 @@ def from_svg(xmlstr: str, size: gws.Size, mime_type=None) -> 'Image':
     raise NotImplementedError
 
 
-def thumbnail(r: bytes, size: gws.Size, max_pixels=0, mime_type=None, options=None) -> bytes:
+def thumbnail(r: bytes, size: gws.Size, max_pixels=0, mime: Optional[gws.MimeType] = None, options=None) -> bytes:
     """Create a thumbnail from an encoded image.
 
     The image is scaled to fit into ``size``, keeping the aspect ratio. Small images are not scaled up.
@@ -273,7 +273,7 @@ def thumbnail(r: bytes, size: gws.Size, max_pixels=0, mime_type=None, options=No
         r: Encoded image.
         size: Maximum thumbnail size ``(width, height)``.
         max_pixels: Maximum number of source pixels, ``0`` for no limit.
-        mime_type: MIME type of the thumbnail, PNG by default.
+        mime: MIME type of the thumbnail, PNG by default.
         options: Encoding options, as in ``Image.to_bytes``.
 
     Returns:
@@ -295,7 +295,7 @@ def thumbnail(r: bytes, size: gws.Size, max_pixels=0, mime_type=None, options=No
             img.thumbnail(sz, resample=PIL.Image.Resampling.BICUBIC)
             if img.mode not in {'1', 'L', 'LA', 'P', 'RGB', 'RGBA'}:
                 img = img.convert('RGB')
-            return Image(img).to_bytes(mime_type, options)
+            return Image(img).to_bytes(mime, options)
     except Error:
         raise
     except Exception as exc:
@@ -454,25 +454,25 @@ class Image(gws.Image):
         self.img = PIL.Image.alpha_composite(self.img, oth)
         return self
 
-    def to_bytes(self, mime_type=None, options=None):
+    def to_bytes(self, mime=None, options=None):
         with io.BytesIO() as fp:
-            self._save(fp, mime_type, options)
+            self._save(fp, mime, options)
             return fp.getvalue()
 
-    def to_base64(self, mime_type=None, options=None):
-        return gws.lib.text.to_base64(self.to_bytes(mime_type, options))
+    def to_base64(self, mime=None, options=None):
+        return gws.lib.text.to_base64(self.to_bytes(mime, options))
 
-    def to_data_url(self, mime_type=None, options=None):
-        mime_type = mime_type or gws.lib.mime.PNG
-        return gws.lib.text.to_data_url(self.to_bytes(mime_type, options), mime_type)
+    def to_data_url(self, mime=None, options=None):
+        mime = mime or gws.lib.mime.PNG
+        return gws.lib.text.to_data_url(self.to_bytes(mime, options), mime)
 
-    def to_path(self, path, mime_type=None, options=None):
+    def to_path(self, path, mime=None, options=None):
         with open(path, 'wb') as fp:
-            self._save(fp, mime_type, options)
+            self._save(fp, mime, options)
         return path
 
-    def _save(self, fp, mime_type: str, options: dict):
-        fmt = _mime_to_format(mime_type)
+    def _save(self, fp, mime: gws.MimeType, options: dict):
+        fmt = _mime_to_format(mime)
         opts = dict(options or {})
         img = self.img
 
@@ -529,18 +529,18 @@ _MIME_TO_FORMAT = {
 }
 
 
-def _mime_to_format(mime_type):
+def _mime_to_format(mime: gws.MimeType):
     """Return the PIL format name for a MIME type, PNG if no MIME type is given."""
 
-    if not mime_type:
+    if not mime:
         return 'PNG'
-    m = mime_type.split(';')[0].strip()
+    m = mime.split(';')[0].strip()
     if m in _MIME_TO_FORMAT:
         return _MIME_TO_FORMAT[m]
     m = m.split('/')
     if len(m) == 2 and m[0] == 'image':
         return m[1].upper()
-    raise Error(f'unknown mime type {mime_type!r}')
+    raise Error(f'unknown mime type {mime!r}')
 
 
 def _int_size(size: gws.Size):
@@ -552,13 +552,13 @@ _PIXELS = {}
 _ERROR_COLOR = '#ffa1b4'
 
 
-def empty_pixel(mime_type: str = None):
+def empty_pixel(mime: Optional[gws.MimeType] = None):
     """Return an encoded empty 1x1 image.
 
     The pixel is transparent, or white for JPEG.
 
     Args:
-        mime_type: MIME type, PNG by default.
+        mime: MIME type, PNG by default.
 
     Returns:
         The encoded image.
@@ -567,14 +567,14 @@ def empty_pixel(mime_type: str = None):
         ``Error``: If the MIME type is not an image type.
     """
 
-    return pixel(mime_type, '#ffffff' if mime_type == gws.lib.mime.JPEG else None)
+    return pixel(mime, '#ffffff' if mime == gws.lib.mime.JPEG else None)
 
 
-def error_pixel(mime_type: str = None):
+def error_pixel(mime: Optional[gws.MimeType] = None):
     """Return an encoded 1x1 image in the error color.
 
     Args:
-        mime_type: MIME type, PNG by default.
+        mime: MIME type, PNG by default.
 
     Returns:
         The encoded image.
@@ -583,16 +583,16 @@ def error_pixel(mime_type: str = None):
         ``Error``: If the MIME type is not an image type.
     """
 
-    return pixel(mime_type, _ERROR_COLOR)
+    return pixel(mime, _ERROR_COLOR)
 
 
-def pixel(mime_type, color):
+def pixel(mime: gws.MimeType, color):
     """Return an encoded 1x1 image of a color.
 
     Results are cached.
 
     Args:
-        mime_type: MIME type, PNG by default.
+        mime: MIME type, PNG by default.
         color: Pixel color, or ``None`` for a transparent pixel.
 
     Returns:
@@ -602,7 +602,7 @@ def pixel(mime_type, color):
         ``Error``: If the MIME type is not an image type.
     """
 
-    fmt = _mime_to_format(mime_type)
+    fmt = _mime_to_format(mime)
     key = fmt, str(color)
 
     if key not in _PIXELS:

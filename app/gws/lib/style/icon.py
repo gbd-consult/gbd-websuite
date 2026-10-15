@@ -107,10 +107,10 @@ def _get_bytes(val, opts) -> Optional[bytes]:
 
 def _decode_data_url(val) -> Optional[bytes]:
     try:
-        mime_type, content = gws.lib.text.parse_data_url(val)
+        mime, content = gws.lib.text.parse_data_url(val)
     except gws.lib.text.Error as exc:
         raise Error('decode error', val) from exc
-    if gws.lib.mime.get_base(mime_type) == gws.lib.mime.SVG:
+    if gws.lib.mime.get_base(mime) == gws.lib.mime.SVG:
         return content
 
 

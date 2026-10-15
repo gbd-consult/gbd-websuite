@@ -71,8 +71,8 @@ def get_content(root: gws.Root, path: str, search: str) -> gws.ContentResponse:
     search = (search or '').strip()
 
     if path in _ASSETS:
-        p, mime_type = _ASSETS[path]
-        return gws.ContentResponse(contentPath=p, mimeType=mime_type)
+        p, mime = _ASSETS[path]
+        return gws.ContentResponse(contentPath=p, mimeType=mime)
 
     obj = _resolve(root, _split(path))
 

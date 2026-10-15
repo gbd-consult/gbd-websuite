@@ -98,15 +98,15 @@ def _set_mime_types(op: gws.OwsOperation, values: list[str]):
     op.mimeTypes = []
     op.mimeTypeMap = {}
     for s in values:
-        mt = gws.lib.mime.get(s)
-        if not mt:
+        mime = gws.lib.mime.get(s)
+        if not mime:
             gws.log.warning(f'{op.verb}: unknown MIME type {s!r} ignored')
             continue
-        if mt in op.mimeTypes:
+        if mime in op.mimeTypes:
             continue
-        op.mimeTypes.append(mt)
-        if s != mt:
-            op.mimeTypeMap[mt] = s
+        op.mimeTypes.append(mime)
+        if s != mime:
+            op.mimeTypeMap[mime] = s
 
 
 _PREFERRED_MIME_TYPES = {
@@ -140,17 +140,17 @@ def _default_mime_type(op: gws.OwsOperation) -> str:
     otherwise the first supported one. Without supported MIME types, the first preferred base type is used.
     """
 
-    best_mts = _PREFERRED_MIME_TYPES['image' if op.verb in _IMAGE_VERBS else 'text']
+    best_mimes = _PREFERRED_MIME_TYPES['image' if op.verb in _IMAGE_VERBS else 'text']
 
     if not op.mimeTypes:
-        return gws.lib.mime.get_base(best_mts[0])
+        return gws.lib.mime.get_base(best_mimes[0])
 
-    for mt in best_mts:
-        if mt in op.mimeTypes:
-            return mt
+    for mime in best_mimes:
+        if mime in op.mimeTypes:
+            return mime
 
-    for mt in op.mimeTypes:
-        if gws.lib.mime.get_base(mt) in best_mts:
-            return mt
+    for mime in op.mimeTypes:
+        if gws.lib.mime.get_base(mime) in best_mimes:
+            return mime
 
     return op.mimeTypes[0]

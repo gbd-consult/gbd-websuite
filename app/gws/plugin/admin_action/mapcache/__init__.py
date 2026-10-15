@@ -61,8 +61,8 @@ def get_content(root: gws.Root, path: str) -> gws.ContentResponse:
         return _page(root, '', -1)
 
     if path in _ASSETS:
-        p, mime_type = _ASSETS[path]
-        return gws.ContentResponse(contentPath=p, mimeType=mime_type)
+        p, mime = _ASSETS[path]
+        return gws.ContentResponse(contentPath=p, mimeType=mime)
 
     m = re.match(r'^(\w+)/(\d+)/(\d+)/(\d+)\.\w+$', path)
     if m:

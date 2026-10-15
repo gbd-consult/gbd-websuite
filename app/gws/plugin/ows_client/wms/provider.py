@@ -51,7 +51,7 @@ class Object(gws.base.ows.client.provider.Object):
             self.cfg('bottomFirst', default=False),
         ])
 
-    def get_map(self, bounds: gws.Bounds, width: int, height: int, source_layers: list[gws.SourceLayer], mime_type: str = '') -> bytes:
+    def get_map(self, bounds: gws.Bounds, width: int, height: int, source_layers: list[gws.SourceLayer], mime: gws.MimeType = '') -> bytes:
         """Fetch a map image with GetMap.
 
         The source layers are given top-first and sent bottom-first, as WMS expects.
@@ -62,7 +62,7 @@ class Object(gws.base.ows.client.provider.Object):
             width: Image width in pixels.
             height: Image height in pixels.
             source_layers: Source layers to render, topmost first.
-            mime_type: MIME type to request, as spelled by the service, the default of the operation if empty.
+            mime: MIME type to request, as spelled by the service, the default of the operation if empty.
 
         Returns:
             The image content.
@@ -94,9 +94,9 @@ class Object(gws.base.ows.client.provider.Object):
             'TRANSPARENT': 'TRUE',
             'VERSION': self.version,
         }
-        mime_type = mime_type or op.defaultMimeType
-        if mime_type:
-            params.setdefault('FORMAT', mime_type)
+        mime = mime or op.defaultMimeType
+        if mime:
+            params.setdefault('FORMAT', mime)
 
         args = self.prepare_operation(op, params=params)
         res = gws.base.ows.client.request.get(args)
@@ -124,7 +124,7 @@ class Object(gws.base.ows.client.provider.Object):
             _defaultSourceLayers=source_layers,
         )
 
-    def get_features(self, search, source_layers, mime_type=''):
+    def get_features(self, search, source_layers, mime=''):
         v3 = self.version >= '1.3'
 
         shape = search.shape
@@ -188,9 +188,9 @@ class Object(gws.base.ows.client.provider.Object):
         if not op:
             return []
 
-        mime_type = mime_type or op.defaultMimeType
-        if mime_type:
-            params.setdefault('INFO_FORMAT', mime_type)
+        mime = mime or op.defaultMimeType
+        if mime:
+            params.setdefault('INFO_FORMAT', mime)
 
         args = self.prepare_operation(op, params=params)
         text = gws.base.ows.client.request.get_text(args)

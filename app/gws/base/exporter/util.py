@@ -124,7 +124,7 @@ def _feature_to_record(f: gws.Feature, grp: Group, ea: gws.ExportArgs, er: gws.E
 ##
 
 
-def run_gdal_vector_export(driver_name: str, mime_type: str, ea: gws.ExportArgs, er: gws.ExportResult):
+def run_gdal_vector_export(driver_name: str, mime: gws.MimeType, ea: gws.ExportArgs, er: gws.ExportResult):
     """Export features with a GDAL vector driver.
 
     Writes one file per group, or a single file with one layer per group if
@@ -134,7 +134,7 @@ def run_gdal_vector_export(driver_name: str, mime_type: str, ea: gws.ExportArgs,
 
     Args:
         driver_name: GDAL driver name, e.g. ``GeoJSON``.
-        mime_type: Mime type of the result file.
+        mime: Mime type of the result file.
         ea: Export arguments.
         er: Export result, filled by this function.
 
@@ -176,4 +176,4 @@ def run_gdal_vector_export(driver_name: str, mime_type: str, ea: gws.ExportArgs,
         gws.lib.zipx.zip_to_path(er.path, paths, flat=True)
     else:
         er.path = paths[0]
-        er.mimeType = mime_type
+        er.mimeType = mime

@@ -640,27 +640,27 @@ class Object(gws.base.edit.helper.Object):
         message = gws.plugin.email_helper.Message(
             subject=self.render_template(f'{category}.emailSubject', args),
             mailTo=email,
-            text=self.render_template(f'{category}.emailBody', args, mime_type='text/plain'),
-            html=self.render_template(f'{category}.emailBody', args, mime_type='text/html'),
+            text=self.render_template(f'{category}.emailBody', args, mime='text/plain'),
+            html=self.render_template(f'{category}.emailBody', args, mime='text/html'),
         )
 
         email_helper = cast(gws.plugin.email_helper.Object, self.root.app.helper('email'))
         email_helper.send_mail(message)
 
-    def render_template(self, subject, args, mime_type=None):
+    def render_template(self, subject, args, mime: Optional[gws.MimeType] = None):
         """Render a template of this helper.
 
         Args:
             subject: Template subject.
             args: Template arguments.
-            mime_type: Template mime type.
+            mime: Template mime type.
 
         Returns:
             The rendered content, or an empty string if there is no such template.
         """
 
 
-        tpl = self.root.app.templateMgr.find_template(subject, where=[self], mime_type=mime_type)
+        tpl = self.root.app.templateMgr.find_template(subject, where=[self], mime=mime)
         if tpl:
             res = tpl.render(gws.TemplateRenderInput(args=args))
             return res.content

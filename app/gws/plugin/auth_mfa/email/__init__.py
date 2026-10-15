@@ -94,25 +94,25 @@ class Object(gws.base.auth.mfa.Object):
         message = gws.plugin.email_helper.Message(
             subject=self.render_template('email.subject', args),
             mailTo=mfa.user.email,
-            text=self.render_template('email.body', args, mime_type='text/plain'),
-            html=self.render_template('email.body', args, mime_type='text/html'),
+            text=self.render_template('email.body', args, mime='text/plain'),
+            html=self.render_template('email.body', args, mime='text/html'),
         )
 
         email_helper = cast(gws.plugin.email_helper.Object, self.root.app.helper('email'))
         email_helper.send_mail(message)
 
-    def render_template(self, subject, args, mime_type=None):
+    def render_template(self, subject, args, mime: Optional[gws.MimeType] = None):
         """Render a template of the adapter.
 
         Args:
             subject: Template subject, for example ``email.body``.
             args: Template arguments.
-            mime_type: Output mime type of the template to find.
+            mime: Output mime type of the template to find.
 
         Returns:
             The rendered content, or an empty string if no template is found.
         """
-        tpl = self.root.app.templateMgr.find_template(subject, where=[self], mime_type=mime_type)
+        tpl = self.root.app.templateMgr.find_template(subject, where=[self], mime=mime)
         if tpl:
             res = tpl.render(gws.TemplateRenderInput(args=args))
             return res.content

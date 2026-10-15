@@ -204,16 +204,16 @@ class Object(gws.base.model.field.Object):
 
     ##
 
-    def can_preview(self, mime_type) -> bool:
+    def can_preview(self, mime: gws.MimeType) -> bool:
         """Check if a thumbnail preview can be made for a MIME type.
 
         Args:
-            mime_type: The MIME type.
+            mime: The MIME type.
 
         Returns:
             True for image types except SVG.
         """
-        return mime_type.startswith('image/') and mime_type != gws.lib.mime.SVG
+        return mime.startswith('image/') and mime != gws.lib.mime.SVG
 
     def prop_to_python(self, feature, value, mc) -> FileValue:
         try:
@@ -227,8 +227,8 @@ class Object(gws.base.model.field.Object):
     def python_to_prop(self, feature, value, mc) -> ServerFileProps:
         fv = cast(FileValue, value)
 
-        mime_type = self.get_mime_type(fv)
-        ext = gws.lib.mime.extension_for(mime_type)
+        mime = self.get_mime_type(fv)
+        ext = gws.lib.mime.extension_for(mime)
 
         p = ServerFileProps(
             # @TODO use a template
@@ -251,7 +251,7 @@ class Object(gws.base.model.field.Object):
             featureUid=feature.uid(),
         )
 
-        if self.can_preview(mime_type):
+        if self.can_preview(mime):
             p.previewUrl = gws.u.action_url_path('webFile', preview=1, **url_args) + '/' + name
 
         p.downloadUrl = gws.u.action_url_path('webFile', **url_args) + '/' + name
@@ -330,11 +330,11 @@ class Object(gws.base.model.field.Object):
 
         if not preview:
             # download complete file content
-            mime_type = self.get_mime_type(fv)
+            mime = self.get_mime_type(fv)
             return gws.ContentResponse(
                 content=fv.content,
-                contentFilename=fv.name or f'gws.{gws.lib.mime.extension_for(mime_type)}',
-                mimeType=mime_type,
+                contentFilename=fv.name or f'gws.{gws.lib.mime.extension_for(mime)}',
+                mimeType=mime,
             )
 
         # preview
@@ -366,7 +366,7 @@ class Object(gws.base.model.field.Object):
                     content,
                     _PREVIEW_SIZE,
                     max_pixels=_PREVIEW_MAX_PIXELS,
-                    mime_type=_PREVIEW_MIME,
+                    mime=_PREVIEW_MIME,
                 )
             except gws.lib.image.Error as exc:
                 raise gws.NotFoundError(f'file preview: {exc}') from exc

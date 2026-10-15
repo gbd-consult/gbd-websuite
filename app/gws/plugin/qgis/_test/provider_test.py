@@ -17,14 +17,14 @@ def _provider(calls):
     return p
 
 
-def _get_map(p, mime_type=''):
+def _get_map(p, mime=''):
     bounds = gws.Bounds(crs=CRS_3857, extent=(0, 0, 100, 100))
-    return p.get_map(bounds, 10, 10, {'LAYERS': ['layer_1']}, mime_type)
+    return p.get_map(bounds, 10, 10, {'LAYERS': ['layer_1']}, mime)
 
 
-def _get_features(p, mime_type=''):
+def _get_features(p, mime=''):
     search = gws.SearchQuery(shape=gws.lib.shape.from_xy(50, 50, CRS_3857), resolution=1)
-    return p.get_features(search, [gws.SourceLayer(name='layer_1')], mime_type)
+    return p.get_features(search, [gws.SourceLayer(name='layer_1')], mime)
 
 
 def test_get_map_default_mime_type():

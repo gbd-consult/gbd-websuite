@@ -1645,7 +1645,7 @@ class Image:
             The image.
         """
 
-    def to_bytes(self, mime_type: Optional[str] = None, options: Optional[dict] = None) -> bytes:
+    def to_bytes(self, mime: Optional[MimeType] = None, options: Optional[dict] = None) -> bytes:
         """Encode the image.
 
         The ``options`` dict can contain any PIL save option
@@ -1659,41 +1659,41 @@ class Image:
         when an RGBA image is saved as JPEG (default is white).
 
         Args:
-            mime_type: MIME type of the output, PNG by default.
+            mime: MIME type of the output, PNG by default.
             options: Encoding options.
 
         Returns:
             The encoded image.
         """
 
-    def to_base64(self, mime_type: Optional[str] = None, options: Optional[dict] = None) -> str:
+    def to_base64(self, mime: Optional[MimeType] = None, options: Optional[dict] = None) -> str:
         """Encode the image as a base64 string.
 
         Args:
-            mime_type: MIME type of the output, PNG by default.
+            mime: MIME type of the output, PNG by default.
             options: Encoding options, as in ``to_bytes``.
 
         Returns:
             The base64 encoded image.
         """
 
-    def to_data_url(self, mime_type: Optional[str] = None, options: Optional[dict] = None) -> str:
+    def to_data_url(self, mime: Optional[MimeType] = None, options: Optional[dict] = None) -> str:
         """Encode the image as a base64 data URL.
 
         Args:
-            mime_type: MIME type of the output, PNG by default.
+            mime: MIME type of the output, PNG by default.
             options: Encoding options, as in ``to_bytes``.
 
         Returns:
             A ``data:`` URL.
         """
 
-    def to_path(self, path: str, mime_type: Optional[str] = None, options: Optional[dict] = None) -> str:
+    def to_path(self, path: str, mime: Optional[MimeType] = None, options: Optional[dict] = None) -> str:
         """Encode the image and save it to a file.
 
         Args:
             path: File path.
-            mime_type: MIME type of the output, PNG by default.
+            mime: MIME type of the output, PNG by default.
             options: Encoding options, as in ``to_bytes``.
 
         Returns:
@@ -6737,13 +6737,13 @@ class OwsServiceProvider(Node):
             The operation, or ``None`` if the service does not support it.
         """
 
-    def get_features(self, args: 'SearchQuery', source_layers: list['SourceLayer'], mime_type: str = '') -> list['FeatureRecord']:
+    def get_features(self, args: 'SearchQuery', source_layers: list['SourceLayer'], mime: MimeType = '') -> list['FeatureRecord']:
         """Search for features in the given source layers.
 
         Args:
             args: Search query.
             source_layers: Source layers to search.
-            mime_type: Response MIME type to request, the default of the operation if empty.
+            mime: Response MIME type to request, the default of the operation if empty.
 
         Returns:
             Found feature records.
@@ -7391,20 +7391,20 @@ class Template(Node):
 class TemplateManager(Node):
     """Template manager, finds templates by subject and creates them from files."""
 
-    def find_templates(self, subjects: list[str], where: list[Node], user: 'User' = None, mime_type: str = None) -> list['Template']:
+    def find_templates(self, subjects: list[str], where: list[Node], user: 'User' = None, mime: MimeType = None) -> list['Template']:
         """Find templates for several subjects.
 
         Args:
             subjects: Template subjects.
             where: Objects whose templates are searched, in this order.
             user: If given, only templates this user can use.
-            mime_type: If given, only templates which can produce this MIME type.
+            mime: If given, only templates which can produce this MIME type.
 
         Returns:
             Found templates, one per subject at most.
         """
 
-    def find_template(self, subject: str, where: list[Node], user: 'User' = None, mime_type: str = None) -> Optional['Template']:
+    def find_template(self, subject: str, where: list[Node], user: 'User' = None, mime: MimeType = None) -> Optional['Template']:
         """Find a template for a subject.
 
         The templates of the objects in ``where`` are searched in the given order,
@@ -7415,7 +7415,7 @@ class TemplateManager(Node):
             subject: Template subject.
             where: Objects whose templates are searched, in this order.
             user: If given, only templates this user can use.
-            mime_type: If given, only templates which can produce this MIME type.
+            mime: If given, only templates which can produce this MIME type.
 
         Returns:
             The first matching template, or ``None``.

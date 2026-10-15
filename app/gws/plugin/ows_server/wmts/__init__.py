@@ -244,7 +244,7 @@ class Object(server.service.Object):
             raise server.error.TileOutOfRange()
         gws.log.debug(f'WMTS: bounds for tile {tms_uid=} {tm_uid=} {row=} {col=}: {bounds}')
 
-        mime_type = sr.requested_format('FORMAT')
+        mime = sr.requested_format('FORMAT')
         ts = self.grids[tms_uid].tileSize
 
         mri = gws.MapRenderInput(
@@ -268,7 +268,7 @@ class Object(server.service.Object):
             text = f'{tm_uid} {row} {col}\n{e[0]}\n{e[1]}\n{e[2]}\n{e[3]}'
             mro.planes[0].image = mro.planes[0].image.add_text(text, x=10, y=10).add_box()
 
-        return self.image_response(sr, mro.planes[0].image, mime_type)
+        return self.image_response(sr, mro.planes[0].image, mime)
 
     def handle_get_legend_graphic(self, sr: server.request.Object):
         """Handle the GetLegendGraphic operation.

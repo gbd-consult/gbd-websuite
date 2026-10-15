@@ -131,53 +131,53 @@ _aliases = {
 }
 
 
-def get(mt: str) -> str:
+def get(s: str) -> str:
     """Return the normalized MIME type, keeping its parameters.
 
     Known types and aliases are mapped to the constants of this module (``image/png8`` to ``PNG8``).
     Other parameters are kept: ``text/html;Charset=utf-8`` gives ``text/html; charset=utf-8``.
 
     Args:
-        mt: MIME type in any spelling, content type, alias or file extension.
+        s: MIME type in any spelling, content type, alias or file extension.
 
     Returns:
         The normalized MIME type, or an empty string if it is unknown.
     """
 
-    if not mt:
+    if not s:
         return ''
 
-    s = _get_quick(mt)
-    if s:
-        return s
+    mime = _get_quick(s)
+    if mime:
+        return mime
 
-    mt = _normalize(mt)
+    s = _normalize(s)
 
-    s = _get_quick(mt)
-    if s:
-        return s
+    mime = _get_quick(s)
+    if mime:
+        return mime
 
-    base, sep, params = mt.partition('; ')
+    base, sep, params = s.partition('; ')
 
     if sep:
-        s = _get_quick(base)
-        if s:
-            return s if ';' in s else s + '; ' + params
+        mime = _get_quick(base)
+        if mime:
+            return mime if ';' in mime else mime + '; ' + params
         if mimetypes.guess_extension(base):
-            return mt
+            return s
         return ''
 
-    if '/' in mt and mimetypes.guess_extension(mt):
-        return mt
+    if '/' in s and mimetypes.guess_extension(s):
+        return s
 
-    t, _ = mimetypes.guess_type('x.' + mt)
-    if t:
-        return t
+    mime, _ = mimetypes.guess_type('x.' + s)
+    if mime:
+        return mime
 
     return ''
 
 
-def get_base(mt: str) -> str:
+def get_base(s: str) -> str:
     """Return the normalized MIME type without parameters.
 
     Parameters are removed before and after the lookup, so that unknown parameters
@@ -189,21 +189,20 @@ def get_base(mt: str) -> str:
         get_base('application/vnd.ogc.gml')  # 'application/gml+xml'
 
     Args:
-        mt: MIME type in any spelling, content type, alias or file extension.
+        s: MIME type in any spelling, content type, alias or file extension.
 
     Returns:
         The normalized MIME type without parameters, or an empty string if it is unknown.
     """
 
-    b = mt.split(';')[0]
-    b = get(b.strip())
-    return b.split(';')[0]
+    mime = get(s.split(';')[0].strip())
+    return mime.split(';')[0]
 
 
-def _normalize(mt: str) -> str:
+def _normalize(s: str) -> str:
     """Spell a MIME type canonically (RFC 9110, 8.3.1): lower-case names, no quotes, ``"; "`` between parameters."""
 
-    parts = mt.split(';')
+    parts = s.split(';')
     res = [parts[0].replace(' ', '').lower()]
     for p in parts[1:]:
         name, _, value = p.partition('=')
@@ -217,14 +216,14 @@ def _normalize(mt: str) -> str:
     return '; '.join(res)
 
 
-def _get_quick(mt):
+def _get_quick(s):
     """Look up a MIME type, an extension or an alias in the built-in tables."""
-    if mt in _common:
-        return mt
-    if mt in _common_extensions:
-        return _common_extensions[mt]
-    if mt in _aliases:
-        return _aliases[mt]
+    if s in _common:
+        return s
+    if s in _common_extensions:
+        return _common_extensions[s]
+    if s in _aliases:
+        return _aliases[s]
 
 
 def for_path(path: str) -> str:
@@ -243,11 +242,11 @@ def for_path(path: str) -> str:
     return t or BIN
 
 
-def extension_for(mt: str, default: str = 'bin') -> str:
+def extension_for(mime: str, default: str = 'bin') -> str:
     """Return the file extension for a MIME type.
 
     Args:
-        mt: Normalized MIME type.
+        mime: Normalized MIME type.
         default: Extension to return if the MIME type is unknown.
 
     Returns:
@@ -255,9 +254,9 @@ def extension_for(mt: str, default: str = 'bin') -> str:
     """
 
     for ext, rt in _common_extensions.items():
-        if rt == mt:
+        if rt == mime:
             return ext
-    s = mimetypes.guess_extension(mt)
+    s = mimetypes.guess_extension(mime)
     if s:
         return s[1:]
     return default

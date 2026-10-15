@@ -26,7 +26,7 @@ def _grabber(image_format, mime_types, calls=None):
     prov = gws.Data(
         maxRequestPixels=4096,
         get_operation=lambda verb: op if verb == gws.OwsVerb.GetMap else None,
-        get_map=lambda bounds, w, h, source_layers, mime_type: calls.append(mime_type) or b'png_1',
+        get_map=lambda bounds, w, h, source_layers, mime: calls.append(mime) or b'png_1',
     )
     return grabber.Object(_opts(image_format), provider=prov, sourceLayers=[gws.SourceLayer(name='layer_1')], sourceCrs=CRS_3857)
 

@@ -31,20 +31,20 @@ def fragment_to_element(fragment: list[gws.XmlElement], atts: dict = None) -> gw
     return _svg_tag(atts, *fr)
 
 
-def fragment_to_image(fragment: list[gws.XmlElement], size: gws.Size, mime_type=gws.lib.mime.PNG) -> gws.lib.image.Image:
+def fragment_to_image(fragment: list[gws.XmlElement], size: gws.Size, mime: gws.MimeType = gws.lib.mime.PNG) -> gws.lib.image.Image:
     """Render an SVG fragment as a raster image.
 
     Args:
         fragment: SVG elements.
         size: Image size in pixels.
-        mime_type: Image mime type.
+        mime: Image mime type.
 
     Returns:
         The image.
     """
 
     el = fragment_to_element(fragment)
-    return gws.lib.image.from_svg(el.to_string(), size, mime_type)
+    return gws.lib.image.from_svg(el.to_string(), size, mime)
 
 
 def normalize_element(el: gws.XmlElement) -> gws.XmlElement:

@@ -122,7 +122,7 @@ def to_image_path(
     in_path: str,
     out_path: str,
     size: gws.Size,
-    mime_type: str = gws.lib.mime.PNG,
+    mime: gws.MimeType = gws.lib.mime.PNG,
     page: int = 1,
 ) -> str:
     """Render a PDF page as an image, using Ghostscript.
@@ -133,7 +133,7 @@ def to_image_path(
         in_path: Path to the input PDF.
         out_path: Path to the output image.
         size: Size of the output image in points.
-        mime_type: Mime type of the output image, either PNG or JPEG.
+        mime: Mime type of the output image, either PNG or JPEG.
         page: Page number to convert, starting with 1.
 
     Returns:
@@ -144,12 +144,12 @@ def to_image_path(
         ``gws.lib.osx.Error``: If Ghostscript fails.
     """
 
-    if mime_type == gws.lib.mime.PNG:
+    if mime == gws.lib.mime.PNG:
         device = 'png16m'
-    elif mime_type == gws.lib.mime.JPEG:
+    elif mime == gws.lib.mime.JPEG:
         device = 'jpeg'
     else:
-        raise ValueError(f'invalid mime type {mime_type!r}')
+        raise ValueError(f'invalid mime type {mime!r}')
 
     w, h = size
     cmd = [

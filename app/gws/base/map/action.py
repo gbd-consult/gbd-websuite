@@ -135,38 +135,38 @@ class Object(gws.base.action.Object):
     @gws.ext.command.api('mapGetBox')
     def api_get_box(self, req: gws.WebRequester, p: GetBoxRequest) -> ImageResponse:
         """Render a layer image of a bounding box."""
-        mime_type, content = self._get_box(req, p)
-        return ImageResponse(mimeType=mime_type, content=content)
+        mime, content = self._get_box(req, p)
+        return ImageResponse(mimeType=mime, content=content)
 
     @gws.ext.command.get('mapGetBox')
     def http_get_box(self, req: gws.WebRequester, p: GetBoxRequest) -> gws.ContentResponse:
         """Render a layer image of a bounding box."""
-        mime_type, content = self._get_box(req, p)
-        return gws.ContentResponse(mimeType=mime_type, content=content)
+        mime, content = self._get_box(req, p)
+        return gws.ContentResponse(mimeType=mime, content=content)
 
     @gws.ext.command.api('mapGetTile')
     def api_get_tile(self, req: gws.WebRequester, p: GetTileRequest) -> ImageResponse:
         """Render a layer tile."""
-        mime_type, content = self._get_tile(req, p)
-        return ImageResponse(mimeType=mime_type, content=content)
+        mime, content = self._get_tile(req, p)
+        return ImageResponse(mimeType=mime, content=content)
 
     @gws.ext.command.get('mapGetTile')
     def http_get_tile(self, req: gws.WebRequester, p: GetTileRequest) -> gws.ContentResponse:
         """Render a layer tile."""
-        mime_type, content = self._get_tile(req, p)
-        return gws.ContentResponse(mimeType=mime_type, content=content)
+        mime, content = self._get_tile(req, p)
+        return gws.ContentResponse(mimeType=mime, content=content)
 
     @gws.ext.command.api('mapGetLegend')
     def api_get_legend(self, req: gws.WebRequester, p: GetLegendRequest) -> ImageResponse:
         """Render the legend of a layer."""
-        mime_type, content = self._get_legend(req, p)
-        return ImageResponse(mimeType=mime_type, content=content)
+        mime, content = self._get_legend(req, p)
+        return ImageResponse(mimeType=mime, content=content)
 
     @gws.ext.command.get('mapGetLegend')
     def http_get_legend(self, req: gws.WebRequester, p: GetLegendRequest) -> gws.ContentResponse:
         """Render the legend of a layer."""
-        mime_type, content = self._get_legend(req, p)
-        return gws.ContentResponse(mimeType=mime_type, content=content)
+        mime, content = self._get_legend(req, p)
+        return gws.ContentResponse(mimeType=mime, content=content)
 
     @gws.ext.command.api('mapDescribeLayer')
     def describe_layer(self, req: gws.WebRequester, p: DescribeLayerRequest) -> DescribeLayerResponse:
@@ -289,8 +289,8 @@ class Object(gws.base.action.Object):
         layer = req.user.require_layer(p.layerUid)
         lro = layer.render_legend()
         if lro and lro.image:
-            mime_type = gws.base.legend.IMAGE_FORMAT.mimeTypes[0]
-            return mime_type, lro.image.to_bytes(mime_type, gws.base.legend.IMAGE_FORMAT.options)
+            mime = gws.base.legend.IMAGE_FORMAT.mimeTypes[0]
+            return mime, lro.image.to_bytes(mime, gws.base.legend.IMAGE_FORMAT.options)
         return self._empty_pixel
 
     def _get_features(self, req: gws.WebRequester, p: GetFeaturesRequest) -> list[gws.FeatureProps]:

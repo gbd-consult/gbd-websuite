@@ -214,14 +214,14 @@ class Object(gws.base.action.Object):
         if not real_path:
             raise gws.NotFoundError(f'no real path for {req_path=}')
 
-        mime_type = gws.lib.mime.for_path(real_path)
+        mime = gws.lib.mime.for_path(real_path)
 
-        if not _valid_mime_type(mime_type, project_assets, site_assets):
+        if not _valid_mime_type(mime, project_assets, site_assets):
             # NB: pretend the file doesn't exist
-            raise gws.NotFoundError(f'invalid mime path={real_path!r} mime_type={mime_type!r}')
+            raise gws.NotFoundError(f'invalid mime path={real_path!r} mime={mime!r}')
 
         gws.log.debug(f'serving {real_path!r} for {req_path!r}')
-        return gws.ContentResponse(contentPath=real_path, mimeType=mime_type)
+        return gws.ContentResponse(contentPath=real_path, mimeType=mime)
 
     def _serve_template(self, req: gws.WebRequester, p: gws.Request, tpl: gws.Template, project: Optional[gws.Project]):
         """Render a template with the asset template arguments."""

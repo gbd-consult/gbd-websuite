@@ -69,7 +69,7 @@ class Object(gws.base.ows.client.provider.Object):
             _defaultSourceLayers=source_layers,
         )
 
-    def get_features(self, search, source_layers, mime_type=''):
+    def get_features(self, search, source_layers, mime=''):
         bounds = search.bounds
         search_shape = None
 
@@ -113,9 +113,9 @@ class Object(gws.base.ows.client.provider.Object):
         if not op:
             return []
 
-        mime_type = mime_type or op.defaultMimeType
-        if mime_type:
-            params.setdefault('OUTPUTFORMAT', mime_type)
+        mime = mime or op.defaultMimeType
+        if mime:
+            params.setdefault('OUTPUTFORMAT', mime)
 
         args = self.prepare_operation(op, params=params)
         text = gws.base.ows.client.request.get_text(args)
