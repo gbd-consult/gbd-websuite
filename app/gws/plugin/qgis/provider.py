@@ -250,14 +250,15 @@ class Object(gws.OwsServiceProvider):
 
     ##
 
-    def get_map(self, bounds: gws.Bounds, width: float, height: float, params: dict) -> bytes:
+    def get_map(self, bounds: gws.Bounds, width: float, height: float, params: dict, mime_type: str = '') -> bytes:
         """Render a map image with a GetMap request.
 
         Args:
             bounds: Box to render.
             width: Image width in pixels.
             height: Image height in pixels.
-            params: Extra request parameters, e.g. ``LAYERS``; they override the defaults (transparent PNG).
+            params: Extra request parameters, e.g. ``LAYERS``; they override the defaults.
+            mime_type: MIME type to request, PNG if empty.
 
         Returns:
             Image bytes.
@@ -275,7 +276,7 @@ class Object(gws.OwsServiceProvider):
             WIDTH=gws.u.to_rounded_int(width),
             HEIGHT=gws.u.to_rounded_int(height),
             CRS=bounds.crs.epsg,
-            FORMAT=gws.lib.mime.PNG,
+            FORMAT=mime_type or gws.lib.mime.PNG,
             TRANSPARENT='true',
             STYLES='',
         )
@@ -287,7 +288,7 @@ class Object(gws.OwsServiceProvider):
             return res.content
         raise gws.Error(res.text)
 
-    def get_features(self, search, source_layers):
+    def get_features(self, search, source_layers, mime_type=''):
         shape = search.shape
         if not shape or shape.type != gws.GeometryType.point:
             return []
@@ -331,7 +332,7 @@ class Object(gws.OwsServiceProvider):
             'QUERY_LAYERS': layer_names,
             'STYLES': [''] * len(layer_names),
             'FEATURE_COUNT': search.limit or 100,
-            'INFO_FORMAT': 'text/xml',
+            'INFO_FORMAT': mime_type or gws.lib.mime.XML,
             'REQUEST': gws.OwsVerb.GetFeatureInfo,
             'WITH_GEOMETRY': 'true',
         }

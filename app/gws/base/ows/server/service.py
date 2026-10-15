@@ -81,12 +81,7 @@ class Object(gws.OwsService):
         if p:
             self.imageFormats = []
             for cfg in p:
-                self.imageFormats.append(
-                    gws.ImageFormat(
-                        mimeTypes=[s.replace(' ', '') for s in cfg.get('mimeTypes', [])],
-                        options=cfg.get('options') or {},
-                    )
-                )
+                self.imageFormats.append(gws.lib.image.format_from_config(cfg))
             return
 
         self.imageFormats = [
@@ -139,8 +134,8 @@ class Object(gws.OwsService):
         """Configure ``supportedOperations``. Must be implemented by subclasses."""
         pass
 
-    def available_formats(self, verb: gws.OwsVerb):
-        """Return the formats available for an operation.
+    def available_mime_types(self, verb: gws.OwsVerb):
+        """Return the MIME types available for an operation.
 
         For image operations, these are the mime types of the image formats,
         otherwise the mime types of the templates for the operation.

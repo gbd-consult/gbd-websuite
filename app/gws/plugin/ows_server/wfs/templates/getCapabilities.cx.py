@@ -81,7 +81,7 @@ def operations(ta: server.TemplateArgs):
 
 def operation_params(ta, op):
     versions = [tpl.ows_value(v) for v in ta.service.supportedVersions]
-    formats = [tpl.ows_value(f) for f in op.formats]
+    formats = [tpl.ows_value(f) for f in op.mimeTypes]
 
     if op.verb == gws.OwsVerb.GetCapabilities:
         yield tag('OWS_11:Parameter', {'name': 'acceptVersions'}, tag('OWS_11:AllowedValues', versions))

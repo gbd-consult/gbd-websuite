@@ -128,7 +128,9 @@ On the layer:
   (18, a level of the global grid), ``requestTiles`` (4), ``requestBuffer``
   (64), ``crs``, ``name``.
 - ``imageFormat``: the stored and returned format (default PNG8); JPEG and
-  other opaque formats render transparency as a white background.
+  other opaque formats render transparency as a white background. WMS and
+  QGIS grabbers request the source MIME type that matches it best
+  (``gws.lib.image.best_mime_type``), e.g. ``image/png; mode=8bit`` for PNG8.
 - ``display``: ``tile`` (grabber tiles), ``box`` (grabber boxes) or, for
   ``tile`` and ``wmts`` layers, ``client`` (the browser fetches source tiles
   directly; requires a source grid in the map CRS).
@@ -150,9 +152,11 @@ A box grabber for a source that renders images on request::
             self.provider = provider
             self.sourceCrs = sourceCrs
             self.maxRequestPixels = provider.maxRequestPixels
+            op = provider.get_operation(gws.OwsVerb.GetMap)
+            self.sourceMimeType = gws.lib.image.best_mime_type(self.imageFormat, op.mimeTypes)
 
         def fetch_box_as_bytes(self, bounds, w, h, params=None):
-            return self.provider.get_map(bounds, w, h, self.mimeType)
+            return self.provider.get_map(bounds, w, h, self.sourceMimeType)
 
         def fetch_box_as_image(self, bounds, w, h, params=None):
             return self.to_image(self.fetch_box_as_bytes(bounds, w, h, params))

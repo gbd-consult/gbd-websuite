@@ -167,32 +167,32 @@ class Object(server.service.Object):
         self.supportedOperations = [
             gws.OwsOperation(
                 verb=gws.OwsVerb.DescribeFeatureType,
-                formats=[gws.lib.mime.GML3],
+                mimeTypes=[gws.lib.mime.GML3],
                 handlerName='handle_describe_feature_type',
             ),
             gws.OwsOperation(
                 verb=gws.OwsVerb.DescribeStoredQueries,
-                formats=self.available_formats(gws.OwsVerb.DescribeStoredQueries),
+                mimeTypes=self.available_mime_types(gws.OwsVerb.DescribeStoredQueries),
                 handlerName='handle_describe_stored_queries',
             ),
             gws.OwsOperation(
                 verb=gws.OwsVerb.GetCapabilities,
-                formats=self.available_formats(gws.OwsVerb.GetCapabilities),
+                mimeTypes=self.available_mime_types(gws.OwsVerb.GetCapabilities),
                 handlerName='handle_get_capabilities',
             ),
             gws.OwsOperation(
                 verb=gws.OwsVerb.GetFeature,
-                formats=self.available_formats(gws.OwsVerb.GetFeature),
+                mimeTypes=self.available_mime_types(gws.OwsVerb.GetFeature),
                 handlerName='handle_get_feature',
             ),
             gws.OwsOperation(
                 verb=gws.OwsVerb.GetPropertyValue,
-                formats=self.available_formats(gws.OwsVerb.GetPropertyValue),
+                mimeTypes=self.available_mime_types(gws.OwsVerb.GetPropertyValue),
                 handlerName='handle_get_property_value',
             ),
             gws.OwsOperation(
                 verb=gws.OwsVerb.ListStoredQueries,
-                formats=self.available_formats(gws.OwsVerb.ListStoredQueries),
+                mimeTypes=self.available_mime_types(gws.OwsVerb.ListStoredQueries),
                 handlerName='handle_list_stored_queries',
             ),
         ]

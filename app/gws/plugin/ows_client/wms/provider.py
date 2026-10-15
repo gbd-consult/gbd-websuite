@@ -51,7 +51,7 @@ class Object(gws.base.ows.client.provider.Object):
             self.cfg('bottomFirst', default=False),
         ])
 
-    def get_map(self, bounds: gws.Bounds, width: int, height: int, source_layers: list[gws.SourceLayer], mime_type: str) -> bytes:
+    def get_map(self, bounds: gws.Bounds, width: int, height: int, source_layers: list[gws.SourceLayer], mime_type: str = '') -> bytes:
         """Fetch a map image with GetMap.
 
         The source layers are given top-first and sent bottom-first, as WMS expects.
@@ -62,7 +62,7 @@ class Object(gws.base.ows.client.provider.Object):
             width: Image width in pixels.
             height: Image height in pixels.
             source_layers: Source layers to render, topmost first.
-            mime_type: Image format to request.
+            mime_type: MIME type to request, as spelled by the service, the default of the operation if empty.
 
         Returns:
             The image content.
@@ -71,6 +71,10 @@ class Object(gws.base.ows.client.provider.Object):
             ``gws.ExternalServiceError``: If the service has no GetMap operation
                 or the response is not an image.
         """
+        op = self.get_operation(gws.OwsVerb.GetMap)
+        if not op:
+            raise gws.ExternalServiceError(f'no GetMap operation in {self.url!r}')
+
         v3 = self.version >= '1.3'
 
         bbox = bounds.extent
@@ -87,14 +91,12 @@ class Object(gws.base.ows.client.provider.Object):
             'HEIGHT': height,
             'LAYERS': layer_names,
             'STYLES': [''] * len(layer_names),
-            'FORMAT': mime_type,
             'TRANSPARENT': 'TRUE',
             'VERSION': self.version,
         }
-
-        op = self.get_operation(gws.OwsVerb.GetMap)
-        if not op:
-            raise gws.ExternalServiceError(f'no GetMap operation in {self.url!r}')
+        mime_type = mime_type or op.defaultMimeType
+        if mime_type:
+            params.setdefault('FORMAT', mime_type)
 
         args = self.prepare_operation(op, params=params)
         res = gws.base.ows.client.request.get(args)
@@ -122,7 +124,7 @@ class Object(gws.base.ows.client.provider.Object):
             _defaultSourceLayers=source_layers,
         )
 
-    def get_features(self, search, source_layers):
+    def get_features(self, search, source_layers, mime_type=''):
         v3 = self.version >= '1.3'
 
         shape = search.shape
@@ -186,8 +188,9 @@ class Object(gws.base.ows.client.provider.Object):
         if not op:
             return []
 
-        if op.preferredFormat:
-            params.setdefault('INFO_FORMAT', op.preferredFormat)
+        mime_type = mime_type or op.defaultMimeType
+        if mime_type:
+            params.setdefault('INFO_FORMAT', mime_type)
 
         args = self.prepare_operation(op, params=params)
         text = gws.base.ows.client.request.get_text(args)

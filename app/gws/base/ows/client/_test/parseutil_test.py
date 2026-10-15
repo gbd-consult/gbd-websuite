@@ -40,13 +40,13 @@ def test_service_operations_wms():
     assert ops[0].url == 'http://host/wms'
     assert ops[0].params == {}
     assert ops[0].postUrl == 'http://host/wms_post'
-    assert ops[0].formats == ['text/xml']
+    assert ops[0].mimeTypes == ['text/xml']
     assert ops[0].allowedParameters == {}
 
     assert ops[1].url == 'http://host/wms'
     assert ops[1].params == {'map': 'x'}
     assert ops[1].postUrl == ''
-    assert ops[1].formats == ['image/png', 'image/jpeg']
+    assert ops[1].mimeTypes == ['image/png', 'image/jpeg']
 
 
 def test_service_operations_ows():
@@ -82,7 +82,7 @@ def test_service_operations_ows():
     assert ops[0].allowedParameters == {'ACCEPTVERSIONS': ['2.0.0', '1.1.0']}
     assert ops[0].postUrl == 'http://host/wfs'
     assert ops[1].allowedParameters == {'OUTPUTFORMAT': ['text/xml; subtype=gml/3.2', 'application/json']}
-    assert ops[1].formats == ['text/xml; subtype=gml/3.2', 'application/json']
+    assert ops[1].mimeTypes == ['text/xml; subtype=gml/3.2', 'application/json']
 
 
 def test_service_operations_empty():

@@ -9,7 +9,7 @@ Submodules:
 
 - ``provider``: base ``OwsServiceProvider``. Holds the service URL, version,
   operations and source layers, merges the operations reported in the
-  capabilities with those in the configuration, selects a preferred format for
+  capabilities with those in the configuration, selects a default MIME type for
   each operation, prepares request arguments (including basic authorization)
   and downloads and caches the capabilities document.
 - ``request``: low-level HTTP helpers. Build the ``SERVICE``, ``REQUEST`` and

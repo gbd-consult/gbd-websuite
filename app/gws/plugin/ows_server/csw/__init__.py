@@ -145,22 +145,22 @@ class Object(server.service.Object):
         self.supportedOperations = [
             gws.OwsOperation(
                 verb=gws.OwsVerb.GetCapabilities,
-                formats=[gws.lib.mime.XML],
+                mimeTypes=[gws.lib.mime.XML],
                 handlerName='handle_get_capabilities',
             ),
             gws.OwsOperation(
                 verb=gws.OwsVerb.DescribeRecord,
-                formats=[gws.lib.mime.XML],
+                mimeTypes=[gws.lib.mime.XML],
                 handlerName='handle_describe_record',
             ),
             gws.OwsOperation(
                 verb=gws.OwsVerb.GetRecords,
-                formats=[gws.lib.mime.XML],
+                mimeTypes=[gws.lib.mime.XML],
                 handlerName='handle_get_records',
             ),
             gws.OwsOperation(
                 verb=gws.OwsVerb.GetRecordById,
-                formats=[gws.lib.mime.XML],
+                mimeTypes=[gws.lib.mime.XML],
                 handlerName='handle_get_record_by_id',
             ),
         ]

@@ -96,7 +96,7 @@ def test_parse_200():
 
     assert [op.verb for op in cc.operations] == ['GetCapabilities', 'GetFeature']
     assert cc.operations[1].postUrl == 'http://host/wfs'
-    assert cc.operations[1].formats == ['application/gml+xml; version=3.2']
+    assert cc.operations[1].mimeTypes == ['application/gml+xml; version=3.2']
 
     assert [sl.name for sl in cc.sourceLayers] == ['ns_1:type_1', 'ns_1:type_2']
 

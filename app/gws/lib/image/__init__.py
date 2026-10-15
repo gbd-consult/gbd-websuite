@@ -8,6 +8,11 @@ bytes, raw pixel data, a file, a data URL or a numpy array) or with ``qr_code``.
 ``Image`` methods resize, crop, rotate, paste and compose images and encode them as bytes,
 base64, data URLs or files. The output format is selected by a MIME type; PNG is the default.
 
+``PNG8``, ``PNG24``, ``JPEG`` and ``WEBP`` are predefined ``gws.ImageFormat`` objects. The first
+MIME type of a format is its content type, the others are names under which services offer it
+(``image/png; mode=8bit``). ``format_from_config`` creates a format from a ``FormatConfig``, and
+``best_mime_type`` selects the MIME type to request from a remote source (WMS, QGIS Server) for a format.
+
 Image sizes are limited to ``MAX_PIXELS``. ``thumbnail`` scales encoded images down,
 ``pixel``, ``empty_pixel`` and ``error_pixel`` return cached encoded 1x1 images.
 ``get_draw`` and ``get_font`` give access to PIL drawing on an image.
@@ -50,11 +55,80 @@ class FormatConfig(gws.Config):
     """Image format with its encoding options."""
 
     name: str = ''
-    """Name of the format."""
-    mimeTypes: list[gws.MimeType]
-    """MIME types for this format."""
+    """Name of the format: "png8", "png24", "jpeg", "webp" or a custom name."""
+    mimeTypes: Optional[list[gws.MimeType]]
+    """MIME types for this format, required for a custom name."""
     options: Optional[dict]
     """Image encoding options."""
+
+
+PNG8 = gws.ImageFormat(name='png8', mimeTypes=[gws.lib.mime.PNG, gws.lib.mime.PNG8], options={'mode': 'P'})
+"""PNG with an 8-bit palette."""
+PNG24 = gws.ImageFormat(name='png24', mimeTypes=[gws.lib.mime.PNG, gws.lib.mime.PNG24], options={})
+"""PNG with full color and alpha."""
+JPEG = gws.ImageFormat(name='jpeg', mimeTypes=[gws.lib.mime.JPEG], options={})
+"""JPEG, transparency rendered as a white background."""
+WEBP = gws.ImageFormat(name='webp', mimeTypes=[gws.lib.mime.WEBP], options={})
+"""WebP."""
+
+_FORMATS = {f.name: f for f in [PNG8, PNG24, JPEG, WEBP]}
+
+
+def format_from_config(cfg: FormatConfig) -> gws.ImageFormat:
+    """Create an image format from its configuration.
+
+    A predefined format (``png8``, ``png24``, ``jpeg``, ``webp``) can be given by name alone;
+    configured MIME types and options replace those of the predefined format.
+
+    Args:
+        cfg: Format configuration.
+
+    Returns:
+        The image format.
+
+    Raises:
+        ``Error``: If the configuration has no known MIME types and the name is not a predefined format.
+    """
+
+    name = cfg.get('name') or ''
+    std = _FORMATS.get(name)
+
+    mts = []
+    for mt in cfg.get('mimeTypes') or (std.mimeTypes if std else []):
+        s = gws.lib.mime.get(mt)
+        if not s:
+            gws.log.warning(f'image format {name!r}: unknown MIME type {mt!r} ignored')
+            continue
+        mts.append(s)
+    if not mts:
+        raise Error(f'unknown image format {name!r}')
+
+    options = cfg.get('options')
+    if options is None:
+        options = std.options if std else {}
+    return gws.ImageFormat(name=name, mimeTypes=mts, options=dict(gws.u.to_dict(options)))
+
+
+def best_mime_type(ifo: gws.ImageFormat, supported: list[str]) -> str:
+    """Select the MIME type to request from a source for an image format.
+
+    The supported MIME types are tried longest first, so that a specific one (``image/png; mode=8bit``)
+    wins over a plain one (``image/png``). The first one that is among the MIME types of the format
+    is selected.
+
+    Args:
+        ifo: Image format.
+        supported: MIME types the source supports, normalized with ``gws.lib.mime.get``.
+
+    Returns:
+        The selected MIME type, or an empty string if none matches.
+    """
+
+    for mt in sorted(supported, key=len, reverse=True):
+        if mt in ifo.mimeTypes:
+            return mt
+
+    return ''
 
 
 def from_size(size: gws.Size, color=None) -> 'Image':
@@ -151,7 +225,7 @@ def from_data_url(url: str) -> 'Image':
         mime_type, content = gws.lib.text.parse_data_url(url)
     except gws.lib.text.Error as exc:
         raise Error('invalid data url') from exc
-    if gws.lib.mime.get(mime_type) not in _DATA_URL_MIME_TYPES:
+    if gws.lib.mime.get_base(mime_type) not in _DATA_URL_MIME_TYPES:
         raise Error('invalid data url')
     return from_bytes(content)
 

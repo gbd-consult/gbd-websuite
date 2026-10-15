@@ -9,34 +9,14 @@ import gws.lib.net
 import gws.lib.mime
 import gws.lib.text
 
-from . import request
+from . import request, operation
 
-_IMAGE_VERBS = {
-    gws.OwsVerb.GetLegendGraphic,
-    gws.OwsVerb.GetMap,
-    gws.OwsVerb.GetTile,
-}
-
-_PREFER_IMAGE_MIME = [gws.lib.mime.PNG, gws.lib.mime.JPEG]
-_PREFER_XML_MIME = [gws.lib.mime.GML3, gws.lib.mime.GML, gws.lib.mime.XML]
-
-
-class OperationConfig(gws.Config):
-    """OWS operation that overrides or adds to those in the service capabilities."""
-    verb: gws.OwsVerb
-    """OWS request type."""
-    formats: Optional[list[str]]
-    """Formats supported by the operation."""
-    params: Optional[dict]
-    """Extra parameters added to GET requests for this operation."""
-    postUrl: Optional[gws.Url]
-    """URL for POST requests."""
-    url: Optional[gws.Url]
-    """URL for GET requests."""
+_MIME_TYPE_PARAMS = {'FORMAT', 'INFO_FORMAT', 'OUTPUTFORMAT'}
 
 
 class AuthorizationConfig(gws.Config):
     """Credentials for accessing the service."""
+
     type: str
     """Authorization type (only "basic" is supported)."""
     username: str = ''
@@ -56,7 +36,7 @@ class Config(gws.Config):
     """Force XY axis order for CRSs with lat/lon axis order."""
     maxRequests: int = 0
     """Max. concurrent requests to this source."""
-    operations: Optional[list[OperationConfig]]
+    operations: Optional[list[operation.Config]]
     """Override operations reported in capabilities."""
     authorization: Optional[AuthorizationConfig]
     """Service authorization options."""
@@ -91,57 +71,24 @@ class Object(gws.OwsServiceProvider):
 
         Operations from the configuration replace those from the capabilities
         with the same verb; attributes missing in the configuration are taken from
-        the capabilities. A preferred format is then chosen for each operation:
-        PNG or JPEG for image requests, GML3, GML or XML for others.
+        the capabilities (see ``operation.create``).
 
         Args:
             operations_from_caps: Operations read from the capabilities.
         """
 
-        d = {}
+        ops = {}
+        cfgs = self.cfg('operations')
 
         for op in operations_from_caps:
-            d[op.verb] = op
+            ops[op.verb] = operation.create(op.verb, op, cfgs)
 
-        for cfg in (self.cfg('operations') or []):
-            # add an operation from the config, borrowing missing attributes from a caps op
-            verb = cfg.get('verb')
-            caps_op = d.get(verb, {})
-            d[verb] = gws.OwsOperation(
-                verb=verb,
-                formats=gws.u.first_not_none(cfg.get('formats'), caps_op.get('formats'), []),
-                params=gws.u.first_not_none(cfg.get('params'), caps_op.get('params'), {}),
-                postUrl=gws.u.first_not_none(cfg.get('postUrl'), caps_op.get('postUrl'), ''),
-                url=gws.u.first_not_none(cfg.get('url'), caps_op.get('url'), '')
-            )
+        if cfgs:
+            for c in cfgs:
+                if c.get('verb') not in ops:
+                    ops[c.get('verb')] = operation.create(c.get('verb'), None, cfgs)
 
-        self.operations = list(d.values())
-
-        for op in self.operations:
-            op.preferredFormat = self._preferred_format(op)
-
-    def _preferred_format(self, op: gws.OwsOperation) -> Optional[str]:
-        """Pick the best supported format of an operation, or the first one if none is preferred."""
-        prefer_fmts = _PREFER_IMAGE_MIME if op.verb in _IMAGE_VERBS else _PREFER_XML_MIME
-
-        if not op.formats:
-            return prefer_fmts[0]
-
-        # select the "best" (leftmost in the preferred list) format
-
-        best_pos = 999
-        best_fmt = ''
-
-        for fmt in op.formats:
-            canon_fmt = gws.lib.mime.get(fmt)
-            if not canon_fmt or canon_fmt not in prefer_fmts:
-                continue
-            pos = prefer_fmts.index(canon_fmt)
-            if pos < best_pos:
-                best_pos = pos
-                best_fmt = fmt
-
-        return best_fmt or op.formats[0]
+        self.operations = list(ops.values())
 
     def cache_hash(self):
         """Compute a hash of the provider settings, used to build cache keys.
@@ -150,11 +97,13 @@ class Object(gws.OwsServiceProvider):
             A hash of the URL, the forced CRS and the axis order setting.
         """
 
-        return gws.u.sha256([
-            self.url,
-            self.forceCrs.srid if self.forceCrs else '',
-            self.alwaysXY,
-        ])
+        return gws.u.sha256(
+            [
+                self.url,
+                self.forceCrs.srid if self.forceCrs else '',
+                self.alwaysXY,
+            ]
+        )
 
     def get_operation(self, verb, method=None):
         for op in self.operations:
@@ -167,7 +116,8 @@ class Object(gws.OwsServiceProvider):
         """Prepare the request arguments for an operation.
 
         For GET requests, the operation parameters are included. Parameter names
-        are upper-cased and checked against the operation's allowed values.
+        are upper-cased and checked against the operation's allowed values. MIME types
+        in ``FORMAT``, ``INFO_FORMAT`` and ``OUTPUTFORMAT`` are sent in the spelling of the service.
         Adds a basic ``Authorization`` header if configured.
 
         Args:
@@ -198,17 +148,17 @@ class Object(gws.OwsServiceProvider):
         if args.method == gws.RequestMethod.POST:
             args.url = op.postUrl
 
-        allowed = op.allowedParameters or {}
-
         if params:
             for name, val in params.items():
                 name = name.upper()
-                if name in allowed and val not in allowed[name]:
+                if name in _MIME_TYPE_PARAMS and val in op.mimeTypeMap:
+                    val = op.mimeTypeMap[val]
+                if name in op.allowedParameters and val not in op.allowedParameters[name]:
                     raise gws.Error(f'invalid parameter value {val!r} for {name!r}')
                 args.params[name] = val
 
         if self.authorization and self.authorization.type == 'basic':
-            b = gws.lib.text.to_base64(f"{self.authorization.username or ''}:{self.authorization.password or ''}")
+            b = gws.lib.text.to_base64(f'{self.authorization.username or ""}:{self.authorization.password or ""}')
             args.headers['Authorization'] = 'Basic ' + b
 
         return args
@@ -216,7 +166,8 @@ class Object(gws.OwsServiceProvider):
     def get_capabilities(self):
         """Download the capabilities document of the service.
 
-        The document is cached for ``capsCacheMaxAge``.
+        The request goes to the service URL, unless the configuration has a ``GetCapabilities``
+        operation with its own attributes. The document is cached for ``capsCacheMaxAge``.
 
         Returns:
             The capabilities XML text.
@@ -226,11 +177,10 @@ class Object(gws.OwsServiceProvider):
         """
 
         url, params = gws.lib.net.extract_params(self.url)
-        op = gws.OwsOperation(
-            formats=[gws.lib.mime.XML],
-            url=url,
-            params=params,
-            verb=gws.OwsVerb.GetCapabilities,
+        op = operation.create(
+            gws.OwsVerb.GetCapabilities,
+            gws.OwsOperation(mimeTypes=[gws.lib.mime.XML], params=params, url=url),
+            self.cfg('operations'),
         )
         args = self.prepare_operation(op)
         return gws.u.get_cached_object(
@@ -238,3 +188,6 @@ class Object(gws.OwsServiceProvider):
             self.cfg('capsCacheMaxAge'),
             lambda: request.get_text(args),
         )
+
+
+##

@@ -66,8 +66,8 @@ class Requester(gws.WebRequester):
     _STRUCT_MSGPACK = 'msgpack'
 
     _struct_mime = {
-        _STRUCT_JSON: 'application/json',
-        _STRUCT_MSGPACK: 'application/msgpack',
+        _STRUCT_JSON: gws.lib.mime.JSON,
+        _STRUCT_MSGPACK: gws.lib.mime.MSGPACK,
     }
 
     def __init__(self, root: gws.Root, environ: dict, site: gws.WebSite, **kwargs):
@@ -119,7 +119,7 @@ class Requester(gws.WebRequester):
         self.contentType = gws.lib.mime.get(self.contentTypeHeader) or gws.lib.mime.BIN
 
         if self.isPost:
-            if self.contentTypeHeader == 'application/x-www-form-urlencoded' or self.contentTypeHeader == 'multipart/form-data':
+            if self.contentTypeHeader == gws.lib.mime.FORM or self.contentTypeHeader == gws.lib.mime.MULTIPART:
                 self.isForm = True
             else:
                 self.structInput = self._struct_type(self.contentTypeHeader)

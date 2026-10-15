@@ -126,22 +126,22 @@ class Object(server.service.Object):
         self.supportedOperations = [
             gws.OwsOperation(
                 verb=gws.OwsVerb.GetCapabilities,
-                formats=self.available_formats(gws.OwsVerb.GetCapabilities),
+                mimeTypes=self.available_mime_types(gws.OwsVerb.GetCapabilities),
                 handlerName='handle_get_capabilities',
             ),
             gws.OwsOperation(
                 verb=gws.OwsVerb.GetMap,
-                formats=self.available_formats(gws.OwsVerb.GetMap),
+                mimeTypes=self.available_mime_types(gws.OwsVerb.GetMap),
                 handlerName='handle_get_map',
             ),
             gws.OwsOperation(
                 verb=gws.OwsVerb.GetFeatureInfo,
-                formats=self.available_formats(gws.OwsVerb.GetFeatureInfo),
+                mimeTypes=self.available_mime_types(gws.OwsVerb.GetFeatureInfo),
                 handlerName='handle_get_feature_info',
             ),
             gws.OwsOperation(
                 verb=gws.OwsVerb.GetLegendGraphic,
-                formats=self.available_formats(gws.OwsVerb.GetLegendGraphic),
+                mimeTypes=self.available_mime_types(gws.OwsVerb.GetLegendGraphic),
                 handlerName='handle_get_legend_graphic',
             ),
         ]

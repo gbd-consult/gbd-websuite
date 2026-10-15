@@ -82,9 +82,9 @@ def _parse_operation(el: gws.XmlElement) -> gws.OwsOperation:
     u = _parse_url(el.findfirst('DCP/HTTP/Get', 'DCPType/HTTP/Get'))
     op.url, op.params = gws.lib.net.extract_params(u)
 
-    op.formats = el.textlist('Format')
+    op.mimeTypes = el.textlist('Format')
     if 'OUTPUTFORMAT' in op.allowedParameters:
-        op.formats.extend(op.allowedParameters['OUTPUTFORMAT'])
+        op.mimeTypes.extend(op.allowedParameters['OUTPUTFORMAT'])
 
     return op
 
@@ -185,7 +185,6 @@ def _element_metadata(el: Optional[gws.XmlElement], md: gws.Metadata):
 
 _contact_mapping = [
     # wms
-
     ('contactArea', 'StateOrProvince'),
     ('contactCity', 'City'),
     ('contactCountry', 'Country'),
@@ -196,9 +195,7 @@ _contact_mapping = [
     ('contactPhone', 'ContactVoiceTelephone'),
     ('contactPosition', 'ContactPosition'),
     ('contactZip', 'PostCode'),
-
     # ows
-
     ('contactArea', 'AdministrativeArea'),
     ('contactCity', 'City'),
     ('contactCountry', 'Country'),
@@ -225,6 +222,7 @@ def _contact_metadata(el: Optional[gws.XmlElement], md: gws.Metadata):
 
 
 ##
+
 
 def wgs_extent(layer_el: gws.XmlElement) -> Optional[gws.Extent]:
     """Read the WGS84 bounding box from a ``Layer`` or ``FeatureType`` element.
@@ -312,10 +310,7 @@ def parse_style(el: gws.XmlElement) -> gws.SourceStyle:
     st.metadata = element_metadata(el)
     st.name = st.metadata.get('name', '').lower()
     st.legendUrl = _parse_url(el.findfirst('LegendURL'))
-    st.isDefault = (
-            el.get('IsDefault') == 'true'
-            or st.name == 'default'
-            or st.name.endswith(':default'))
+    st.isDefault = el.get('IsDefault') == 'true' or st.name == 'default' or st.name.endswith(':default')
     return st
 
 
@@ -483,11 +478,13 @@ def _parse_link(el: gws.XmlElement) -> Optional[gws.MetadataLink]:
         return gws.MetadataLink(url=el.get('href'))
 
     # nested
-    d = gws.u.strip({
-        'url': _parse_url(el),
-        'type': el.get('type'),
-        'format': el.textof('Format'),
-    })
+    d = gws.u.strip(
+        {
+            'url': _parse_url(el),
+            'type': el.get('type'),
+            'format': el.textof('Format'),
+        }
+    )
 
     if d:
         return gws.MetadataLink(d)

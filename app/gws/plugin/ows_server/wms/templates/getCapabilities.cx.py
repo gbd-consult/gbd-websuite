@@ -117,8 +117,8 @@ def request_caps(ta):
                 verb = 'SLD:GetLegendGraphic'
             if ta.intVersion == 110:
                 continue
-        # NB QGIS wants a space after ';'
-        yield tag(str(verb), [tag('Format', f.replace(';', '; ')) for f in op.formats], url)
+        # NB QGIS wants a space after ';', as in normalized MIME types
+        yield tag(str(verb), [tag('Format', mt) for mt in op.mimeTypes], url)
 
 
 def layer(ta, lc: server.LayerCaps):

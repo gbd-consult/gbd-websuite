@@ -17,7 +17,7 @@ import gws.gis.cache
 
 from . import ows
 
-DEFAULT_IMAGE_FORMAT = gws.ImageFormat(name='png8', mimeTypes=['image/png'], options={'mode': 'P'})
+DEFAULT_IMAGE_FORMAT = gws.lib.image.PNG8
 
 
 class AutoLayersConfig(gws.ConfigWithAccess):
@@ -190,7 +190,7 @@ class Object(gws.Layer):
         self.imageFormat = DEFAULT_IMAGE_FORMAT
         p = self.cfg('imageFormat')
         if p:
-            self.imageFormat = gws.ImageFormat(name=p.name, mimeTypes=p.mimeTypes, options=p.options or {})
+            self.imageFormat = gws.lib.image.format_from_config(p)
 
         self.parentWgsExtent = self.cfg('_parentWgsExtent')
         self.parentResolutions = self.cfg('_parentResolutions')

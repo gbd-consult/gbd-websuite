@@ -2,6 +2,7 @@
 
 import gws
 import gws.base.grabber.box
+import gws.lib.image
 
 from . import provider
 
@@ -13,6 +14,8 @@ class Object(gws.base.grabber.box.Object):
     """WMS service provider."""
     sourceLayers: list[gws.SourceLayer]
     """Source layers to render."""
+    sourceMimeType: str
+    """MIME type of GetMap requests, the default of the operation if empty."""
 
     def __init__(self, opts: gws.base.grabber.Options, provider: provider.Object, sourceLayers: list[gws.SourceLayer], sourceCrs: gws.Crs):
         """Create the grabber.
@@ -28,6 +31,8 @@ class Object(gws.base.grabber.box.Object):
         self.sourceLayers = sourceLayers
         self.sourceCrs = sourceCrs
         self.maxRequestPixels = self.provider.maxRequestPixels
+        op = self.provider.get_operation(gws.OwsVerb.GetMap)
+        self.sourceMimeType = gws.lib.image.best_mime_type(self.imageFormat, op.mimeTypes if op else [])
 
     def fetch_box_as_bytes(self, bounds, w, h, params=None):
         return self.provider.get_map(
@@ -35,7 +40,7 @@ class Object(gws.base.grabber.box.Object):
             w,
             h,
             self.sourceLayers,
-            self.mimeType,
+            self.sourceMimeType,
         )
 
     def fetch_box_as_image(self, bounds, w, h, params=None):

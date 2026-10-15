@@ -141,17 +141,17 @@ class Object(server.service.Object):
         self.supportedOperations = [
             gws.OwsOperation(
                 verb=gws.OwsVerb.GetCapabilities,
-                formats=self.available_formats(gws.OwsVerb.GetCapabilities),
+                mimeTypes=self.available_mime_types(gws.OwsVerb.GetCapabilities),
                 handlerName='handle_get_capabilities',
             ),
             gws.OwsOperation(
                 verb=gws.OwsVerb.GetLegendGraphic,
-                formats=self.available_formats(gws.OwsVerb.GetLegendGraphic),
+                mimeTypes=self.available_mime_types(gws.OwsVerb.GetLegendGraphic),
                 handlerName='handle_get_legend_graphic',
             ),
             gws.OwsOperation(
                 verb=gws.OwsVerb.GetTile,
-                formats=self.available_formats(gws.OwsVerb.GetTile),
+                mimeTypes=self.available_mime_types(gws.OwsVerb.GetTile),
                 handlerName='handle_get_tile',
             ),
         ]

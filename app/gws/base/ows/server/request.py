@@ -395,19 +395,18 @@ class Object:
         raise error.InvalidParameterValue(p)
 
     def requested_format(self, param_names: str) -> str:
-        """Return the requested format with whitespace removed.
+        """Return the requested MIME type, normalized.
 
         Args:
             param_names: Comma-separated parameter names to look for.
 
         Returns:
-            The format, or an empty string if not requested.
+            The MIME type, the value as given if it is unknown, or an empty string if not requested.
         """
 
         _, val = self._get_param(param_names, '')
         if val:
-            # NB our mime types do not contain spaces
-            return ''.join(val.split())
+            return gws.lib.mime.get(val) or val
         return ''
 
     def requested_feature_count(self, param_names: str) -> int:

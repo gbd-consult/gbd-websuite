@@ -6596,16 +6596,18 @@ class OwsOperation(Data):
     """Allowed values for parameters, keyed by the upper-cased parameter name."""
     constraints: dict[str, list[str]]
     """Operation constraints."""
-    formats: list[str]
-    """Supported output formats."""
+    defaultMimeType: str
+    """Output MIME type to use in requests that do not specify one (client side)."""
     handlerName: str
     """Name of the service method that handles this operation (server side)."""
+    mimeTypeMap: dict[str, str]
+    """Normalized MIME types mapped to the spelling of the remote service, if it differs (client side)."""
+    mimeTypes: list[str]
+    """Supported output MIME types, normalized."""
     params: dict[str, str]
     """Extra parameters for GET requests (client side)."""
     postUrl: Url
     """URL for POST requests."""
-    preferredFormat: str
-    """Output format to use in requests (client side)."""
     url: Url
     """URL for GET requests."""
     verb: OwsVerb
@@ -6735,12 +6737,13 @@ class OwsServiceProvider(Node):
             The operation, or ``None`` if the service does not support it.
         """
 
-    def get_features(self, args: 'SearchQuery', source_layers: list['SourceLayer']) -> list['FeatureRecord']:
+    def get_features(self, args: 'SearchQuery', source_layers: list['SourceLayer'], mime_type: str = '') -> list['FeatureRecord']:
         """Search for features in the given source layers.
 
         Args:
             args: Search query.
             source_layers: Source layers to search.
+            mime_type: Response MIME type to request, the default of the operation if empty.
 
         Returns:
             Found feature records.
