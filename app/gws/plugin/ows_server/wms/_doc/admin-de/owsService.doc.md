@@ -43,7 +43,7 @@ map.layers+ {
 }
 ```
 
-Der Dienst veröffentlicht die Layer der Projektkarte; über `map.layers` bestimmen Sie also, was der WMS ausliefert. `supportedCrs` legt die Koordinatenbezugssysteme fest, in denen Kartenbilder angefordert werden können. In `metadata` hinterlegen Sie die im Capabilities-Dokument sichtbaren Angaben des Dienstes. Die Vorlage mit dem Subject `ows.GetFeatureInfo` steuert, welche Attribute eine Objektabfrage zurückgibt. Der `finders`-Eintrag des Layers macht diesen abfragbar, sodass `GetFeatureInfo` überhaupt Ergebnisse liefert.
+Der Dienst veröffentlicht die Layer der Projektkarte; über `map.layers` bestimmen Sie also, was der WMS ausliefert. `supportedCrs` legt die Koordinatenbezugssysteme fest, in denen Kartenbilder angefordert werden können. In `metadata` hinterlegen Sie die im Capabilities-Dokument sichtbaren Angaben des Dienstes. Die Vorlage mit dem Subject `ows.GetFeatureInfo` steuert, welche Attribute eine Objektabfrage zurückgibt. Der `finders`-Eintrag des Layers legt fest, dass `GetFeatureInfo` die Objekte aus der Tabelle `edit.poi` abfragt; ohne ihn fragt ein `qgisflat`-Layer seine abfragbaren Quell-Layer über QGIS ab.
 
 %ref "gws.plugin.ows_server.wms.Config"
 %demo "service_wms_advanced_demo"

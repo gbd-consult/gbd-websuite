@@ -11,7 +11,7 @@ Eine vollständige Installation besteht aus dem WebSuite-Container und – sobal
 ```yaml title="docker-compose.yml"
 services:
     gws:
-        image: gbdconsult/gws-amd64:8.4
+        image: gbdconsult/gws-amd64:8.5
         container_name: gws
         restart: unless-stopped
         volumes:

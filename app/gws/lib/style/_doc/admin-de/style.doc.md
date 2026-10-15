@@ -5,26 +5,22 @@ Das Erscheinungsbild von Vektorobjekten – Füllung, Linien, Marker und Beschri
 Eigene Eigenschaften werden mit zwei Bindestrichen geschrieben (`--marker`, `--label-fill`). Das ist die CSS-Schreibweise für benutzerdefinierte Eigenschaften; ein CSS-Parser oder ein Editor stört sich dadurch nicht daran. Die WebSuite entfernt das Präfix beim Einlesen, `--marker` und `marker` sind also gleichbedeutend.
 
 %warn
-Unbekannte Eigenschaften werden nicht stillschweigend übergangen: Die WebSuite meldet `style: invalid css property` im Log und ignoriert die Angabe. Prüfen Sie bei unerwarteter Darstellung zuerst das Log.
+Unbekannte Eigenschaften und ungültige Werte werden stillschweigend übergangen: Der Client übernimmt aus einer CSS-Regel nur die Eigenschaften, die er kennt, und meldet keinen Fehler. Prüfen Sie bei unerwarteter Darstellung zuerst die Schreibweise.
 %end
 
 ## Ein Stil konfigurieren
 
-Ein Stil hat zwei Formen. Bevorzugt verweisen Sie mit `cssSelector` auf eine Regel aus einer eigenen CSS-Datei, die über das `web`-Verzeichnis ausgeliefert wird:
+Ein Layer verweist mit `cssSelector` auf eine Regel aus einer eigenen CSS-Datei, die über das `web`-Verzeichnis ausgeliefert wird:
 
 ```javascript
-style {
+layers+ {
+    type "postgres"
+    tableName "public.poi"
     cssSelector ".myLayer"
 }
 ```
 
-So halten Sie die Gestaltung getrennt von der Konfiguration, und mehrere Layer teilen sich dasselbe Aussehen, ohne dass Sie die Regeln wiederholen. Alternativ geben Sie die Regeln unmittelbar als Text an:
-
-```javascript
-style {
-    text "fill: rgba(255,0,0,0.4); stroke: red; stroke-width: 2"
-}
-```
+So halten Sie die Gestaltung getrennt von der Konfiguration, und mehrere Layer teilen sich dasselbe Aussehen, ohne dass Sie die Regeln wiederholen.
 
 Einige Objekte gestaltet der Client über einen fest vergebenen Selektor. So zeichnet er Treffer aus Suche und Objektabfrage mit der Klasse `.modMarkerFeature`; eine gleichnamige Regel in Ihrer CSS-Datei ändert deren Hervorhebung.
 
@@ -40,12 +36,12 @@ Die Druckausgabe wird aus dem Dateisystem heraus erzeugt, nicht über den Webser
 
 ## Geometrie und Beschriftung
 
-Ein Stil beschreibt beides zugleich: die Geometrie und die Beschriftung des Objekts. Über `--with-geometry` und `--with-label` schalten Sie eines von beiden ab – etwa um nur Beschriftungen ohne sichtbare Geometrie darzustellen.
+Ein Stil beschreibt beides zugleich: die Geometrie und die Beschriftung des Objekts. Die Beschriftung ist voreingestellt ausgeschaltet; `--with-label: all` schaltet sie ein. Mit `--with-geometry: none` blenden Sie die Geometrie aus – etwa um nur Beschriftungen ohne sichtbare Geometrie darzustellen.
 
 | Eigenschaft | Werte | Bedeutung |
 |---|---|---|
 | `--with-geometry` | `all`, `none` | Geometrie zeichnen. Voreinstellung `all` |
-| `--with-label` | `all`, `none` | Beschriftung zeichnen. Voreinstellung `all` |
+| `--with-label` | `all`, `none` | Beschriftung zeichnen. Voreinstellung `none` |
 
 ## Flächen und Linien
 
@@ -103,18 +99,17 @@ Mit `--label-min-scale` und `--label-max-scale` blenden Sie Beschriftungen in un
 
 ## Beispiel-Konfiguration ::
 
-```javascript
-style {
-    text """
-        fill: rgba(0, 100, 200, 0.3);
-        stroke: rgb(0, 60, 140);
-        stroke-width: 2;
-        --label-fill: rgb(0, 60, 140);
-        --label-font-size: 13;
-        --label-font-weight: bold;
-        --label-placement: middle;
-    """
+```css title="style.css"
+.myLayer {
+    fill: rgba(0, 100, 200, 0.3);
+    stroke: rgb(0, 60, 140);
+    stroke-width: 2;
+    --with-label: all;
+    --label-fill: rgb(0, 60, 140);
+    --label-font-size: 13;
+    --label-font-weight: bold;
+    --label-placement: middle;
 }
 ```
 
-Dieser Stil beschreibt Geometrie und Beschriftung zugleich. `fill` mit halbdurchsichtiger Farbe füllt die Fläche, `stroke` und `stroke-width` zeichnen eine 2 Pixel breite Kontur. Die `--label-*`-Eigenschaften gestalten den von der Vorlage `feature.label` erzeugten Text: `--label-fill` setzt die Textfarbe, `--label-font-size` und `--label-font-weight` die Schrift, `--label-placement middle` platziert die Beschriftung mittig auf der Geometrie.
+Diese Regel beschreibt Geometrie und Beschriftung zugleich. `fill` mit halbdurchsichtiger Farbe füllt die Fläche, `stroke` und `stroke-width` zeichnen eine 2 Pixel breite Kontur. `--with-label: all` schaltet die Beschriftung ein, die `--label-*`-Eigenschaften gestalten den von der Vorlage `feature.label` erzeugten Text: `--label-fill` setzt die Textfarbe, `--label-font-size` und `--label-font-weight` die Schrift, `--label-placement middle` platziert die Beschriftung mittig auf der Geometrie.

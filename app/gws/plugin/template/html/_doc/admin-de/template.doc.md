@@ -24,7 +24,7 @@ Für die PDF-Ausgabe erweitert die WebSuite die Jump-Sprache um eigene Befehle. 
 
 ### Karte
 
-`@map` rendert die aktuelle Karte an dieser Stelle. Erforderlich sind `width` und `height`; die übrigen Angaben überschreiben den Ausschnitt, den der Nutzer im Client gewählt hat.
+`@map` rendert die aktuelle Karte an dieser Stelle. Ohne `width` und `height` gilt `mapSize` der Vorlage; die übrigen Angaben überschreiben den Ausschnitt, den der Nutzer im Client gewählt hat.
 
 ```
 @map (
@@ -43,11 +43,11 @@ Für die PDF-Ausgabe erweitert die WebSuite die Jump-Sprache um eigene Befehle. 
 
 ### Legende
 
-`@legend` fügt die Legende ein. Ohne Angabe erscheinen die Legenden aller sichtbaren Layer; mit `layers` schränken Sie die Auswahl auf bestimmte Layer-uids ein, getrennt durch Leerzeichen.
+`@legend` fügt die Legende ein. Ohne Angabe erscheinen die Legenden aller sichtbaren Layer; mit `layers` schränken Sie die Auswahl auf bestimmte Layer-uids ein, getrennt durch Kommas.
 
 ```
 @legend (
-    layers="strassen gebaeude"
+    layers="strassen,gebaeude"
 )
 ```
 
@@ -73,7 +73,7 @@ Für die PDF-Ausgabe erweitert die WebSuite die Jump-Sprache um eigene Befehle. 
 templates+ {
     subject "feature.title"
     type "html"
-    text "<b>{{{{name}}}}</b>"
+    text "<b>{{name}}</b>"
 }
 templates+ {
     subject "feature.teaser"
@@ -85,7 +85,7 @@ templates+ {
 Das `subject` legt den Zweck einer Vorlage fest: `feature.title` erzeugt die Überschrift eines Features, `feature.teaser` seine Kurzansicht. Kurze Vorlagen geben Sie direkt über `text` an, umfangreichere über `path` als Datei.
 
 %info
-Die Konfiguration wird selbst mit der Jump-Sprache verarbeitet. Eine `{`, auf die kein Leerzeichen folgt, deutet der Server daher schon beim Einlesen der Konfiguration als Beginn eines Ausdrucks. Eine über `text` eingebettete Vorlage enthält aber ihrerseits Jump-Platzhalter wie `{{name}}`. Damit diese nicht bereits beim Einlesen ausgewertet werden, verdoppeln Sie die Klammern: `{{{{name}}}}` wird beim Einlesen zu `{{name}}`, das die Vorlage anschließend gegen das Feature auflöst. Geben Sie die Vorlage über `path` als eigene Datei an, entfällt das Verdoppeln – die Datei durchläuft die Konfigurationsverarbeitung nicht und verwendet einfache Klammern (`{{name}}`).
+Die Konfiguration wird selbst mit der Jump-Sprache verarbeitet. Eine `{`, auf die kein Leerzeichen folgt, deutet der Server daher schon beim Einlesen der Konfiguration als Beginn eines Ausdrucks. Eine über `text` eingebettete Vorlage enthält aber ihrerseits Jump-Platzhalter wie `{name}`. Damit diese nicht bereits beim Einlesen ausgewertet werden, verdoppeln Sie die Klammern: `{{name}}` wird beim Einlesen zu `{name}`, das die Vorlage anschließend gegen das Feature auflöst. Geben Sie die Vorlage über `path` als eigene Datei an, entfällt das Verdoppeln – die Datei durchläuft die Konfigurationsverarbeitung nicht und verwendet einfache Klammern (`{name}`).
 %end
 
 %ref "gws.plugin.template.html.Config"

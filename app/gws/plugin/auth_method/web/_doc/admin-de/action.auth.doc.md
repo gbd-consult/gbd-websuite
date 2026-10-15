@@ -20,6 +20,6 @@ actions+ {
 }
 ```
 
-Die Aktion selbst hat keine eigenen Optionen; sie stellt nur die Login-, Logout- und Prüf-Endpunkte bereit. Voraussetzung ist die `web`-Authentifizierungsmethode (`auth.methods`), die die Sitzung über ein Cookie führt. Mit `loginRedirect` leiten Sie nicht angemeldete Anfragen auf passende URLs zur Login-Seite um. `permissions.read "allow all"` gibt die Endpunkte frei, damit sich auch nicht angemeldete Nutzer anmelden können.
+Die Aktion selbst hat keine eigenen Optionen; sie stellt nur die Login-, Logout- und Prüf-Endpunkte bereit. Voraussetzung ist die `web`-Authentifizierungsmethode (`auth.methods`), die die Sitzung über ein Cookie führt. Mit `loginRedirect` leiten Sie abgewiesene GET-Anfragen auf passende URLs zur Login-Seite um. `permissions.read "allow all"` gibt die Endpunkte frei, damit sich auch nicht angemeldete Nutzer anmelden können.
 
 %ref "gws.plugin.auth_method.web.action.Config"

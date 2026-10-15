@@ -2,7 +2,7 @@
 
 Ein Drucker erzeugt beim [](/admin-de/themen/darstellung/drucken) aus der aktuellen Kartenansicht ein PDF. Sie konfigurieren ihn global oder je Projekt; ein Projekt kann mehrere Drucker für unterschiedliche Vorlagen enthalten.
 
-Mit `template` geben Sie die zu verwendende Druckvorlage an. Über `qualityLevels` definieren Sie die auswählbaren Qualitätsstufen mit ihrer jeweiligen Auflösung (DPI); mit `models` binden Sie Datenmodelle für bedruckbare Objekte ein.
+Mit `template` geben Sie die zu verwendende Druckvorlage an. Über `qualityLevels` definieren Sie die auswählbaren Qualitätsstufen mit ihrer jeweiligen Auflösung (DPI); mit `models` binden Sie Datenmodelle ein, deren Felder im Druckdialog als Eingabefelder erscheinen.
 
 ## Beispiel-Konfiguration ::
 

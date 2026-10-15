@@ -2,7 +2,7 @@
 
 Der Hilfsdienst `account` verwaltet Benutzerkonten in einer Datenbanktabelle: die administrative Pflege, das E-Mail-gestützte Onboarding und optional die Multifaktor-Authentifizierung. Die Tabelle muss die festen Spalten `email`, `status`, `password`, `mfauid`, `mfasecret`, `tc`, `tctime` und `tccategory` enthalten; die fachliche Einordnung und der Ablauf stehen im Thema [Benutzerkonten](/admin-de/themen/zugriff/konten).
 
-Das Datenmodell für die administrative Bearbeitung geben Sie über `adminModel` an, ein optionales `userModel` erlaubt Nutzern die Pflege eigener Stammdaten. Mit `onboardingUrl` legen Sie die Adresse fest, an die Freischaltungs-Mails verweisen, mit `tcLifeTime` die Gültigkeit des Freischaltungs-Codes (Vorgabe eine Stunde); über `mfa` bestimmen Sie die wählbaren Verfahren zur Multifaktor-Authentifizierung. Der Mail-Versand nutzt den konfigurierten E-Mail-Helfer.
+Das Datenmodell für die administrative Bearbeitung geben Sie über `adminModel` an, die Option `userModel` wird derzeit nicht ausgewertet. Mit `onboardingUrl` legen Sie die Adresse fest, an die Freischaltungs-Mails verweisen, mit `tcLifeTime` die Gültigkeit des Freischaltungs-Codes (Vorgabe eine Stunde); über `mfa` bestimmen Sie die wählbaren Verfahren zur Multifaktor-Authentifizierung. Der Mail-Versand nutzt den konfigurierten E-Mail-Helfer.
 
 ## Beispiel-Konfiguration ::
 

@@ -14,7 +14,7 @@ map.layers+ {
 }
 ```
 
-`provider.paths` listet die Rasterdateien auf; alternativ erfassen Sie mit `provider.pathPattern` ein ganzes Verzeichnis über ein Dateimuster. `display "tile"` gibt den Layer gekachelt aus. Die Direktiven in `processing` steuern die Rasterausgabe – hier die Beschränkung auf drei Bänder und eine Gamma-Korrektur. Für eine eigene Symbolisierung geben Sie über `sldPath` und `sldName` eine SLD-Datei an.
+`provider.paths` listet die Rasterdateien auf; alternativ erfassen Sie mit `provider.pathPattern` ein ganzes Verzeichnis über ein Dateimuster. `display "tile"` gibt den Layer gekachelt aus. Die Direktiven in `processing` steuern die Rasterausgabe – hier die Auswahl des dritten Bands (`BANDS` erwartet die Nummern der zu verwendenden Bänder, etwa `BANDS=1,2,3`) und eine Gamma-Korrektur. Für eine eigene Symbolisierung geben Sie über `sldPath` und `sldName` eine SLD-Datei an.
 
 %ref "gws.plugin.raster_layer.layer.Config"
 %demo "raster_layer"

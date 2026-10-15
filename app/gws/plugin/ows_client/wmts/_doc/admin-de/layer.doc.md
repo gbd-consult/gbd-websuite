@@ -14,7 +14,7 @@ map.layers+ {
 }
 ```
 
-`provider.url` verweist auf den WMTS-Dienst, `sourceLayers.names` wählt daraus den anzuzeigenden Quelllayer aus. Ohne diese Angabe verwendet der Layer den ersten Quelllayer des Dienstes. `withCache true` speichert die Kacheln auf dem Server zwischen, was besonders bei einer Umprojektion in ein anderes Koordinatensystem die Antwortzeiten verbessert.
+`provider.url` verweist auf den WMTS-Dienst, `sourceLayers.names` wählt daraus den anzuzeigenden Quelllayer aus. Ohne diese Angabe verwendet der Layer den ersten Quelllayer des Dienstes. `withCache true` (die Vorgabe) speichert die Kacheln auf dem Server zwischen, was besonders bei einer Umprojektion in ein anderes Koordinatensystem die Antwortzeiten verbessert.
 
 %ref "gws.plugin.ows_client.wmts.layer.Config"
 %demo "wmts_layer"

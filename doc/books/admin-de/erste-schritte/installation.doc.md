@@ -13,7 +13,7 @@ Ein ausführlicheres Beispiel als im [](/admin-de/erste-schritte/schnellstart). 
 ```yaml title="docker-compose.yml"
 services:
     gws:
-        image: gbdconsult/gws-amd64:8.4
+        image: gbdconsult/gws-amd64:8.5
         container_name: gws
 #       restart: unless-stopped
         ports:
@@ -80,7 +80,7 @@ Für den QGIS-Container gelten zusätzlich die [QGIS-Server-Variablen](https://d
 
 Nicht alles ist über Umgebungsvariablen steuerbar. Die folgenden Einstellungen setzen Sie in der [Konfiguration](/admin-de/erste-schritte/konfigurationsgrundlagen):
 
-- **Webserver & Rewrites** – mindestens eine `web.site` mit Rewrite-Regeln für lesbare URLs. Ein minimales Beispiel zeigt das [Einfache Projekt](/admin-de/erste-schritte/einfaches-projekt).
+- **Webserver & Rewrites** – die Webseite `web.site`. Die Rewrite-Regeln für Start- und Projektseite bringt sie von sich aus mit; eigene Regeln brauchen Sie nur für zusätzliche Adressen. Ein minimales Beispiel zeigt das [Einfache Projekt](/admin-de/erste-schritte/einfaches-projekt).
 - **SSL** – Zertifikat und Schlüssel hinterlegen:
 
 ```js

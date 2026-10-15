@@ -16,7 +16,7 @@ map.layers+ {
 }
 ```
 
-`provider.path` benennt das QGIS-Projekt, `sourceLayers.names` wählt daraus die zu verwendenden Quelllayer über ihre Layernamen aus. Alle gewählten Layer werden zu einem einzelnen Rasterbild zusammengefasst. Ohne `sourceLayers` stellt der Layer das gesamte Projekt als ein Bild dar.
+`provider.path` benennt das QGIS-Projekt, `sourceLayers.names` wählt daraus die zu verwendenden Quelllayer über ihre Layernamen aus. Alle gewählten Layer werden zu einem einzelnen Rasterbild zusammengefasst. Ohne `sourceLayers` stellt der Layer alle im Projekt sichtbaren Layer als ein Bild dar.
 
 %ref "gws.plugin.qgis.flatlayer.Config"
 %demo "qgis_dynamic_legend"

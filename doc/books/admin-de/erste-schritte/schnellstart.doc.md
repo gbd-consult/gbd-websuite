@@ -13,7 +13,7 @@ Erstellen Sie in einem beliebigen Verzeichnis eine Datei `docker-compose.yml`:
 ```yaml title="docker-compose.yml"
 services:
     gws:
-        image: gbdconsult/gws-amd64:8.4
+        image: gbdconsult/gws-amd64:8.5
         container_name: gws
         ports:
             - 3333:80
@@ -45,7 +45,7 @@ Bis hierher läuft die WebSuite mit der eingebauten Demo-Konfiguration. Für ein
 ```yaml title="docker-compose.yml"
 services:
     gws:
-        image: gbdconsult/gws-amd64:8.4
+        image: gbdconsult/gws-amd64:8.5
         container_name: gws
         volumes:
             - ./data:/data

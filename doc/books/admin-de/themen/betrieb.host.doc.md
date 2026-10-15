@@ -2,7 +2,7 @@
 
 Bevor es um die Konfiguration der WebSuite selbst geht, steht die Umgebung, in der sie läuft. Dieser Abschnitt beschreibt, was auf dem Host vorhanden sein muss und wie die Teile zusammenhängen.
 
-Die GBD WebSuite wird als Docker-Container ausgeliefert. Auf dem Host benötigen Sie daher eine Container-Runtime mit dem Compose-Plugin – mehr nicht: Alle Bibliotheken, der Webserver und der Kartenproxy stecken im Image. Eine Installation besteht in der Regel aus zwei Containern, der WebSuite und dem QGIS-Server, die sich dieselben Verzeichnisse teilen.
+Die GBD WebSuite wird als Docker-Container ausgeliefert. Auf dem Host benötigen Sie daher eine Container-Runtime mit dem Compose-Plugin – mehr nicht: Alle Bibliotheken und der Webserver stecken im Image. Eine Installation besteht in der Regel aus zwei Containern, der WebSuite und dem QGIS-Server, die sich dieselben Verzeichnisse teilen.
 
 ## Zwei Verzeichnisse
 

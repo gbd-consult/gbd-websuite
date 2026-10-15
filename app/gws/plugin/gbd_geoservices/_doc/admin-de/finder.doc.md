@@ -15,4 +15,4 @@ finders+ {
 Der Finder durchsucht die GBD Geoservices und unterstützt Stichwort- und räumliche Suche. Über `apiKey` hinterlegen Sie den Zugangsschlüssel, mit `spatialContext "map"` wird die Suche auf die aktuelle Kartenausdehnung bezogen.
 
 %ref "gws.plugin.gbd_geoservices.finder.Config"
-%demo "geoservices_search"
+%demo "gbd_geoservices"

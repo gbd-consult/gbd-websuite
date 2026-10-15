@@ -31,5 +31,5 @@ map {
 
 %ref "gws.base.map.core.Config"
 %demo "map_world_3857"
-%demo "map_worlds_4326"
+%demo "map_world_4326"
 %demo "overview_map"

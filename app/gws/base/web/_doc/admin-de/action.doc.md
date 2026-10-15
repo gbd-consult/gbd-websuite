@@ -10,6 +10,6 @@ actions+ {
 }
 ```
 
-Die Aktion selbst hat keine eigenen Optionen; das Aktivieren schaltet die Asset-, Download- und Objekt-Datei-Endpunkte frei. Welche Verzeichnisse ausgeliefert und welche URLs auf die Endpunkte umgeschrieben werden, konfigurieren Sie getrennt über `web.sites` (`assets.dir`, `root.dir`, `rewriteRules`).
+Die Aktion selbst hat keine eigenen Optionen; das Aktivieren schaltet die Asset-, Download- und Objekt-Datei-Endpunkte frei. Welche Verzeichnisse ausgeliefert und welche URLs auf die Endpunkte umgeschrieben werden, konfigurieren Sie getrennt über `web.site` (`assets.dir`, `root.dir`, `rewriteRules`).
 
 %ref "gws.base.web.action.Config"

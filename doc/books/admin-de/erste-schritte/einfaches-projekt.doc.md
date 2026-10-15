@@ -45,13 +45,12 @@ Erstellen Sie die drei referenzierten Dateien schon jetzt (zunächst leer) – f
 `/data/config/web.cx` steuert das Ausliefern von Dateien:
 
 ```javascript title="/data/config/web.cx"
-web.sites+ {
+web.site {
     root.dir "/data/web"
-    host "*"
 }
 ```
 
-Dateien unter `root` werden unverändert ausgeliefert; `host` wird gegen die aufrufende Domain geprüft. Beide Werte entsprechen der Voreinstellung — die Datei ist hier vor allem der Ort, an dem Sie später TLS, Zugriffsregeln oder eigene Adressen ergänzen.
+Dateien unter `root` werden unverändert ausgeliefert. Der Wert entspricht der Voreinstellung — die Datei ist hier vor allem der Ort, an dem Sie später TLS, Zugriffsregeln oder eigene Adressen ergänzen.
 
 Nach einem Neustart sind Dateien aus `/data/web` abrufbar. Zum Test: `/data/web/test.html` mit Inhalt `<h1>Test erfolgreich</h1>` anlegen und `http://localhost:3333/test.html` öffnen.
 

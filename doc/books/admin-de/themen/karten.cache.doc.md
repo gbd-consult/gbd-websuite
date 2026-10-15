@@ -6,12 +6,12 @@ Der Server kann Geo-Bilder aus externen Quellen auf der Festplatte zwischenspeic
 Caches können viel Speicherplatz belegen. Achten Sie auf ausreichend freien Platz und freie Inodes.
 %end
 
-Das Zwischenspeichern konfigurieren Sie pro Rasterlayer. Über `maxLevel` begrenzen Sie die tiefste (feinste) Zoomstufe, die zwischengespeichert wird (Vorgabe 1), über `maxAge`, wie lange ein Bild gültig bleibt, bevor es neu geholt wird (Vorgabe 7 Tage). Der Cache füllt sich von selbst, sobald Nutzer die Karten betrachten; er lässt sich aber auch vorab über die Kommandozeile befüllen (*Seeding*) und dort verwalten. Nach Änderungen an der Ansicht oder an einem Layer sollten Sie den betroffenen Cache löschen, um Darstellungsfehler zu vermeiden.
+Das Zwischenspeichern konfigurieren Sie pro Rasterlayer. Über `maxLevel` begrenzen Sie die tiefste (feinste) Zoomstufe, die zwischengespeichert wird; die Stufe bezieht sich auf das für alle Layer gemeinsame Kachelraster des Koordinatensystems (Vorgabe 18). Über `maxAge`, wie lange ein Bild gültig bleibt, bevor es neu geholt wird (Vorgabe 7 Tage). Der Cache füllt sich von selbst, sobald Nutzer die Karten betrachten; er lässt sich aber auch vorab über die Kommandozeile befüllen (*Seeding*) und dort verwalten. Nach Änderungen an der Ansicht oder an einem Layer sollten Sie den betroffenen Cache löschen, um Darstellungsfehler zu vermeiden.
 
 Das Seeding ist durch dieselben Grenzen bestimmt; global regeln `cache.seedingConcurrency` und `cache.seedingMaxTime` die Zahl der Threads und die maximale Laufzeit eines Durchlaufs.
 
 %warn
-Antwortet die Quelle beim Seeding mit einem Fehler, speichert der Server an dieser Stelle ein **leeres Bild**. Ein Ausfall der Quelle während des Vorbefüllens hinterlässt daher weiße Kacheln, die erst nach dem Löschen des Caches wieder korrekt geladen werden.
+Antwortet die Quelle beim Seeding mit einem Fehler, speichert der Server für den betroffenen Block **nichts** und zählt dessen Kacheln als fehlgeschlagen. Nach einem Ausfall der Quelle füllt ein erneuter Seeding-Lauf die Lücken; bereits gespeicherte Kacheln werden dabei übersprungen.
 %end
 
 %see

@@ -42,7 +42,7 @@ map.layers+ {
 }
 ```
 
-Der Dienst stellt jeden Vektor-Layer der Projektkarte als Objektart (`FeatureType`) bereit. `supportedCrs` bestimmt, in welchen Koordinatenbezugssystemen Geometrien geliefert werden. Mit `ows.xmlns` setzen Sie das Namensraum-Präfix, unter dem die Objektart erscheint; mit `ows.featureName` überschreiben Sie den vollständigen Namen einer Objektart einzeln. In `metadata` hinterlegen Sie die im Capabilities-Dokument sichtbaren Angaben.
+Der Dienst stellt jeden durchsuchbaren Layer der Projektkarte, der einen XML-Namensraum hat, als Objektart (`FeatureType`) bereit. `supportedCrs` bestimmt, in welchen Koordinatenbezugssystemen Geometrien geliefert werden. Mit `ows.xmlns` setzen Sie das Namensraum-Präfix, unter dem die Objektart erscheint; mit `ows.featureName` überschreiben Sie den vollständigen Namen einer Objektart einzeln. In `metadata` hinterlegen Sie die im Capabilities-Dokument sichtbaren Angaben.
 
 %ref "gws.plugin.ows_server.wfs.Config"
 %demo "service_wfs_auth_demo"

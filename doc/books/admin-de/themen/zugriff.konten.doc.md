@@ -12,7 +12,7 @@ Jedes Konto durchläuft drei Zustände: *neu* (angelegt, aber noch nicht freiges
 
 Es gibt **keine** offene Selbstregistrierung. Konten werden von Berechtigten über die administrative Oberfläche angelegt (Aktion `accountadmin`, Client-Element `Sidebar.AccountAdmin`) und zunächst im Zustand *neu* gespeichert.
 
-Freigeschaltet wird ein Konto über ein *Onboarding*: Die WebSuite erzeugt einen temporären Code, verschickt ihn per E-Mail an die hinterlegte Adresse (die Adresse legen Sie mit `onboardingUrl` fest) und der Nutzer setzt darüber sein Passwort und richtet – falls konfiguriert – einen zweiten Faktor ein. Danach ist das Konto *aktiv*. Diesen Selbstbedienungs-Teil stellt die Aktion `account` bereit. Der Code ist nur begrenzt gültig (`tcLifeTime`, Vorgabe eine Stunde).
+Freigeschaltet wird ein Konto über ein *Onboarding*: Die WebSuite erzeugt einen temporären Code, verschickt ihn per E-Mail an die hinterlegte Adresse (als Link auf die Onboarding-Seite, deren Adresse Sie mit `onboardingUrl` festlegen) und der Nutzer setzt darüber sein Passwort und richtet – falls konfiguriert – einen zweiten Faktor ein. Danach ist das Konto *aktiv*. Diesen Selbstbedienungs-Teil stellt die Aktion `account` bereit. Der Code ist nur begrenzt gültig (`tcLifeTime`, Vorgabe eine Stunde).
 
 Auch ein Passwort-Wechsel läuft über dieses Onboarding: Ein Zurücksetzen – durch einen Administrator oder über den Kommandozeilen-Befehl `gws account reset` – erzeugt einen neuen Code und verschickt erneut eine Freischaltungs-Mail. Eine anonyme „Passwort vergessen"-Selbstbedienung gibt es nicht.
 

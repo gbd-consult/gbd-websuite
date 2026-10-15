@@ -134,7 +134,7 @@ Die Sitzungsverwaltung speichert die Sitzungen angemeldeter Nutzer, sodass eine 
 
 ## Speicher-Provider :storageProvider
 
-Ein Speicher-Provider bestimmt, wo die im Client erzeugten Objekte – Markierungen, Bemaßungen, Auswahllisten – in der serverseitigen [](/admin-de/themen/darstellung/datenablage) liegen. Voreingestellt ist eine lokale SQLite-Datei; einen anderen Provider konfigurieren Sie, wenn die Daten in einer gemeinsamen Datenbank liegen sollen.
+Ein Speicher-Provider bestimmt, wo die im Client erzeugten Objekte – Markierungen, Bemaßungen, Auswahllisten – in der serverseitigen [](/admin-de/themen/darstellung/datenablage) liegen. Einen Provider gibt es nicht von selbst; ohne ihn lässt sich die Datenablage nicht einrichten. Zur Wahl stehen eine lokale SQLite-Datei und eine gemeinsame PostgreSQL-Datenbank.
 
 ### :/admin-de/konfiguration/storageProvider/*
 

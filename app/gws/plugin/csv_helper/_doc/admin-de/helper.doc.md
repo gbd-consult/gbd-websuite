@@ -13,10 +13,10 @@ format {
 
 Ausschlaggebend ist dabei `delimiter`: Excel erwartet im deutschen Gebietsschema das Semikolon und stellt eine komma-getrennte Datei sonst in einer einzigen Spalte dar.
 
-Das Dezimaltrennzeichen ist **keine** Option des Hilfsdienstes – es ergibt sich aus dem [Gebietsschema](/admin-de/themen/betrieb/lokalisierung). Für ein Komma setzen Sie `locales ["de_DE"]`.
+Das Dezimaltrennzeichen ist **keine** Option des Hilfsdienstes – es ergibt sich aus dem [Gebietsschema](/admin-de/themen/betrieb/lokalisierung), das der aufrufende Dienst vorgibt. Der ALKIS-Export verwendet fest `de_DE` und schreibt damit immer ein Komma.
 
 %warn
-Die Option `formulaHack` ist **standardmäßig aktiv**: Werte, die nur aus Ziffern bestehen, werden mit einem vorangestellten `=` versehen und in Anführungszeichen gesetzt, damit Excel sie als Formel und nicht als Zahl behandelt. Das bewahrt führende Nullen, verändert aber die Darstellung von Postleitzahlen, Telefonnummern und Kennungen. Setzen Sie `formulaHack false`, wenn die Rohwerte erhalten bleiben sollen.
+Die Option `formulaHack` ist **standardmäßig aktiv**: Textwerte, die nur aus Ziffern bestehen, werden mit einem vorangestellten `=` versehen und in Anführungszeichen gesetzt, damit Excel sie als Formel und nicht als Zahl behandelt. Das bewahrt führende Nullen, verändert aber die Darstellung von Postleitzahlen, Telefonnummern und Kennungen. Setzen Sie `formulaHack false`, wenn die Rohwerte erhalten bleiben sollen.
 %end
 
 Mit `quoteAll` setzen Sie jeden Wert in Anführungszeichen, mit `rowDelimiter` das Zeilenende (`CR`, `LF` oder eine feste Zeichenfolge).
@@ -34,6 +34,6 @@ helpers+ {
 }
 ```
 
-Dieser Eintrag registriert den CSV-Hilfsdienst für die gesamte Anwendung; sämtliche CSV-Ausgaben verwenden anschließend die hier gesetzten `format`-Werte. Mit `delimiter ";"` und `encoding "cp1252"` sind die Dateien für eine deutschsprachige Excel-Installation vorbereitet, `quoteAll true` setzt jeden Wert in Anführungszeichen. Nicht gesetzte Werte wie `formulaHack` behalten ihre Vorgaben.
+Dieser Eintrag registriert den CSV-Hilfsdienst für die gesamte Anwendung; alle CSV-Ausgaben über den Hilfsdienst, derzeit der ALKIS-Export, verwenden anschließend die hier gesetzten `format`-Werte. Der Exporter `csv` schreibt über GDAL und ist davon nicht betroffen. Mit `delimiter ";"` und `encoding "cp1252"` sind die Dateien für eine deutschsprachige Excel-Installation vorbereitet, `quoteAll true` setzt jeden Wert in Anführungszeichen. Nicht gesetzte Werte wie `formulaHack` behalten ihre Vorgaben.
 
 %ref "gws.plugin.csv_helper.Config"

@@ -28,6 +28,6 @@ projects+ {
 }
 ```
 
-Jedes Projekt braucht eine eindeutige `uid` – sie erscheint in der URL. `title` und `metadata` beschreiben das Projekt für die Projektliste und die Metadaten-Dienste. Unter `map` liegt die Karte des Projekts mit ihren Layern. Die `actions`-Liste schaltet die Funktionen dieses Projekts frei; sie **ergänzt** die global in der Applikation definierten Aktionen. Nur hier aufgeführte Aktionen stehen im Projekt zur Verfügung.
+Jedes Projekt braucht eine eindeutige `uid` – sie erscheint in der URL. `title` und `metadata` beschreiben das Projekt für die Projektliste und die Metadaten-Dienste. Unter `map` liegt die Karte des Projekts mit ihren Layern. Die `actions`-Liste schaltet die Funktionen dieses Projekts frei; sie **ergänzt** die global in der Applikation definierten Aktionen. Ist eine Aktion desselben Typs global und im Projekt eingetragen, gilt im Projekt die Projekt-Aktion.
 
 %ref "gws.base.project.core.Config"

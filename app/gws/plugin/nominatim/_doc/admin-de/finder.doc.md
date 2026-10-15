@@ -1,6 +1,6 @@
 # Finder "nominatim" :/admin-de/konfiguration/finder/nominatim
 
-Der Finder `nominatim` durchsucht den Nominatim-Dienst von OpenStreetMap und eignet sich für die Adress- und Ortssuche. Über `country` und `language` schränken Sie die Ergebnisse auf ein Land bzw. eine Sprache ein.
+Der Finder `nominatim` durchsucht den Nominatim-Dienst von OpenStreetMap und eignet sich für die Adress- und Ortssuche. Mit `country` schränken Sie die Ergebnisse auf Länder ein, mit `language` wählen Sie die bevorzugte Sprache der Ergebnisse.
 
 ## Beispiel-Konfiguration ::
 
@@ -13,7 +13,7 @@ finders+ {
 }
 ```
 
-Der Finder durchsucht den Nominatim-Dienst. Mit `country` beschränken Sie die Ergebnisse auf ein Land und mit `language` auf eine Ausgabesprache. Über `spatialContext "map"` wird die Suche auf die aktuelle Kartenausdehnung bezogen.
+Der Finder durchsucht den Nominatim-Dienst. Mit `country` beschränken Sie die Ergebnisse auf ein Land und mit `language` wählen Sie die bevorzugte Ausgabesprache. Über `spatialContext "map"` wird die Suche auf die aktuelle Kartenausdehnung bezogen.
 
 %ref "gws.plugin.nominatim.finder.Config"
 %demo "nominatim_search"

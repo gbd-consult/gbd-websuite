@@ -11,6 +11,6 @@ models+ {
 }
 ```
 
-Das Modell liest die Features aus der über `provider.path` angegebenen GeoJSON-Datei. Die Felder werden aus den Eigenschaften der Datei abgeleitet; als Kennung dient `id`, als Geometriefeld `geometry`. Der Zugriff ist ausschließlich lesend.
+Das Modell liest die Features aus der über `provider.path` angegebenen GeoJSON-Datei. Die Eigenschaften der Features werden unverändert als Attribute übernommen; als Kennung dient die Eigenschaft `id` (ersatzweise `uid`, `fid`, `sid` oder die Position in der Datei), als Geometriefeld `geometry`. Der Zugriff ist ausschließlich lesend.
 
 %ref "gws.plugin.geojson.model.Config"

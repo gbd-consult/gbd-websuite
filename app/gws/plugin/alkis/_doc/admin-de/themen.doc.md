@@ -4,7 +4,7 @@ Die GBD WebSuite kann Daten aus dem Amtlichen Liegenschaftskatasterinformationss
 
 Eingebunden wird ALKIS über eine Server-Aktion, die auf die Datenbank verweist und das Schema der ALKIS-Daten, ein eigenes Schema für die Indizes sowie das Koordinatensystem benennt. Bevor die Suche genutzt werden kann, müssen die Daten für die WebSuite indiziert werden; dies geschieht über die Kommandozeile und ist nach jeder ALKIS-Aktualisierung zu wiederholen. Der Index wird ausschließlich in das dafür vorgesehene Schema geschrieben, die ALKIS-Daten selbst bleiben unverändert.
 
-Zugänglich wird die Suche im Client über das entsprechende Seitenleisten-Element. Sie lässt sich um den Zugang zu Buchungs- und Eigentümerdaten erweitern; der Zugang zu Eigentümerdaten kann auf bestimmte Rollen beschränkt und auf Wunsch protokolliert werden, wobei jeder Zugriff einen dokumentierten Grund erfordert.
+Zugänglich wird die Suche im Client über das entsprechende Seitenleisten-Element. Sie lässt sich um den Zugang zu Buchungs- und Eigentümerdaten erweitern; der Zugang zu Eigentümerdaten kann auf bestimmte Rollen beschränkt, auf Wunsch protokolliert und an einen dokumentierten Grund für jeden Zugriff gebunden werden.
 
 %see
 Siehe auch: [Aktion/alkis](/admin-de/konfiguration/action/alkis).

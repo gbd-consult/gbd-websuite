@@ -14,7 +14,7 @@ map.layers+ {
 }
 ```
 
-`provider.url` gibt die XYZ-Vorlage mit den Platzhaltern `{z}`, `{x}` und `{y}` an. `display "tile"` bezieht die Kacheln über den Server; mit `withCache true` werden sie dort zwischengespeichert. Setzen Sie stattdessen `display "client"`, ruft der Browser die Kacheln direkt vom Dienst ab.
+`provider.url` gibt die XYZ-Vorlage mit den Platzhaltern `{z}`, `{x}` und `{y}` an. `display "tile"` bezieht die Kacheln über den Server; mit `withCache true` werden sie dort zwischengespeichert. Beides ist die Vorgabe. Setzen Sie stattdessen `display "client"`, ruft der Browser die Kacheln direkt vom Dienst ab.
 
 %ref "gws.plugin.tile_layer.layer.Config"
 %demo "tile_client"

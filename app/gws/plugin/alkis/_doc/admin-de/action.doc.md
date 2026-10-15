@@ -25,10 +25,10 @@ eigentuemer {
 
 ## Protokolltabelle
 
-Mit `logTable` benennen Sie eine Tabelle, in die jeder Zugriff auf Eigentümerdaten geschrieben wird – auch die abgelehnten. Protokolliert werden Zeitpunkt, IP-Adresse, Anmeldename und Anzeigename des Nutzers, die Kontrolleingabe, das Ergebnis der Prüfung sowie Anzahl und Kennungen der abgefragten Flurstücke.
+Mit `logTable` benennen Sie eine Tabelle, in die jeder Zugriff auf Eigentümerdaten geschrieben wird – auch die, deren Kontrolleingabe abgelehnt wurde. Protokolliert werden Zeitpunkt, IP-Adresse, Anmeldename und Anzeigename des Nutzers, die Kontrolleingabe, das Ergebnis der Prüfung sowie Anzahl und Kennungen der abgefragten Flurstücke.
 
 %warn
-Die Tabelle wird **nicht** automatisch angelegt. Fehlt sie, schlägt das Protokollieren fehl. Legen Sie sie vor der Inbetriebnahme selbst an.
+Die Tabelle wird **nicht** automatisch angelegt. Fehlt sie, schlägt bereits die Konfiguration der Aktion fehl. Legen Sie sie vor der Inbetriebnahme selbst an.
 %end
 
 ```sql

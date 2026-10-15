@@ -6,7 +6,7 @@ Exporter lassen sich global oder je Projekt konfigurieren. Global konfigurierte 
 
 ## Gemeinsame Eigenschaften
 
-Alle Exporter nutzen intern GDAL. Der jeweilige Typ (`csv`, `geojson`, `gml`, `kml`, `shapefile`) legt nur den GDAL-Treiber fest; die eigentlichen Treiber-Optionen geben Sie über das `options`-Objekt an – hier stellen Sie etwa die Zeichenkodierung eines Shapefiles oder das `srsName` einer GML-Datei ein. Ein separater Zeichensatz oder eine Umprojektion findet **nicht** statt: Der Export übernimmt die Koordinaten in ihrem vorhandenen System (einzelne Treiber wie GeoJSON und KML schreiben allerdings immer in WGS 84).
+Alle Exporter nutzen intern GDAL. Der jeweilige Typ (`csv`, `geojson`, `gml`, `kml`, `shapefile`) legt nur den GDAL-Treiber fest; die eigentlichen Treiber-Optionen geben Sie über das `options`-Objekt an – hier stellen Sie etwa die Form des `srsName` einer GML-Datei ein (`SRSNAME_FORMAT`). Es handelt sich um Erstellungsoptionen der Datei; Shapefiles schreibt die WebSuite stets in UTF-8. Ein separater Zeichensatz oder eine Umprojektion findet **nicht** statt: Der Export übernimmt die Koordinaten in ihrem vorhandenen System (einzelne Treiber wie GeoJSON und KML schreiben allerdings immer in WGS 84).
 
 Beim Zusammenstellen der Features geht der Exporter tolerant vor und **überspringt** stillschweigend, was nicht in eine Tabelle passt: Features ohne Geometrie, mit abweichendem Geometrietyp oder abweichendem Koordinatensystem sowie Attribute mit nicht unterstützten Datentypen. Über `withNoGeometry`, `withMixedGeometry` und `withMixedCrs` lassen Sie diese Fälle ausdrücklich zu. Entstehen mehrere Dateien (etwa die Bestandteile eines Shapefiles), werden sie automatisch zu einem ZIP-Archiv zusammengefasst.
 

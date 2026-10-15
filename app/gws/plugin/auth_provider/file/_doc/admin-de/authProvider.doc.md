@@ -11,6 +11,6 @@ auth.providers+ {
 }
 ```
 
-Der Provider wird über `auth.providers+` aktiviert. `path` verweist auf die JSON-Datei mit den Benutzerkonten. Jeder Datensatz enthält mindestens `login` und ein als Hash hinterlegtes `password`; weitere Felder wie `displayName` oder `roles` werden zu Eigenschaften des Nutzers. Den Passwort-Hash erzeugen Sie mit dem CLI-Befehl `gws auth password`.
+Der Provider wird über `auth.providers+` aktiviert. `path` verweist auf die JSON-Datei mit den Benutzerkonten. Jeder Datensatz enthält mindestens `login` und ein als Hash hinterlegtes `password`; `name` wird zum Anzeigenamen, weitere Felder wie `roles` oder `email` werden zu Eigenschaften des Nutzers. Den Passwort-Hash erzeugen Sie mit dem CLI-Befehl `gws auth password`.
 
 %ref "gws.plugin.auth_provider.file.Config"

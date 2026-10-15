@@ -1,7 +1,7 @@
 # Datenablage :/admin-de/themen/darstellung/datenablage
 
-Im Client erzeugte Objekte – etwa Markierungen, Bemaßungen oder Auswahllisten – lassen sich serverseitig speichern und später wieder aufrufen. Diese *Datenablage* wird über ein Hilfsobjekt bereitgestellt und ist in Kategorien unterteilt, die jeweils einer Client-Funktion entsprechen; je Kategorie legen Sie fest, welche Rollen lesen und welche schreiben dürfen.
+Im Client erzeugte Objekte – etwa Markierungen, Bemaßungen oder Auswahllisten – lassen sich serverseitig speichern und später wieder aufrufen. Diese *Datenablage* stellt ein Speicher-Provider bereit, und sie ist in Kategorien unterteilt, die jeweils einer Client-Funktion entsprechen. Je Kategorie legen Sie in der Option `storage` der zugehörigen Aktion (`annotate`, `dimension`, `select`, `alkis`) fest, welche Rollen lesen und welche schreiben dürfen.
 
 %see
-Siehe auch: [Konfiguration/Helfer](/admin-de/konfiguration/helper), [Konfiguration/Speicher-Provider](/admin-de/konfiguration/storageProvider).
+Siehe auch: [Konfiguration/Speicher-Provider](/admin-de/konfiguration/storageProvider), [Aktion/annotate](/admin-de/konfiguration/action/annotate), [Aktion/dimension](/admin-de/konfiguration/action/dimension), [Aktion/select](/admin-de/konfiguration/action/select).
 %end

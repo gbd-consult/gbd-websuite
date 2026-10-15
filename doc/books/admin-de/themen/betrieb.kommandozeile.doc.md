@@ -10,13 +10,13 @@ Der Aufruf ohne Argumente oder mit `-h` listet die verfügbaren Befehle; `gws <g
 
 Ein Aufruf hat immer die Form `gws <gruppe> <verb>`, gefolgt von benannten Optionen:
 
-    gws auth password --user meier
+    gws auth password
     gws cache status
     gws server reconfigure
 
 Beide Wörter sind zwingend — ein Aufruf mit nur einem Wort bricht mit `invalid arguments` ab. Intern setzt die WebSuite die beiden zu einem Namen in Binnenmajuskel zusammen, aus `gws auth password` wird `authPassword`. Diesen zusammengesetzten Namen sehen Sie in Protokollen und Fehlermeldungen; auf der Kommandozeile geben Sie ihn **nicht** so ein.
 
-Optionen schreiben Sie mit zwei Bindestrichen und in Binnenmajuskel, etwa `--projectUid`. Groß- und Kleinschreibung spielt dabei keine Rolle.
+Optionen schreiben Sie mit einem oder zwei Bindestrichen und in Binnenmajuskel, etwa `-projectUid` oder `--projectUid`. Groß- und Kleinschreibung spielt dabei keine Rolle.
 
 ## Die Befehle arbeiten gegen Ihre Konfiguration
 

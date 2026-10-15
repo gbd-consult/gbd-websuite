@@ -11,7 +11,7 @@ auth.providers+ {
     bindDN "cn=admin,dc=example,dc=org"
     bindPassword "secret"
     users+ {
-        memberOf "cn=gis-editors,ou=groups,dc=example,dc=org"
+        memberOf "(cn=gis-editors)"
         roles [ "editor" ]
     }
     users+ {
@@ -21,6 +21,6 @@ auth.providers+ {
 }
 ```
 
-Der Provider wird über `auth.providers+` aktiviert. `url` folgt dem Schema `ldap://host:port/baseDN?searchAttribute`; das Attribut am Ende (hier `uid`) wird zum Abgleich des Logins verwendet. `bindDN` und `bindPassword` hinterlegen ein Konto mit Suchberechtigung. Jeder `users`-Eintrag bildet eine Bedingung auf GBD-WebSuite-Rollen ab: `memberOf` prüft die Mitgliedschaft in einer Gruppe, `matches` einen beliebigen LDAP-Filter. Ein Nutzer erhält die `roles` aller zutreffenden Einträge.
+Der Provider wird über `auth.providers+` aktiviert. `url` folgt dem Schema `ldap://host:port/baseDN?searchAttribute`; das Attribut am Ende (hier `uid`) wird zum Abgleich des Logins verwendet. `bindDN` und `bindPassword` hinterlegen ein Konto mit Suchberechtigung. Jeder `users`-Eintrag bildet eine Bedingung auf GBD-WebSuite-Rollen ab: `memberOf` ist ein LDAP-Filter für Gruppen und prüft, ob der Nutzer in `member`, `members` oder `uniqueMember` einer passenden Gruppe steht; `matches` ist ein beliebiger LDAP-Filter, auf den der Eintrag des Nutzers passen muss. Ein Nutzer erhält die `roles` aller zutreffenden Einträge.
 
 %ref "gws.plugin.auth_provider.ldap.Config"

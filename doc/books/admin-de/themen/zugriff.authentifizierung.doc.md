@@ -10,7 +10,7 @@ Angemeldete Nutzer behalten ihre Sitzung über einen Neustart des Servers hinweg
 
 ## HTTPS-Zwang der Methoden
 
-Jede Methode gilt standardmäßig als *sicher* (`secure`) und verweigert die Anmeldung über unverschlüsseltes HTTP. Betreiben Sie die WebSuite hinter einem TLS-Proxy, ist das unkritisch; erreichen Anfragen den Server aber tatsächlich über HTTP, sind alle Methoden stillschweigend abgeschaltet und niemand kann sich anmelden. Für Tests oder ein internes Netz geben Sie mit `allowInsecureFrom` einzelne IP-Adressen frei, die auch unverschlüsselt anmelden dürfen.
+Jede Methode gilt standardmäßig als *sicher* (`secure`) und verweigert die Anmeldung über unverschlüsseltes HTTP. Betreiben Sie die WebSuite hinter einem TLS-Proxy, erkennt sie HTTPS nur, wenn `web.site.proxyCount` gesetzt ist und der Proxy den Header `X-Forwarded-Proto` sendet, oder wenn `web.ssl` konfiguriert ist; erreichen Anfragen den Server aber als HTTP, sind alle Methoden stillschweigend abgeschaltet und niemand kann sich anmelden. Für Tests oder ein internes Netz geben Sie mit `allowInsecureFrom` einzelne IP-Adressen frei, die die Methoden `basic` und `token` auch unverschlüsselt nutzen dürfen. Für die Methode `web` wirkt `allowInsecureFrom` nicht; die Anmeldung über HTTP ist dort nur mit `secure false` möglich.
 
 ## Zweiter Faktor
 

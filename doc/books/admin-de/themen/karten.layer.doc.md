@@ -4,7 +4,7 @@ Ein Layer stellt eine Ebene der Karte dar. In seiner Konfiguration legen Sie ein
 
 Grundsätzlich gibt es zwei Arten von Layern. Ein Rasterlayer liefert Geoinformation als fertiges Pixelbild und enthält selbst keine Sachdaten, lässt sich aber mit einer Suche verbinden. Ein Vektorlayer besteht aus einzelnen Objekten (Features) mit Geometrie und Attributen; sein Erscheinungsbild wird über Stilregeln festgelegt.
 
-Innerhalb der Karte wird ein Layer über eine vollständige Kennung angesprochen, die Projekt, Karte und Layer umfasst. Diese Form nutzen Sie überall dort, wo an anderer Stelle auf einen Layer verwiesen wird.
+An anderer Stelle der Konfiguration – etwa in einer kombinierten Legende – verweisen Sie auf einen Layer über seine `uid`. Ohne Angabe erzeugt die WebSuite eine fortlaufende Nummer; vergeben Sie daher selbst eine eindeutige `uid`, wenn Sie den Layer ansprechen wollen.
 
 ## Rasterlayer
 

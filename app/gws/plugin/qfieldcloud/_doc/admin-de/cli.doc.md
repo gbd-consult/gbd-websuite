@@ -8,12 +8,12 @@ Mit `gws qfieldcloud package` erzeugen Sie das Datenpaket eines QField-Projekts 
 
 ## Was im Zielverzeichnis landet
 
-Das Paket enthält dieselben Bestandteile wie das, welches die App erhält: je editierbarem Layer ein GeoPackage, die kopierten Anhang- und Datenverzeichnisse sowie das umgeschriebene QGIS-Projekt unter `<QField-Projekt>.qgs`. Daneben legt die WebSuite zwei Dateien ab, die bei der Fehlersuche helfen:
+Ins Zielverzeichnis schreibt die WebSuite je editierbarem Layer ein GeoPackage sowie das umgeschriebene QGIS-Projekt unter `<QField-Projekt>.qgs`. Daneben legt die WebSuite zwei Dateien ab, die bei der Fehlersuche helfen:
 
 - `<QField-Projekt>.qgs.source.qgs` – das unveränderte Ausgangsprojekt. Ein Vergleich mit der umgeschriebenen Fassung zeigt, welche Layer entfernt und welche Datenquellen ersetzt wurden.
 - `path_map.json` – die Zuordnung der Dateinamen im Paket zu den tatsächlichen Pfaden auf dem Server.
 
-Die gerenderte Hintergrundkarte liegt nicht im Zielverzeichnis, sondern im Kartencache des Projekts; `path_map.json` verweist darauf.
+Die gerenderte Hintergrundkarte liegt nicht im Zielverzeichnis, sondern im Kartencache des Projekts; ebenso werden die Anhang- und Datenverzeichnisse nicht kopiert. `path_map.json` verweist auf ihren Ort auf dem Server.
 
 ## Berechtigungen
 

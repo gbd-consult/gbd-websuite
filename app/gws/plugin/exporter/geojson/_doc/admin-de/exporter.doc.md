@@ -1,6 +1,6 @@
 # Exporter "geojson" :/admin-de/konfiguration/exporter/geojson
 
-Der Exporter `geojson` wandelt Features in eine GeoJSON-Datei um. Es wird ein einzelner Vektor-Layer exportiert, wobei Geometrie und Attribute jedes Features erhalten bleiben. Der Export nutzt den GDAL-Treiber `GeoJSON`.
+Der Exporter `geojson` wandelt Features in eine GeoJSON-Datei um. Jeder Layer wird in eine eigene Datei geschrieben, mehrere Dateien werden zu einem ZIP-Archiv zusammengefasst; Geometrie und Attribute jedes Features bleiben erhalten. Der Export nutzt den GDAL-Treiber `GeoJSON`.
 
 ## Beispiel-Konfiguration ::
 

@@ -1,6 +1,6 @@
 # Helfer "xml" :/admin-de/konfiguration/helper/xml
 
-Der Hilfsdienst `xml` stellt zusätzliche XML-Namensräume für die XML-Erzeugung bereit, wie sie etwa von OWS-Diensten benötigt werden. Über `namespaces` definieren Sie eigene Namensräume mit Präfix, URI, Schema-Ort und Version.
+Der Hilfsdienst `xml` stellt zusätzliche XML-Namensräume für die XML-Erzeugung bereit, wie sie etwa von OWS-Diensten benötigt werden. Über `namespaces` definieren Sie eigene Namensräume mit Präfix, URI und Schema-Ort; die Option `version` ist veraltet und wird ignoriert.
 
 ## Beispiel-Konfiguration ::
 

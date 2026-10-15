@@ -6,7 +6,7 @@ Statische Dateien wie HTML-Seiten, Bilder oder PDFs liefert sie wie ein gewöhnl
 
 Alle dynamischen Anfragen laufen über einen einzigen Endpunkt, erkennbar am Unterstrich `_` im Pfad. Das erste Pfadsegment danach benennt den Befehl, gefolgt von Parameter-Wert-Paaren:
 
-    http://example.com/_/mapHttpGetBox/projectUid/london/layerUid/london.map.metro
+    http://example.com/_/mapGetBox/projectUid/london/layerUid/london.map.metro
 
 Welcher Befehl eine Anfrage bearbeitet, entscheidet, welche *Server-Aktion* zuständig ist. Eine Aktion ist eine Funktionsgruppe des Servers – etwa für Karten, Suche oder Druck – und liefert je nach Anfrage HTML, JSON oder ein Bild zurück. Aktionen müssen in der Konfiguration freigeschaltet werden; ist eine Aktion nicht aktiv, steht die zugehörige Funktion nicht zur Verfügung.
 

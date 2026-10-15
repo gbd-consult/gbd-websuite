@@ -11,7 +11,7 @@ Die Anmelde-Abfrage muss **genau eine Zeile** mit mindestens diesen Spalten lief
 | `validuser` | `true`, wenn der Nutzer sich anmelden darf |
 | `validpassword` | `true`, wenn das Passwort stimmt |
 | `uid` | eindeutige Benutzer-Kennung |
-| `roles` | kommagetrennte Liste der Rollen |
+| `roles` | kommagetrennte Liste der Rollen (optional) |
 
 Weitere Spalten werden zu Eigenschaften des Nutzers (etwa `displayName`, `login`). Das Passwort prüfen Sie in der Abfrage selbst, üblicherweise mit `pgcrypto`:
 

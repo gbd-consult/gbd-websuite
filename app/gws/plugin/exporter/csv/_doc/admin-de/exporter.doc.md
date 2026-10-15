@@ -1,6 +1,6 @@
 # Exporter "csv" :/admin-de/konfiguration/exporter/csv
 
-Der Exporter `csv` wandelt Features in eine CSV-Datei um. Die Ausgabe erfolgt als tabellarischer Text mit einer Zeile je Feature; es wird ein einzelner Vektor-Layer exportiert. Der Export nutzt den GDAL-Treiber `CSV`.
+Der Exporter `csv` wandelt Features in eine CSV-Datei um. Die Ausgabe erfolgt als tabellarischer Text mit einer Zeile je Feature. Jeder Layer wird in eine eigene Datei geschrieben; mehrere Dateien werden zu einem ZIP-Archiv zusammengefasst. Der Export nutzt den GDAL-Treiber `CSV`.
 
 ## Beispiel-Konfiguration ::
 

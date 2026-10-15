@@ -1,6 +1,6 @@
 # Exporter "shapefile" :/admin-de/konfiguration/exporter/shapefile
 
-Der Exporter `shapefile` wandelt Features in ein ESRI-Shapefile um. Es wird ein einzelner Vektor-Layer exportiert. Der Export nutzt den GDAL-Treiber `ESRI Shapefile`.
+Der Exporter `shapefile` wandelt Features in ein ESRI-Shapefile um. Jeder Layer wird in ein eigenes Shapefile geschrieben; die Dateien werden zu einem ZIP-Archiv zusammengefasst. Der Export nutzt den GDAL-Treiber `ESRI Shapefile`.
 
 ## Beispiel-Konfiguration ::
 

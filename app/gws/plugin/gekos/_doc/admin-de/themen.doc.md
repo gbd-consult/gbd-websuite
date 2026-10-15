@@ -7,7 +7,7 @@ Die Verbindung besteht ausschließlich aus Adressen. Beide Systeme rufen einande
 ## Voraussetzungen
 
 - Die Aktion `gekos` im Projekt oder in der Applikation.
-- Die Aktion `alkis` im selben Projekt. Die Rückrufe, die zu einem Flurstücks- oder Adress-Code eine Koordinate liefern, lösen diese Codes über das [ALKIS-Modul](/admin-de/themen/fachmodule/alkis) auf; fehlt die Aktion, antwortet die Schnittstelle mit `error:`.
+- Die Aktion `alkis` im selben Projekt oder in der Applikation. Die Rückrufe, die zu einem Flurstücks- oder Adress-Code eine Koordinate liefern, lösen diese Codes über das [ALKIS-Modul](/admin-de/themen/fachmodule/alkis) auf; fehlt die Aktion, antwortet die Schnittstelle mit `error:`.
 - Das Element `Toolbar.Gekos` in der [Client-Konfiguration](/admin-de/konfiguration/client), damit die Rückgabe einer Koordinate aus der Karte funktioniert.
 - Für die Übernahme von Vorgängen aus Gek-Online zusätzlich eine Datenbank mit einer Tabelle, die ausschließlich diesem Zweck dient.
 
@@ -38,7 +38,7 @@ Der Abgleich läuft nicht selbsttätig, sondern über den [](/admin-de/konfigura
 ## Fehlersuche
 
 - **Die Karte öffnet, zeigt aber keine Markierung.** Prüfen Sie die Reihenfolge der Platzhalter im Flurstückscode. Eine falsche Reihenfolge führt nicht zu einer Fehlermeldung, sondern zu einem leeren Ergebnis.
-- **Ein Rückruf antwortet mit `error:`.** Entweder fehlt die Aktion `alkis` im Projekt, oder der übergebene Code findet keine Entsprechung. Das Protokoll nennt beide Fälle getrennt.
+- **Ein Rückruf antwortet mit `error:`.** Entweder fehlt die Aktion `alkis` im Projekt und in der Applikation, oder der übergebene Code findet keine Entsprechung. Das Protokoll nennt beide Fälle getrennt.
 - **Die Schaltfläche fehlt.** Siehe oben — ohne `gekosUrl` ist das der Normalzustand.
 
 %see

@@ -9,7 +9,7 @@ Der GBD WebSuite Server ist kein einzelner Prozess, sondern ein Verbund mehrerer
 
 Einzelne Prozesse lassen sich deaktivieren, wenn sie nicht benötigt werden.
 
-Sie müssen auch nicht alle auf derselben Maschine laufen. Für den QGIS-Server geben Sie in der Konfiguration `host` und `port` an; damit lässt er sich auf einen eigenen Rechner auslagern, etwa um das Rendern von der Auslieferung zu trennen. Voreingestellt ist der lokale Betrieb.
+Sie müssen auch nicht alle auf derselben Maschine laufen. Für den QGIS-Server geben Sie in der Konfiguration `host` und `port` an; damit lässt er sich auf einen eigenen Rechner auslagern, etwa um das Rendern von der Auslieferung zu trennen. Voreingestellt sind der Host `qgis` und der Port 80, also der gleichnamige Dienst im Compose-Netz.
 
 ## Dimensionierung
 
@@ -17,9 +17,9 @@ Unter Last bestimmen einige Angaben je Prozess das Verhalten des Servers. Jeder 
 
 ## Automatisches Neuladen
 
-Der Monitor prüft in Abständen (`frequency`, Vorgabe 30 s), ob sich Konfigurations- oder Datendateien geändert haben, und lädt bei Bedarf neu. Zwei Wege sind zu unterscheiden: Ein *Reload* startet die Arbeitsprozesse neu, ein *Reconfigure* liest die Konfiguration erneut ein; beide lassen sich auch über die Kommandozeile auslösen. Mit `disableWatch` schalten Sie die Überwachung ab, sodass nur noch ein ausdrücklicher Aufruf neu lädt.
+Der Monitor bemerkt Änderungen an Konfigurations- und Datendateien innerhalb weniger Sekunden und liest die Konfiguration dann neu ein; `frequency` (Vorgabe 30 s) bestimmt dagegen das Intervall seiner periodischen Aufgaben. Zwei Wege sind zu unterscheiden: Ein *Reload* startet die Arbeitsprozesse neu, ein *Reconfigure* liest die Konfiguration erneut ein; beide lassen sich auch über die Kommandozeile auslösen. Mit `disableWatch` schalten Sie die Überwachung ab, sodass nur noch ein ausdrücklicher Aufruf neu lädt.
 
-Vor dem Konfigurieren und nach dem Start des Dienstes kann der Server eigene Skripte ausführen (`preConfigure`, `postConfigure`) – ein Einschubpunkt für Aufgaben, die zur Inbetriebnahme gehören.
+Die früheren Optionen `preConfigure` und `postConfigure` für eigene Skripte gibt es nicht mehr, `autoRun` wird ignoriert. Befehle, die vor dem Start laufen sollen, gehören in die `docker-compose.yml`: als `command:` des Containers oder als eigener, einmalig laufender Dienst, von dem der WebSuite-Container über `depends_on` mit `condition: service_completed_successfully` abhängt.
 
 ## Konfigurationsvorlagen
 

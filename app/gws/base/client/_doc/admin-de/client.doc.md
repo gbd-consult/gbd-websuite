@@ -27,7 +27,7 @@ Der Client läuft in einer gewöhnlichen HTML-Seite. Diese liefert die Vorlage m
 </body>
 ```
 
-Die Dateien des Clients werden unter `/_/webSystemAsset` ausgeliefert; diese Adresse müssen Sie nicht eigens einrichten. `vendor.js` enthält die Bibliotheken, `app.js` die Anwendung, `light.css` das Aussehen. Die Sprache der Oberfläche bestimmt der Pfadteil `localeUid` vor `app.js` – die Texte stecken im Bundle, nicht in der Konfiguration. Den Dateinamen können Sie die Versionsnummer voranstellen (`8.4.5.vendor.js`), um Browser-Caches beim Versionswechsel zu umgehen.
+Die Dateien des Clients werden unter `/_/webSystemAsset` ausgeliefert; diese Adresse müssen Sie nicht eigens einrichten. `vendor.js` enthält die Bibliotheken, `app.js` die Anwendung, `light.css` das Aussehen. Die Sprache der Oberfläche bestimmt der Pfadteil `localeUid` vor `app.js` – die Texte stecken im Bundle, nicht in der Konfiguration. Den Dateinamen können Sie die Versionsnummer voranstellen (`8.5.4.vendor.js`), um Browser-Caches beim Versionswechsel zu umgehen.
 
 Das Element mit der Klasse `gws` nimmt die Oberfläche auf. Sie können es frei positionieren; fehlt es, hängt der Client selbst eines an das Ende von `<body>`.
 
@@ -45,7 +45,7 @@ Das Skript mit der id `gwsOptions` übergibt die Startwerte als JSON:
 | `helpUrlTarget` | `blank` (neues Fenster) oder `frame`, voreingestellt `blank` |
 | `homeUrl` | Ziel des Verweises auf die Startseite, voreingestellt `/` |
 
-Layer sprechen Sie in `showLayers` und `hideLayers` mit ihrer vollständigen Kennung an, also `<Projekt>.map.<Layer>`. Sind unter `markFeatures` Objekte angegeben, verdrängen sie die Startparameter `x`/`y`/`z`, `bbox` und `extents` aus der Adresszeile. `helpUrl`, `helpUrlTarget` und `homeUrl` lassen sich auch in den `options` des Client-Objekts setzen; die Konfiguration hat dann Vorrang vor der Seite.
+Layer sprechen Sie in `showLayers` und `hideLayers` mit ihrer `uid` an. Sind unter `markFeatures` Objekte angegeben, verdrängen sie die Startparameter `x`/`y`/`z`, `bbox` und `extents` aus der Adresszeile. `helpUrl`, `helpUrlTarget` und `homeUrl` lassen sich auch in den `options` des Client-Objekts setzen; die Konfiguration hat dann Vorrang vor der Seite.
 
 %info
 Wollen Sie lediglich eigenes CSS oder JavaScript ergänzen, brauchen Sie keine eigene Vorlage: Die Applikation nimmt über `templateOptions.projectResources` zusätzliche Dateien in die Standard-Projektseite auf.

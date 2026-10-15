@@ -12,11 +12,11 @@ Verlangt ein Dienst eine Anmeldung, hinterlegen Sie die Zugangsdaten im `provide
 
 ## Zwischenspeicherung der Capabilities
 
-Beim Einbinden liest die WebSuite das Capabilities-Dokument des Dienstes – die Beschreibung seiner Ebenen und Fähigkeiten – und speichert es zwischen (`capsCacheMaxAge`, Vorgabe ein Tag). Ändert sich die Struktur eines externen Dienstes, wirkt sich das daher unter Umständen erst nach Ablauf dieser Zeit aus; für einen sofortigen Effekt verkürzen Sie den Wert oder starten den Server neu.
+Beim Einbinden liest die WebSuite das Capabilities-Dokument des Dienstes – die Beschreibung seiner Ebenen und Fähigkeiten – und speichert es zwischen (`capsCacheMaxAge`, Vorgabe ein Tag). Ändert sich die Struktur eines externen Dienstes, wirkt sich das daher unter Umständen erst nach Ablauf dieser Zeit aus; für einen sofortigen Effekt verkürzen Sie den Wert. Ein Neustart des Servers genügt nicht, da das Dokument im Cache-Verzeichnis des Datenverzeichnisses liegt und den Neustart überdauert.
 
 ## Koordinatensystem und Achsen-Reihenfolge
 
-Rendert ein externer Dienst verdreht oder liefert leere Bilder, liegt das meist an der Achsen-Reihenfolge geografischer Koordinatensysteme (Lat/Lon gegenüber Lon/Lat, etwa bei `EPSG:4326`). Zwei Angaben im `provider` beheben das: `alwaysXY` erzwingt die Reihenfolge Lon/Lat, `forceCrs` bindet den Dienst fest an ein bestimmtes Koordinatensystem. Bei WMS regelt zusätzlich `bottomFirst`, ob die Ebenen des Dienstes von unten nach oben aufgeführt sind. Mit `maxRequests` begrenzen Sie die Zahl gleichzeitiger Anfragen an einen empfindlichen Dienst.
+Rendert ein externer Dienst verdreht oder liefert leere Bilder, liegt das meist an der Achsen-Reihenfolge geografischer Koordinatensysteme (Lat/Lon gegenüber Lon/Lat, etwa bei `EPSG:4326`). Zwei Angaben im `provider` beheben das: `alwaysXY` erzwingt die Reihenfolge Lon/Lat, `forceCrs` bindet den Dienst fest an ein bestimmtes Koordinatensystem. Bei WMS regelt zusätzlich `bottomFirst`, ob die Ebenen des Dienstes von unten nach oben aufgeführt sind.
 
 %see
 Siehe auch: [Konfiguration/Layer](/admin-de/konfiguration/layer).

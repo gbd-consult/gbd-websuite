@@ -15,9 +15,9 @@ Damit beide Systeme aufeinander verweisen, tragen Sie die Adressen der WebSuite 
 | `GIS-URL-GetXYFromFs` | `/_/gekosGetXY/projectUid/PROJECT_ID/fs/<land>_<gem>_<flur>_<zaehler>_<nenner>_<folge>` |
 | `GIS-URL-GetXYFromGrd` | `/_/gekosGetXY/projectUid/PROJECT_ID/ad/<str>_<hnr><hnralpha>_<plz>_<ort>_<bishnr><bishnralpha>` |
 
-Die Adressen zerfallen in zwei Gruppen. Die ersten drei öffnen die Karte im Browser: `ShowXY` setzt eine Markierung auf die übergebene Koordinate, `ShowFs` stellt ein Flurstück dar, und `GetXYFromMap` lässt den Nutzer einen Punkt wählen und schickt ihn an die in `gekosUrl` genannte Adresse zurück. Sie werden vom Client verarbeitet und setzen voraus, dass das Werkzeug `Toolbar.Gekos` in der [Client-Konfiguration](/admin-de/konfiguration/client) eingetragen ist.
+Die Adressen zerfallen in zwei Gruppen. Die ersten drei öffnen die Karte im Browser: `ShowXY` setzt eine Markierung auf die übergebene Koordinate, `ShowFs` stellt ein Flurstück dar, und `GetXYFromMap` lässt den Nutzer einen Punkt wählen und schickt ihn an die in `gekosUrl` genannte Adresse zurück. Sie werden vom Client verarbeitet; für `GetXYFromMap` muss das Werkzeug `Toolbar.Gekos` in der [Client-Konfiguration](/admin-de/konfiguration/client) eingetragen sein.
 
-Die beiden `GetXY`-Adressen sind dagegen Rückrufe ohne Oberfläche: Sie sprechen unmittelbar die Aktion an und liefern als Antwort reinen Text im Format `x;y` mit drei Nachkommastellen, im Fehlerfall `error:`. Damit sie funktionieren, muss im Projekt auch die Aktion `alkis` verfügbar sein – die Auflösung der Codes übernimmt das ALKIS-Modul.
+Die beiden `GetXY`-Adressen sind dagegen Rückrufe ohne Oberfläche: Sie sprechen unmittelbar die Aktion an und liefern als Antwort reinen Text im Format `x;y` mit drei Nachkommastellen, im Fehlerfall `error:`. Damit sie funktionieren, muss im Projekt oder in der Applikation auch die Aktion `alkis` verfügbar sein – die Auflösung der Codes übernimmt das ALKIS-Modul.
 
 %warn
 Die Reihenfolge der Platzhalter in den zusammengesetzten Codes ist verbindlich und muss den Feldern des ALKIS-Moduls entsprechen. Eine abweichende Reihenfolge führt nicht zu einer Fehlermeldung, sondern zu einem leeren Suchergebnis.
@@ -30,7 +30,7 @@ Die Reihenfolge der Platzhalter in den zusammengesetzten Codes ist verbindlich u
 Über `position` verschieben Sie die eingelesenen Punkte (`offsetX`, `offsetY`); liegen mehrere Vorgänge auf derselben Koordinate, ordnet die WebSuite sie über `distance` und `angle` kreisförmig an, damit sie im Client unterscheidbar bleiben.
 
 %warn
-Der Import legt die Zieltabelle bei jedem Lauf **neu an** – die vorhandene Tabelle wird gelöscht und mit einem festen Spaltenschema neu erstellt. Verwenden Sie eine eigene Tabelle, die ausschließlich diesem Zweck dient. Datensätze der Gek-Online-Quelle ohne `X`/`Y`/`ObjectID` werden übersprungen. Die Abfrage der Quelle prüft das TLS-Zertifikat nicht.
+Der Import legt die Zieltabelle bei jedem Lauf **neu an** – die vorhandene Tabelle wird gelöscht und mit einem festen Spaltenschema neu erstellt. Verwenden Sie eine eigene Tabelle, die ausschließlich diesem Zweck dient. Datensätze der Gek-Online-Quelle ohne `X` oder `Y` werden übersprungen, ebenso solche mit einer bereits vergebenen `ObjectID`. Die Abfrage der Quelle prüft das TLS-Zertifikat.
 %end
 
 ## Beispiel-Konfiguration ::

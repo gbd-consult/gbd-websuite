@@ -24,8 +24,6 @@ owsServices+ {
     }
 }
 
-map.extent [ 723753, 6631615, 783753, 6691615 ]
-
 map.layers+ {
     title "Basiskarte"
     type "qgis"
@@ -34,7 +32,7 @@ map.layers+ {
 }
 ```
 
-Der Dienst liefert vorberechnete Kacheln der Projektkarte. Für jedes in `supportedCrs` angegebene Koordinatenbezugssystem wird ein eigener `TileMatrixSet` erzeugt; der `map.extent` – hier in EPSG:3857 als erstem unterstützten CRS – begrenzt den Bereich der Kachelmatrix. Über `map.layers` legen Sie den Karteninhalt fest; `withCache true` bewirkt, dass die Kacheln zwischengespeichert und nicht bei jeder Anfrage neu gerendert werden.
+Der Dienst liefert vorberechnete Kacheln der Projektkarte. Für jedes in `supportedCrs` angegebene Koordinatenbezugssystem wird ein eigener `TileMatrixSet` (`TMS_<srid>`, Stufen `00` bis `20`) erzeugt; er beruht auf dem globalen Kachelraster des CRS oder auf einem Raster, das Sie unter `grids` für dieses CRS angeben. Über `map.layers` legen Sie den Karteninhalt fest; `withCache true` (Vorgabe) bewirkt, dass die Kacheln zwischengespeichert und nicht bei jeder Anfrage neu gerendert werden.
 
 %ref "gws.plugin.ows_server.wmts.Config"
 %demo "service_wmts_qgis_demo"

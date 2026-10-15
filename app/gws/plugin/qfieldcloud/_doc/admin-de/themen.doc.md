@@ -93,7 +93,7 @@ Enthält das QGIS-Projekt die Platzhalter `{user.authToken}`, `{user.loginName}`
 
 ## Der Rückweg: Änderungen und Anhänge
 
-QField schickt die im Feld vorgenommenen Änderungen als Liste von Einzeloperationen zurück – anlegen, ändern, löschen. Die WebSuite ordnet jede Operation dem Datenmodell des betroffenen Layers zu und führt sie darüber aus. Damit gelten dieselben Regeln wie beim [](/admin-de/themen/daten/editieren) im Browser: Validatoren, Wertvorgaben und Berechtigungen greifen unverändert. Die Operationen eines Modells laufen gemeinsam in einer Transaktion.
+QField schickt die im Feld vorgenommenen Änderungen als Liste von Einzeloperationen zurück – anlegen, ändern, löschen. Die WebSuite ordnet jede Operation dem Datenmodell des betroffenen Layers zu und führt sie darüber aus. Damit gelten dieselben Regeln wie beim [](/admin-de/themen/daten/editieren) im Browser: Validatoren, Wertvorgaben und Berechtigungen greifen unverändert. Alle Operationen einer Übertragung laufen gemeinsam in einer Transaktion: Schlägt eine fehl, wird nichts geschrieben.
 
 Dateianhänge kommen getrennt hinterher. QField überträgt zuerst die Änderung am Objekt, in der nur der Dateiname steht, danach den Inhalt in einer eigenen Anfrage. Die WebSuite findet das zugehörige Objekt, indem sie diesen Namen mit dem Namensfeld des Dateifelds vergleicht. Ist an dem Modell kein Dateifeld mit Namensspalte konfiguriert, lässt sich der Anhang nicht zuordnen und geht verloren.
 
@@ -109,11 +109,11 @@ Verzichten Sie auf eigene Modelle, sind die automatisch erzeugten uneingeschrän
 
 ## Betrieb und Fehlersuche
 
-Die WebSuite legt ihre Arbeitsdateien unter `<GWS_VAR_DIR>/qfieldcloud/projects/<uid>` ab, wobei `<uid>` die Kennung des QField-Projekts ist und nicht die des WebSuite-Projekts: die fertigen Pakete als `package_<Zeitstempel>`, die Kacheln der Hintergrundkarte unter `cache`, die eingegangenen Änderungslisten unter `deltas`. Pakete und Änderungslisten, die älter als eine Stunde sind, räumt die WebSuite beim nächsten Packen weg; der Kartencache bleibt so lange gültig, wie es `mapCacheLifeTime` vorgibt.
+Die WebSuite legt ihre Arbeitsdateien unter `<GWS_VAR_DIR>/qfieldcloud/projects/<uid>` ab, wobei `<uid>` die Kennung des QField-Projekts ist und nicht die des WebSuite-Projekts: die fertigen Pakete als `package_<Zeitstempel>`, die Hintergrundkarte unter `cache`, die eingegangenen Änderungen in der Datei `deltas.sqlite`. Pakete, die älter als eine Stunde sind, räumt die WebSuite beim nächsten Packen weg, Änderungen nach Ablauf von `deltaLifeTime` (Vorgabe 30 Tage) bei der nächsten Übertragung; der Kartencache bleibt so lange gültig, wie es `mapCacheLifeTime` vorgibt.
 
 Ändern Sie das QGIS-Projekt, bemerkt die WebSuite das an dessen Inhalt und wertet es beim nächsten Zugriff neu aus – ein Serverneustart ist dafür nicht nötig. Ein neues Paket entsteht allerdings erst, wenn die App eines anfordert.
 
-Bleibt ein Layer in der App unerwartet aus, hilft ein Blick ins Protokoll: Die WebSuite vermerkt dort, welchen Layer sie aus welchem Grund entfernt hat – nicht unterstützte Datenquelle, fehlender Tabellenname, kein Modell oder ein nicht editierbares Modell. Zum Prüfen, ohne ein Gerät zu bemühen, erzeugen Sie das Paket mit dem [Kommandozeilen-Befehl](/admin-de/konfiguration/cli/qfieldcloud) von Hand und sehen sich die Dateien an.
+Bleibt ein Layer in der App unerwartet aus, hilft ein Blick ins Protokoll: Die WebSuite vermerkt dort, welchen Layer sie aus welchem Grund entfernt hat – nicht unterstützte Datenquelle, fehlender Tabellenname oder eine Tabelle, die in der Datenbank nicht gefunden wurde. Zum Prüfen, ohne ein Gerät zu bemühen, erzeugen Sie das Paket mit dem [Kommandozeilen-Befehl](/admin-de/konfiguration/cli/qfieldcloud) von Hand und sehen sich die Dateien an.
 
 %see
 Siehe auch: [Aktion/qfieldcloud](/admin-de/konfiguration/action/qfieldcloud), [Modell/postgres](/admin-de/konfiguration/model/postgres), [Modell-Feld/file](/admin-de/konfiguration/modelField/file), [Kommandozeilen-Befehl/qfieldcloud](/admin-de/konfiguration/cli/qfieldcloud).

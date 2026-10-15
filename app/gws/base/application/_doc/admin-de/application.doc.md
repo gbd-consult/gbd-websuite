@@ -8,7 +8,7 @@ Die Applikation ist das oberste Konfigurationsobjekt der GBD WebSuite. Sie bünd
 
 ## Server und Web ::
 
-`server` steuert die Serverprozesse und deren Einstellungen – Module, Anzahl der Worker und das Logging. `web` konfiguriert die Webseiten, die Auslieferung statischer und dynamischer Inhalte sowie das URL-Rewriting; dazu gehört auch die SSL-Einrichtung.
+`server` steuert die Serverprozesse und deren Einstellungen – Module, Anzahl der Worker und das Logging. `web` konfiguriert die Webseite, die Auslieferung statischer und dynamischer Inhalte sowie das URL-Rewriting; dazu gehört auch die SSL-Einrichtung.
 
 ## Zugriff ::
 
@@ -32,7 +32,7 @@ Die Applikation ist das oberste Konfigurationsobjekt der GBD WebSuite. Sie bünd
 
 ## Weitere Einstellungen ::
 
-`cache` steuert die Zwischenspeicherung von Kacheln und Dienstantworten, `storage` die serverseitige Datenablage. `locales` legt die verfügbaren Sprachen und Gebietsschemata fest, `metadata` die globalen Metadaten. `helpers` konfiguriert Hilfsobjekte, `developer` die Optionen für Entwicklung und Fehlersuche und `vars` globale Variablen zur Wiederverwendung in der Konfiguration.
+`cache` legt Zeitlimit und Parallelität für das Vorbefüllen des Kachel-Caches fest, `storage` die serverseitige Datenablage. `locales` legt die verfügbaren Sprachen und Gebietsschemata fest, `metadata` die globalen Metadaten. `helpers` konfiguriert Hilfsobjekte, `developer` die Optionen für Entwicklung und Fehlersuche und `vars` globale Variablen zur Wiederverwendung in der Konfiguration.
 
 ## Beispiel-Konfiguration ::
 

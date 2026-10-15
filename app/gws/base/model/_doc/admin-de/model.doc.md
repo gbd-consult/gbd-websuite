@@ -1,6 +1,6 @@
 # Modell "default" :/admin-de/konfiguration/model/default
 
-Der Modell-Typ `default` ist das allgemeine Standardmodell ohne eigene Datenquelle. Er verwaltet Features anhand der von Ihnen konfigurierten `fields` und kommt überall dort zum Einsatz, wo kein quellenspezifischer Modell-Typ angegeben ist. Die Features werden vollständig in den Speicher geladen; als Standard dienen `uid` und `geometry` als Kennung und Geometriefeld.
+Der Modell-Typ `default` ist das allgemeine Standardmodell ohne eigene Datenquelle. Er übernimmt alle Attribute der Features unverändert, unabhängig von den konfigurierten `fields`, und kommt dort zum Einsatz, wo kein Modell konfiguriert ist. Die Features werden vollständig geladen; als Kennung und Geometriefeld dienen fest `uid` und `geometry`.
 
 ## Beispiel-Konfiguration ::
 
@@ -8,9 +8,8 @@ Der Modell-Typ `default` ist das allgemeine Standardmodell ohne eigene Datenquel
 models+ {
     type "default"
     fields+ {
-        name "id"
+        name "uid"
         type "integer"
-        isPrimaryKey true
     }
     fields+ {
         name "name"
@@ -23,6 +22,6 @@ models+ {
 }
 ```
 
-Das `default`-Modell besitzt keine eigene Datenquelle und beschreibt die Features allein über die konfigurierten `fields`. Das Feld `id` dient mit `isPrimaryKey true` als Kennung, `name` hält ein Textattribut und `geometry` die Geometrie. Ohne abweichende Angabe werden `uid` und `geometry` als Standard-Kennung bzw. -Geometriefeld verwendet.
+Das `default`-Modell besitzt keine eigene Datenquelle und beschreibt die Features allein über die konfigurierten `fields`. Das Feld `uid` hält die Kennung, `name` ein Textattribut und `geometry` die Geometrie. Kennung und Geometriefeld sind beim `default`-Modell fest `uid` und `geometry`; `isPrimaryKey` an einem anderen Feld ändert daran nichts.
 
 %ref "gws.base.model.default_model.Config"

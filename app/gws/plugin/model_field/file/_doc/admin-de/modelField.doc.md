@@ -1,6 +1,6 @@
 # Modell-Feld "file" :/admin-de/konfiguration/modelField/file
 
-Das Feld `file` bildet ein Attribut mit einer Datei ab, etwa einem Dokument oder Bild, das an ein Objekt angehängt wird. Über `contentColumn` legen Sie fest, in welcher Datenbankspalte der Dateiinhalt gespeichert wird, alternativ verweist `pathColumn` auf eine im Dateisystem abgelegte Datei; mit `nameColumn` bestimmen Sie die Spalte für den Dateinamen. Es muss entweder `contentColumn` oder `pathColumn` gesetzt sein, und das Modell benötigt einen Primärschlüssel.
+Das Feld `file` bildet ein Attribut mit einer Datei ab, etwa einem Dokument oder Bild, das an ein Objekt angehängt wird. Über `contentColumn` legen Sie fest, in welcher Datenbankspalte der Dateiinhalt gespeichert wird, `pathColumn` für einen Dateipfad im Dateisystem wird zwar gelesen, das Speichern und Ausliefern von Dateien aus dem Dateisystem ist aber noch nicht umgesetzt; mit `nameColumn` bestimmen Sie die Spalte für den Dateinamen. Es muss entweder `contentColumn` oder `pathColumn` gesetzt sein, und das Modell benötigt einen Primärschlüssel.
 
 ## Beispiel-Konfiguration ::
 

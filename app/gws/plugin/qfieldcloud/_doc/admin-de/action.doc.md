@@ -2,7 +2,7 @@
 
 Die Aktion `qfieldcloud` stellt die Schnittstelle zur QFieldCloud bereit und ermöglicht den Abgleich von Projekten zwischen der GBD WebSuite und der QField-App für die mobile Felderfassung. Wie Sie das zugehörige QGIS-Projekt vorbereiten und wie der Abgleich abläuft, beschreibt das Thema [](/admin-de/themen/fachmodule/qfieldcloud).
 
-Die Aktion kennt nur eine Eigenschaft: Unter `projects` listen Sie die Projekte auf, die in der App zur Auswahl stehen sollen. Die Aktion lässt sich in einem Projekt oder global in der Applikation konfigurieren.
+Die zentrale Eigenschaft der Aktion ist `projects`: Darunter listen Sie die Projekte auf, die in der App zur Auswahl stehen sollen. Die Aktion lässt sich in einem Projekt oder global in der Applikation konfigurieren.
 
 ## Ein Projekteintrag
 
@@ -35,7 +35,7 @@ models+ {
 }
 ```
 
-Die Zuordnung erfolgt über `tableName`; der Name muss auf dieselbe Tabelle zeigen wie der Layer im QGIS-Projekt. `withAutoFields` übernimmt die übrigen Spalten, ohne dass Sie jedes Feld einzeln aufführen. `isEditable` muss gesetzt sein, sonst nimmt die WebSuite den Layer aus dem Paket – es sei denn, er ist in QFieldSync vollständig gesperrt und damit ohnehin nur zum Lesen bestimmt. Mit `permissions.edit` schränken Sie das Schreiben auf Rollen ein.
+Die Zuordnung erfolgt über `tableName`; der Name muss auf dieselbe Tabelle zeigen wie der Layer im QGIS-Projekt. `withAutoFields` übernimmt die übrigen Spalten, ohne dass Sie jedes Feld einzeln aufführen. Ohne `isEditable` kommt der Layer nur zum Lesen ins Paket: Die WebSuite sperrt dann in QField alle Bearbeitungsmöglichkeiten. Mit `permissions.edit` schränken Sie das Schreiben auf Rollen ein.
 
 ## Dateianhänge
 
@@ -62,7 +62,7 @@ QField überträgt einen Anhang in zwei Schritten: Zuerst kommen die Änderungen
 Die Aktion beantwortet die Anfragen der App unter dem internen Befehl `qfieldcloudApi`. Damit die App eine gewöhnliche Adresse ansprechen kann, legen Sie in der Webseite eine Rewrite-Regel an, die einen Pfad Ihrer Wahl auf diesen Befehl abbildet und dabei das Projekt benennt:
 
 ```javascript
-web.sites+ {
+web.site {
     rewriteRules+ {
         pattern "^/qfc/(.*)"
         target "/_/qfieldcloudApi/projectUid/qfield_demo/$1"
@@ -70,13 +70,13 @@ web.sites+ {
 }
 ```
 
-`projectUid` benennt das **Projekt der WebSuite**, nicht das QField-Projekt aus `projects`. Steht die Aktion in einem Projekt, darf die Angabe entfallen; geben Sie sie an, muss sie zu diesem Projekt passen. Ist die Aktion global in der Applikation konfiguriert, ist sie zwingend – sonst weiß die Schnittstelle nicht, in welchem Projektkontext sie arbeitet.
+`projectUid` benennt das **Projekt der WebSuite**, nicht das QField-Projekt aus `projects`. Die Angabe ist optional. Steht die Aktion in einem Projekt, arbeitet sie immer in diesem Projekt, und ein `projectUid` in der Adresse wird nicht beachtet. Ist die Aktion global in der Applikation konfiguriert, legt `projectUid` den Projektkontext fest; ohne Angabe arbeitet sie ohne Projekt.
 
 In der App wählen die Nutzer *QFieldCloud-Projekte*, tragen als Server die daraus entstehende Adresse ein – hier `https://example.com/qfc` – und melden sich mit ihren WebSuite-Zugangsdaten an. Anschließend laden sie das Projekt aus der Liste herunter und übertragen ihre Änderungen später über *Synchronisieren* zurück. Die Anmeldung müssen Sie nicht konfigurieren: Die Aktion bringt eine eigene Authentifizierungsmethode mit und registriert sie selbst. Vorhanden sein müssen nur ein [](/admin-de/konfiguration/authProvider), gegen den die Zugangsdaten geprüft werden, und eine [](/admin-de/konfiguration/authSessionManager), deren Lebensdauer bestimmt, wie lange eine Anmeldung der App gültig bleibt.
 
 ## Kartencache
 
-Die Hintergrundkacheln eines Projekts rendert der QGIS-Server und die WebSuite legt sie unter `<GWS_VAR_DIR>/qfieldcloud/projects/<uid>/cache` ab – `<uid>` ist dabei die Kennung des QField-Projekts; die fertigen Pakete liegen als `package_*` daneben. `mapCacheLifeTime` bestimmt, wie lange die Kacheln als gültig gelten – voreingestellt ist `0`, also kein Cache. Da das Rendern der Kacheln der aufwendigste Teil der Paketerstellung ist, lohnt hier ein Wert wie `7d`.
+Die Hintergrundkarte eines Projekts rendert der QGIS-Server als einzelnes Rasterbild, und die WebSuite legt sie unter `<GWS_VAR_DIR>/qfieldcloud/projects/<uid>/cache` ab – `<uid>` ist dabei die Kennung des QField-Projekts; die fertigen Pakete liegen als `package_*` daneben. `mapCacheLifeTime` bestimmt, wie lange die Karte als gültig gilt – voreingestellt ist `0`, also kein Cache. Da das Rendern der Karte der aufwendigste Teil der Paketerstellung ist, lohnt hier ein Wert wie `7d`.
 
 ## Kleinstmögliche Konfiguration ::
 
@@ -119,3 +119,4 @@ Unter `projects` binden Sie je Eintrag ein QGIS-Projekt (`provider.path`) an, da
 
 %ref "gws.plugin.qfieldcloud.action.Config"
 %demo "qfield_demo"
+%demo "qfield_simple"

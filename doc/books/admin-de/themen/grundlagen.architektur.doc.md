@@ -6,7 +6,7 @@ Auch wenn die WebSuite als reiner Webserver arbeiten kann, entfaltet sie ihren N
 
 ## Prozesse
 
-Innerhalb des Containers ist der Server kein einzelner Prozess, sondern ein Verbund: Ein Webserver nimmt die Anfragen entgegen, ein Applikationsserver führt die Logik der WebSuite aus, ein Kartenproxy bindet externe Quellen an und speichert Kacheln zwischen, ein Hintergrunddienst erledigt langlaufende Aufgaben wie den Druck, und eine Überwachung lädt die Konfiguration neu, sobald sich Dateien ändern.
+Innerhalb des Containers ist der Server kein einzelner Prozess, sondern ein Verbund: Ein Webserver nimmt die Anfragen entgegen, ein Applikationsserver führt die Logik der WebSuite aus, ein Hintergrunddienst erledigt langlaufende Aufgaben wie den Druck, und eine Überwachung lädt die Konfiguration neu, sobald sich Dateien ändern.
 
 Für die Konfiguration der Inhalte ist dieser Aufbau ohne Belang. Er wird dort wichtig, wo es um den [Betrieb](/admin-de/themen/betrieb/server) geht: Nicht benötigte Prozesse lassen sich abschalten, und Anzahl und Zeitlimits der Arbeitsprozesse bestimmen das Verhalten unter Last.
 
@@ -16,7 +16,7 @@ Das gesamte Verhalten der WebSuite ergibt sich aus einer einzigen Konfiguration,
 
 ## Webseiten und Projekte
 
-Auf oberster Ebene trennt die WebSuite zwei Begriffe. Eine *Webseite* ist ein Hostname mit den zugehörigen Regeln für Auslieferung und Zugriff. Ein *Projekt* ist eine Karte mit ihren Einstellungen. Beide sind voneinander unabhängig: Dasselbe Projekt kann unter mehreren Webseiten erreichbar sein, und eine Webseite kann Inhalte ausliefern, die zu keinem Projekt gehören.
+Auf oberster Ebene trennt die WebSuite zwei Begriffe. Eine *Webseite* ist ein Hostname mit den zugehörigen Regeln für Auslieferung und Zugriff. Ein *Projekt* ist eine Karte mit ihren Einstellungen. Beide sind voneinander unabhängig: Eine Installation hat genau eine Webseite, über die alle Projekte erreichbar sind, und sie kann Inhalte ausliefern, die zu keinem Projekt gehören.
 
 Daraus ergibt sich die Gliederung jeder Installation in zwei Ebenen – die globale Applikation und die einzelnen Projekte –, die die folgenden Abschnitte beschreiben.
 
