@@ -127,8 +127,8 @@ On the layer:
 - ``withCache`` (default true) and ``cache``: ``maxAge`` (7d), ``maxLevel``
   (18, a level of the global grid), ``requestTiles`` (4), ``requestBuffer``
   (64), ``crs``, ``name``.
-- ``imageFormat``: the stored and returned format (default PNG8); JPEG and
-  other opaque formats render transparency as a white background. WMS and
+- ``imageFormat``: the stored and returned format (default PNG8); JPEG
+  renders transparency as its ``background`` color (default white). WMS and
   QGIS grabbers request the source MIME type that matches it best
   (``gws.lib.image.format.best_mime_type``), e.g. ``image/png; mode=8bit`` for PNG8.
 - ``display``: ``tile`` (grabber tiles), ``box`` (grabber boxes) or, for
@@ -184,7 +184,8 @@ Notes and open issues
 - A source answering with an image of unexpected size raises
   ``gws.ExternalServiceError`` (empty tile, log entry) rather than being
   padded.
-- The background color for opaque formats is not configurable.
+- The ``background`` of opaque formats is not sent to the source, which
+  fills its own background (usually white) inside the source area.
 - The own WMTS service composes a box per tile instead of reading stored
   tiles directly.
 """

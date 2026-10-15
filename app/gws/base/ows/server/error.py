@@ -1,5 +1,7 @@
 """OWS exceptions."""
 
+from typing import Optional
+
 import gws
 import gws.lib.xmlx as xmlx
 import gws.lib.image
@@ -79,22 +81,23 @@ class Error(gws.Error):
             ),
         )
 
-    def to_image_response(self, mime: gws.MimeType = gws.lib.mime.PNG) -> gws.ContentResponse:
+    def to_image_response(self, ifo: Optional[gws.ImageFormat] = None) -> gws.ContentResponse:
         """Create an image response for this error.
 
         The image is a single error pixel.
 
         Args:
-            mime: Image mime type.
+            ifo: Image format, PNG24 by default.
 
         Returns:
             The image response.
         """
 
+        ifo = ifo or gws.lib.image.format.PNG24
         return gws.ContentResponse(
             status=self.status,
-            mimeType=mime,
-            content=gws.lib.image.util.error_pixel(mime),
+            mimeType=ifo.mimeTypes[0],
+            content=gws.lib.image.util.error_pixel(ifo),
         )
 
 

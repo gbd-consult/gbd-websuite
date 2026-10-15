@@ -397,31 +397,15 @@ class Object(gws.OwsService):
             ``error.InvalidFormat``: If the mime type is not supported.
         """
 
-        ifmt = self.find_image_format(mime)
+        ifo = self.imageFormats[0]
+        if mime:
+            ifo = gws.lib.image.format.find_by_mime_type(mime, self.imageFormats)
+        if not ifo:
+            raise error.InvalidFormat()
         if img:
-            gws.log.debug(f'image_response: {img.mode()=} {img.size()=} {mime=} {ifmt.options}')
-        content = img.to_bytes(mime, ifmt.options) if img else gws.lib.image.util.empty_pixel(mime)
-        return gws.ContentResponse(mimeType=mime, content=content)
-
-    def find_image_format(self, mime: gws.MimeType) -> gws.ImageFormat:
-        """Find an image format by mime type.
-
-        Args:
-            mime: Mime type. If empty, the first format is returned.
-
-        Returns:
-            The image format.
-
-        Raises:
-            ``error.InvalidFormat``: If the mime type is not supported.
-        """
-
-        if not mime:
-            return self.imageFormats[0]
-        for f in self.imageFormats:
-            if mime in f.mimeTypes:
-                return f
-        raise error.InvalidFormat()
+            gws.log.debug(f'image_response: {img.mode()=} {img.size()=} {mime=} {ifo.options}')
+            return gws.ContentResponse(mimeType=mime, content=img.to_bytes(mime, ifo.options))
+        return gws.ContentResponse(mimeType=mime, content=gws.lib.image.util.empty_pixel(ifo))
 
     def render_legend(self, sr: request.Object, lcs: list[core.LayerCaps], mime: gws.MimeType) -> gws.ContentResponse:
         """Render a combined legend for the given layers.

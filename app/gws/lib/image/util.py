@@ -17,7 +17,7 @@ import qrcode.constants
 import gws
 import gws.lib.mime
 
-from . import core
+from . import core, format
 
 
 def thumbnail(
@@ -147,40 +147,46 @@ def get_font(
 
 _PIXELS = {}
 _ERROR_COLOR = '#ffa1b4'
+_EMPTY_COLOR = '#ffffff'
 
 
-def empty_pixel(mime: gws.MimeType = ''):
+def empty_pixel(ifo: Optional[gws.ImageFormat] = None):
     """Return an encoded empty 1x1 image.
 
-    The pixel is transparent, or white for JPEG.
+    The pixel is transparent, or the background color of the format (white by default) for JPEG.
 
     Args:
-        mime: MIME type, PNG by default.
+        ifo: Image format, PNG24 by default.
 
     Returns:
-        The encoded image.
+        The image encoded in the first MIME type of the format.
 
     Raises:
         ``Error``: If the MIME type is not an image type.
     """
 
-    return pixel(mime, '#ffffff' if mime == gws.lib.mime.JPEG else None)
+    ifo = ifo or format.PNG24
+    mime = ifo.mimeTypes[0]
+    if gws.lib.mime.get_base(mime) == gws.lib.mime.JPEG:
+        return pixel(mime, ifo.options.get('background') or _EMPTY_COLOR)
+    return pixel(mime, None)
 
 
-def error_pixel(mime: gws.MimeType = ''):
+def error_pixel(ifo: Optional[gws.ImageFormat] = None):
     """Return an encoded 1x1 image in the error color.
 
     Args:
-        mime: MIME type, PNG by default.
+        ifo: Image format, PNG24 by default.
 
     Returns:
-        The encoded image.
+        The image encoded in the first MIME type of the format.
 
     Raises:
         ``Error``: If the MIME type is not an image type.
     """
 
-    return pixel(mime, _ERROR_COLOR)
+    ifo = ifo or format.PNG24
+    return pixel(ifo.mimeTypes[0], _ERROR_COLOR)
 
 
 def pixel(mime: gws.MimeType, color):

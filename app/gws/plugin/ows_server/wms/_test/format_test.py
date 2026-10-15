@@ -18,9 +18,9 @@ def root():
         owsServices+ {
             type "wms"
             uid "WMS_1"
-            imageFormats+ { name "png8" }
-            imageFormats+ { name "png24" }
-            imageFormats+ { mimeTypes [ "Image/JPEG;Quality=low" "foo/bar" ] options { quality 10 } }
+            imageFormats+ { name "PNG8" }
+            imageFormats+ { name "PNG24" }
+            imageFormats+ { name "JPEG" mimeTypes [ "Image/JPEG;Quality=low" "foo/bar" ] options { quality 10 } }
         }
         projects+ {
             uid "PROJECT_1"

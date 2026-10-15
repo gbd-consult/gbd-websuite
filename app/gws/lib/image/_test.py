@@ -204,23 +204,58 @@ def test_add_box():
 
 
 def test_format_from_config_by_name():
-    fmt = image.format.from_config(image.format.Config(name='png8'))
-    assert fmt.name == 'png8'
+    fmt = image.format.from_config(image.format.Config(name='PNG8'))
+    assert fmt.name == 'PNG8'
     assert fmt.mimeTypes == ['image/png', 'image/png; mode=8bit']
+    assert fmt.options == {'mode': 'P', 'compress_level': 3}
+
+
+def test_format_from_config_fields_override():
+    fmt = image.format.from_config(image.format.Config(name='PNG8', mode='L', quality=50, background='#ff0000'))
+    assert fmt.options == {'mode': 'L', 'compress_level': 3, 'quality': 50, 'background': '#ff0000'}
+
+
+def test_format_from_config_fields_over_options():
+    fmt = image.format.from_config(image.format.Config(name='JPEG', quality=50, options={'quality': 10, 'progressive': True}))
+    assert fmt.options == {'quality': 50, 'progressive': True}
+
+
+def test_format_from_config_options_replaced():
+    fmt = image.format.from_config(image.format.Config(name='PNG8', options={'dpi': (72, 72)}))
+    assert fmt.options == {'dpi': (72, 72), 'mode': 'P'}
+
+
+def test_format_from_config_empty_options():
+    fmt = image.format.from_config(image.format.Config(name='PNG8', options={}))
     assert fmt.options == {'mode': 'P'}
 
 
+def test_format_from_config_options_keep_predefined_quality():
+    fmt = image.format.from_config(image.format.Config(name='JPEG_HIGH', options={'progressive': True}))
+    assert fmt.options == {'progressive': True, 'quality': 90}
+
+
+def test_format_from_config_options_override_predefined_mode():
+    fmt = image.format.from_config(image.format.Config(name='PNG8', options={'mode': 'RGBA'}))
+    assert fmt.options == {'mode': 'RGBA'}
+
+
+def test_format_from_config_webp_lossless():
+    fmt = image.format.from_config(image.format.Config(name='WEBP_LOSSLESS'))
+    assert fmt.mimeTypes == ['image/webp']
+    assert fmt.options == {'lossless': True}
+
+
 def test_format_from_config_name_with_options():
-    fmt = image.format.from_config(image.format.Config(name='jpeg', options={'quality': 50}))
+    fmt = image.format.from_config(image.format.Config(name='JPEG', options={'quality': 50}))
     assert fmt.mimeTypes == ['image/jpeg']
     assert fmt.options == {'quality': 50}
 
 
-def test_format_from_config_custom():
-    fmt = image.format.from_config(image.format.Config(name='name_1', mimeTypes=['image/gif']))
-    assert fmt.name == 'name_1'
-    assert fmt.mimeTypes == ['image/gif']
-    assert fmt.options == {}
+def test_format_from_config_jpeg_presets():
+    assert image.format.from_config(image.format.Config(name='JPEG_LOW')).options == {'quality': 50}
+    assert image.format.from_config(image.format.Config(name='JPEG')).options == {'quality': 75}
+    assert image.format.from_config(image.format.Config(name='JPEG_HIGH')).options == {'quality': 90}
 
 
 def test_format_from_config_unknown_name():
@@ -250,20 +285,56 @@ def test_best_mime_type_no_match():
 
 
 def test_format_from_config_normalizes():
-    fmt = image.format.from_config(image.format.Config(name='name_1', mimeTypes=['Image/PNG;Mode=8bit']))
+    fmt = image.format.from_config(image.format.Config(name='PNG8', mimeTypes=['Image/PNG;Mode=8bit']))
     assert fmt.mimeTypes == ['image/png; mode=8bit']
 
 
 def test_format_from_config_unknown_mime_type_ignored():
-    fmt = image.format.from_config(image.format.Config(name='name_1', mimeTypes=['foo/bar', 'image/gif']))
+    fmt = image.format.from_config(image.format.Config(name='PNG8', mimeTypes=['foo/bar', 'image/gif']))
     assert fmt.mimeTypes == ['image/gif']
 
 
 def test_format_from_config_no_known_mime_type():
     with u.raises(image.Error):
-        image.format.from_config(image.format.Config(name='name_1', mimeTypes=['foo/bar']))
+        image.format.from_config(image.format.Config(name='PNG8', mimeTypes=['foo/bar']))
 
 
 def test_format_from_config_options_as_data():
-    fmt = image.format.from_config(image.format.Config(name='jpeg', options=gws.Data(quality=10)))
+    fmt = image.format.from_config(image.format.Config(name='JPEG', options=gws.Data(quality=10)))
     assert fmt.options == {'quality': 10}
+
+
+def test_empty_pixel_default_png():
+    img = image.from_bytes(image.util.empty_pixel())
+    assert img.to_array()[0][0][3] == 0
+
+
+def test_empty_pixel_jpeg_with_params():
+    ifo = image.format.from_config(image.format.Config(name='JPEG', mimeTypes=['image/jpeg; quality=low']))
+    img = image.from_bytes(image.util.empty_pixel(ifo))
+    assert img.mode() == 'RGB'
+    assert list(img.to_array()[0][0]) == [255, 255, 255]
+
+
+def test_empty_pixel_jpeg_background():
+    ifo = image.format.from_config(image.format.Config(name='JPEG', background='#ffff00'))
+    r, g, b = image.from_bytes(image.util.empty_pixel(ifo)).to_array()[0][0]
+    assert r > 250 and g > 250 and b < 5
+
+
+def test_empty_pixel_png_transparent():
+    ifo = image.format.from_config(image.format.Config(name='PNG24', background='#ffff00'))
+    img = image.from_bytes(image.util.empty_pixel(ifo))
+    assert img.to_array()[0][0][3] == 0
+
+
+def test_error_pixel_jpeg():
+    img = image.from_bytes(image.util.error_pixel(image.format.JPEG))
+    assert img.mode() == 'RGB'
+
+
+def test_find_by_mime_type():
+    formats = [image.format.PNG8, image.format.PNG24, image.format.JPEG]
+    assert image.format.find_by_mime_type('image/png', formats) is image.format.PNG8
+    assert image.format.find_by_mime_type('image/png; mode=32bit', formats) is image.format.PNG24
+    assert image.format.find_by_mime_type('image/gif', formats) is None

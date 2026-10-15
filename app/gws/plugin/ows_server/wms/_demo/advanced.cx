@@ -41,20 +41,24 @@ owsServices+ {
     }
 
     imageFormats+ {
+        name "png24"
         mimeTypes [ "image/png" "image/png; mode=32bit" ]
-        options { mode "RGBA" }
     }
     imageFormats+ {
+        name "png8"
         mimeTypes [ "image/png; mode=8bit" ]
-        options { mode "P" }
     }
     imageFormats+ {
+        name "jpeg"
         mimeTypes [ "image/jpeg" "image/jpeg; quality=high" ]
-        options { quality 50 background "cyan" }
+        quality 50
+        background "cyan"
     }
     imageFormats+ {
+        name "jpeg_low"
         mimeTypes [ "image/jpeg; quality=low" ]
-        options { quality 10 background "yellow" }
+        quality 10
+        background "yellow"
     }
 
     templates+ {
