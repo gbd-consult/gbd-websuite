@@ -204,20 +204,20 @@ def test_add_box():
 
 
 def test_format_from_config_by_name():
-    fmt = image.format_from_config(image.FormatConfig(name='png8'))
+    fmt = image.format.from_config(image.format.Config(name='png8'))
     assert fmt.name == 'png8'
     assert fmt.mimeTypes == ['image/png', 'image/png; mode=8bit']
     assert fmt.options == {'mode': 'P'}
 
 
 def test_format_from_config_name_with_options():
-    fmt = image.format_from_config(image.FormatConfig(name='jpeg', options={'quality': 50}))
+    fmt = image.format.from_config(image.format.Config(name='jpeg', options={'quality': 50}))
     assert fmt.mimeTypes == ['image/jpeg']
     assert fmt.options == {'quality': 50}
 
 
 def test_format_from_config_custom():
-    fmt = image.format_from_config(image.FormatConfig(name='name_1', mimeTypes=['image/gif']))
+    fmt = image.format.from_config(image.format.Config(name='name_1', mimeTypes=['image/gif']))
     assert fmt.name == 'name_1'
     assert fmt.mimeTypes == ['image/gif']
     assert fmt.options == {}
@@ -225,45 +225,45 @@ def test_format_from_config_custom():
 
 def test_format_from_config_unknown_name():
     with u.raises(image.Error):
-        image.format_from_config(image.FormatConfig(name='name_1'))
+        image.format.from_config(image.format.Config(name='name_1'))
 
 
 def test_best_mime_type_specific_wins():
     supported = ['image/png', 'image/png; mode=8bit', 'image/jpeg']
-    assert image.best_mime_type(image.PNG8, supported) == 'image/png; mode=8bit'
-    assert image.best_mime_type(image.PNG24, supported) == 'image/png'
-    assert image.best_mime_type(image.JPEG, supported) == 'image/jpeg'
+    assert image.format.best_mime_type(image.format.PNG8, supported) == 'image/png; mode=8bit'
+    assert image.format.best_mime_type(image.format.PNG24, supported) == 'image/png'
+    assert image.format.best_mime_type(image.format.JPEG, supported) == 'image/jpeg'
 
 
 def test_best_mime_type_png24():
-    assert image.best_mime_type(image.PNG24, ['image/png', 'image/png; mode=8bit', 'image/png; mode=32bit']) == 'image/png; mode=32bit'
+    assert image.format.best_mime_type(image.format.PNG24, ['image/png', 'image/png; mode=8bit', 'image/png; mode=32bit']) == 'image/png; mode=32bit'
 
 
 def test_best_mime_type_plain():
-    assert image.best_mime_type(image.PNG8, ['image/png', 'image/jpeg']) == 'image/png'
+    assert image.format.best_mime_type(image.format.PNG8, ['image/png', 'image/jpeg']) == 'image/png'
 
 
 def test_best_mime_type_no_match():
-    assert image.best_mime_type(image.WEBP, ['image/png', 'image/jpeg']) == ''
-    assert image.best_mime_type(image.PNG8, ['image/png; mode=1bit']) == ''
-    assert image.best_mime_type(image.PNG8, []) == ''
+    assert image.format.best_mime_type(image.format.WEBP, ['image/png', 'image/jpeg']) == ''
+    assert image.format.best_mime_type(image.format.PNG8, ['image/png; mode=1bit']) == ''
+    assert image.format.best_mime_type(image.format.PNG8, []) == ''
 
 
 def test_format_from_config_normalizes():
-    fmt = image.format_from_config(image.FormatConfig(name='name_1', mimeTypes=['Image/PNG;Mode=8bit']))
+    fmt = image.format.from_config(image.format.Config(name='name_1', mimeTypes=['Image/PNG;Mode=8bit']))
     assert fmt.mimeTypes == ['image/png; mode=8bit']
 
 
 def test_format_from_config_unknown_mime_type_ignored():
-    fmt = image.format_from_config(image.FormatConfig(name='name_1', mimeTypes=['foo/bar', 'image/gif']))
+    fmt = image.format.from_config(image.format.Config(name='name_1', mimeTypes=['foo/bar', 'image/gif']))
     assert fmt.mimeTypes == ['image/gif']
 
 
 def test_format_from_config_no_known_mime_type():
     with u.raises(image.Error):
-        image.format_from_config(image.FormatConfig(name='name_1', mimeTypes=['foo/bar']))
+        image.format.from_config(image.format.Config(name='name_1', mimeTypes=['foo/bar']))
 
 
 def test_format_from_config_options_as_data():
-    fmt = image.format_from_config(image.FormatConfig(name='jpeg', options=gws.Data(quality=10)))
+    fmt = image.format.from_config(image.format.Config(name='jpeg', options=gws.Data(quality=10)))
     assert fmt.options == {'quality': 10}

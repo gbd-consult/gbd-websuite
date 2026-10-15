@@ -25,7 +25,7 @@ class Config(gws.ConfigWithAccess):
     """Service extent."""
     extentCrs: Optional[gws.CrsName]
     """CRS of the service extent."""
-    imageFormats: Optional[list[gws.lib.image.FormatConfig]]
+    imageFormats: Optional[list[gws.lib.image.format.Config]]
     """Image formats for map and tile requests."""
     maxFeatureCount: int = 10000
     """Maximum number of features per page a request can ask for."""
@@ -81,7 +81,7 @@ class Object(gws.OwsService):
         if p:
             self.imageFormats = []
             for cfg in p:
-                self.imageFormats.append(gws.lib.image.format_from_config(cfg))
+                self.imageFormats.append(gws.lib.image.format.from_config(cfg))
             return
 
         self.imageFormats = [
@@ -400,7 +400,7 @@ class Object(gws.OwsService):
         ifmt = self.find_image_format(mime)
         if img:
             gws.log.debug(f'image_response: {img.mode()=} {img.size()=} {mime=} {ifmt.options}')
-        content = img.to_bytes(mime, ifmt.options) if img else gws.lib.image.empty_pixel(mime)
+        content = img.to_bytes(mime, ifmt.options) if img else gws.lib.image.util.empty_pixel(mime)
         return gws.ContentResponse(mimeType=mime, content=content)
 
     def find_image_format(self, mime: gws.MimeType) -> gws.ImageFormat:

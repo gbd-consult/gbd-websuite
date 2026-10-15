@@ -457,7 +457,7 @@ class Object(gws.base.edit.helper.Object):
         url = mo.adapter.key_uri(secret, self.mfaIssuer, account.get(self.usernameColumn))
         if not url:
             return ''
-        return gws.lib.image.qr_code(url).to_data_url()
+        return gws.lib.image.util.qr_code(url).to_data_url()
 
         ##
 

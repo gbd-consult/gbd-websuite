@@ -27,10 +27,10 @@ def _grabber(image_format, calls=None):
 
 
 def test_source_mime_types():
-    assert _grabber(gws.lib.image.PNG8).sourceMimeType == 'image/png; mode=8bit'
-    assert _grabber(gws.lib.image.PNG24).sourceMimeType == 'image/png'
-    assert _grabber(gws.lib.image.JPEG).sourceMimeType == 'image/jpeg'
-    assert _grabber(gws.lib.image.WEBP).sourceMimeType == 'image/webp'
+    assert _grabber(gws.lib.image.format.PNG8).sourceMimeType == 'image/png; mode=8bit'
+    assert _grabber(gws.lib.image.format.PNG24).sourceMimeType == 'image/png'
+    assert _grabber(gws.lib.image.format.JPEG).sourceMimeType == 'image/jpeg'
+    assert _grabber(gws.lib.image.format.WEBP).sourceMimeType == 'image/webp'
 
 
 def test_source_mime_type_unsupported():
@@ -40,6 +40,6 @@ def test_source_mime_type_unsupported():
 
 def test_fetch_box_sends_source_mime_type_and_params():
     calls = []
-    gr = _grabber(gws.lib.image.PNG8, calls)
+    gr = _grabber(gws.lib.image.format.PNG8, calls)
     gr.fetch_box_as_bytes(gws.Bounds(crs=CRS_3857, extent=(0, 0, 100, 100)), 10, 10, {'FILTER': 'filter_1'})
     assert calls == [({'LAYERS': ['layer_1'], 'FILTER': 'filter_1'}, 'image/png; mode=8bit')]

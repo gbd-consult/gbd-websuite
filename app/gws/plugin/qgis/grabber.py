@@ -39,7 +39,7 @@ class Object(gws.base.grabber.box.Object):
         self.provider = provider
         self.params = params
         self.sourceCrs = self.targetCrs
-        self.sourceMimeType = gws.lib.image.best_mime_type(self.imageFormat, _GET_MAP_MIME_TYPES)
+        self.sourceMimeType = gws.lib.image.format.best_mime_type(self.imageFormat, _GET_MAP_MIME_TYPES)
 
     def fetch_box_as_bytes(self, bounds, w, h, params=None):
         return self.provider.get_map(

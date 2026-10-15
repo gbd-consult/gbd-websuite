@@ -80,7 +80,7 @@ class Object(gws.base.action.Object):
         url = self._create_url(req, p)
         return CreateLinkResponse(
             url=url,
-            qrCode=gws.lib.image.qr_code(url).to_data_url(),
+            qrCode=gws.lib.image.util.qr_code(url).to_data_url(),
         )
 
     @gws.ext.command.api('mapshareDecodeLink')

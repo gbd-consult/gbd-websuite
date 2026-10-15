@@ -254,7 +254,7 @@ def draw_probe(img: gws.Image):
 
     if _probe_image is None:
         p = gws.lib.image.from_size((PROBE_SIZE, PROBE_SIZE), '#000000')
-        draw = gws.lib.image.get_draw(p)
+        draw = gws.lib.image.util.get_draw(p)
         for y in range(0, PROBE_SIZE, PROBE_BLOCK):
             for x in range(0, PROBE_SIZE, PROBE_BLOCK):
                 if (x // PROBE_BLOCK + y // PROBE_BLOCK) % 2:
@@ -271,9 +271,9 @@ def draw_probe(img: gws.Image):
 
 def draw_overlay(img: gws.Image, text: str):
     img.add_box((60, 60, 60, 160))
-    draw = gws.lib.image.get_draw(img)
+    draw = gws.lib.image.util.get_draw(img)
     draw.fontmode = '1'
-    font = gws.lib.image.get_font(11, scene.FONT_PATH)
+    font = gws.lib.image.util.get_font(11, scene.FONT_PATH)
     draw.multiline_text(
         (5, 4), text,
         font=font,

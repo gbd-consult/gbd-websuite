@@ -17,7 +17,7 @@ import gws.gis.cache
 
 from . import ows
 
-DEFAULT_IMAGE_FORMAT = gws.lib.image.PNG8
+DEFAULT_IMAGE_FORMAT = gws.lib.image.format.PNG8
 
 
 class AutoLayersConfig(gws.ConfigWithAccess):
@@ -88,7 +88,7 @@ class Config(gws.ConfigWithAccess):
     """Search providers for the layer's features."""
     grid: Optional[dict]
     """Ignored. (deprecated in 8.5)"""
-    imageFormat: Optional[gws.lib.image.FormatConfig]
+    imageFormat: Optional[gws.lib.image.format.Config]
     """Format of rendered and cached images."""
     legend: Optional[gws.ext.config.legend]
     """Custom legend or legend options for the layer."""
@@ -190,7 +190,7 @@ class Object(gws.Layer):
         self.imageFormat = DEFAULT_IMAGE_FORMAT
         p = self.cfg('imageFormat')
         if p:
-            self.imageFormat = gws.lib.image.format_from_config(p)
+            self.imageFormat = gws.lib.image.format.from_config(p)
 
         self.parentWgsExtent = self.cfg('_parentWgsExtent')
         self.parentResolutions = self.cfg('_parentResolutions')

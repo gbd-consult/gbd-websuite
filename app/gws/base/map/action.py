@@ -130,7 +130,7 @@ class Object(gws.base.action.Object):
     client.
     """
 
-    _empty_pixel = gws.lib.mime.PNG, gws.lib.image.empty_pixel()
+    _empty_pixel = gws.lib.mime.PNG, gws.lib.image.util.empty_pixel()
 
     @gws.ext.command.api('mapGetBox')
     def api_get_box(self, req: gws.WebRequester, p: GetBoxRequest) -> ImageResponse:

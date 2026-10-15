@@ -32,7 +32,7 @@ class Object(gws.base.grabber.box.Object):
         self.sourceCrs = sourceCrs
         self.maxRequestPixels = self.provider.maxRequestPixels
         op = self.provider.get_operation(gws.OwsVerb.GetMap)
-        self.sourceMimeType = gws.lib.image.best_mime_type(self.imageFormat, op.mimeTypes if op else [])
+        self.sourceMimeType = gws.lib.image.format.best_mime_type(self.imageFormat, op.mimeTypes if op else [])
 
     def fetch_box_as_bytes(self, bounds, w, h, params=None):
         return self.provider.get_map(

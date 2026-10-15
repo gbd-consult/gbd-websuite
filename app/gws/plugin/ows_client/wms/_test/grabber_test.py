@@ -32,22 +32,22 @@ def _grabber(image_format, mime_types, calls=None):
 
 
 def test_source_mime_type_specific():
-    gr = _grabber(gws.lib.image.PNG8, [gws.lib.mime.PNG, gws.lib.mime.PNG8])
+    gr = _grabber(gws.lib.image.format.PNG8, [gws.lib.mime.PNG, gws.lib.mime.PNG8])
     assert gr.sourceMimeType == gws.lib.mime.PNG8
 
 
 def test_source_mime_type_plain():
-    gr = _grabber(gws.lib.image.PNG24, [gws.lib.mime.PNG, gws.lib.mime.PNG8])
+    gr = _grabber(gws.lib.image.format.PNG24, [gws.lib.mime.PNG, gws.lib.mime.PNG8])
     assert gr.sourceMimeType == gws.lib.mime.PNG
 
 
 def test_source_mime_type_no_match():
-    gr = _grabber(gws.lib.image.JPEG, [gws.lib.mime.PNG])
+    gr = _grabber(gws.lib.image.format.JPEG, [gws.lib.mime.PNG])
     assert gr.sourceMimeType == ''
 
 
 def test_fetch_box_sends_source_mime_type():
     calls = []
-    gr = _grabber(gws.lib.image.PNG8, [gws.lib.mime.PNG, gws.lib.mime.PNG8], calls)
+    gr = _grabber(gws.lib.image.format.PNG8, [gws.lib.mime.PNG, gws.lib.mime.PNG8], calls)
     assert gr.fetch_box_as_bytes(gws.Bounds(crs=CRS_3857, extent=(0, 0, 100, 100)), 10, 10) == b'png_1'
     assert calls == [gws.lib.mime.PNG8]

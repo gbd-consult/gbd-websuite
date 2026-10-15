@@ -138,7 +138,7 @@ class Image:
             The image.
         """
 
-    def to_bytes(self, mime: Optional[MimeType] = None, options: Optional[dict] = None) -> bytes:
+    def to_bytes(self, mime: MimeType = '', options: Optional[dict] = None) -> bytes:
         """Encode the image.
 
         The ``options`` dict can contain any PIL save option
@@ -159,7 +159,7 @@ class Image:
             The encoded image.
         """
 
-    def to_base64(self, mime: Optional[MimeType] = None, options: Optional[dict] = None) -> str:
+    def to_base64(self, mime: MimeType = '', options: Optional[dict] = None) -> str:
         """Encode the image as a base64 string.
 
         Args:
@@ -170,7 +170,7 @@ class Image:
             The base64 encoded image.
         """
 
-    def to_data_url(self, mime: Optional[MimeType] = None, options: Optional[dict] = None) -> str:
+    def to_data_url(self, mime: MimeType = '', options: Optional[dict] = None) -> str:
         """Encode the image as a base64 data URL.
 
         Args:
@@ -181,7 +181,7 @@ class Image:
             A ``data:`` URL.
         """
 
-    def to_path(self, path: str, mime: Optional[MimeType] = None, options: Optional[dict] = None) -> str:
+    def to_path(self, path: str, mime: MimeType = '', options: Optional[dict] = None) -> str:
         """Encode the image and save it to a file.
 
         Args:

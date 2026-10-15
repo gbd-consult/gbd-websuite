@@ -362,7 +362,7 @@ class Object(gws.base.model.field.Object):
                 content = fv.content
 
             try:
-                return gws.lib.image.thumbnail(
+                return gws.lib.image.util.thumbnail(
                     content,
                     _PREVIEW_SIZE,
                     max_pixels=_PREVIEW_MAX_PIXELS,

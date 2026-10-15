@@ -94,7 +94,7 @@ class Error(gws.Error):
         return gws.ContentResponse(
             status=self.status,
             mimeType=mime,
-            content=gws.lib.image.error_pixel(mime),
+            content=gws.lib.image.util.error_pixel(mime),
         )
 
 

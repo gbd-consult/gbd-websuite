@@ -134,8 +134,8 @@ def _tile(root: gws.Root, name: str, z: int, x: int, y: int) -> gws.ContentRespo
     
     # img.add_box(_DECOR_COLOR)
     # text = f'{p[len(store.baseDir) + 1 :]}\n{os.path.getsize(p) / 1024:.1f}K'
-    # draw = gws.lib.image.get_draw(img)
-    # font = gws.lib.image.get_font(11)
+    # draw = gws.lib.image.util.get_draw(img)
+    # font = gws.lib.image.util.get_font(11)
     # x0, y0, x1, y1 = draw.multiline_textbbox((4, 3), text, font=font)
     # draw.rectangle((x0 - 2, y0 - 1, x1 + 2, y1 + 1), fill=(255, 255, 255, 200))
     # draw.multiline_text((4, 3), text, font=font, fill=_DECOR_COLOR)
