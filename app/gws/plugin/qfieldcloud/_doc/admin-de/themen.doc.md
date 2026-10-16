@@ -23,7 +23,7 @@ Je Layer entscheidet die eingestellte Aktion über sein Schicksal im Paket:
 - **Entfernen** – der Layer wird aus dem mitgelieferten Projekt gelöscht. Gruppen, die dadurch leer werden, verschwinden ebenfalls.
 - **Keine Aktion** – der Layer bleibt unverändert stehen, mitsamt seiner ursprünglichen Datenquelle. Im Feld ist er damit nur nutzbar, solange das Gerät diese Quelle erreicht. Für den Offline-Einsatz ist das die häufigste Fehlerquelle.
 
-Sperren Sie in QFieldSync alle vier Bearbeitungsmöglichkeiten eines Layers – Attribute, Geometrie, Anlegen und Löschen –, behandelt die WebSuite ihn als reine Lesequelle. Er wird dann zwar ins Paket exportiert, muss aber kein editierbares Datenmodell besitzen.
+Aktivieren Sie in den Layereigenschaften unter *QField* > *Befugnisse* alle vier Optionen (*Erstellen von Objekt deaktivieren*, *Löschen von Objekten deaktivieren*, *Bearbeiten von Attributen deaktivieren*, *Bearbeiten von Geometrien deaktivieren*), behandelt die WebSuite den Layer als reine Lesequelle. Er wird dann zwar ins Paket exportiert, muss aber kein editierbares Datenmodell besitzen. Einzelne Befugnisse verrechnet die WebSuite mit den Rechten am Datenmodell, wie unter [](/admin-de/themen/fachmodule/qfieldcloud/berechtigungen) beschrieben.
 
 ### Hintergrundkarte
 
@@ -87,7 +87,7 @@ Fordert die App ein Paket an, legt die WebSuite einen Hintergrundauftrag an und 
 
 Beim Umschreiben des Projekts ersetzt die WebSuite die Datenquellen der editierbaren Layer und der Hintergrundkarte durch die lokalen Dateien, entfernt die ausgeschlossenen Layer und stellt das Projekt auf relative Pfade um. Auch Beziehungen zwischen Layern und Widgets vom Typ *Relation Reference* werden mitgezogen, sodass verknüpfte Objekte im Feld weiter funktionieren.
 
-Zwei Eigenheiten des Exports sollten Sie kennen. Erstens landen nur Attribute der Typen Wahrheitswert, Datum, Zeit, Zeitstempel, Ganzzahl, Fließkommazahl und Text im GeoPackage; Felder anderer Typen – etwa Dateifelder – bleiben außen vor und werden getrennt behandelt. Zweitens benennt die WebSuite ein Feld namens `fid` im Paket in `fid_gws` um, weil GDAL diesen Namen selbst belegt; auf dem Rückweg macht sie das wieder rückgängig.
+Zwei Eigenheiten des Exports sollten Sie kennen. Erstens landen nur Attribute der Typen Wahrheitswert, Datum, Zeit, Zeitstempel, Ganzzahl, Fließkommazahl und Text im GeoPackage; Felder anderer Typen bleiben außen vor; wie Dateifelder behandelt werden, beschreibt der Abschnitt [](/admin-de/themen/fachmodule/qfieldcloud/arbeiten-mit-dateien). Zweitens benennt die WebSuite ein Feld namens `fid` im Paket in `fid_gws` um, weil GDAL diesen Namen selbst belegt; auf dem Rückweg macht sie das wieder rückgängig.
 
 Enthält das QGIS-Projekt die Platzhalter `{user.authToken}`, `{user.loginName}` oder `{user.displayName}`, setzt die WebSuite beim Packen die Werte des anfordernden Nutzers ein. So kann ein Layer im Feld etwa einen Dienst der WebSuite selbst ansprechen, ohne dass Zugangsdaten im Projekt stehen.
 
@@ -95,7 +95,7 @@ Enthält das QGIS-Projekt die Platzhalter `{user.authToken}`, `{user.loginName}`
 
 QField schickt die im Feld vorgenommenen Änderungen als Liste von Einzeloperationen zurück – anlegen, ändern, löschen. Die WebSuite ordnet jede Operation dem Datenmodell des betroffenen Layers zu und führt sie darüber aus. Damit gelten dieselben Regeln wie beim [](/admin-de/themen/daten/editieren) im Browser: Validatoren, Wertvorgaben und Berechtigungen greifen unverändert. Alle Operationen einer Übertragung laufen gemeinsam in einer Transaktion: Schlägt eine fehl, wird nichts geschrieben.
 
-Dateianhänge kommen getrennt hinterher. QField überträgt zuerst die Änderung am Objekt, in der nur der Dateiname steht, danach den Inhalt in einer eigenen Anfrage. Die WebSuite findet das zugehörige Objekt, indem sie diesen Namen mit dem Namensfeld des Dateifelds vergleicht. Ist an dem Modell kein Dateifeld mit Namensspalte konfiguriert, lässt sich der Anhang nicht zuordnen und geht verloren.
+Dateianhänge kommen getrennt hinterher, wie unter [](/admin-de/themen/fachmodule/qfieldcloud/arbeiten-mit-dateien) beschrieben.
 
 ## Berechtigungen
 
@@ -103,9 +103,114 @@ Es greifen drei Ebenen, und alle drei sollten Sie bewusst setzen:
 
 - Die **Aktion** selbst legt fest, wer die Schnittstelle überhaupt ansprechen darf.
 - Jeder **Projekteintrag** hat eigene Zugriffsregeln. In der App sieht ein Nutzer nur die Projekte, die er benutzen darf.
-- Die **Modelle** entscheiden über das Schreiben. `isEditable` erlaubt die Bearbeitung grundsätzlich, `permissions.edit` schränkt sie auf Rollen ein.
+- Die **Layer** bestimmen, was bearbeitet werden darf: über die *Befugnisse* in QFieldSync, über die Rechte an den Modellen oder über beides.
 
-Verzichten Sie auf eigene Modelle, sind die automatisch erzeugten uneingeschränkt bearbeitbar. Die Zugriffsregeln des Projekteintrags sind dann die einzige Schranke – für einen Produktivbetrieb zu wenig.
+Für die Bearbeitung gibt es damit zwei Wege. Sollen alle Nutzer eines Projekts dieselben Möglichkeiten haben, genügen die Befugnisse in QFieldSync. Brauchen verschiedene Nutzergruppen verschiedene Rechte, steuern Sie die Bearbeitung über die Modelle der WebSuite.
+
+### Berechtigungen mit QFieldSync steuern
+
+Sie konfigurieren keine eigenen Modelle, oder Modelle, die allen Nutzern die Bearbeitung erlauben (`permissions.edit "allow user"`). Die automatisch erzeugten Modelle sind für jeden bearbeitbar, der das Projekt benutzen darf; wer zugreift, entscheiden dann allein die Zugriffsregeln der Aktion und des Projekteintrags.
+
+Was bearbeitet werden darf, legen Sie je Layer in den Layereigenschaften unter *QField* > *Befugnisse* fest:
+
+- *Erstellen von Objekt deaktivieren*
+- *Löschen von Objekten deaktivieren*
+- *Bearbeiten von Attributen deaktivieren*
+- *Bearbeiten von Geometrien deaktivieren*
+
+Diese Einstellungen gelten für alle Nutzer gleich. QField bietet die deaktivierten Werkzeuge nicht an, und die WebSuite prüft sie beim Zurückschicken erneut: Eine Änderung, deren Befugnis im QGIS-Projekt deaktiviert ist, weist sie ab. Da alle Operationen einer Übertragung in einer Transaktion laufen, wird dann die ganze Übertragung abgelehnt.
+
+Befugnisse, die über einen Ausdruck gesteuert werden (das Symbol neben der Option), wertet die WebSuite nicht aus. Der Ausdruck bleibt im Projekt stehen und wird nur von QField auf dem Gerät ausgewertet; beim Zurückschicken prüft die WebSuite ihn nicht.
+
+### Berechtigungen mit der WebSuite steuern
+
+Sie konfigurieren Modelle mit `isEditable` und vergeben die Rechte getrennt nach Rollen (`permissions.create`, `permissions.write`, `permissions.delete`). So kann etwa eine Gruppe Objekte nur ändern, eine andere auch anlegen und löschen.
+
+Die Befugnisse in QFieldSync gelten dabei weiter. Eine Bearbeitung ist nur erlaubt, wenn das Modell sie dem Nutzer zulässt und die zugehörige Befugnis nicht deaktiviert ist:
+
+| Befugnis in QFieldSync | nötiges Recht am Modell |
+|---|---|
+| *Erstellen von Objekt deaktivieren* | `permissions.create` |
+| *Löschen von Objekten deaktivieren* | `permissions.delete` |
+| *Bearbeiten von Attributen deaktivieren* | `permissions.write` |
+| *Bearbeiten von Geometrien deaktivieren* | `permissions.write` am Modell und am Geometriefeld |
+
+Ohne `isEditable` am Modell, oder wenn der Layer in QGIS schreibgeschützt ist, ist jede Bearbeitung deaktiviert. Das Ergebnis berechnet die WebSuite beim Packen für den anfordernden Nutzer und setzt die Befugnisse im mitgelieferten Projekt entsprechend. Ist jede Bearbeitung deaktiviert, kommt der Layer schreibgeschützt ins Paket. Zwei Feldkräfte können daher vom selben QGIS-Projekt unterschiedliche Pakete erhalten.
+
+Beim Zurückschicken greifen die Rechte am Modell wie beim Editieren im Browser. Was serverseitig verbindlich ausgeschlossen sein soll, regeln Sie hier und nicht über einen Ausdruck in QFieldSync.
+
+## Arbeiten mit Dateien
+
+Fotos und andere Anhänge, die im Feld entstehen, legt die WebSuite in der Datenbank ab, in derselben Tabelle wie das Objekt. Auf Wunsch schickt sie vorhandene Dateien auch mit dem Paket an die App.
+
+### Spalten in der Datenbank
+
+Je Anhang braucht die Tabelle zwei Spalten:
+
+- eine Textspalte für den Dateinamen, genauer den Pfad, den QField für die Datei vergibt, etwa `DCIM/foto_20261016.jpg`,
+- eine Spalte vom Typ `bytea` für den Dateiinhalt.
+
+Die Namensspalte ist ein gewöhnliches Attribut: Sie wandert ins GeoPackage, QField trägt dort den Pfad ein und schickt ihn mit den übrigen Änderungen zurück. Die Inhaltsspalte kommt nicht ins Paket, solange Sie sie nicht über `syncFiles` mit `useBlob` anfordern (siehe unten).
+
+### Das Dateifeld im Modell
+
+Damit die WebSuite die beiden Spalten als Anhang versteht, braucht das Modell ein Feld vom Typ [`file`](/admin-de/konfiguration/modelField/file), das sie verbindet. Das Feld ist virtuell: Sein Name entspricht keiner Spalte, `nameColumn` und `contentColumn` verweisen auf die beiden echten Spalten. Die Namensspalte bleibt daneben als eigenes Textfeld im Modell, etwa über `withAutoFields`:
+
+```javascript
+models+ {
+    type "postgres"
+    tableName "edit.poi"
+    withAutoFields true
+    isEditable true
+    fields+ {
+        type "file"
+        name "photo_file"
+        nameColumn "photo"
+        contentColumn "photo_content"
+    }
+}
+```
+
+Automatisch erzeugte Modelle enthalten kein Dateifeld. Für jede Tabelle mit Anhängen ist deshalb ein eigenes Modell nötig.
+
+QField überträgt einen neuen Anhang in zwei Schritten: zuerst die Änderung am Objekt, in der nur der Pfad steht, danach den Inhalt in einer eigenen Anfrage. Die WebSuite sucht in den Modellen des Projekts ein Objekt, dessen Namensspalte genau diesen Pfad enthält, und schreibt den Inhalt in dessen Inhaltsspalte. Findet sie keines, etwa weil das Modell kein Dateifeld mit `nameColumn` hat, lehnt sie die Datei ab, und QField verwirft sie.
+
+### Einstellungen im QGIS-Formular
+
+Im QGIS-Projekt stellen Sie in den Layereigenschaften unter *Attributformular* für die Namensspalte das Bedienelement *Anhang* (engl. *Attachment*) ein. Damit bietet QField an diesem Feld Kamera und Dateiauswahl an und trägt den Pfad der Datei ein. Speichern Sie den Pfad relativ zum Projekt: Mit diesem Pfad ordnet die WebSuite die Datei zu, und nur relative Pfade schickt sie im Paket mit zurück auf das Gerät.
+
+Die Inhaltsspalte braucht im Formular kein Bedienelement. Blenden Sie sie aus, sofern sie über `useBlob` im Paket steht.
+
+### Dateien zurück an die App
+
+Ohne weitere Einstellung bleiben die Dateien auf dem Server: Die App kennt nur die Pfade, nicht die Inhalte. Sollen vorhandene Dateien im Feld sichtbar sein, nennen Sie das Dateifeld im Projekteintrag unter `syncFiles`:
+
+```javascript
+projects+ {
+    ...
+    syncFiles+ { field "photo_file" }
+    syncFiles+ { field "scan_file" useBlob true }
+}
+```
+
+Der Name muss genau ein Dateifeld in den Modellen des Projekts bezeichnen; das Feld braucht `contentColumn` und, ohne `useBlob`, auch `nameColumn`. Andernfalls startet die Konfiguration nicht. Ins Paket kommt der Inhalt nur für Nutzer, die das Dateifeld lesen dürfen.
+
+%warn
+Mit `syncFiles` sieht jeder Nutzer, der das Projekt benutzen und das Dateifeld lesen darf, die Dateien aller Objekte im Paket, also auch die Fotos, die andere Nutzer aufgenommen haben.
+%end
+
+Es gibt zwei Arten der Übertragung:
+
+- **Als Datei** (Vorgabe). Die WebSuite legt jede Datei unter dem Pfad aus der Namensspalte ins Paket, sodass das Bedienelement *Anhang* sie in QField anzeigt. Leere Dateien, absolute Pfade und Pfade mit `..` überspringt sie. Die Dateien hält sie im Cache des Projekts vor und liest sie erst wieder aus der Datenbank, wenn sich ihre Größe geändert hat.
+- **Als Spalte im GeoPackage** (`useBlob true`). Der Inhalt steht in einer Binärspalte, die wie die `contentColumn` heißt. QField schickt bei jeder Änderung eines Objekts alle Attribute zurück, auch diese Spalte; jede Bearbeitung überträgt die Datei also erneut. Anzeigen kann QField eine Binärspalte nicht direkt, ein Bild aber über ein HTML-Element im Formular als Data-URL:
+
+```html
+<img src=expression.evaluate("'data:image/jpeg;base64,' || to_base64(scan_content)")>
+```
+
+Neue Dateien nimmt auch in diesem Fall das Bedienelement *Anhang* an der Namensspalte auf, und sie werden wie oben beschrieben hochgeladen.
+
+Ohne `useBlob` wird eine Datei in der Regel nur einmal übertragen und bleibt danach auf dem Gerät im Cache. Mit `useBlob` steckt sie im GeoPackage und wird bei jeder Synchronisierung erneut übertragen.
 
 ## Betrieb und Fehlersuche
 

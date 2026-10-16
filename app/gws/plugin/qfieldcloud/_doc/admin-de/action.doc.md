@@ -35,7 +35,7 @@ models+ {
 }
 ```
 
-Die Zuordnung erfolgt über `tableName`; der Name muss auf dieselbe Tabelle zeigen wie der Layer im QGIS-Projekt. `withAutoFields` übernimmt die übrigen Spalten, ohne dass Sie jedes Feld einzeln aufführen. Ohne `isEditable` kommt der Layer nur zum Lesen ins Paket: Die WebSuite sperrt dann in QField alle Bearbeitungsmöglichkeiten. Mit `permissions.edit` schränken Sie das Schreiben auf Rollen ein.
+Die Zuordnung erfolgt über `tableName`; der Name muss auf dieselbe Tabelle zeigen wie der Layer im QGIS-Projekt. `withAutoFields` übernimmt die übrigen Spalten, ohne dass Sie jedes Feld einzeln aufführen. Ohne `isEditable` kommt der Layer nur zum Lesen ins Paket: Die WebSuite deaktiviert dann in QField alle Befugnisse zur Bearbeitung. Mit `permissions.edit` schränken Sie das Schreiben auf Rollen ein.
 
 ## Dateianhänge
 
