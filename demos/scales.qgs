@@ -442,7 +442,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="120,85,236,255,hsv:0.7055555555555556,0.63921568627450975,0.92549019607843142,1" type="QString"/>
+                <Option name="color" value="66,47,130,255,rgb:0.25882352941176473,0.1843137254901961,0.5098039215686274,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -455,7 +455,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -481,7 +481,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="110,238,51,255,hsv:0.28055555555555556,0.78431372549019607,0.93333333333333335,1" type="QString"/>
+                <Option name="color" value="61,131,28,255,rgb:0.23921568627450981,0.5137254901960784,0.10980392156862745,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -494,7 +494,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -520,7 +520,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="224,152,136,255,hsv:0.03055555555555555,0.39215686274509803,0.8784313725490196,1" type="QString"/>
+                <Option name="color" value="123,84,75,255,rgb:0.4823529411764706,0.32941176470588235,0.29411764705882354,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -533,7 +533,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -559,7 +559,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="135,208,239,255,hsv:0.55000000000000004,0.43529411764705883,0.93725490196078431,1" type="QString"/>
+                <Option name="color" value="74,114,131,255,rgb:0.2901960784313726,0.4470588235294118,0.5137254901960784,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -572,7 +572,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -598,7 +598,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="138,44,206,255,hsv:0.76388888888888884,0.78823529411764703,0.80784313725490198,1" type="QString"/>
+                <Option name="color" value="76,24,113,255,rgb:0.2980392156862745,0.09411764705882353,0.44313725490196076,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -611,7 +611,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -637,7 +637,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="208,155,95,255,hsv:0.08888888888888889,0.54509803921568623,0.81568627450980391,1" type="QString"/>
+                <Option name="color" value="114,85,52,255,rgb:0.4470588235294118,0.3333333333333333,0.20392156862745098,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -650,7 +650,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -676,7 +676,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="236,190,38,255,hsv:0.12777777777777777,0.83921568627450982,0.92549019607843142,1" type="QString"/>
+                <Option name="color" value="130,105,21,255,rgb:0.5098039215686274,0.4117647058823529,0.08235294117647059,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -689,7 +689,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -715,7 +715,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="227,101,164,255,hsv:0.91666666666666663,0.55294117647058827,0.8901960784313725,1" type="QString"/>
+                <Option name="color" value="125,56,90,255,rgb:0.49019607843137253,0.2196078431372549,0.35294117647058826,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -728,7 +728,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -754,7 +754,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="29,93,221,255,hsv:0.61111111111111116,0.87058823529411766,0.8666666666666667,1" type="QString"/>
+                <Option name="color" value="16,51,122,255,rgb:0.06274509803921569,0.2,0.47843137254901963,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -767,7 +767,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -793,7 +793,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="240,49,234,255,hsv:0.83888888888888891,0.79607843137254897,0.94117647058823528,1" type="QString"/>
+                <Option name="color" value="132,27,129,255,rgb:0.5176470588235295,0.10588235294117647,0.5058823529411764,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -806,7 +806,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -832,7 +832,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="15,205,44,255,hsv:0.35833333333333334,0.92549019607843142,0.80392156862745101,1" type="QString"/>
+                <Option name="color" value="8,113,24,255,rgb:0.03137254901960784,0.44313725490196076,0.09411764705882353,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -845,7 +845,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -871,7 +871,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="232,45,116,255,hsv:0.93611111111111112,0.80784313725490198,0.90980392156862744,1" type="QString"/>
+                <Option name="color" value="128,25,64,255,rgb:0.5019607843137255,0.09803921568627451,0.25098039215686274,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -884,7 +884,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -910,7 +910,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="202,104,224,255,hsv:0.80277777777777781,0.53725490196078429,0.8784313725490196,1" type="QString"/>
+                <Option name="color" value="111,57,123,255,rgb:0.43529411764705883,0.2235294117647059,0.4823529411764706,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -923,7 +923,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -949,7 +949,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="200,115,187,255,hsv:0.85833333333333328,0.42745098039215684,0.78431372549019607,1" type="QString"/>
+                <Option name="color" value="110,63,103,255,rgb:0.43137254901960786,0.24705882352941178,0.403921568627451,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -962,7 +962,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -988,7 +988,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="144,165,240,255,hsv:0.63055555555555554,0.40000000000000002,0.94117647058823528,1" type="QString"/>
+                <Option name="color" value="79,91,132,255,rgb:0.30980392156862746,0.3568627450980392,0.5176470588235295,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1001,7 +1001,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1027,7 +1027,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="67,229,110,255,hsv:0.37777777777777777,0.70588235294117652,0.89803921568627454,1" type="QString"/>
+                <Option name="color" value="37,126,61,255,rgb:0.1450980392156863,0.49411764705882355,0.23921568627450981,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1040,7 +1040,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1066,7 +1066,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="222,222,116,255,hsv:0.16666666666666666,0.47843137254901963,0.87058823529411766,1" type="QString"/>
+                <Option name="color" value="122,122,64,255,rgb:0.47843137254901963,0.47843137254901963,0.25098039215686274,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1079,7 +1079,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1105,7 +1105,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="77,136,207,255,hsv:0.59166666666666667,0.62745098039215685,0.81176470588235294,1" type="QString"/>
+                <Option name="color" value="42,75,114,255,rgb:0.16470588235294117,0.29411764705882354,0.4470588235294118,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1118,7 +1118,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1144,7 +1144,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="73,88,202,255,hsv:0.64722222222222225,0.63921568627450975,0.792156862745098,1" type="QString"/>
+                <Option name="color" value="40,48,111,255,rgb:0.1568627450980392,0.18823529411764706,0.43529411764705883,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1157,7 +1157,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1183,7 +1183,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="201,214,101,255,hsv:0.18611111111111112,0.52941176470588236,0.83921568627450982,1" type="QString"/>
+                <Option name="color" value="111,118,56,255,rgb:0.43529411764705883,0.4627450980392157,0.2196078431372549,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1196,7 +1196,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1222,7 +1222,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="236,55,188,255,hsv:0.87777777777777777,0.7686274509803922,0.92549019607843142,1" type="QString"/>
+                <Option name="color" value="130,30,103,255,rgb:0.5098039215686274,0.11764705882352941,0.403921568627451,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1235,7 +1235,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1261,7 +1261,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="102,221,91,255,hsv:0.31944444444444442,0.58823529411764708,0.8666666666666667,1" type="QString"/>
+                <Option name="color" value="56,122,50,255,rgb:0.2196078431372549,0.47843137254901963,0.19607843137254902,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1274,7 +1274,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1300,7 +1300,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="155,110,206,255,hsv:0.74444444444444446,0.46666666666666667,0.80784313725490198,1" type="QString"/>
+                <Option name="color" value="85,61,113,255,rgb:0.3333333333333333,0.23921568627450981,0.44313725490196076,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1313,7 +1313,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1339,7 +1339,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="227,131,122,255,hsv:0.01388888888888889,0.46274509803921571,0.8901960784313725,1" type="QString"/>
+                <Option name="color" value="125,72,67,255,rgb:0.49019607843137253,0.2823529411764706,0.2627450980392157,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1352,7 +1352,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1378,7 +1378,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="73,201,180,255,hsv:0.47222222222222221,0.63921568627450975,0.78823529411764703,1" type="QString"/>
+                <Option name="color" value="40,111,99,255,rgb:0.1568627450980392,0.43529411764705883,0.38823529411764707,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1391,7 +1391,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1417,7 +1417,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="69,227,219,255,hsv:0.49166666666666664,0.69411764705882351,0.8901960784313725,1" type="QString"/>
+                <Option name="color" value="38,125,120,255,rgb:0.14901960784313725,0.49019607843137253,0.47058823529411764,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1430,7 +1430,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1456,7 +1456,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="91,213,95,255,hsv:0.33888888888888891,0.5725490196078431,0.83529411764705885,1" type="QString"/>
+                <Option name="color" value="50,117,52,255,rgb:0.19607843137254902,0.4588235294117647,0.20392156862745098,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1469,7 +1469,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1495,7 +1495,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="234,77,82,255,hsv:0.99444444444444446,0.6705882352941176,0.91764705882352937,1" type="QString"/>
+                <Option name="color" value="129,42,45,255,rgb:0.5058823529411764,0.16470588235294117,0.17647058823529413,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1508,7 +1508,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1534,7 +1534,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="237,213,30,255,hsv:0.14722222222222223,0.87450980392156863,0.92941176470588238,1" type="QString"/>
+                <Option name="color" value="130,117,16,255,rgb:0.5098039215686274,0.4588235294117647,0.06274509803921569,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1547,7 +1547,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1573,7 +1573,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="70,224,32,255,hsv:0.29999999999999999,0.85882352941176465,0.8784313725490196,1" type="QString"/>
+                <Option name="color" value="38,123,18,255,rgb:0.14901960784313725,0.4823529411764706,0.07058823529411765,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1586,7 +1586,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1612,7 +1612,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="76,206,235,255,hsv:0.53055555555555556,0.67843137254901964,0.92156862745098034,1" type="QString"/>
+                <Option name="color" value="42,113,129,255,rgb:0.16470588235294117,0.44313725490196076,0.5058823529411764,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1625,7 +1625,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1651,7 +1651,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="214,121,146,255,hsv:0.9555555555555556,0.43529411764705883,0.83921568627450982,1" type="QString"/>
+                <Option name="color" value="118,67,80,255,rgb:0.4627450980392157,0.2627450980392157,0.3137254901960784,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1664,7 +1664,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1690,7 +1690,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="66,229,148,255,hsv:0.41666666666666669,0.70980392156862748,0.89803921568627454,1" type="QString"/>
+                <Option name="color" value="36,126,81,255,rgb:0.1411764705882353,0.49411764705882355,0.3176470588235294,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1703,7 +1703,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1729,7 +1729,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="236,161,22,255,hsv:0.10833333333333334,0.90588235294117647,0.92549019607843142,1" type="QString"/>
+                <Option name="color" value="130,89,12,255,rgb:0.5098039215686274,0.34901960784313724,0.047058823529411764,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1742,7 +1742,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1768,7 +1768,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="64,44,219,255,hsv:0.68611111111111112,0.80000000000000004,0.85882352941176465,1" type="QString"/>
+                <Option name="color" value="35,24,120,255,rgb:0.13725490196078433,0.09411764705882353,0.47058823529411764,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1781,7 +1781,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1807,7 +1807,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="117,206,151,255,hsv:0.3972222222222222,0.43137254901960786,0.80784313725490198,1" type="QString"/>
+                <Option name="color" value="64,113,83,255,rgb:0.25098039215686274,0.44313725490196076,0.3254901960784314,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1820,7 +1820,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1846,7 +1846,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="123,208,20,255,hsv:0.24166666666666667,0.90588235294117647,0.81568627450980391,1" type="QString"/>
+                <Option name="color" value="68,114,11,255,rgb:0.26666666666666666,0.4470588235294118,0.043137254901960784,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1859,7 +1859,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1885,7 +1885,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="21,219,233,255,hsv:0.51111111111111107,0.90980392156862744,0.9137254901960784,1" type="QString"/>
+                <Option name="color" value="12,120,128,255,rgb:0.047058823529411764,0.47058823529411764,0.5019607843137255,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1898,7 +1898,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1924,7 +1924,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="204,240,86,255,hsv:0.20555555555555555,0.64313725490196083,0.94117647058823528,1" type="QString"/>
+                <Option name="color" value="112,132,47,255,rgb:0.4392156862745098,0.5176470588235295,0.1843137254901961,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1937,7 +1937,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -1963,7 +1963,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="122,222,45,255,hsv:0.26111111111111113,0.79607843137254897,0.87058823529411766,1" type="QString"/>
+                <Option name="color" value="67,122,25,255,rgb:0.2627450980392157,0.47843137254901963,0.09803921568627451,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -1976,7 +1976,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -2002,7 +2002,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="193,231,123,255,hsv:0.22500000000000001,0.46666666666666667,0.90588235294117647,1" type="QString"/>
+                <Option name="color" value="106,127,68,255,rgb:0.41568627450980394,0.4980392156862745,0.26666666666666666,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -2015,7 +2015,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -2041,7 +2041,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="202,50,144,255,hsv:0.89722222222222225,0.75294117647058822,0.792156862745098,1" type="QString"/>
+                <Option name="color" value="111,28,79,255,rgb:0.43529411764705883,0.10980392156862745,0.30980392156862746,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -2054,7 +2054,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -2080,7 +2080,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="97,205,162,255,hsv:0.43333333333333335,0.52549019607843139,0.80392156862745101,1" type="QString"/>
+                <Option name="color" value="53,113,89,255,rgb:0.20784313725490197,0.44313725490196076,0.34901960784313724,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -2093,7 +2093,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -2119,7 +2119,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="182,73,228,255,hsv:0.78333333333333333,0.67843137254901964,0.89411764705882357,1" type="QString"/>
+                <Option name="color" value="100,40,125,255,rgb:0.39215686274509803,0.1568627450980392,0.49019607843137253,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -2132,7 +2132,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -2158,7 +2158,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="160,127,221,255,hsv:0.72499999999999998,0.42745098039215684,0.8666666666666667,1" type="QString"/>
+                <Option name="color" value="88,70,122,255,rgb:0.34509803921568627,0.27450980392156865,0.47843137254901963,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -2171,7 +2171,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -2197,7 +2197,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="112,112,215,255,hsv:0.66666666666666663,0.47843137254901963,0.84313725490196079,1" type="QString"/>
+                <Option name="color" value="62,62,118,255,rgb:0.24313725490196078,0.24313725490196078,0.4627450980392157,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -2210,7 +2210,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -2236,7 +2236,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="77,169,240,255,hsv:0.57222222222222219,0.67843137254901964,0.94117647058823528,1" type="QString"/>
+                <Option name="color" value="42,93,132,255,rgb:0.16470588235294117,0.36470588235294116,0.5176470588235295,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -2249,7 +2249,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -2275,7 +2275,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="202,112,125,255,hsv:0.97499999999999998,0.44705882352941179,0.792156862745098,1" type="QString"/>
+                <Option name="color" value="111,62,69,255,rgb:0.43529411764705883,0.24313725490196078,0.27058823529411763,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -2288,7 +2288,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -2314,7 +2314,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="18,201,149,255,hsv:0.45277777777777778,0.90980392156862744,0.78823529411764703,1" type="QString"/>
+                <Option name="color" value="10,111,82,255,rgb:0.0392156862745098,0.43529411764705883,0.3215686274509804,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -2327,7 +2327,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -2353,7 +2353,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="210,112,43,255,hsv:0.06944444444444445,0.79607843137254897,0.82352941176470584,1" type="QString"/>
+                <Option name="color" value="116,62,24,255,rgb:0.4549019607843137,0.24313725490196078,0.09411764705882353,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -2366,7 +2366,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -2392,7 +2392,7 @@
               <Option type="Map">
                 <Option name="angle" value="0" type="QString"/>
                 <Option name="cap_style" value="square" type="QString"/>
-                <Option name="color" value="212,114,219,255,hsv:0.82222222222222219,0.47843137254901963,0.85882352941176465,1" type="QString"/>
+                <Option name="color" value="117,63,120,255,rgb:0.4588235294117647,0.24705882352941178,0.47058823529411764,1" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
                 <Option name="joinstyle" value="bevel" type="QString"/>
                 <Option name="name" value="circle" type="QString"/>
@@ -2405,7 +2405,7 @@
                 <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="outline_width_unit" value="MM" type="QString"/>
                 <Option name="scale_method" value="diameter" type="QString"/>
-                <Option name="size" value="4" type="QString"/>
+                <Option name="size" value="7" type="QString"/>
                 <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="size_unit" value="MM" type="QString"/>
                 <Option name="vertical_anchor_point" value="1" type="QString"/>
@@ -2474,7 +2474,7 @@
       </selection>
       <labeling type="simple">
         <settings calloutType="simple">
-          <text-style fontStrikeout="0" tabStopDistanceUnit="Point" isExpression="0" fontItalic="0" fontSize="10" tabStopDistanceMapUnitScale="3x:0,0,0,0,0,0" legendString="Aa" previewBkgrdColor="255,255,255,255,rgb:1,1,1,1" fontWeight="50" fieldName="label" blendMode="0" fontFamily="Helvetica" fontWordSpacing="0" fontSizeUnit="Point" textColor="50,50,50,255,rgb:0.19607843137254902,0.19607843137254902,0.19607843137254902,1" fontKerning="1" multilineHeight="1" forcedItalic="0" fontUnderline="0" namedStyle="Regular" useSubstitutions="0" textOrientation="horizontal" allowHtml="0" fontSizeMapUnitScale="3x:0,0,0,0,0,0" multilineHeightUnit="Percentage" tabStopDistance="80" forcedBold="0" fontLetterSpacing="0" capitalization="0" textOpacity="1">
+          <text-style fontStrikeout="0" tabStopDistanceUnit="Point" isExpression="0" fontItalic="0" fontSize="7" tabStopDistanceMapUnitScale="3x:0,0,0,0,0,0" legendString="Aa" previewBkgrdColor="255,255,255,255,rgb:1,1,1,1" fontWeight="50" fieldName="label" blendMode="0" fontFamily="Helvetica" fontWordSpacing="0" fontSizeUnit="Point" textColor="255,255,255,255,rgb:1,1,1,1" fontKerning="1" multilineHeight="1" forcedItalic="0" fontUnderline="0" namedStyle="Regular" useSubstitutions="0" textOrientation="horizontal" allowHtml="0" fontSizeMapUnitScale="3x:0,0,0,0,0,0" multilineHeightUnit="Percentage" tabStopDistance="80" forcedBold="0" fontLetterSpacing="0" capitalization="0" textOpacity="1">
             <families/>
             <text-buffer bufferSizeMapUnitScale="3x:0,0,0,0,0,0" bufferOpacity="1" bufferBlendMode="0" bufferSizeUnits="MM" bufferNoFill="1" bufferJoinStyle="128" bufferColor="250,250,250,255,rgb:0.98039215686274506,0.98039215686274506,0.98039215686274506,1" bufferDraw="0" bufferSize="1"/>
             <text-mask maskType="0" maskSizeMapUnitScale="3x:0,0,0,0,0,0" maskOpacity="1" maskedSymbolLayers="" maskSize2="1.5" maskEnabled="0" maskSizeUnits="MM" maskJoinStyle="128" maskSize="1.5"/>
@@ -2561,8 +2561,8 @@
             <substitutions/>
           </text-style>
           <text-format wrapChar="" addDirectionSymbol="0" placeDirectionSymbol="0" useMaxLineLengthForAutoWrap="1" reverseDirectionSymbol="0" decimals="3" autoWrapLength="0" rightDirectionSymbol=">" leftDirectionSymbol="&lt;" formatNumbers="0" multilineAlign="3" plussign="0"/>
-          <placement distUnits="MM" centroidWhole="0" lineAnchorType="0" allowDegraded="0" rotationAngle="0" xOffset="0" geometryGeneratorType="PointGeometry" lineAnchorTextPoint="FollowPlacement" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" geometryGeneratorEnabled="0" maximumDistanceMapUnitScale="3x:0,0,0,0,0,0" placementFlags="10" polygonPlacementFlags="2" lineAnchorClipping="0" geometryGenerator="" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" repeatDistance="0" overrunDistanceMapUnitScale="3x:0,0,0,0,0,0" dist="0" priority="5" quadOffset="4" offsetType="1" offsetUnits="MM" placement="6" repeatDistanceUnits="MM" maximumDistanceUnit="MM" maxCurvedCharAngleIn="25" lineAnchorPercent="0.5" maximumDistance="0" prioritization="PreferCloser" distMapUnitScale="3x:0,0,0,0,0,0" preserveRotation="1" yOffset="0" centroidInside="0" layerType="PointGeometry" fitInPolygonOnly="0" rotationUnit="AngleDegrees" overrunDistanceUnit="MM" overlapHandling="PreventOverlap" maxCurvedCharAngleOut="-25" overrunDistance="0"/>
-          <rendering scaleVisibility="0" fontMaxPixelSize="10000" upsidedownLabels="0" obstacleType="1" fontLimitPixelSize="0" scaleMin="0" scaleMax="0" unplacedVisibility="0" mergeLines="0" fontMinPixelSize="3" obstacle="1" obstacleFactor="1" drawLabels="1" maxNumLabels="2000" minFeatureSize="0" zIndex="0" labelPerPart="0" limitNumLabels="0"/>
+          <placement distUnits="MM" centroidWhole="0" lineAnchorType="0" allowDegraded="0" rotationAngle="0" xOffset="0" geometryGeneratorType="PointGeometry" lineAnchorTextPoint="FollowPlacement" labelOffsetMapUnitScale="3x:0,0,0,0,0,0" geometryGeneratorEnabled="0" maximumDistanceMapUnitScale="3x:0,0,0,0,0,0" placementFlags="10" polygonPlacementFlags="2" lineAnchorClipping="0" geometryGenerator="" predefinedPositionOrder="TR,TL,BR,BL,R,L,TSR,BSR" repeatDistanceMapUnitScale="3x:0,0,0,0,0,0" repeatDistance="0" overrunDistanceMapUnitScale="3x:0,0,0,0,0,0" dist="0" priority="5" quadOffset="4" offsetType="1" offsetUnits="MM" placement="1" repeatDistanceUnits="MM" maximumDistanceUnit="MM" maxCurvedCharAngleIn="25" lineAnchorPercent="0.5" maximumDistance="0" prioritization="PreferCloser" distMapUnitScale="3x:0,0,0,0,0,0" preserveRotation="1" yOffset="0" centroidInside="0" layerType="PointGeometry" fitInPolygonOnly="0" rotationUnit="AngleDegrees" overrunDistanceUnit="MM" overlapHandling="PreventOverlap" maxCurvedCharAngleOut="-25" overrunDistance="0"/>
+          <rendering scaleVisibility="0" fontMaxPixelSize="10000" upsidedownLabels="0" obstacleType="1" fontLimitPixelSize="0" scaleMin="0" scaleMax="0" unplacedVisibility="0" mergeLines="0" fontMinPixelSize="3" obstacle="0" obstacleFactor="1" drawLabels="1" maxNumLabels="2000" minFeatureSize="0" zIndex="0" labelPerPart="0" limitNumLabels="0"/>
           <dd_properties>
             <Option type="Map">
               <Option name="name" value="" type="QString"/>

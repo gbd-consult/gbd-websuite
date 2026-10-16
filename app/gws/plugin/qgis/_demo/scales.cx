@@ -25,10 +25,11 @@ map {
 }
 
 map.layers+ {
-    uid "qqq"
     title "Scales"
-    type "qgis"
+    type "qgisflat"
     provider.path "/demos/scales.qgs"
+    sourceLayers.names [ "scales" ]
+    withCache false
 }
 
 {demo_osm_background}
