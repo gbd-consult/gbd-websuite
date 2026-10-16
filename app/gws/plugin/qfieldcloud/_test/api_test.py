@@ -13,7 +13,7 @@ import gws.lib.sqlitex
 import gws.lib.datetimex as dtx
 import gws.test.util as u
 
-from gws.plugin.qfieldcloud import action as action_mod, packager
+from gws.plugin.qfieldcloud import action as action_mod, action_handler, packager
 from gws.plugin.qfieldcloud._test import util as tu
 
 CONFIG = f"""
@@ -756,6 +756,22 @@ def test_stale_pending_payload_is_reported_failed_and_applied_again(root: gws.Ro
     assert _post_deltas(root, token, payload).status_code == 200
     assert u.pg.rows('SELECT id, name FROM qfc.poi') == [(1, 'stale')]
     assert _status(root, token, 'PAYLOAD_STALE') == ['STATUS_APPLIED']
+
+
+def test_payload_is_refused_while_the_delta_lock_is_held(root: gws.Root, token, monkeypatch):
+    u.pg.insert('qfc.poi', [])
+    monkeypatch.setattr(action_handler, 'DELTA_LOCK_TIMEOUT', 0)
+    payload = _delta_payload('PAYLOAD_LOCKED', [
+        _delta('create', 'DL1', new={'id': 1, 'name': 'locked'}),
+    ])
+
+    with gws.u.server_lock('qfieldcloud_deltas_QFC_1'):
+        assert _post_deltas(root, token, payload).status_code == 409
+
+    assert u.pg.rows('SELECT id FROM qfc.poi') == []
+
+    assert _post_deltas(root, token, payload).status_code == 200
+    assert u.pg.rows('SELECT id, name FROM qfc.poi') == [(1, 'locked')]
 
 
 def test_old_deltas_are_removed(root: gws.Root, token):

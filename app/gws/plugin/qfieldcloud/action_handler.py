@@ -14,6 +14,9 @@ import gws.lib.osx as osx
 
 from . import core, patcher, api, action_base, delta, auth
 
+DELTA_LOCK_TIMEOUT = 10
+"""Seconds to wait for the delta lock of a QField project."""
+
 
 def route(pattern: str):
     """Decorator that marks a method as an API route handler.
@@ -474,26 +477,11 @@ class Handler:
         except Exception as exc:
             raise gws.BadRequestError(f'invalid delta file: {exc}')
 
-        user_name = self.auth.user.loginName
-        delta.cleanup(self.delta_db(), self.action.deltaLifeTime)
-
-        uids = []
-        drs = []
-
-        for d in payload.deltas:
-            uid = gws.u.sha256([user_name, d])
-            uids.append(uid)
-            dr = delta.get_one(self.delta_db(), uid, user_name)
-            if dr:
-                ds = delta.status(dr, payload.id)
-                if ds.status == api.DeltaStatusType.applied:
-                    continue
-                if ds.status == api.DeltaStatusType.pending:
-                    raise core.DeltaApplyError(f'changes {payload.id!r} are being applied, try again later')
-            drs.append(delta.new_record(uid, d, user_name))
-
-        delta.link_payload(self.delta_db(), payload.id, uids, user_name)
-        delta.store_all(self.delta_db(), drs)
+        try:
+            with gws.u.server_lock(f'qfieldcloud_deltas_{self.qfcProject.uid}', DELTA_LOCK_TIMEOUT):
+                drs = self.store_pending_deltas(payload)
+        except gws.LockBusyError as exc:
+            raise core.DeltaApplyError(f'changes {payload.id!r}: server busy, try again later') from exc
 
         if not drs:
             gws.log.info(f'deltas {payload.id!r}: already applied')
@@ -516,6 +504,43 @@ class Handler:
             raise core.DeltaApplyError(f'changes {payload.id!r} could not be applied, see the server log') from exc
 
         delta.set_status_for_all(self.delta_db(), drs, api.DeltaStatusType.applied)
+
+    def store_pending_deltas(self, payload: api.DeltasPayload) -> list[delta.Record]:
+        """Store the deltas of a payload that need to be applied, with the status pending.
+
+        Must be called under the delta lock of the QField project, so that concurrent
+        requests with the same deltas do not both apply them.
+
+        Args:
+            payload: Delta payload.
+
+        Returns:
+            The stored delta records, empty if all deltas are already applied.
+
+        Raises:
+            ``core.DeltaApplyError``: If a delta is still being applied.
+        """
+        user_name = self.auth.user.loginName
+        delta.cleanup(self.delta_db(), self.action.deltaLifeTime)
+
+        uids = []
+        drs = []
+
+        for d in payload.deltas:
+            uid = gws.u.sha256([user_name, d])
+            uids.append(uid)
+            dr = delta.get_one(self.delta_db(), uid, user_name)
+            if dr:
+                ds = delta.status(dr, payload.id)
+                if ds.status == api.DeltaStatusType.applied:
+                    continue
+                if ds.status == api.DeltaStatusType.pending:
+                    raise core.DeltaApplyError(f'changes {payload.id!r} are being applied, try again later')
+            drs.append(delta.new_record(uid, d, user_name))
+
+        delta.link_payload(self.delta_db(), payload.id, uids, user_name)
+        delta.store_all(self.delta_db(), drs)
+        return drs
 
     @route('GET api/v1/deltas/(?P<project_id>[^/]+)')
     def on_get_deltas(self) -> gws.ContentResponse:
