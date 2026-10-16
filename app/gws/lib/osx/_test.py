@@ -91,7 +91,7 @@ def test_file_mtime(tmp_path):
     d.mkdir()
     p = d / "foo.txt"
     p.write_text("test")
-    assert int(osx.file_mtime(p)) == int(time.time())
+    assert abs(osx.file_mtime(p) - time.time()) < 1
 
 
 def test_dir_mtime(tmp_path):
@@ -99,7 +99,7 @@ def test_dir_mtime(tmp_path):
     d.mkdir()
     p = d / 'foo.txt'
     p.write_text('test')
-    assert int(osx.file_mtime(d)) == int(time.time())
+    assert abs(osx.file_mtime(d) - time.time()) < 1
 
 
 def test_file_age(tmp_path):
