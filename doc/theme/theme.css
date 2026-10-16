@@ -668,6 +668,10 @@ body.searching #search_results {
     padding-left: 5rem;
 }
 
+#sidebar_toc ul ul ul ul ul ul li span {
+    padding-left: 6rem;
+}
+
 #sidebar_toc ul ul li {
     background: var(--sidebar-l1);
 }
