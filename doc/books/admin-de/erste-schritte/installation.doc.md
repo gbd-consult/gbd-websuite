@@ -73,8 +73,35 @@ Umgebungsvariablen überschreiben stets den entsprechenden Eintrag in der Konfig
 | `PGSERVICEFILE` | – | – | Definitionsdatei benannter PostgreSQL-Verbindungen |
 | `(HTTP\|HTTPS\|NO)_PROXY` | – | – | Proxy für ausgehende Anfragen |
 | `GWS_UID` / `GWS_GID` | – | `1000` | UID/GID des Prozess-Users im Container |
+| `GWS_EXTRA_CA_BUNDLE` | - | - | PEM-Datei mit zusätzlichen CA-Zertifikaten |
 
 Für den QGIS-Container gelten zusätzlich die [QGIS-Server-Variablen](https://docs.qgis.org/latest/en/docs/server_manual/config.html#environment-variables), u. a. `QGIS_WORKERS` (paralleles Rendern) und `PGSERVICEFILE`.
+
+## Proxy und eigene CA-Zertifikate
+
+In Netzen, deren Proxy TLS-Verbindungen aufbricht und mit einem eigenen Zertifikat neu signiert, schlagen ausgehende HTTPS-Anfragen der WebSuite (WMS, WMTS, Tiles, LDAP) fehl, solange der Container die CA des Proxys nicht kennt. Die WebSuite prüft Zertifikate gegen die Zertifikatsliste des Systems im Image.
+
+Zusätzliche CA-Zertifikate geben Sie als eine PEM-Datei in `GWS_EXTRA_CA_BUNDLE` an. Beim Start hängt die WebSuite sie an die Systemliste an, schreibt das Ergebnis nach `<GWS_VAR_DIR>/config/ca-bundle.crt` und verwendet diese Datei für alle Verbindungen:
+
+```yaml title="docker-compose.yml"
+    gws:
+        volumes:
+            - /etc/ssl/proxy-ca.pem:/data/proxy-ca.pem:ro
+        environment:
+            - GWS_EXTRA_CA_BUNDLE=/data/proxy-ca.pem
+            - HTTPS_PROXY=http://proxy.example.com:3128
+            - HTTP_PROXY=http://proxy.example.com:3128
+            - NO_PROXY=localhost,127.0.0.1,qgis,db.example.com
+```
+
+Ist die CA auf dem Host bereits installiert, können Sie stattdessen die Zertifikatsliste des Hosts über die des Images legen: `/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro`.
+
+Beachten Sie dabei:
+
+- Tragen Sie in `NO_PROXY` alle internen Hosts ein, vor allem den QGIS-Container. Sonst gehen auch Anfragen an QGIS Server über den Proxy.
+- Der QGIS-Container lädt entfernte Daten selbst. Er braucht eigene Proxy-Variablen und die CA, etwa über die eingehängte Zertifikatsliste des Hosts.
+- Die Liste aus `GWS_EXTRA_CA_BUNDLE` gilt für Prozesse, die über den Befehl `gws` laufen, also für den Server und `docker exec ... gws ...`. Ein Skript, das Sie direkt mit `docker exec ... python3` starten, sieht sie nicht.
+- Python lehnt CA-Zertifikate ohne die Erweiterung `keyUsage` ab. Ein älteres Proxy-Zertifikat ohne diese Erweiterung muss neu ausgestellt werden.
 
 ## Wichtige Konfigurationsthemen
 

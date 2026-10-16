@@ -10,6 +10,34 @@ An anderer Stelle der Konfiguration – etwa in einer kombinierten Legende – v
 
 Für Rasterlayer bestimmen Sie unter anderem das Bildformat, in dem die Kacheln geliefert werden, den Anzeigemodus – ob der Server den ganzen Ausschnitt, einzelne Kacheln oder eine clientseitige Darstellung erzeugt – sowie das Zwischenspeichern der Bilder auf dem Server.
 
+### Bildformat
+
+Das Bildformat eines Rasterlayers legen Sie mit `imageFormat` fest. Ohne Angabe liefert der Layer PNG mit 8-Bit-Palette. In diesem Format werden die Bilder auch im Cache gespeichert. Von einem WMS oder QGIS Server fordert die WebSuite das passende Format an, sofern die Quelle es anbietet.
+
+Sie wählen eines der vordefinierten Formate über `name`:
+
+| `name` | Format |
+|---|---|
+| `PNG8` | PNG mit 8-Bit-Palette (Vorgabe) |
+| `PNG24` | PNG in voller Farbtiefe mit Transparenz |
+| `JPEG_LOW`, `JPEG`, `JPEG_HIGH` | JPEG mit Qualität 50, 75 und 90 |
+| `WEBP` | WebP, verlustbehaftet |
+| `WEBP_LOSSLESS` | WebP, verlustfrei |
+
+Mit `quality` setzen Sie die Qualität selbst (JPEG 1-95, WebP 0-100), mit `background` die Farbe, mit der JPEG transparente Stellen füllt (Vorgabe Weiß). Ein Luftbild etwa wird als JPEG deutlich kleiner als als PNG:
+
+```javascript
+map.layers+ {
+    title "Luftbild"
+    type "wmsflat"
+    provider.url "https://example.com/wms"
+    sourceLayers.names [ "dop" ]
+    imageFormat { name "JPEG" quality 85 }
+}
+```
+
+Eigene Formatnamen gibt es nicht. Die Liste `imageFormats` eines [OWS-Dienstes](/admin-de/themen/publishing/ows) verwendet dieselben Einträge und bestimmt, welche Formate der Dienst anbietet.
+
 ## Vektorlayer
 
 Für Vektorlayer bestimmen Sie das Datenmodell, das Aussehen der Features und ob und wie sie editiert werden dürfen. Über die Ladestrategie legen Sie fest, ob alle Features auf einmal oder nur die des sichtbaren Ausschnitts geladen werden.

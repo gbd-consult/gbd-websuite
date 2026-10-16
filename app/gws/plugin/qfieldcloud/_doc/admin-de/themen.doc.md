@@ -29,7 +29,7 @@ Aktivieren Sie in den Layereigenschaften unter *QField* > *Befugnisse* alle vier
 
 Ist in QFieldSync die Erzeugung einer Hintergrundkarte eingeschaltet, rendert der QGIS-Server sie und die WebSuite legt sie als einzelnes Rasterbild ins Paket. Als Vorlage dient wahlweise ein Kartenthema des Projekts oder ein einzelner Layer. Aus den eingestellten Zoomstufen nimmt die WebSuite die höhere und begrenzt sie auf den Bereich 3 bis 20; daraus ergibt sich die Auflösung des Bildes.
 
-Das Rendern ist der mit Abstand aufwendigste Teil der Paketerstellung. Halten Sie das Gebiet klein und die Zoomstufe so niedrig wie vertretbar, und schalten Sie in der Aktion einen Cache ein.
+Das Rendern ist der mit Abstand aufwendigste Teil der Paketerstellung. Halten Sie das Gebiet klein und die Zoomstufe so niedrig wie vertretbar, und schalten Sie in der Aktion einen Cache ein. Das Bild darf höchstens eine Milliarde Pixel haben, etwa 31.000 x 31.000. Bei Zoomstufe 18 entspricht das einem Gebiet von rund 19 x 19 km, bei Stufe 16 von rund 75 x 75 km. Ist es größer, bricht die Paketerstellung mit einer Fehlermeldung im Protokoll ab.
 
 ### Bearbeitungsgebiet
 
@@ -94,6 +94,10 @@ Enthält das QGIS-Projekt die Platzhalter `{user.authToken}`, `{user.loginName}`
 ## Der Rückweg: Änderungen und Anhänge
 
 QField schickt die im Feld vorgenommenen Änderungen als Liste von Einzeloperationen zurück – anlegen, ändern, löschen. Die WebSuite ordnet jede Operation dem Datenmodell des betroffenen Layers zu und führt sie darüber aus. Damit gelten dieselben Regeln wie beim [](/admin-de/themen/daten/editieren) im Browser: Validatoren, Wertvorgaben und Berechtigungen greifen unverändert. Alle Operationen einer Übertragung laufen gemeinsam in einer Transaktion: Schlägt eine fehl, wird nichts geschrieben.
+
+Eine abgelehnte Übertragung geht nicht verloren. QField behält die Änderungen auf dem Gerät und meldet die Synchronisierung als fehlgeschlagen. Solange die Ursache besteht, etwa eine verletzte Validierung oder eine fehlende Berechtigung, scheitert jeder weitere Versuch, und auch spätere Änderungen auf diesem Gerät gelangen nicht auf den Server. Den Grund nennt das Protokoll der WebSuite. Ist er behoben, überträgt die nächste Synchronisierung alles. Bereits übernommene Änderungen erkennt die WebSuite wieder und schreibt sie kein zweites Mal.
+
+Weil eine Übertragung eine einzige Transaktion ist, müssen alle Tabellen eines QField-Projekts über dieselbe Datenbankverbindung laufen: die Modelle unter `models` ebenso wie die Layer, die in QFieldSync zum Bearbeiten markiert sind. Verteilen sie sich auf mehrere [Datenbank-Provider](/admin-de/konfiguration/databaseProvider), lehnt die WebSuite jede Übertragung ab.
 
 Dateianhänge kommen getrennt hinterher, wie unter [](/admin-de/themen/fachmodule/qfieldcloud/arbeiten-mit-dateien) beschrieben.
 

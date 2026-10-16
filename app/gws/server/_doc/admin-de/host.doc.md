@@ -59,15 +59,17 @@ Sie setzen die Variablen im `environment`-Block der Container. Wo eine Konfigura
 
 | Variable | Bedeutung | Voreinstellung |
 |---|---|---|
-| `GWS_CONFIG` | Pfad zur Einstiegsdatei der Konfiguration | `/data/config.cx` |
-| `GWS_GID` | Gruppen-ID des Server-Nutzers | `1000` |
-| `GWS_LOG_LEVEL` | Ausführlichkeit des Logs (`ERROR`, `INFO`, `DEBUG`) | `INFO` |
+| `GWS_ALKIS_GID_VERSION` | GeoInfoDok-Version der ALKIS-Quelldaten, `6`{.configref_literal} oder `7`{.configref_literal} | `7`{.configref_literal} |
+| `GWS_CONFIG` | Pfad zur Einstiegsdatei der Konfiguration | `/data/config.cx`{.configref_literal} |
+| `GWS_EXTRA_CA_BUNDLE` | PEM-Datei mit CA-Zertifikaten, denen zusätzlich zu den Systemzertifikaten vertraut wird | – |
+| `GWS_GID` | Gruppen-ID des Server-Nutzers | `1000`{.configref_literal} |
+| `GWS_LOG_LEVEL` | Ausführlichkeit des Logs (`ERROR`{.configref_literal}, `INFO`{.configref_literal}, `DEBUG`{.configref_literal}) | `INFO`{.configref_literal} |
 | `GWS_MANIFEST` | Pfad zur Manifest-Datei für Plugins | – |
 | `GWS_SPOOL_WORKERS` | Anzahl der Spool-Prozesse | – |
-| `GWS_TMP_DIR` | Temporäres Verzeichnis | `/tmp/gws` |
-| `GWS_UID` | Benutzer-ID des Server-Nutzers | `1000` |
-| `GWS_VAR_DIR` | Verzeichnis für veränderliche Laufzeitdaten | `/gws-var` |
-| `GWS_WEB_WORKERS` | Anzahl der Web-Prozesse | – |
+| `GWS_TMP_DIR` | Temporäres Verzeichnis | `/tmp/gws`{.configref_literal} |
+| `GWS_UID` | Benutzer-ID des Server-Nutzers | `1000`{.configref_literal} |
+| `GWS_VAR_DIR` | Verzeichnis für veränderliche Laufzeitdaten | `/gws-var`{.configref_literal} |
+| `GWS_WEB_WORKERS` | Anzahl der Web-Prozesse |  – |
 | `PGSERVICEFILE` | Pfad zur `pg_service.conf` | – |
 
 ## Logging
