@@ -37,7 +37,7 @@ printers+ {
         mapSize [ "250mm" "150mm" ]
     }
     qualityLevels [
-        { dpi 150 name "150 dpi" }
+        { dpi 150 name "gute Qualität" }
     ]
 }
 

@@ -22,7 +22,7 @@ printers+ {
     }
     qualityLevels [
         { dpi  90 name "Bildschirm" }
-        { dpi 150 name "normale Qualität" }
+        { dpi 150 name "gute Qualität" }
         { dpi 300 name "beste Qualität" }
     ]
     models+ {

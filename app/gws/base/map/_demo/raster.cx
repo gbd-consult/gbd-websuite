@@ -76,9 +76,9 @@ printers+ {
        mapSize [ "280mm" "180mm" ]
    }
    qualityLevels [
-       { dpi  90 name "screen" }
-       { dpi 150 name "gut" }
-       { dpi 300 name "hoch" }
+       { dpi  90 name "Bildschirm" }
+       { dpi 150 name "gute Qualität" }
+       { dpi 300 name "beste Qualität" }
    ]
 }
 printers+ {
@@ -95,8 +95,8 @@ printers+ {
        mapSize [ "560mm" "400mm" ]
    }
    qualityLevels [
-       { dpi  90 name "screen" }
-       { dpi 150 name "gut" }
-       { dpi 300 name "hoch" }
+       { dpi  90 name "Bildschirm" }
+       { dpi 150 name "gute Qualität" }
+       { dpi 300 name "beste Qualität" }
    ]
 }

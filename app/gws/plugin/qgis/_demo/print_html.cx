@@ -15,19 +15,25 @@ Die beiden `printers` verwenden Vorlagen `type "qgis"` aus demselben QGIS-Projek
 printers+ {
     template {
         type "qgis"
-        provider.path "print_html.qgs"
+        provider.path "/demos/print_html.qgs"
         index 0
     }
-    qualityLevels [ { dpi  72 name "nice vectors" } { dpi 150 name "good quality" } ]
+    qualityLevels [ 
+        { dpi  72 name "Vektordruck" } 
+        { dpi 150 name "gute Qualität" } 
+    ]
 }
 
 printers+ {
     template {
         type "qgis"
-        provider.path "print_html.qgs"
+        provider.path "/demos/print_html.qgs"
         index 1
     }
-    qualityLevels [ { dpi  72 name "nice vectors" } { dpi 150 name "good quality" } ]
+    qualityLevels [ 
+        { dpi  72 name "Vektordruck" } 
+        { dpi 150 name "gute Qualität" } 
+    ]
 }
 
 map {

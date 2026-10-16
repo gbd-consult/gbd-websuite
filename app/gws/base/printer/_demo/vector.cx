@@ -27,10 +27,10 @@ printers+ {
         title "A4 landscape"
     }
     qualityLevels [
-        { dpi  0  name "screen" }
-        { dpi  72 name "nice vectors" }
-        { dpi 150 name "good quality" }
-        { dpi 300 name "best quality" }
+        { dpi  0  name "Bildschirm" }
+        { dpi  72 name "Vektordruck" }
+        { dpi 150 name "gute Qualität" }
+        { dpi 300 name "beste Qualität" }
     ]
 }
 

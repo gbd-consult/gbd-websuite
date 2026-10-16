@@ -22,9 +22,9 @@ printers+ {
         title "A4 landscape"
     }
     qualityLevels [
-        { dpi  90 name "screen" }
-        { dpi 150 name "good quality" }
-        { dpi 300 name "best quality" }
+        { dpi  90 name "Bildschirm" }
+        { dpi 150 name "gute Qualität" }
+        { dpi 300 name "beste Qualität" }
     ]
 }
 
@@ -36,9 +36,9 @@ printers+ {
         title "A4 portrait"
     }
     qualityLevels [
-        { dpi  90 name "screen" }
-        { dpi 150 name "good quality" }
-        { dpi 300 name "best quality" }
+        { dpi  90 name "Bildschirm" }
+        { dpi 150 name "gute Qualität" }
+        { dpi 300 name "beste Qualität" }
     ]
 }
 

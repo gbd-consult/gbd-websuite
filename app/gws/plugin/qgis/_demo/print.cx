@@ -15,19 +15,25 @@ Die beiden `printers` verwenden Vorlagen `type "qgis"`; `provider.path` nennt da
 printers+ {
     template {
         type "qgis"
-        provider.path "print.qgs"
+        provider.path "/demos/print.qgs"
         index 0
     }
-    qualityLevels [ { dpi  72 name "nice vectors" } { dpi 150 name "good quality" } ]
+    qualityLevels [ 
+        { dpi  72 name "Vektordruck" } 
+        { dpi 150 name "gute Qualität" } 
+    ]
 }
 
 printers+ {
     template {
         type "qgis"
-        provider.path "print.qgs"
+        provider.path "/demos/print.qgs"
         index 1
     }
-    qualityLevels [ { dpi  72 name "nice vectors" } { dpi 150 name "good quality" } ]
+    qualityLevels [ 
+        { dpi  72 name "Vektordruck" } 
+        { dpi 150 name "gute Qualität" } 
+    ]
 }
 
 map {
