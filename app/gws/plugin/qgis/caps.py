@@ -671,11 +671,16 @@ def _datasource_space_delimited(text):
         elif key == 'table':
             # 'table=' is special, it can be `table="foo"` or `table="foo"."bar"` or table=`"foo"."bar" (geom)`
             v, text = _cut(text, value_re)
-            ds['table'] = _value(v)
+            parts = [_value(v)]
 
             if text.startswith('.'):
                 v, text = _cut(text[1:], value_re)
-                ds['table'] += '.' + _value(v)
+                parts.append(_value(v))
+
+            if len(parts) == 1 and (parts[0].startswith('(') or parts[0].upper().startswith('SELECT ')):
+                ds['table'] = parts[0]
+            else:
+                ds['table'] = '.'.join(_quote_table_name_part(p) for p in parts)
 
             if text.startswith('('):
                 v, text = _cut(text, parens_re)
@@ -687,6 +692,12 @@ def _datasource_space_delimited(text):
             ds[key] = _value(v)
 
     return ds
+
+
+def _quote_table_name_part(name):
+    if re.match(r'^\w+$', name):
+        return name
+    return '"' + name.replace('"', '""') + '"'
 
 
 def _datasource_pipe_delimited(text):

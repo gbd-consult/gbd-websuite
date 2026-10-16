@@ -496,7 +496,7 @@ class Parser:
         for model in self.qfcProject.models:
             full_name = model.db.join_table_name('', model.tableName)
             if full_name == model.db.join_table_name('', table_name):
-                gp_name = self.gp_name_for_model(full_name)
+                gp_name = self.gp_name_for_model(*model.db.split_table_name(full_name))
                 if gp_name not in self.caps.modelMap:
                     self.caps.modelMap[gp_name] = ModelEntry(gpName=gp_name, tableName=full_name, model=model)
                 return self.caps.modelMap[gp_name]
@@ -506,7 +506,7 @@ class Parser:
             gws.log.warning(f'layer {sl.sourceId!r}: table {table_name!r} not found')
             return
 
-        gp_name = self.gp_name_for_model(table_name)
+        gp_name = self.gp_name_for_model(*db.split_table_name(table_name))
 
         if gp_name not in self.caps.modelMap:
             model = self.qfcProject.root.create_shared(
@@ -525,18 +525,22 @@ class Parser:
 
         return self.caps.modelMap[gp_name]
 
-    def gp_name_for_model(self, table_name):
+    def gp_name_for_model(self, schema, name):
         """Return the GeoPackage name for a table.
 
         Args:
-            table_name: Table name, optionally with a schema (``public`` by default).
+            schema: Schema name.
+            name: Table name.
 
         Returns:
-            Name in the form ``qm_<schema>_<table>``, lowercase.
+            Name in the form ``qm_<schema>_<table>``, converted with ``gws.u.to_uid``.
+            If the conversion changes the names, a short hash of the original names is appended.
         """
-        if '.' not in table_name:
-            table_name = 'public.' + table_name
-        return 'qm_' + table_name.replace('.', '_').lower()
+        raw = f'{schema}_{name}'
+        uid = gws.u.to_uid(schema) + '_' + gws.u.to_uid(name)
+        if uid != raw:
+            uid += '_' + gws.u.sha256([schema, name])[:8]
+        return 'qm_' + uid
 
 
 ##

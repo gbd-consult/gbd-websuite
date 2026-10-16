@@ -113,6 +113,19 @@ def test_join_empty_schema_uses_split():
     assert result == 'public.mytable'
 
 
+def test_join_quotes_special_names():
+    prov = postgres_provider.Object.__new__(postgres_provider.Object)
+    assert prov.join_table_name('my.schema', 'tab (1)') == '"my.schema"."tab (1)"'
+    assert prov.join_table_name('public', 'x"y') == 'public."x""y"'
+    assert prov.join_table_name('', '"my.schema"."a.b"') == '"my.schema"."a.b"'
+
+
+def test_join_split_roundtrip():
+    prov = postgres_provider.Object.__new__(postgres_provider.Object)
+    for schema, name in [('public', 'a.b'), ('my schema', 'x"y'), ('s', 'Tab (1) ä-ö')]:
+        assert prov.split_table_name(prov.join_table_name(schema, name)) == (schema, name)
+
+
 ##
 # connection_url
 ##

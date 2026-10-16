@@ -2,6 +2,7 @@
 
 import hashlib
 import io
+import re
 
 import gws
 import gws.lib.datetimex as dtx
@@ -172,9 +173,21 @@ def test_dict_to_data_skips_missing_and_invalid():
 
 def test_gp_name_for_model():
     pa = caps.Parser.__new__(caps.Parser)
-    assert pa.gp_name_for_model('poi') == 'qm_public_poi'
-    assert pa.gp_name_for_model('edit.poi') == 'qm_edit_poi'
-    assert pa.gp_name_for_model('Edit.POI') == 'qm_edit_poi'
+    assert pa.gp_name_for_model('public', 'poi') == 'qm_public_poi'
+    assert pa.gp_name_for_model('edit', 'poi_1') == 'qm_edit_poi_1'
+
+
+def test_gp_name_for_model_special_names():
+    pa = caps.Parser.__new__(caps.Parser)
+    gp_name_1 = pa.gp_name_for_model('public', 'tab (1)')
+    gp_name_2 = pa.gp_name_for_model('public', 'tab_1')
+    gp_name_3 = pa.gp_name_for_model('Edit', 'POI')
+    gp_name_4 = pa.gp_name_for_model('edit', 'poi')
+    assert re.match(r'^qm_public_tab_1_[0-9a-f]{8}$', gp_name_1)
+    assert gp_name_2 == 'qm_public_tab_1'
+    assert re.match(r'^qm_edit_poi_[0-9a-f]{8}$', gp_name_3)
+    assert gp_name_4 == 'qm_edit_poi'
+    assert pa.gp_name_for_model('public', 'tab (1)') == gp_name_1
 
 
 ##

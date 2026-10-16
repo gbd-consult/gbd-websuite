@@ -10,6 +10,7 @@ import gws.lib.crs
 import gws.lib.extent
 import gws.lib.net
 import gws.lib.sa as sa
+import sqlalchemy.dialects.postgresql as sa_pg
 
 
 @gws.ext.config.databaseProvider('postgres')
@@ -78,10 +79,10 @@ class Object(gws.base.database.provider.Object):
         return s.replace('""', '"'), t.replace('""', '"')
 
     def join_table_name(self, schema, name):
-        if schema:
-            return schema + '.' + name
-        schema, name2 = self.split_table_name(name)
-        return schema + '.' + name2
+        if not schema:
+            schema, name = self.split_table_name(name)
+        p = sa_pg.dialect().identifier_preparer
+        return p.quote(schema) + '.' + p.quote(name)
 
     def table_bounds(self, table):
         desc = self.describe(table)
