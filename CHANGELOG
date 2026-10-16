@@ -1,3 +1,21 @@
+## Version 8.5.5
+
+- QField Cloud: a push is applied in one transaction and rejected as a whole on error; deltas are stored for status queries, new `deltaLifeTime` option
+- QField Cloud: model permissions, QGIS layer locks and read-only flags are respected
+- QField Cloud: new `syncFiles` option sends file field content to QField
+- QField Cloud: improved base map rendering, base map size is limited
+- ALKIS: GeoInfoDok 7 is the default (`GWS_ALKIS_GID_VERSION` for version 6), house number range queries
+- `server.timeZone` is ignored, the time zone is set by the `TZ` environment variable (image default `Europe/Berlin`)
+- `server.preConfigure` and `server.postConfigure` removed
+- default locale is `de_DE` (was `en_CA`)
+- system CA certificate bundle is used for TLS; additional CA certificates via `GWS_EXTRA_CA_BUNDLE`
+- LDAP: `memberOf` and `matches` rules are checked against the user entry only, login attribute is matched case-insensitively
+- image formats: more predefined formats; new `mode`, `background` and `quality` options; faster PNG encoding; `name` must be a predefined format, custom format names are no longer accepted
+- MIME types are normalized; WMS and QGIS sources are requested in the format matching the layer's `imageFormat`
+- default rewrite rules are appended after the configured rules (were prepended)
+- psycopg upgraded to v3
+- plugin API: database connections use `begin`/`execute` with explicit transactions instead of `connect`/`exec`
+
 ## Version 8.5.4
 
 - updated and restructured administrator documentation
