@@ -1,0 +1,43 @@
+uid "qgis_opacity"
+
+title "QGIS Layer-Deckkraft"
+
+metadata.keywords [ "qgis" "karte" ]
+
+metadata.abstract """
+Prüft, ob die WebSuite die Deckkraft von QGIS-Layern korrekt übernimmt.
+
+Das QGIS-Projekt enthält den Layer "Districts" (blaue Füllung, Deckkraft 30 %) und den Layer "DOP (WMTS)" (Deckkraft 50 %). Beide Layer sollen in der Karte genauso transparent erscheinen wie in QGIS.
+
+Das Projekt ist dreimal eingebunden: "Über QGIS" rendert alle Layer mit dem QGIS Server, "WMTS direkt" lädt den WMTS-Layer mit `provider.directRender [ "wmts" ]` direkt von der Quelle, "Districts flach" zeigt nur den Layer "Districts" als `qgisflat`-Layer.
+"""
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale  300000
+    zoom.maxScale  1000000
+}
+
+map.layers+ {
+    title "Über QGIS"
+    type "qgis"
+    provider.path "/demos/opacity.qgs"
+}
+
+map.layers+ {
+    title "WMTS direkt"
+    type "qgis"
+    provider.path "/demos/opacity.qgs"
+    provider.directRender [ "wmts" ]
+    clientOptions.hidden true
+}
+
+map.layers+ {
+    title "Districts flach"
+    type "qgisflat"
+    provider.path "/demos/opacity.qgs"
+    sourceLayers.names [ "Districts" ]
+    clientOptions.hidden true
+}
+
+{demo_osm_background}

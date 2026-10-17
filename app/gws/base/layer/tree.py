@@ -165,7 +165,6 @@ def _config(tca: _TreeConfigArgs, sl: gws.SourceLayer, depth: int):
         return None
 
     cfg = gws.u.merge(
-        gws.u.to_dict(cfg),
         {
             'title': sl.title,
             'clientOptions': {
@@ -174,6 +173,7 @@ def _config(tca: _TreeConfigArgs, sl: gws.SourceLayer, depth: int):
             },
             'opacity': sl.opacity or 1,
         },
+        gws.u.to_dict(cfg),
     )
 
     for cc in tca.auto_layers:

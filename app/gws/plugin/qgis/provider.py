@@ -376,6 +376,8 @@ class Object(gws.OwsServiceProvider):
             'type': 'qgisflat',
             '_defaultProvider': self,
             '_defaultSourceLayers': source_layers,
+            # opacity is handled by QGIS, so we set it to 1 here.
+            'opacity': 1,
         }
 
         if len(source_layers) > 1 or source_layers[0].isGroup:

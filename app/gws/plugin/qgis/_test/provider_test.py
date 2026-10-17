@@ -56,3 +56,31 @@ def test_get_features_explicit_mime_type():
     calls = []
     _get_features(_provider(calls), gws.lib.mime.HTML)
     assert calls[0]['INFO_FORMAT'] == 'text/html'
+
+
+def _leaf_provider(direct_render=None):
+    p = provider.Object()
+    p.directRender = set(direct_render or [])
+    p.directSearch = set()
+    return p
+
+
+def _wmts_source_layer(opacity):
+    return gws.SourceLayer(
+        name='layer_1',
+        isGroup=False,
+        opacity=opacity,
+        dataSource={'provider': 'wmts', 'url': 'http://host_1/wmts', 'layers': ['layer_1']},
+    )
+
+
+def test_leaf_config_qgisflat_opacity():
+    cfg = _leaf_provider().create_leaf_layer_config([_wmts_source_layer(0.5)])
+    assert cfg['type'] == 'qgisflat'
+    assert cfg['opacity'] == 1
+
+
+def test_leaf_config_direct_render_no_opacity():
+    cfg = _leaf_provider(['wmts']).create_leaf_layer_config([_wmts_source_layer(0.5)])
+    assert cfg['type'] == 'wmts'
+    assert 'opacity' not in cfg

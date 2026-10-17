@@ -332,7 +332,7 @@ def _map_layer(layer_el: gws.XmlElement, caps: Caps, use_layer_ids: bool) -> gws
             sl.scaleRange = [a, z]
 
     sl.dataSource = _map_layer_datasource(layer_el)
-    sl.opacity = _parse_float(layer_el.textof('layerOpacity') or '1')
+    sl.opacity = _map_layer_opacity(layer_el)
     sl.isQueryable = layer_el.textof('flags/Identifiable') == '1'
     sl.isReadOnly = layer_el.get('readOnly') == '1'
     sl.properties = _parse_properties(layer_el.find('customproperties'))
@@ -356,6 +356,16 @@ def _map_layer(layer_el: gws.XmlElement, caps: Caps, use_layer_ids: bool) -> gws
         sl.wgsExtent = ext
 
     return sl
+
+
+def _map_layer_opacity(layer_el: gws.XmlElement) -> float:
+    """Read the layer opacity, for raster layers from the renderer."""
+    s = layer_el.textof('layerOpacity')
+    if not s:
+        el = layer_el.find('pipe/rasterrenderer')
+        if el is not None:
+            s = el.get('opacity')
+    return _parse_float(s or '1')
 
 
 def _map_layer_metadata(layer_el) -> gws.Metadata:
