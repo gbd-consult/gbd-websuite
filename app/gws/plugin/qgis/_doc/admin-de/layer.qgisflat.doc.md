@@ -1,6 +1,6 @@
 # Layer "qgisflat" :/admin-de/konfiguration/layer/qgisflat
 
-Ein `qgisflat`-Layer fasst einen oder mehrere Layer eines QGIS-Projekts zu einem einzelnen Rasterlayer zusammen. Das Projekt geben Sie über den `provider` an, mit `sourceLayers` wählen Sie die zu verwendenden Quelllayer aus. Mit `sqlFilters` hinterlegen Sie SQL-Filter je Quelllayer, die auf die Darstellung angewendet werden.
+Ein `qgisflat`-Layer fasst einen oder mehrere Layer eines QGIS-Projekts zu einem einzelnen Rasterlayer zusammen. Das Projekt geben Sie über den `provider` an, mit `sourceLayers` wählen Sie die zu verwendenden Quelllayer aus. Mit `sqlFilters` hinterlegen Sie SQL-Filter je Quelllayer, die auf die Darstellung angewendet werden. Gerenderte Kacheln werden standardmäßig nicht im persistenten Cache gespeichert; mit `withCache true` schalten Sie den Cache ein.
 
 ## Beispiel-Konfiguration ::
 

@@ -19,6 +19,8 @@ class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
     """Render all sublayers as one image instead of one image per layer."""
     sqlFilters: Optional[dict]
     """SQL filters for source layers, passed to QGIS Server."""
+    withCache: Optional[bool] = False
+    """Store rendered tiles of this layer and its sublayers in the persistent cache. (changed in 8.5)"""
 
 
 @gws.ext.object.layer('qgis')
@@ -48,13 +50,15 @@ class Object(gws.base.layer.group.Object):
             gws.base.layer.image.Object.post_configure_grabbers(self)
 
     def create_cache_name(self, cache):
-        return gws.u.sha256([
-            self.provider.cache_hash(),
-            vars(self.imageFormat),
-            list(self.wgsExtent),
-            cache.requestBuffer,
-            cache.requestTiles,
-        ])[: gws.base.layer.image.CACHE_NAME_LENGTH]
+        return gws.u.sha256(
+            [
+                self.provider.cache_hash(),
+                vars(self.imageFormat),
+                list(self.wgsExtent),
+                cache.requestBuffer,
+                cache.requestTiles,
+            ]
+        )[: gws.base.layer.image.CACHE_NAME_LENGTH]
 
     def create_grabber(self, opts):
         return grabber.Object(opts, provider=self.provider, params={})
@@ -65,10 +69,18 @@ class Object(gws.base.layer.group.Object):
     def configure_group(self):
         if super().configure_group():
             return True
+
+        def create_leaf_layer_config(source_layers):
+            # propagate the withCache setting to the leaf layer configuration
+            cfg = self.provider.create_leaf_layer_config(source_layers)
+            if self.cfg('withCache'):
+                cfg['withCache'] = True
+            return cfg
+
         gws.base.layer.tree.configure_group_layers_for(
             self,
             self.provider.sourceLayers,
-            self.provider.create_leaf_layer_config,
+            create_leaf_layer_config,
         )
         return True
 

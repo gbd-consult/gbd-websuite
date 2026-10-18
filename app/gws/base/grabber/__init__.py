@@ -124,9 +124,9 @@ Configuration
 
 On the layer:
 
-- ``withCache`` (default true) and ``cache``: ``maxAge`` (7d), ``maxLevel``
-  (18, a level of the global grid), ``requestTiles`` (4), ``requestBuffer``
-  (64), ``crs``, ``name``.
+- ``withCache`` (default true, false for ``qgis`` and ``qgisflat``) and
+  ``cache``: ``maxAge`` (7d), ``maxLevel`` (18, a level of the global grid),
+  ``requestTiles`` (4), ``requestBuffer`` (64), ``crs``, ``name``.
 - ``imageFormat``: the stored and returned format (default PNG8); JPEG
   renders transparency as its ``background`` color (default white). WMS and
   QGIS grabbers request the source MIME type that matches it best

@@ -37,6 +37,10 @@ Normalerweise rendert und durchsucht der QGIS-Server die Layer. Für einige Quel
 
 Beides verbessert die Antwortzeiten. `directSearch` ist zudem die Voraussetzung dafür, dass Werkzeuge wie die Auswahl Geometrien aus einem QGIS-Layer erhalten.
 
+## Cache
+
+QGIS-Projekte ändern sich in der Regel häufig, deshalb speichert ein `qgis`-Layer gerenderte Kacheln standardmäßig nicht im persistenten Cache. Mit `withCache true` wird der Cache für alle Unterlayer eingeschaltet. Über `autoLayers` können Sie `withCache` für einzelne Unterlayer abweichend setzen. Direkt gerenderte Unterlayer (`directRender`) verwenden ohne diese Angabe den Cache wie gewöhnliche WMS-, WMTS- und XYZ-Layer.
+
 ## Beispiel-Konfiguration ::
 
 ```javascript

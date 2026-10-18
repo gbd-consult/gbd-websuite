@@ -23,6 +23,8 @@ class Config(gws.base.layer.Config):
     """Source layers to render."""
     sqlFilters: Optional[dict]
     """SQL filters for source layers, passed to QGIS Server."""
+    withCache: Optional[bool] = False
+    """Store rendered tiles in the persistent cache. (changed in 8.5)"""
 
 
 @gws.ext.object.layer('qgisflat')

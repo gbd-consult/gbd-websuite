@@ -61,6 +61,11 @@ an image layer, and the client gets a ``compositeBox`` or ``compositeTile``
 layer whose children are ``compositeLeaf`` layers; the client sends the
 visible children in ``compositeLayerUids``.
 
+QGIS projects are usually dynamic, so ``qgis`` and ``qgisflat`` layers have
+``withCache`` off by default. A ``qgis`` layer with ``withCache`` passes it on
+to all its leaf layers, before ``autoLayers`` configs are applied; direct
+render leaves of a ``qgis`` layer without ``withCache`` keep their own default.
+
 Print templates work as follows. The project is reloaded on each render.
 The map is rendered by WebSuite as a PDF.
 Label and HTML items of the QGIS layout are treated as WebSuite ``html``
