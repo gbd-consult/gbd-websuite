@@ -18,11 +18,17 @@ class AuthorizationConfig(gws.Config):
     """Credentials for accessing the service."""
 
     type: str
-    """Authorization type (only "basic" is supported)."""
+    """Authorization type ("basic" or "token")."""
     username: str = ''
     """User name."""
     password: str = ''
     """Password."""
+    header: str = ''
+    """HTTP header that carries the token."""
+    prefix: str = ''
+    """Prefix expected before the token in the header value."""
+    token: str = ''
+    """Authorization token."""
 
 
 class Config(gws.Config):
@@ -158,8 +164,16 @@ class Object(gws.OwsServiceProvider):
                 args.params[name] = val
 
         if self.authorization and self.authorization.type == 'basic':
-            b = gws.lib.text.to_base64(f'{self.authorization.username or ""}:{self.authorization.password or ""}')
+            u = self.authorization.username or ''
+            p = self.authorization.password or ''
+            b = gws.lib.text.to_base64(f'{u}:{p}')
             args.headers['Authorization'] = 'Basic ' + b
+
+        if self.authorization and self.authorization.type == 'token':
+            h = self.authorization.header or ''
+            p = self.authorization.prefix or ''
+            t = self.authorization.token or ''
+            args.headers[h] = f'{p} {t}'
 
         return args
 

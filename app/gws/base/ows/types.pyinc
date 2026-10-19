@@ -15,11 +15,18 @@ class OwsAuthorization(Data):
     """Credentials for accessing an OWS service."""
 
     type: str
-    """Authorization type, only ``basic`` is supported."""
+    """Authorization type, ``basic`` or ``token``."""
     username: str
     """User name."""
     password: str
     """Password."""
+    header: str
+    """HTTP header that carries the token."""
+    prefix: str
+    """Prefix expected before the token in the header value."""
+    token: str
+    """Authorization token."""
+
 
 
 class OwsVerb(Enum):
