@@ -50,6 +50,9 @@ Options:
     -no-cache
         disable cache
 
+    -no-lock
+        ignore the pip lock file (install/pip-<version>.lock)
+
     -push
         push the image to dockerhub ($GWS_DOCKERHUB_USERNAME and $GWS_DOCKERHUB_TOKEN must be set)
         
@@ -107,6 +110,11 @@ class Base:
 
         self.apts = self.lines(cli.read_file(f'{self.this_dir}/apt.lst'))
         self.pips = self.lines(cli.read_file(f'{self.this_dir}/pip.lst'))
+
+        self.pip_lock_file = f'{self.this_dir}/pip-{self.app_short_version}.lock'
+        self.with_pip_lock = os.path.isfile(self.pip_lock_file)
+        if args.get('no-lock') or args.get('nl'):
+            self.with_pip_lock = False
 
         self.exclude_file = f'{self.gws_dir}/.package_exclude'
 
@@ -180,6 +188,9 @@ class Builder(Base):
                 cli.run(f'bash {self.this_dir}/mapserver/make.sh all {MAPSERVER_VERSION} {self.arch} {self.mapserver_package}')
             cli.run(f'tar -xzf {self.mapserver_package}')
 
+        if self.with_pip_lock:
+            cli.run(f'cp {self.pip_lock_file} pip.lock')
+
         cli.run(f'bash {self.gws_dir}/make.sh package .')
         cli.run(f'mv app {self.skip_cache_mark}app')
 
@@ -233,7 +244,11 @@ class Builder(Base):
 
         pip_opts = '--disable-pip-version-check --no-cache-dir --no-compile'
 
-        __(f'RUN pip3 install {pip_opts} {pips}')
+        if self.with_pip_lock:
+            __(f'COPY pip.lock /pip.lock')
+            __(f'RUN pip3 install {pip_opts} --constraint /pip.lock {pips} && rm -f /pip.lock')
+        else:
+            __(f'RUN pip3 install {pip_opts} {pips}')
 
         __(f'COPY {self.wkhtmltopdf_package} /{self.wkhtmltopdf_package}')
         __(f'RUN apt install -y /{self.wkhtmltopdf_package} && rm -f /{self.wkhtmltopdf_package}')

@@ -1,47 +1,47 @@
 # gws core
 
-numpy==2.*
+numpy==2.5.*
 # 2.15+ has no 'narrow' unit names for 'de', see lib/intl
 Babel==2.14.*
-GeoAlchemy2==0.*
-jq==1.*
-pendulum==3.*
-Pillow==12.*
-psutil==7.*
-psycopg[binary]==3.*
-pycountry==26.*
-pypdf==6.*
-pyproj==3.*
-python-ldap==3.*
-PyYAML==6.*
-qrcode==8.*
-requests==2.*
-shapely==2.*
-SQLAlchemy==2.*
-watchdog==6.*
-Werkzeug==3.*
-lxml==6.*
+GeoAlchemy2==0.20.*
+jq==1.12.*
+pendulum==3.3.*
+Pillow==12.3.*
+psutil==7.2.*
+psycopg[binary]==3.3.*
+pycountry==26.2.*
+pypdf==6.20.*
+pyproj==3.8.*
+python-ldap==3.4.*
+PyYAML==6.0.*
+qrcode==8.2.*
+requests==2.34.*
+shapely==2.2.*
+SQLAlchemy==2.1.*
+watchdog==6.0.*
+Werkzeug==3.1.*
+lxml==6.1.*
 
-uWSGI==2.*
+uWSGI==2.0.*
 
 # must match major.minor of libgdal in apt.lst and must not be newer than it
 gdal==3.12.2
 
 # testing
 
-pytest==9.*
-pytest-clarity==1.*
-coverage==7.*
+pytest==9.1.*
+pytest-clarity==1.0.*
+coverage==7.16.*
 
 # documentation
 
-Sphinx==9.*
-sphinx-autoapi==3.*
-Pygments==2.*
+Sphinx==9.1.*
+sphinx-autoapi==3.8.*
+Pygments==2.21.*
 
 # lib/vendor/dog uses the 2.x plugin API
-mistune==2.*
+mistune==2.1.*
 
-pyodbc==5.*
-Authlib==1.*
-matplotlib==3.*
+pyodbc==5.3.*
+Authlib==1.8.*
+matplotlib==3.11.*
