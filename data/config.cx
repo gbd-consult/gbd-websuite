@@ -21,7 +21,6 @@ web.site {
 }
 
 server {
-    timeZone "Europe/Berlin"
     log.level "INFO"
 }
 
