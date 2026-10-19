@@ -15,8 +15,10 @@ class Config(gws.base.layer.Config, gws.base.layer.tree.Config):
 
     provider: Optional[provider.Config]
     """QGIS project the layers are loaded from."""
-    compositeRender: bool = False
-    """Render all sublayers as one image instead of one image per layer."""
+    withCompositeRender: bool = False
+    """Render all sublayers as one image instead of one image per layer. (added in 8.5)"""
+    compositeRender: Optional[bool]
+    """Use ``withCompositeRender``. (deprecated in 8.5)"""
     sqlFilters: Optional[dict]
     """SQL filters for source layers, passed to QGIS Server."""
     withCache: Optional[bool] = False
@@ -28,25 +30,29 @@ class Object(gws.base.layer.group.Object):
     """Group layer that shows a QGIS project as a tree of layers.
 
     The child layers are created from the project layer tree. With
-    ``compositeRender``, the layer renders its visible children as one image.
+    ``withCompositeRender``, the layer renders its visible children as one image.
     """
 
     provider: provider.Object
     """QGIS provider."""
-    compositeRender: bool = False
+    withCompositeRender: bool = False
     """Render all visible sublayers as one image."""
     sqlFilters: dict
     """SQL filters passed to the child layers, mapping a source layer name (or ``*``) to a filter expression."""
 
     def configure(self):
-        self.compositeRender = self.cfg('compositeRender', default=False)
+        self.withCompositeRender = self.cfg('withCompositeRender', default=False)
+        p = self.cfg('compositeRender')
+        if p is not None:
+            self.root.config_warning('"compositeRender" is deprecated, use "withCompositeRender"')
+            self.withCompositeRender = self.withCompositeRender or p
         self.sqlFilters = self.cfg('sqlFilters', default={})
-        if self.compositeRender:
+        if self.withCompositeRender:
             self.canRenderBox = True
             self.canRenderTile = True
 
     def post_configure(self):
-        if self.compositeRender:
+        if self.withCompositeRender:
             gws.base.layer.image.Object.post_configure_grabbers(self)
 
     def create_cache_name(self, cache):
@@ -92,7 +98,7 @@ class Object(gws.base.layer.group.Object):
 
     def props(self, user):
         p = super().props(user)
-        if not self.compositeRender:
+        if not self.withCompositeRender:
             return p
 
         def _to_leaf(la):
@@ -117,7 +123,7 @@ class Object(gws.base.layer.group.Object):
         return p
 
     def render_box(self, lri):
-        if not self.compositeRender:
+        if not self.withCompositeRender:
             return
         lri.renderParams = self.composite_render_params(lri)
         if not lri.renderParams:
@@ -125,7 +131,7 @@ class Object(gws.base.layer.group.Object):
         return gws.base.layer.image.Object.render_box(self, lri)
 
     def render_tile(self, lri):
-        if not self.compositeRender:
+        if not self.withCompositeRender:
             return
         lri.renderParams = self.composite_render_params(lri)
         if not lri.renderParams:

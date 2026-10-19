@@ -1,6 +1,6 @@
 # Layer "qgis" :/admin-de/konfiguration/layer/qgis
 
-Ein `qgis`-Layer bindet ein QGIS-Projekt als Layerbaum ein und übernimmt dessen Struktur, Darstellung und Legenden. Das Projekt geben Sie über den `provider` an. Mit `compositeRender` lassen Sie den Baum als einzelnes Bild rendern, mit `sqlFilters` hinterlegen Sie SQL-Filter je Quelllayer. Wie beim WMS steuern Sie über `rootLayers`, `excludeLayers` und `flattenLayers` den Aufbau des Baums.
+Ein `qgis`-Layer bindet ein QGIS-Projekt als Layerbaum ein und übernimmt dessen Struktur, Darstellung und Legenden. Das Projekt geben Sie über den `provider` an. Mit `withCompositeRender` lassen Sie den Baum als einzelnes Bild rendern, mit `sqlFilters` hinterlegen Sie SQL-Filter je Quelllayer. Wie beim WMS steuern Sie über `rootLayers`, `excludeLayers` und `flattenLayers` den Aufbau des Baums.
 
 ## Das QGIS-Projekt vorbereiten
 

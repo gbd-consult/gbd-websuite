@@ -55,7 +55,7 @@ options ``directRender`` and ``directSearch``, children based on WMS, WMTS
 or XYZ sources are rendered by WebSuite directly (``wmsflat``, ``wmts`` or
 ``tile`` layers), and WMS, WFS and Postgres sources get their own finders
 (and, for Postgres, models) instead of going through QGIS Server. With
-``compositeRender``, the ``qgis`` layer renders all visible ``qgisflat``
+``withCompositeRender``, the ``qgis`` layer renders all visible ``qgisflat``
 children as one image with one GetMap request. It then creates grabbers like
 an image layer, and the client gets a ``compositeBox`` or ``compositeTile``
 layer whose children are ``compositeLeaf`` layers; the client sends the
