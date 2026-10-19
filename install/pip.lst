@@ -16,7 +16,7 @@ PyYAML==6.*
 qrcode==7.*
 requests==2.*
 shapely==2.*
-SQLAlchemy==2.*
+SQLAlchemy==2.0.*
 watchdog==6.*
 Werkzeug==3.*
 lxml==6.*
