@@ -1092,7 +1092,7 @@ export class MapManager implements types.IMapManager {
 
         this.walk(this.root, la => {
             if (layers.indexOf(la) < 0)
-                this.app.server.dequeueLoad(la.uid);
+                this.app.server.cancelLayerLoad(la.uid);
         });
     }
 

@@ -24,8 +24,8 @@ export interface IStoreWrapper {
 }
 
 interface IServer extends Server {
-    queueLoad(layerUid: string, url: string, responseType: string): Promise<any>;
-    dequeueLoad(layerUid: string);
+    loadLayerData(layerUid: string, url: string, responseType: string): Promise<any>;
+    cancelLayerLoad(layerUid: string);
     requestCount: number;
     whenChanged: () => void;
 }

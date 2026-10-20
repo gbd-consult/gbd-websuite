@@ -200,7 +200,7 @@ abstract class OlBackedLayer<T extends ol.layer.Layer> extends Layer {
 export class BoxLayer extends OlBackedLayer<ol.layer.Image> {
 
     async loadImage(oImage: ol.Image, url: string) {
-        let blob = await this.map.app.server.queueLoad(this.uid, url, 'blob');
+        let blob = await this.map.app.server.loadLayerData(this.uid, url, 'blob');
         if (blob) {
             let img: any = oImage.getImage();
             img.src = window.URL.createObjectURL(blob);
@@ -309,7 +309,7 @@ abstract class CompositeLayer extends OlBackedLayer<ol.layer.Image> {
 
 export class CompositeBoxLayer extends CompositeLayer {
     async loadImage(oImage: ol.Image, url: string) {
-        let blob = await this.map.app.server.queueLoad(this.uid, url, 'blob');
+        let blob = await this.map.app.server.loadLayerData(this.uid, url, 'blob');
         if (blob) {
             let img: any = oImage.getImage();
             img.src = window.URL.createObjectURL(blob);
@@ -504,8 +504,7 @@ export class FeatureLayer extends OlBackedLayer<ol.layer.Vector> implements type
             url += '&bbox=' + encodeURIComponent(bbox.join(','));
         }
 
-        this.map.app.server.dequeueLoad(this.uid);
-        let req = this.map.app.server.queueLoad(this.uid, url, '');
+        let req = this.map.app.server.loadLayerData(this.uid, url, '');
         req.then(res => this.olLoaderDone(res));
     }
 

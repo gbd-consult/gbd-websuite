@@ -13,67 +13,29 @@ function errorResponse(err) {
     }
 }
 
-enum QueueState {
-    OPEN = 1,
-    RUNNING = 2,
-    DONE = 3
-}
-
-class QueuedRequest {
-    layerUid: string;
-    url: string;
-    responseType: ResponseType;
-    state: QueueState;
-    server: Server;
+class LayerLoader {
     cancel: Canceler;
-    resolve: any;
     promise: Promise<any>;
 
-    constructor(server: Server, layerUid, url, responseType) {
-        this.server = server;
-        this.layerUid = layerUid;
-        this.url = url;
-        this.responseType = responseType;
-        this.state = QueueState.OPEN;
-
-        this.promise = new Promise<any>(resolve => this.resolve = resolve);
+    constructor(url: string, responseType: ResponseType, whenDone: (ldr: LayerLoader) => void) {
+        this.promise = this.load(url, responseType, whenDone);
     }
 
-    abort() {
-        console.log('ABORT', this.layerUid)
-        if (this.cancel) {
-            this.cancel();
-        }
-        this.end(null);
-    }
-
-    end(data) {
-        this.state = QueueState.DONE;
-        if (this.resolve) {
-            this.resolve(data);
-        }
-        this.resolve = null;
-    }
-
-    start() {
-        console.log('START', this.layerUid);
-
-        this.state = QueueState.RUNNING;
-
-        axios.get(this.url, {
-            cancelToken: new axios.CancelToken((c) => this.cancel = c),
-            responseType: this.responseType
-        })
-            .then(res => {
-                console.log('OK', this.layerUid);
-                this.end(res.data)
-            })
-            .catch(err => {
-                console.log('ERR', this.layerUid, err);
-                this.end(null)
+    async load(url: string, responseType: ResponseType, whenDone: (ldr: LayerLoader) => void) {
+        let data = null;
+        try {
+            let res = await axios.get(url, {
+                cancelToken: new axios.CancelToken(c => this.cancel = c),
+                responseType,
             });
+            data = res.data;
+        } catch (err) {
+            if (!axios.isCancel(err))
+                console.log('LOAD ERROR', url, err);
+        }
+        whenDone(this);
+        return data;
     }
-
 }
 
 const MSGPACK_MIME = 'application/msgpack';
@@ -82,8 +44,7 @@ export class Server extends BaseServer {
     url: string;
     whenChanged: () => void;
     commandCount = 0;
-    queue: Array<QueuedRequest> = [];
-    queueSize = 3;
+    activeLoaders: {[layerUid: string]: LayerLoader} = {};
 
     protected app;
 
@@ -92,11 +53,10 @@ export class Server extends BaseServer {
         this.url = url;
         this.whenChanged = () => null;
         this.app = app;
-        window.setInterval(() => this.pollQueue(), 500);
     }
 
     get requestCount() {
-        return this.commandCount + this.queue.length;
+        return this.commandCount + Object.keys(this.activeLoaders).length;
     }
 
     async execCall(cmd, request, options) {
@@ -156,53 +116,31 @@ export class Server extends BaseServer {
         }
     }
 
-    queueLoad(layerUid, url, responseType) {
-        this.dequeueLoad(layerUid);
+    loadLayerData(layerUid, url, responseType) {
+        this.cancelLayerLoad(layerUid);
 
         if (!url)
             return;
 
-        let req = new QueuedRequest(this, layerUid, url, responseType);
-        this.queue.push(req);
+        let whenDone = (ldr: LayerLoader) => {
+            if (this.activeLoaders[layerUid] === ldr) {
+                delete this.activeLoaders[layerUid];
+                this.whenChanged();
+            }
+        };
+        let loader = new LayerLoader(url, responseType, whenDone);
+        this.activeLoaders[layerUid] = loader;
+        this.whenChanged();
 
-        console.log('QUEUE', layerUid);
-
-        return req.promise;
+        return loader.promise;
     }
 
-    dequeueLoad(layerUid) {
-        this.queue = this.queue.filter(r => r.state !== QueueState.DONE);
-
-        this.queue.forEach(r => {
-            if (r.layerUid === layerUid)
-                r.abort();
-        });
-    }
-
-    prevLen = 0;
-
-    pollQueue() {
-        if (!this.queue.length && !this.prevLen)
+    cancelLayerLoad(layerUid) {
+        let loader = this.activeLoaders[layerUid];
+        if (!loader)
             return;
-
-        this.queue = this.queue.filter(r => r.state !== QueueState.DONE);
-        this.prevLen = this.queue.length;
-
-        if (this.queue.length === 0) {
-            console.log('EMPTY');
-            this.whenChanged();
-            return;
-        }
-
-        let running = this.queue.filter(r => r.state === QueueState.RUNNING).length;
-        let open = this.queue.filter(r => r.state === QueueState.OPEN);
-
-        //console.log('POLL', running, '/', this.queue.length, this.queue.map(r => r.layerUid))
-
-        if (running < this.queueSize && open.length) {
-            open[0].start();
-            this.whenChanged();
-        }
+        delete this.activeLoaders[layerUid];
+        loader.cancel();
+        this.whenChanged();
     }
 }
-
