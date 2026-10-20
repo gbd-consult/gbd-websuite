@@ -23,7 +23,7 @@ class AuthorizationConfig(gws.Config):
     """User name."""
     password: str = ''
     """Password."""
-    header: str = ''
+    header: str = 'Authorization'
     """HTTP header that carries the token."""
     prefix: str = ''
     """Prefix expected before the token in the header value."""
@@ -69,8 +69,27 @@ class Object(gws.OwsServiceProvider):
         self.url = self.cfg('url')
         self.version = ''
 
+        self.configure_authorization()
+
+    def configure_authorization(self):
+        self.authorization = None
+
         p = self.cfg('authorization')
-        self.authorization = gws.OwsAuthorization(p) if p else None
+        if not p:
+            return
+
+        a = gws.OwsAuthorization(p)
+
+        if a.type == 'basic' and not a.username:
+            raise gws.ConfigurationError('basic authorization: "username" is required')
+        if a.type == 'token' and not a.header:
+            a.header = 'Authorization'
+        if a.type == 'token' and not a.token:
+            raise gws.ConfigurationError('token authorization: "token" is required')
+        if a.type not in ('basic', 'token'):
+            raise gws.ConfigurationError(f'invalid authorization type {a.type!r}')
+
+        self.authorization = a
 
     def configure_operations(self, operations_from_caps):
         """Set up the provider operations.
@@ -124,7 +143,7 @@ class Object(gws.OwsServiceProvider):
         For GET requests, the operation parameters are included. Parameter names
         are upper-cased and checked against the operation's allowed values. MIME types
         in ``FORMAT``, ``INFO_FORMAT`` and ``OUTPUTFORMAT`` are sent in the spelling of the service.
-        Adds a basic ``Authorization`` header if configured.
+        Adds a basic ``Authorization`` header or a token header if configured.
 
         Args:
             op: Operation.
@@ -173,7 +192,7 @@ class Object(gws.OwsServiceProvider):
             h = self.authorization.header or ''
             p = self.authorization.prefix or ''
             t = self.authorization.token or ''
-            args.headers[h] = f'{p} {t}'
+            args.headers[h] = f'{p} {t}'.strip()
 
         return args
 
