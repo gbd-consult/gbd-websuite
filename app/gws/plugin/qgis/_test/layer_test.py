@@ -58,3 +58,55 @@ def test_auto_layers_override_with_cache(monkeypatch):
     )
     cfg = tree._config(tca, _source_layer(), 0)
     assert cfg['withCache'] is False
+
+
+def test_cache_passed_to_leaves_without_name(monkeypatch):
+    cache = {'maxAge': 100, 'maxLevel': 10, 'name': 'name_1'}
+    cfg = _leaf_config_fn(monkeypatch, {'cache': cache})([_source_layer()])
+    assert cfg['cache'] == {'maxAge': 100, 'maxLevel': 10, 'name': ''}
+    assert cache['name'] == 'name_1'
+
+
+def test_no_cache_not_passed_to_leaves(monkeypatch):
+    cfg = _leaf_config_fn(monkeypatch, {})([_source_layer()])
+    assert 'cache' not in cfg
+
+
+##
+
+
+def _configured_layer(config):
+    la = layer.Object()
+    la.config = gws.Config(config)
+    warnings = []
+    la.root = gws.Data(config_warning=warnings.append)
+    la.configure()
+    return la, warnings
+
+
+def test_with_composite_render():
+    la, warnings = _configured_layer({'withCompositeRender': True})
+    assert la.withCompositeRender is True
+    assert la.canRenderBox is True
+    assert la.canRenderTile is True
+    assert warnings == []
+
+
+def test_without_composite_render():
+    la, warnings = _configured_layer({})
+    assert la.withCompositeRender is False
+    assert warnings == []
+
+
+def test_composite_render_deprecated():
+    la, warnings = _configured_layer({'compositeRender': True})
+    assert la.withCompositeRender is True
+    assert la.canRenderBox is True
+    assert len(warnings) == 1
+    assert 'compositeRender' in warnings[0]
+
+
+def test_composite_render_deprecated_false():
+    la, warnings = _configured_layer({'compositeRender': False})
+    assert la.withCompositeRender is False
+    assert len(warnings) == 1

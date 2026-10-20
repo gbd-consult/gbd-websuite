@@ -2,6 +2,7 @@
 
 import gws
 import gws.test.util as u
+import gws.lib.text
 import gws.base.ows.client.provider as provider
 import gws.base.ows.client.request as request
 
@@ -124,3 +125,32 @@ def test_get_capabilities_uses_config(monkeypatch):
     p.get_capabilities()
     assert calls[0].url == 'http://host_2/caps'
     assert calls[0].params == {'b': '2'}
+
+
+def _get_map_op(p):
+    p.configure_operations([_caps_op(gws.OwsVerb.GetMap)])
+    return p.get_operation(gws.OwsVerb.GetMap)
+
+
+def test_prepare_operation_without_authorization():
+    p = _provider()
+    args = p.prepare_operation(_get_map_op(p))
+    assert args.headers == {}
+
+
+def test_prepare_operation_basic_authorization():
+    p = _provider(authorization=dict(type='basic', username='user_1', password='password_1'))
+    args = p.prepare_operation(_get_map_op(p))
+    assert args.headers == {'Authorization': 'Basic ' + gws.lib.text.to_base64('user_1:password_1')}
+
+
+def test_prepare_operation_token_authorization():
+    p = _provider(authorization=dict(type='token', header='header_1', prefix='prefix_1', token='token_1'))
+    args = p.prepare_operation(_get_map_op(p))
+    assert args.headers == {'header_1': 'prefix_1 token_1'}
+
+
+def test_prepare_operation_token_authorization_without_prefix():
+    p = _provider(authorization=dict(type='token', header='header_1', token='token_1'))
+    args = p.prepare_operation(_get_map_op(p))
+    assert args.headers == {'header_1': 'token_1'}
