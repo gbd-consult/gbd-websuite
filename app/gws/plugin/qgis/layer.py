@@ -77,10 +77,13 @@ class Object(gws.base.layer.group.Object):
             return True
 
         def create_leaf_layer_config(source_layers):
-            # propagate the withCache setting to the leaf layer configuration
+            # propagate the withCache and cache settings to the leaf layer configuration
             cfg = self.provider.create_leaf_layer_config(source_layers)
             if self.cfg('withCache'):
                 cfg['withCache'] = True
+            cache = self.cfg('cache')
+            if cache:
+                cfg['cache'] = gws.u.merge(gws.u.to_dict(cache), name='')
             return cfg
 
         gws.base.layer.tree.configure_group_layers_for(

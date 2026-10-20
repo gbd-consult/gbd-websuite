@@ -110,18 +110,6 @@ class Object(core.Object):
 
     ##
 
-    def grabber_for(self, lri: gws.LayerRenderInput) -> Optional[gws.Grabber]:
-        """Find the grabber for the target CRS of a render request.
-
-        Args:
-            lri: Render input; without ``targetCrs`` the map CRS is used.
-
-        Returns:
-            The grabber, or ``None`` if there is none for the CRS.
-        """
-        crs = lri.targetCrs or self.mapCrs
-        return self.grabbers.get(crs.srid)
-
     def render_tile(self, lri):
         grabber = self.grabber_for(lri)
         if not grabber:

@@ -458,6 +458,18 @@ class Object(gws.Layer):
 
         return p
 
+    def grabber_for(self, lri: gws.LayerRenderInput) -> Optional[gws.Grabber]:
+        """Find the grabber for the target CRS of a render request.
+
+        Args:
+            lri: Render input; without ``targetCrs`` the map CRS is used.
+
+        Returns:
+            The grabber, or ``None`` if there is none for the CRS.
+        """
+        crs = lri.targetCrs or self.mapCrs
+        return self.grabbers.get(crs.srid)
+
     def find_features(self, search, user):
         return []
 

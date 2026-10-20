@@ -65,6 +65,8 @@ QGIS projects are usually dynamic, so ``qgis`` and ``qgisflat`` layers have
 ``withCache`` off by default. A ``qgis`` layer with ``withCache`` passes it on
 to all its leaf layers, before ``autoLayers`` configs are applied; direct
 render leaves of a ``qgis`` layer without ``withCache`` keep their own default.
+The ``cache`` settings of a ``qgis`` layer are passed on the same way, except
+``name``, so that each leaf keeps its own cache directory.
 
 Print templates work as follows. The project is reloaded on each render.
 The map is rendered by WebSuite as a PDF.
