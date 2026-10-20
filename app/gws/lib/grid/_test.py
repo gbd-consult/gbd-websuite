@@ -41,19 +41,20 @@ def test_matrix_extent_for_range():
     assert e == grid.extent_for_range(GRID_3857, (2124, 1364, 2125, 1365, 12))
 
 
-def test_matrix_for_resolution_never_upscales():
+def test_matrix_for_resolution_prefers_upscaling():
     r5 = M[5].resolution
     assert grid.matrix_for_resolution(TMS, r5).identifier == '5'
-    assert grid.matrix_for_resolution(TMS, r5 * 1.5).identifier == '5'
-    assert grid.matrix_for_resolution(TMS, r5 * 0.9).identifier == '6'
+    assert grid.matrix_for_resolution(TMS, r5 * (1 - 0.5 * grid.RESOLUTION_TOLERANCE)).identifier == '5'
+    assert grid.matrix_for_resolution(TMS, r5 * 1.5).identifier == '4'
     assert grid.matrix_for_resolution(TMS, r5 * 2).identifier == '4'
     assert grid.matrix_for_resolution(TMS, M[20].resolution / 10).identifier == '20'
 
 
-def test_matrix_for_resolution_tolerates_rounding():
+def test_matrix_for_resolution_upscales():
     r5 = M[5].resolution
-    assert grid.matrix_for_resolution(TMS, r5 * (1 - 0.5 * grid.RESOLUTION_TOLERANCE)).identifier == '5'
-    assert grid.matrix_for_resolution(TMS, r5 * (1 - 2 * grid.RESOLUTION_TOLERANCE)).identifier == '6'
+    max_upscale = 2 ** (grid.UPSCALE_BIAS / (grid.UPSCALE_BIAS + 1))
+    assert grid.matrix_for_resolution(TMS, r5 / (0.99 * max_upscale)).identifier == '5'
+    assert grid.matrix_for_resolution(TMS, r5 / (1.01 * max_upscale)).identifier == '6'
 
 
 def test_matrix_for_resolution_unordered_matrices():

@@ -136,8 +136,16 @@ def test_box_spanning_tiles_is_mosaicked():
 def test_box_is_downsampled_from_finer_matrix():
     gr = _grabber()
     extent = _tile_extent((2124, 1364, 12))
-    img = gr.compose_box_as_image(extent, 200, 200)
+    img = gr.compose_box_as_image(extent, 240, 240)
     assert gr.fetches == [(12, 2124, 1364)]
+    assert img.size() == (240, 240)
+
+
+def test_box_is_upscaled_from_coarser_matrix():
+    gr = _grabber()
+    extent = _tile_extent((2124, 1364, 12))
+    img = gr.compose_box_as_image(extent, 200, 200)
+    assert gr.fetches == [(11, 1062, 682)]
     assert img.size() == (200, 200)
 
 
@@ -173,10 +181,10 @@ def test_cross_crs_tile_is_warped_from_buffered_source_tiles():
     assert img.size() == (256, 256)
     assert _rgba(img)[128, 128, 3] == 255
     assert gr.fetches
-    assert all(f[0] == 12 for f in gr.fetches)
+    assert all(f[0] == 11 for f in gr.fetches)
 
     src = gws.lib.extent.transform(gws.lib.grid.extent_for_tile(gr.grid, (x0, y0, z)), gr.targetCrs, gr.sourceCrs)
-    c0, r0, c1, r1, _ = gws.lib.grid.matrix_range_for_extent(M[12], src)
+    c0, r0, c1, r1, _ = gws.lib.grid.matrix_range_for_extent(M[11], src)
     assert {(c, r) for _, c, r in gr.fetches} >= {(c, r) for c in range(c0, c1 + 1) for r in range(r0, r1 + 1)}
 
 

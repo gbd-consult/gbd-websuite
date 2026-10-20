@@ -42,15 +42,18 @@ Example::
 
 A custom grid from a ``Config``-like set of options::
 
-    mg = gws.lib.grid.new(gws.lib.grid.Options(
-        crs=gws.lib.crs.get(25832),
-        extent=(280000, 5200000, 920000, 6100000),
-        tileSize=512,
-    ))
+    mg = gws.lib.grid.new(
+        gws.lib.grid.Options(
+            crs=gws.lib.crs.get(25832),
+            extent=(280000, 5200000, 920000, 6100000),
+            tileSize=512,
+        )
+    )
 """
 
 import math
-from typing import Iterator, Optional
+from typing import Optional
+from collections.abc import Iterator
 
 import gws
 import gws.lib.crs
@@ -62,6 +65,15 @@ Requests are often rounded (bboxes with a few decimals), so a resolution slightl
 a level's must still map to that level rather than to the next finer one.
 """
 
+UPSCALE_BIAS = 2
+"""Preference for upscaling a source matrix over downscaling one, as a factor on a log scale.
+
+1 picks the matrix with the smaller scale factor, values above 1 nudge towards upscaling the
+coarser matrix, values below 1 towards downscaling the finer one. Downscaling makes labels and
+thin lines unreadable, upscaling only makes them soft. With a 2x ladder, a matrix is upscaled by
+at most ``2 ** (UPSCALE_BIAS / (UPSCALE_BIAS + 1))``, about 1.59 for the default.
+"""
+
 DEFAULT_TILE_SIZE = 256
 """Default tile size in pixels."""
 
@@ -71,8 +83,6 @@ class Props(gws.Props):
     extent: gws.Extent
     resolutions: list[float]
     tileSize: int
-
-
 
 
 class Config(gws.Config):
@@ -365,10 +375,42 @@ def matrix_set_for_grid(mg: gws.MapGrid, max_level: int, identifier: str = '') -
     return tms
 
 
-def matrix_for_resolution(tms: gws.TileMatrixSet, resolution: float) -> gws.TileMatrix:
-    """Return the coarsest matrix that does not need upscaling.
+def best_resolution(resolution: float, resolutions: list[float]) -> float:
+    """Return the resolution to render a resolution from.
 
-    A matrix whose resolution is within ``RESOLUTION_TOLERANCE`` of the given one also matches.
+    Of the two resolutions around the given one, the coarser one needs upscaling and the
+    finer one downscaling. The scale factors are compared on a log scale, weighted by ``UPSCALE_BIAS``.
+
+    Args:
+        resolution: Wanted resolution.
+        resolutions: Available resolutions, in any order.
+
+    Returns:
+        The matching resolution, or the finest one if all are coarser.
+    """
+
+    by_res = sorted(resolutions, reverse=True)
+    prev = None
+
+    for r in by_res:
+        if math.isclose(r, resolution, rel_tol=RESOLUTION_TOLERANCE):
+            return r
+        if r > resolution:
+            prev = r
+            continue
+        if prev is None:
+            return r
+        up_scale_factor = math.log(prev / resolution)
+        down_scale_factor = math.log(resolution / r)
+        if up_scale_factor <= UPSCALE_BIAS * down_scale_factor:
+            return prev
+        return r
+
+    return by_res[-1]
+
+
+def matrix_for_resolution(tms: gws.TileMatrixSet, resolution: float) -> gws.TileMatrix:
+    """Return the matrix to render a resolution from, see ``best_resolution``.
 
     Args:
         tms: Tile matrix set.
@@ -378,16 +420,11 @@ def matrix_for_resolution(tms: gws.TileMatrixSet, resolution: float) -> gws.Tile
         The matching matrix, or the finest one if all are coarser.
     """
 
-    # Coarsest matrix with tm.resolution <= resolution, i.e. never upscale (downscale up to 2x).
-    # Cross-CRS the wanted resolution rarely hits the source ladder, e.g. 3857 -> 25832
-    # at 51N needs 1.6x the target resolution, landing between two levels.
-    # Alternatives: nearest by ratio (upscale up to sqrt(2), coarser cartography, bigger labels)
-    # or a threshold as in MapProxy (allow upscale below a factor, default 1.15).
-    coarsest_first = sorted(tms.matrices, key=lambda m: -m.resolution)
-    for tm in coarsest_first:
-        if tm.resolution <= resolution or math.isclose(tm.resolution, resolution, rel_tol=RESOLUTION_TOLERANCE):
+    r = best_resolution(resolution, [tm.resolution for tm in tms.matrices])
+    for tm in tms.matrices:
+        if tm.resolution == r:
             return tm
-    return coarsest_first[-1]
+    raise ValueError(f'no matrix found for resolution {r}')
 
 
 def matrix_range_for_extent(tm: gws.TileMatrix, extent: gws.Extent) -> gws.MapTileRange | None:
