@@ -1,3 +1,15 @@
+## Version 8.5.6
+
+- `qgis` and `qgisflat` layers have `withCache` off by default; cache settings of a `qgis` layer are passed on to its leaf layers
+- `qgis` layer option `compositeRender` renamed to `withCompositeRender`
+- QGIS: raster layer opacity is read from the renderer, opacity is no longer applied twice
+- tile sources (WMTS, `tile` layers): a coarser source level is upscaled (up to ~1.6x) rather than a finer one downscaled, keeping labels readable
+- Postgres table names with uppercase or special characters are quoted correctly
+- OWS sources: new `token` authorization type, authorization options are validated
+- client layer data is loaded directly instead of through a polled queue of 3 requests
+- Python packages pinned to minor versions; the image is built from the pip lock file
+- new `install/host_logging.sh` sets up rsyslog and logrotate on the Docker host
+
 ## Version 8.5.5
 
 - QField Cloud: a push is applied in one transaction and rejected as a whole on error; deltas are stored for status queries, new `deltaLifeTime` option
