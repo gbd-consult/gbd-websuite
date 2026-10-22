@@ -31,3 +31,7 @@ The GBD WebSuite is a web-based open source GIS platform for geodata processing.
 Homepage: https://gbd-websuite.de
 
 Documentation: https://docs.gbd-websuite.de/stable
+
+#### Use of AI
+
+Parts of the source code and documentation of this project were written with the help of AI assistants. Maintainers review, test and edit all AI-assisted contributions before they are released, and remain responsible for the content.
