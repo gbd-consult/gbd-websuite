@@ -1,16 +1,15 @@
 # gws core
 
 numpy==2.5.*
-# 2.15+ has no 'narrow' unit names for 'de', see lib/intl
-Babel==2.14.*
+Babel==2.18.*
 GeoAlchemy2==0.20.*
-jq==1.12.*
+jq==1.13.*
 pendulum==3.3.*
-Pillow==12.3.*
+Pillow==13.0.*
 psutil==7.2.*
 psycopg[binary]==3.3.*
 pycountry==26.2.*
-pypdf==6.20.*
+pypdf==6.21.*
 pyproj==3.8.*
 python-ldap==3.4.*
 PyYAML==6.0.*
@@ -31,11 +30,11 @@ gdal==3.12.2
 
 pytest==9.1.*
 pytest-clarity==1.0.*
-coverage==7.16.*
+coverage==7.17.*
 
 # documentation
 
-Sphinx==9.1.*
+Sphinx==9.2.*
 sphinx-autoapi==3.8.*
 Pygments==2.21.*
 
@@ -43,5 +42,5 @@ Pygments==2.21.*
 mistune==2.1.*
 
 pyodbc==5.3.*
-Authlib==1.8.*
+Authlib==1.9.*
 matplotlib==3.11.*
