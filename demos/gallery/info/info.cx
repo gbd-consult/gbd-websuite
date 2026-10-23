@@ -1,0 +1,191 @@
+uid "info"
+
+title "Locations in Düsseldorf"
+
+metadata.keywords [ "qgis" "suche" "drucken" "datenbank" "wmts" "karte" "werkzeuge" ]
+
+metadata.abstract """
+Orte in Düsseldorf suchen, abfragen und drucken.
+
+Die Karte zeigt Orte zu den Themen Bäckerei, Bank, Bar, Biergarten, Buchladen, Cafe, Hotel, Kiosk, Postfiliale, Kneipe, Restaurant und Supermarkt. Zum Ausprobieren in das Suchfeld oben oder in der Seitenleiste "Suche" z. B. "Cafe" oder einen Namen eingeben, mit dem Abfrage-Werkzeug auf einen Ort klicken oder über die Werkzeugleiste einen Ausschnitt drucken. Im Reiter "Layer" lässt sich die Hintergrundkarte zwischen "Hell", "Dunkel" und "Grau" umschalten. Die Daten stammen aus OpenStreetMap.
+
+Die Karte besteht aus zwei QGIS-Projekten: die Orte kommen als `qgisflat`-Layer aus `poi.qgs`, die Stadtkarte mit Gebäuden, Gewässern, Parks und Stadtgrenze als `qgis`-Layer "Karte Düsseldorf" aus `background.qgs`, der als Baum von Unterlayern erscheint und gekachelt (`display "tile"`) ausgeliefert wird. Die Druckvorlage `type "qgis"` stammt aus dem Layout in `poi.qgs`.
+
+Der Layer "Orte" hat eigene Vorlagen `feature.description` (Tabelle im Infofenster) und `feature.teaser` (Kurzansicht in der Trefferliste). Die Suche läuft über einen `postgres`-Finder auf einer Datenbank-View, die Kategorie und Name zu einem Suchfeld verbindet (`textSearch {{ type "any" minLength 3 }}`).
+
+Die Hintergrundkarte ist eine Gruppe (`type "group"`) mit `clientOptions.exclusive true`, sodass immer nur einer der drei `wmts`-Layer der GBD Geoservices sichtbar ist; die anderen beiden sind mit `clientOptions.hidden true` zunächst ausgeblendet.
+"""
+
+overviewMap {
+    "crs": "EPSG:25832",
+    "center": [
+        345000,
+        5678000
+    ],
+    "extent": [
+        331000,
+        5650000,
+        365000,
+        5690000
+    ],
+    "layers": [
+        { {demo_osm_layer} }
+    ],
+    "zoom": {
+        "scales": [
+            150000
+        ]
+    }
+}
+
+map {
+    crs 25832
+    center [ 346200, 5678000 ]
+    extent [ 330000, 5600000, 370000, 5700000 ]
+    zoom.initScale 100000
+    zoom.maxScale 200000
+}
+
+map.layers+ {
+    type "qgisflat"
+    title "Orte"
+    cache.maxAge "1s"
+    provider.path "/demos/gallery/info/poi.qgs"
+    provider.extentBuffer 1000
+    metadata.attribution "&copy; OpenStreetMap Daten veröffentlicht unter <a href='http://opendatacommons.org/licenses/odbl/'>ODbL</a>"
+
+    finders+ {
+        tableName "info_duesseldorf.v_punkte_suche"
+        type postgres
+        dbUid "DB_GALERIE"
+        models+ {
+            type "postgres"
+
+            fields+ {
+                name "id"
+                type "integer"
+                isPrimaryKey true
+            }
+            fields+ {
+                name "name"
+                type "text"
+            }
+            fields+ {
+                name "fclass"
+                type "text"
+            }
+            fields+ {
+                name "ortsuche"
+                type "text"
+                textSearch { type "any" minLength 3 }
+            }
+            fields+ {
+                name "geom"
+                type "geometry"
+            }
+        }
+    }
+
+    legend {
+            type "qgis"
+            options {
+                BOXSPACE 0
+                LAYERFONTCOLOR "#ffffff"
+                LAYERFONTSIZE 1
+            }
+            provider.path "/demos/gallery/info/background.qgs"
+        }
+
+    templates+  {
+        subject "feature.description"
+        path "/demos/gallery/info/feature.description.cx.html"
+        type "html"
+    }
+
+    templates+ {
+        subject "feature.teaser"
+        path "/demos/gallery/info/feature.teaser.cx.html"
+        type "html"
+    }
+}
+
+map.layers+ {
+    title "Karte Düsseldorf"
+    type "qgis"
+    display "tile"
+    cache.maxAge "1s"
+    provider.path "/demos/gallery/info/background.qgs"
+    provider.extentBuffer 1000
+    clientOptions.expanded true
+    metadata.attribution "&copy; OpenStreetMap Daten veröffentlicht unter <a href='http://opendatacommons.org/licenses/odbl/'>ODbL</a>"
+}
+
+map.layers+ {
+    type "group"
+    title "Hintergrundkarte"
+    clientOptions { exclusive true expanded true }
+    layers [
+        {
+            type "wmts"
+            title "Hell"
+            display "client"
+            provider.url "https://geoservices.gbd-consult.de/wmts?key=gwsdemo"
+            sourceLayers.names [ "light" ]
+            withCache false
+            metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+        }
+        {
+            type "wmts"
+            title "Dunkel"
+            display "client"
+            provider.url "https://geoservices.gbd-consult.de/wmts?key=gwsdemo"
+            sourceLayers.names [ "dark" ]
+            withCache false
+            clientOptions.hidden true
+            metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+        }
+        {
+            type "wmts"
+            title "Grau"
+            display "client"
+            provider.url "https://geoservices.gbd-consult.de/wmts?key=gwsdemo"
+            sourceLayers.names [ "grayscale" ]
+            withCache false
+            clientOptions.hidden true
+            metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+        }
+    ]
+}
+
+client {
+    options.sidebarVisible true
+    options.sidebarResizable true
+    options.toolbarActiveButton "Toolbar.Identify.Click"
+    options.layersShowInactive true
+}
+
+client.removeElements+ { tag "Sidebar.User"}
+
+client.addElements+ { tag "Sidebar.Annotate"}
+client.addElements+ { tag "Toolbar.Identify.Click"}
+client.addElements+ { tag "Toolbar.Annotate.Draw"}
+client.addElements+ { tag "Task.Annotate"}
+client.addElements+ { tag "Toolbar.Print" }
+client.addElements+ { tag "Sidebar.Search" }
+client.addElements+ { tag "Altbar.Search" }
+
+actions+ { type "search" }
+
+printers+ {
+    template {
+       type "qgis"
+        title "druckkarte"
+        provider.path "/demos/gallery/info/poi.qgs"
+    }
+    qualityLevels [
+        { dpi  0  name "Screenshot" }
+        { dpi  72 name "Gut" }
+        { dpi 150 name "Besser" }
+        { dpi 300 name "am Besten" }
+    ]
+}

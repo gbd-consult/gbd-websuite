@@ -1,0 +1,75 @@
+uid "alkis"
+
+title "ALKIS Kamen"
+
+metadata.keywords [ "alkis" "suche" "qgis" "datenbank" ]
+
+metadata.abstract """
+Flurstücksauskunft in Kamen.
+
+Das Projekt "ALKIS in Kamen" ist ein Beispiel für die Suche und Beauskunftung von Katasterinformationen ohne personenbezogene Daten. Das Plugin kann um zusätzliche Abfragemöglichkeiten erweitert werden.
+
+Zum Ausprobieren im Reiter "Flurstücksuche" nach Gemarkung, Straße und Hausnummer oder Flurstückskennzeichen suchen, mit einer gezeichneten Fläche räumlich suchen oder Flurstücke durch Klick in die Karte wählen. Gefundene Flurstücke lassen sich in eine Auswahlliste übernehmen und exportieren; auch historische Flurstücke können gesucht werden.
+
+Die Aktion `alkis` liest die ALKIS-Daten aus einer PostgreSQL-Datenbank. Unter `ui` sind `useSelect`, `usePick`, `useExport`, `searchSpatial` und `useHistory` freigeschaltet, `limit 200` begrenzt die Trefferzahl. Buchungs- und Eigentümerdaten sind mit `access "deny all"` gesperrt.
+
+Die Karte zeigt die ALKIS-Daten als `qgis`-Layer aus einem QGIS-Projekt, das mit `withCompositeRender true` als ein einziges Bild gerendert wird. Darunter liegt die Standardkarte der GBD Geoservices als `wmts`-Layer.
+"""
+
+map {
+    crs 25832
+    zoom.minScale 50
+    zoom.initScale 6000
+    zoom.maxScale 15000
+}
+
+map.extent {demo_make_extent(406747.84, 5714686.35, 20)}
+
+map.layers+ {
+    type "qgis"
+    withCompositeRender true
+    provider.path "/demos/gallery/alkis/alkis.qgs"
+    clientOptions.unfolded true
+}
+
+map.layers+ {
+    type "wmts"
+    display "client"
+    title "OpenStreetMap"
+    provider.url "https://geoservices.gbd-consult.de/wmts?key=gwsdemo"
+    sourceLayers.names [ "std" ]
+    withCache false
+    metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+}
+
+client {
+    addElements [
+        { tag "Sidebar.Alkis" after "Sidebar.Layers"}
+    ]
+    options.sidebarVisible True
+}
+
+actions+ {
+    type "alkis"
+    dbUid "DB_ALKIS"
+    dataSchema "alkis"
+    indexSchema "gws"
+    crs 25832
+    limit 200
+
+    buchung {
+        access "deny all"
+    }
+    eigentuemer {
+        access "deny all"
+    }
+
+    ui {
+        useExport true
+        useSelect true
+        usePick true
+        searchSpatial true
+        gemarkungListMode "plain"
+        useHistory true
+    }
+}

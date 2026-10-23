@@ -1,0 +1,59 @@
+@def val(name)
+    @let v = feature.attributes.get(name)
+    @if v and v != "NULL"
+        @return v | html
+    @end
+    @return "-"
+@end
+
+<div class="cmpDescription">
+    <p class="head">Laternenstandort</p>
+    <table>
+        <tbody>
+        <tr>
+            <th>ID</th>
+            <td>{val("id_0")}</td>
+        </tr>
+        <tr>
+            <th>Modell</th>
+            <td>{val("lamp_model")}</td>
+        </tr>
+        <tr>
+            <th>Befestigung</th>
+            <td>{val("lamp_mount")}</td>
+        </tr>
+        <tr>
+            <th>Betreiber</th>
+            <td>{val("lamp_operator")}</td>
+        </tr>
+        <tr>
+            <th>Flammen</th>
+            <td>{val("lamp_flames")}</td>
+        </tr>
+        <tr>
+            <th>Typ</th>
+            <td>{val("lamp_type")}</td>
+        </tr>
+        <tr>
+            <th>Aufstelldatum</th>
+            <td>{val("start_date")}</td>
+        </tr>
+        <tr>
+            <th>Stadt</th>
+            <td>{val("city")}</td>
+        </tr>
+        <tr>
+            <th>Straße</th>
+            <td>{val("street")}</td>
+        </tr>
+        <tr>
+            <th>Stadtteil</th>
+            <td>{val("suburb")}</td>
+        </tr>
+        <tr>
+            <th>PLZ</th>
+            <td>{val("postcode")}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>

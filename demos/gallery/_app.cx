@@ -1,0 +1,4 @@
+web.site.rewriteRules+ {
+    pattern "^/baum/(.*)"
+    target "/_/qfieldcloudApi/projectUid/baumerfassung/$1"
+}

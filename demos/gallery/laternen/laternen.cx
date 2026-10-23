@@ -1,0 +1,292 @@
+uid "laternenstandorte"
+
+title "Laternenkarte"
+
+metadata.keywords [ "edit" "datenbank" "qgis" "werkzeuge" ]
+
+metadata.abstract """
+Laternenstandorte in Düsseldorf ansehen, abfragen und bearbeiten.
+
+Zum Ausprobieren in der Seitenleiste den Reiter "Editieren" (Stift-Symbol) öffnen und das Modell "Laternen" wählen. Eine Laterne wird aus der Liste gewählt oder direkt in der Karte: mit dem Stift in der Werkzeugleiste ("Objekt zum Editieren auswählen") auf eine Laterne klicken. Die Attribute werden im Formular bearbeitet und gespeichert. Mit "Attributtabelle öffnen" unten in der Seitenleiste werden alle Laternen in einer Tabellenansicht angezeigt und bearbeitet.
+
+Die Karte zeigt die Laternen als `qgisflat`-Layer aus einem QGIS-Projekt. Ein Klick mit dem Abfrage-Werkzeug zeigt die Attribute mit einer eigenen `feature.description`-Vorlage. Mit den Werkzeugen im Reiter "Markierungen" lassen sich eigene Skizzen in die Karte zeichnen.
+
+Bearbeitet wird über ein `postgres`-Modell auf Projektebene unter `models`, das auf dieselbe Tabelle zugreift wie der QGIS-Layer. Die Felder verwenden die Widgets `input`, `select`, `integer` und `date`; "Stadt" ist schreibgeschützt (`readOnly`), "Straße" darf nicht leer sein (Validator `notEmpty`). `permissions.edit "allow all"` erlaubt das Bearbeiten ohne Anmeldung.
+"""
+
+access "allow all"
+locales ["de_DE"]
+
+actions+ { type "edit" }
+
+overviewMap {
+    crs "EPSG:3857"
+    center {demo_point_duesseldorf_3857}
+    zoom.scales [ 150000 ]
+    layers+ {
+        {demo_osm_layer}
+    }
+}
+
+map {
+    crs 3857
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 4000
+    zoom.maxScale 8000
+}
+
+map.layers+ {
+    title "Laternen"
+    type "qgisflat"
+    provider.path "/demos/gallery/laternen/laternen_small.qgs"
+    provider.extentBuffer 1000
+    sourceLayers.names [ "Laternen" ]
+    templates+ {
+        subject "feature.description"
+        type "html"
+        path "/demos/gallery/laternen/feature.description.cx.html"
+    }
+}
+
+{demo_osm_background}
+
+models+ {
+    type "postgres"
+    dbUid "DB_GALERIE"
+    uid "model_laternen"
+    title "Laternen"
+    tableName "laternen.laternen_small_3857"
+    loadingStrategy "bbox"
+    isEditable true
+    permissions.edit "allow all"
+
+    sort [
+        { fieldName "street" }
+        { fieldName "id" }
+    ]
+
+    fields+ {
+        name "id"
+        type "text"
+        title "ID"
+        isPrimaryKey true
+        isRequired true
+        widget { type "input"}
+    }
+
+    fields+ {
+        name "lamp_model"
+        type "text"
+        title "Modell"
+        widget {
+            type "select"
+            items [
+                { value "Aufsatzleuchte" }
+                { value "Reihenleuchte" }
+                { value "Frankfurter" }
+                { value "Ansatzleuchte" }
+                { value "Alt-Düsseldorfer" }
+            ]
+        }
+    }
+
+    fields+ {
+        name "lamp_mount"
+        type "text"
+        title "Befestigung"
+        widget {
+            type "select"
+            items [
+                { value "cast steel mast" }
+                { value "short cast steel mast" }
+                { value "cast_steel_mast" }
+                { value "wall" }
+                { value "wall mounted" }
+                { value "bent mast, wall mounted" }
+                { value "bent_mast" }
+                { value "straight_mast" }
+            ]
+        }
+    }
+
+    fields+ {
+        name "lamp_operator"
+        type "text"
+        title "Betreiber"
+        widget {
+            type "input"
+        }
+    }
+
+    fields+ {
+        name "lamp_flames"
+        type "text"
+        title "Flammen"
+        widget {
+            type "integer"
+        }
+    }
+
+    fields+ {
+        name "lamp_type"
+        type "text"
+        title "Typ"
+        widget {
+            type "select"
+            items [
+                { value "LED" }
+                { value "electric" }
+                { value "gaslight" }
+                { value "high_pressure_sodium" }
+                { value "metal-halide" }
+                { value "metal-sodium_vapor" }
+            ]
+        }
+    }
+
+    fields+ {
+        name "start_date"
+        type "text"
+        title "Aufstelldatum"
+        widget {
+            type "input"
+        }
+    }
+
+    fields+ {
+        name "city"
+        type "text"
+        title "Stadt"
+        widget {
+            type "input"
+            readOnly True
+        }
+    }
+
+    fields+ {
+        name "street"
+        type "text"
+        title "Straße"
+        widget {
+            type "input"
+        }
+        validators+ {
+            type "notEmpty"
+            message "Straße muss vorhanden sein."
+        }
+    }
+
+    fields+ {
+        name "housenumber"
+        type "text"
+        title "Hausnummer"
+        widget {
+            type "input"
+        }
+    }
+
+    fields+ {
+        name "suburb"
+        type "text"
+        title "Stadteil"
+        widget {
+            type "select"
+            items [
+                { value "Altstadt" }
+                { value "Benrath" }
+                { value "Bilk" }
+                { value "Carlstadt" }
+                { value "Derendorf" }
+                { value "Düsseltal" }
+                { value "Eller" }
+                { value "Flehe" }
+                { value "Flingern Nord" }
+                { value "Flingern Süd" }
+                { value "Friedrichstadt" }
+                { value "Gerresheim" }
+                { value "Golzheim" }
+                { value "Grafenberg" }
+                { value "Hamm" }
+                { value "Hassels" }
+                { value "Heerdt" }
+                { value "Himmelgeist" }
+                { value "Holthausen" }
+                { value "Kaiserswerth" }
+                { value "Lichtenbroich" }
+                { value "Lierenfeld" }
+                { value "Lohausen" }
+                { value "Ludenberg" }
+                { value "Lörick" }
+                { value "Mörsenbroich" }
+                { value "Niederkassel" }
+                { value "Oberbilk" }
+                { value "Oberkassel" }
+                { value "Pempelfort" }
+                { value "Rath" }
+                { value "Reisholz" }
+                { value "Stadtmitte" }
+                { value "Stockum" }
+                { value "Unterbilk" }
+                { value "Unterrath" }
+                { value "Urdenbach" }
+                { value "Vennhausen" }
+                { value "Volmerswerth" }
+                { value "Wersten" }
+            ]
+        }
+    }
+
+    fields+ {
+        name "postcode"
+        type "text"
+        title "PLZ"
+        widget {
+            type "input"
+        }
+    }
+
+    fields+ {
+        name "last_checked"
+        type "text"
+        title "Letzte Prüfung"
+        widget {
+            type "date"
+        }
+    }
+
+    fields+ {
+        name "geom"
+        type "geometry"
+        title "Geometry"
+    }
+
+    templates+ {
+        subject "feature.title"
+        type "html"
+        text "{{street}}"
+    }
+
+    templates+ {
+        subject "feature.label"
+        type "html"
+        text "{{street}}"
+    }
+
+}
+
+client {
+    options.sidebarVisible True
+    options.toolbarActiveButton "Toolbar.Identify.Click"
+    options.layersShowInactive true
+}
+
+client.removeElements+ { tag "Sidebar.User" }
+
+client.addElements [
+    { tag "Sidebar.Annotate" }
+    { tag "Sidebar.Edit" before "Sidebar.Layers" }
+	{ tag "Toolbar.Identify.Click"}
+    { tag "Toolbar.Annotate.Draw" }
+    { tag "Toolbar.Edit" }
+    { tag "Task.Annotate" }
+]

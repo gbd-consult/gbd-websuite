@@ -4,13 +4,18 @@
 @code
 
 uid = ARGS.params.get('prj')
-cx_paths = list(gws.lib.osx.find_files(gws.c.APP_DIR, r'_demo/.+?\.cx$'))
 
-for path in cx_paths:
+cx_paths = []
+for path in gws.lib.osx.find_files(gws.c.APP_DIR, r'_demo/.+?\.cx$'):
+    cx_paths.append((path, path.replace(gws.c.APP_DIR, 'app')))
+for path in gws.lib.osx.find_files('/demos/gallery', r'\.cx$'):
+    cx_paths.append((path, path.replace('/demos/', 'demos/')))
+
+for path, rel_path in cx_paths:
     src = gws.u.read_file(path)
     if f'uid "{uid}"' in src:
         ARGS.src = src
-        ARGS.path = path.replace(gws.c.APP_DIR, '')
+        ARGS.path = rel_path
         break
 else:
     return gws.ContentResponse(mime='text/plain', content='not found')
@@ -32,9 +37,9 @@ else:
 <body class="config-page">
 <div class="config">
     <h1>Projektkonfiguration</h1>
-    <p class="config-path">app{path}</p>
+    <p class="config-path">{path}</p>
     <pre>{src | html}</pre>
-    <p><a class="config-link" href="https://github.com/gbd-consult/gbd-websuite/tree/master/app{path}" target="_blank">Auf GitHub ansehen</a></p>
+    <p><a class="config-link" href="https://github.com/gbd-consult/gbd-websuite/tree/master/{path}" target="_blank">Auf GitHub ansehen</a></p>
 </div>
 </body>
 </html>

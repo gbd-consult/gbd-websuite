@@ -1,0 +1,100 @@
+uid "baumerfassung"
+
+title "Baumerfassung mit QField"
+
+access "allow all"
+
+metadata.keywords [ "qfield" "qgis" "edit" "datenbank" ]
+
+metadata.abstract """
+Diese Daten können mit QField auf einem mobilen Gerät bearbeitet werden.
+
+Um die Daten zu bearbeiten, benutzen Sie bitte die QField App. Unter "QFieldCloud Projekte" melden Sie sich zunächst mit folgenden Zugangsdaten an:
+
+- **Server**: https://docs.gbd-websuite.de/baum
+- **Benutzername**: demo1
+- **Passwort**: demo
+
+Laden Sie das Projekt "Baumerfassung" herunter und öffnen Sie es in QField. Editieren Sie die Daten, danach aus dem QFieldCloud-Menü "Synchronisieren" wählen.
+
+Anschließend laden Sie diese Seite neu, um die Änderungen in der Webkarte zu sehen.
+"""
+
+map.crs 25832
+map.center [ 346783 5678994 ]
+map.zoom.initScale 2000
+
+map.layers+ {
+    title "Baum"
+    type "qgisflat"
+    provider { dbUid "DB_QFIELD" schema "erfassung" projectName "baumerfassung" }
+    sourceLayers.names [ "Baum" ]
+}
+map.layers+ {
+    title "Wegenetz (Status)"
+    type "qgisflat"
+    provider { dbUid "DB_QFIELD" schema "erfassung" projectName "baumerfassung" }
+    sourceLayers.names [ "Wegenetz (Status)" ]
+}
+map.layers+ {
+    type "wmts"
+    display "client"
+    title "OpenStreetMap"
+    provider.url "https://geoservices.gbd-consult.de/wmts?key=gwsdemo"
+    sourceLayers.names [ "std" ]
+    withCache false
+    metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+}
+
+actions+ {
+    type "qfieldcloud"
+    access "allow all"
+    projects+ {
+        uid "baumerfassung"
+        title "Baumerfassung"
+        provider { dbUid "DB_QFIELD" schema "erfassung" projectName "baumerfassung" }
+        mapCacheLifeTime "7d"
+        access "allow user, deny all"
+        syncFiles+ { field "file_foto" useBlob true }
+        syncFiles+ { field "file_foto_protokoll" useBlob true }
+        models+ {
+            title "Baum"
+            type "postgres"
+            dbUid "DB_QFIELD"
+            tableName "erfassung.baum"
+            withAutoFields true
+            isEditable true
+            permissions.edit "allow user, deny all"
+            fields+ {
+                name "file_anhang"
+                title "Anhang"
+                type "file"
+                contentColumn "anhang_content"
+                nameColumn "anhang"
+            }
+            fields+ {
+                name "file_foto"
+                title "Foto"
+                type "file"
+                contentColumn "foto_content"
+                nameColumn "foto"
+            }
+        }
+        models+ {
+            title "Protokoll"
+            type "postgres"
+            dbUid "DB_QFIELD"
+            tableName "erfassung.protokoll"
+            withAutoFields true
+            isEditable true
+            permissions.edit "allow user, deny all"
+            fields+ {
+                name "file_foto_protokoll"
+                title "Foto"
+                type "file"
+                contentColumn "foto_content"
+                nameColumn "foto"
+            }
+        }
+    }
+}

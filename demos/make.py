@@ -36,13 +36,13 @@ Options:
 def main(args):
     # basic config - from this dir
 
-    main_cfg = [
-        read_config_file(THIS_DIR + '/config_base.cx')
-    ]
+    main_cfg = [read_config_file(THIS_DIR + '/config_base.cx')]
     projects_cfg = []
 
     only = args.get('only')
-    cx_paths = list(cli.find_files(APP_DIR, r'_demo/.+?\.cx$'))
+    cx_paths = []
+    cx_paths.extend(cli.find_files(APP_DIR, r'_demo/.+?\.cx$'))
+    cx_paths.extend(cli.find_files(THIS_DIR, r'gallery/.+?\.cx$'))
 
     # include configs from app subdirectories
 
@@ -55,12 +55,12 @@ def main(args):
         if not only or re.search(only, path):
             # project configuration
             cfg = read_config_file(path)
-            projects_cfg.append(f'''
+            projects_cfg.append(f"""
                 projects+ {{ 
                     {cfg}
                     metadata.authorityIdentifier "app{path.replace(APP_DIR, '')}"
                 }}
-            ''')
+            """)
 
     config = '\n'.join(main_cfg) + '\n' + '\n'.join(projects_cfg)
 
@@ -135,7 +135,7 @@ def error_lines(src, err):
         cli.error(s)
 
 
-RE_ASSET = r'''(?x)
+RE_ASSET = r"""(?x)
     ([\x22\x27])
     (
         [\w./-]+?
@@ -145,7 +145,7 @@ RE_ASSET = r'''(?x)
         )
     )
     \1
-'''
+"""
 
 
 def read_config_file(path):
