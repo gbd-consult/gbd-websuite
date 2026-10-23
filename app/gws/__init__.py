@@ -1741,8 +1741,6 @@ class Locale(Data):
     """Medium date format pattern."""
     dateFormatShort: str
     """Short date format pattern."""
-    dateUnits: str
-    """Narrow names of year, month and day, e.g. ``YMD`` for ``en``, ``JMT`` for ``de``."""
     dayNamesLong: list[str]
     """Full day names."""
     dayNamesShort: list[str]

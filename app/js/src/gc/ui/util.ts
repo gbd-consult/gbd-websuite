@@ -70,7 +70,6 @@ export interface Locale {
     dateFormatLong: string;
     dateFormatMedium: string;
     dateFormatShort: string;
-    dateUnits: string;
     dayNamesLong: Array<string>;
     dayNamesNarrow: Array<string>;
     dayNamesShort: Array<string>;

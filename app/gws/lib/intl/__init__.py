@@ -125,11 +125,6 @@ def _locale_by_uid(uid):
         lo.dateFormatLong = str(p.date_formats['long'])
         lo.dateFormatMedium = str(p.date_formats['medium'])
         lo.dateFormatShort = str(p.date_formats['short'])
-        lo.dateUnits = (
-            p.unit_display_names['duration-year']['narrow']
-            + p.unit_display_names['duration-month']['narrow']
-            + p.unit_display_names['duration-day']['narrow']
-        )
 
         lo.dayNamesLong = list(p.days['format']['wide'].values())
         lo.dayNamesNarrow = list(p.days['format']['narrow'].values())

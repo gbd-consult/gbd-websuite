@@ -6,7 +6,6 @@ de = dict(
     dateFormatLong='d. MMMM y',
     dateFormatMedium='dd.MM.y',
     dateFormatShort='dd.MM.yy',
-    dateUnits='JMT',
     dayNamesLong=['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
     dayNamesNarrow=['S', 'M', 'D', 'M', 'D', 'F', 'S'],
     dayNamesShort=['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'],
