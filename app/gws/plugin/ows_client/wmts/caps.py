@@ -43,6 +43,7 @@ def _layer(layer_el: gws.XmlElement, tms_dct):
     #   <ows:Title>...
     #   <Style>...
     #   <Format>...
+    #   <ResourceURL format=... resourceType=... template=...>
     #   <TileMatrixSetLink>
     #     <TileMatrixSet>...
 
@@ -70,9 +71,15 @@ def _layer(layer_el: gws.XmlElement, tms_dct):
     sl.isImage = True
     sl.isVisible = True
 
-    sl.imageFormat = layer_el.textof('Format')
+    sl.formats = [e.text for e in layer_el.findall('Format')]
 
-    sl.resourceUrls = {e.get('resourceType'): e.get('template') for e in layer_el.findall('ResourceURL')}
+    sl.resourceUrls = []
+    for e in layer_el.findall('ResourceURL'):
+        sl.resourceUrls.append(gws.SourceResourceUrl(
+            resourceType=e.get('resourceType'),
+            format=e.get('format'),
+            template=e.get('template'),
+        ))
 
     return sl
 

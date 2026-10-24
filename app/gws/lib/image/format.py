@@ -3,7 +3,8 @@
 ``PNG8``, ``PNG24``, ``JPEG_LOW``, ``JPEG``, ``JPEG_HIGH``, ``WEBP`` and ``WEBP_LOSSLESS`` are predefined ``gws.ImageFormat`` objects. The first
 MIME type of a format is its content type, the others are names under which services offer it
 (``image/png; mode=8bit``). ``from_config`` creates a format from a ``Config``, and ``best_mime_type``
-selects the MIME type to request from a remote source (WMS, QGIS Server) for a format.
+selects the MIME type to request from a remote source (WMS, QGIS Server) for a format,
+``best_format_string`` the format string as spelled by the source (WMTS).
 
 Encoding options
 ----------------
@@ -230,3 +231,28 @@ def best_mime_type(ifo: gws.ImageFormat, supported: list[str]) -> str:
             return mime
 
     return ''
+
+
+def best_format_string(ifo: gws.ImageFormat, supported: list[str]) -> str:
+    """Select the format string, as spelled by a source, that matches an image format best.
+
+    The strings are normalized with ``gws.lib.mime.get`` and the MIME type is selected with ``best_mime_type``.
+
+    Args:
+        ifo: Image format.
+        supported: Format strings as spelled by the source.
+
+    Returns:
+        The selected format string, the first one if none matches, or an empty string if there are none.
+    """
+
+    by_mime = {}
+    for fmt in supported:
+        mime = gws.lib.mime.get(fmt)
+        if mime and mime not in by_mime:
+            by_mime[mime] = fmt
+
+    mime = best_mime_type(ifo, list(by_mime))
+    if mime:
+        return by_mime[mime]
+    return supported[0] if supported else ''

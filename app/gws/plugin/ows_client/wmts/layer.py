@@ -94,7 +94,16 @@ class Object(gws.base.layer.image.Object):
             opts,
             provider=self.provider,
             tms=self.activeTms,
-            urlTemplate=self.provider.tile_url_template(self.activeLayer, self.activeTms, self.activeStyle),
+            urlTemplate=self.url_template(),
+        )
+
+    def url_template(self) -> str:
+        """Create the tile URL template for the active source layer, tile matrix set and style."""
+        return self.provider.tile_url_template(
+            self.activeLayer,
+            self.activeTms,
+            self.activeStyle,
+            self.imageFormat,
         )
 
     def configure_provider(self):
@@ -104,17 +113,21 @@ class Object(gws.base.layer.image.Object):
         p = super().props(user)
         if self.displayMode != gws.LayerDisplayMode.client:
             return p
-        tms = self.activeTms
-        m0 = tms.matrices[0]
         return gws.u.merge(
             p,
             type='wmts',
-            url=self.provider.tile_url_template(self.activeLayer, tms, self.activeStyle),
+            url=self.url_template(),
             tileMatrixSet=TileMatrixSetProps(
-                origin=(m0.x, m0.y),
-                resolutions=[tm.resolution for tm in tms.matrices],
-                matrixIds=[tm.identifier for tm in tms.matrices],
-                tileSize=(int(m0.tileWidth), int(m0.tileHeight)),
+                origin=(
+                    self.activeTms.matrices[0].x,
+                    self.activeTms.matrices[0].y,
+                ),
+                resolutions=[tm.resolution for tm in self.activeTms.matrices],
+                matrixIds=[tm.identifier for tm in self.activeTms.matrices],
+                tileSize=(
+                    int(self.activeTms.matrices[0].tileWidth),
+                    int(self.activeTms.matrices[0].tileHeight),
+                ),
             ),
         )
 

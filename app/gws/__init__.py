@@ -3388,6 +3388,16 @@ class SourceStyle(Data):
     name: str
     """Style name."""
 
+class SourceResourceUrl(Data):
+    """A WMTS resource URL template."""
+
+    resourceType: str
+    """Type of the resource."""
+    format: str
+    """Format of the resource."""
+    template: str
+    """URL template."""
+
 
 class SourceLayer(Data):
     """A layer of an external source, such as a WMS, WFS or WMTS service or a QGIS project.
@@ -3447,13 +3457,13 @@ class SourceLayer(Data):
     """Default style."""
 
     tileMatrixIds: list[str]
-    """Ids of the WMTS tile matrix sets the layer links to."""
+    """Ids of tile matrix sets the layer links to (WMTS)."""
     tileMatrixSets: list[TileMatrixSet]
-    """WMTS tile matrix sets of the layer."""
-    imageFormat: str
-    """Image format for WMTS requests."""
-    resourceUrls: dict
-    """WMTS resource URL templates, keyed by resource type."""
+    """Tile matrix sets of the layer (WMTS)."""
+    formats: list[str]
+    """Image formats (WMTS)."""
+    resourceUrls: list[SourceResourceUrl]
+    """Resource URLs (WMTS)."""
 
     sourceId: str
     """Id of the layer in the source, e.g. the QGIS layer id."""
