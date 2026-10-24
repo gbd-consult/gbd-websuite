@@ -1,12 +1,9 @@
 """WMTS service provider."""
 
-from typing import Optional, cast
 
 import gws
-import gws.base.layer
 import gws.base.ows.client
-import gws.config.util
-import gws.lib.uom
+import gws.lib.image
 import gws.lib.net
 
 from . import caps
@@ -38,37 +35,42 @@ class Object(gws.base.ows.client.provider.Object):
 
         self.configure_operations(cc.operations)
 
-    def tile_url_template(self, sl: gws.SourceLayer, tms: gws.TileMatrixSet, style: gws.SourceStyle) -> str:
+    def tile_url_template(self, sl: gws.SourceLayer, tms: gws.TileMatrixSet, style: gws.SourceStyle, ifo: gws.ImageFormat) -> str:
         """Create a tile URL template for a source layer.
 
-        If the layer has a ``ResourceURL`` of type ``tile``, its template is used,
-        with ``{TileMatrixSet}`` and ``{Style}`` filled in. Otherwise, a KVP GetTile
-        URL is built, with the layer format or ``image/jpeg``. In both cases the
-        result contains the ``{TileMatrix}``, ``{TileCol}`` and ``{TileRow}`` placeholders.
+        If the layer has ``ResourceURL`` elements of type ``tile``, the template of the one
+        whose format matches ``ifo`` best is used, with ``{TileMatrixSet}`` and
+        ``{Style}`` filled in. Otherwise, a KVP GetTile URL is built, with the layer format
+        that matches ``ifo`` best. Without a match, the first format is used,
+        or ``image/jpeg`` if the layer has none. In both cases the_best_format result contains the
+        ``{TileMatrix}``, ``{TileCol}`` and ``{TileRow}`` placeholders.
 
         Args:
             sl: Source layer.
             tms: Tile matrix set.
             style: Source style.
+            ifo: Image format the tiles are requested for.
 
         Returns:
             The URL template.
         """
-        ru = sl.resourceUrls
-        resource_url = ru.get('tile') if ru else None
+        resource_urls = [ru for ru in sl.resourceUrls or [] if ru.resourceType == 'tile']
 
-        if resource_url:
-            return (
-                resource_url
-                .replace('{TileMatrixSet}', tms.identifier)
-                .replace('{Style}', style.name))
+        if resource_urls:
+            fmt = gws.lib.image.format.best_format_string(ifo, [ru.format for ru in resource_urls])
+            for ru in resource_urls:
+                if ru.format == fmt:
+                    return (
+                        ru.template
+                        .replace('{TileMatrixSet}', tms.identifier)
+                        .replace('{Style}', style.name))
 
         params = {
             'SERVICE': gws.OwsProtocol.WMTS,
             'REQUEST': gws.OwsVerb.GetTile,
             'VERSION': self.version,
             'LAYER': sl.name,
-            'FORMAT': sl.imageFormat or 'image/jpeg',
+            'FORMAT': gws.lib.image.format.best_format_string(ifo, sl.formats or []) or 'image/jpeg',
             'TILEMATRIXSET': tms.identifier,
             'STYLE': style.name,
             'TILEMATRIX': '{TileMatrix}',

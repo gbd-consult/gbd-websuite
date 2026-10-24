@@ -84,11 +84,13 @@ def test_parse():
     assert layer_1.name == 'layer_1'
     assert layer_1.title == 'LAYER_1'
     assert layer_1.isImage is True
-    assert layer_1.imageFormat == 'image/png'
+    assert layer_1.formats == ['image/png']
     assert layer_1.wgsExtent == (5.0, 47.0, 15.0, 55.0)
     assert [crs.srid for crs in layer_1.supportedCrs] == [3857]
     assert layer_1.tileMatrixIds == ['tms_1']
     assert layer_1.tileMatrixSets[0] is tms
-    assert layer_1.resourceUrls == {'tile': 'http://host/tile/{TileMatrix}/{TileRow}/{TileCol}.png'}
+    assert [vars(ru) for ru in layer_1.resourceUrls] == [
+        {'resourceType': 'tile', 'format': 'image/png', 'template': 'http://host/tile/{TileMatrix}/{TileRow}/{TileCol}.png'},
+    ]
     assert layer_1.defaultStyle.name == 'default'
     assert layer_1.legendUrl == 'http://host/legend_1'

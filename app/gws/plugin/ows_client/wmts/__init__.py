@@ -15,7 +15,8 @@ The layer uses a single source layer (the first selected one), a tile matrix
 set and a style. The tile matrix set is the one in the forced CRS of the
 provider or, by default, in the CRS that best matches the map CRS. Tile URLs
 are taken from the ``ResourceURL`` template of the layer if the service
-provides one, otherwise a KVP GetTile URL is built. Unless configured
+provides one, otherwise a KVP GetTile URL is built. In both cases the source
+format is the one that matches the ``imageFormat`` of the layer best. Unless configured
 otherwise, the layer extent is the extent of the first matrix, clipped to the
 extent of the source layer, the resolutions are derived from the scales of the
 matrices, the legend is the legend URL of the style and the metadata is the
