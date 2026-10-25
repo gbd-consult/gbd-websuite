@@ -1,3 +1,9 @@
+## Version 8.5.7
+
+- WMTS layers: tiles are requested in the source format (`Format` or `ResourceURL`) that best matches the layer's `imageFormat`
+- new gallery demos (ALKIS, Baumerfassung, Locations, Laternen)
+- UTM32 demos use a matching background map
+
 ## Version 8.5.6
 
 - `qgis` and `qgisflat` layers have `withCache` off by default; cache settings of a `qgis` layer are passed on to its leaf layers
