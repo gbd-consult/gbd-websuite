@@ -36,15 +36,8 @@ map.layers+ {
     provider { dbUid "DB_QFIELD" schema "erfassung" projectName "baumerfassung" }
     sourceLayers.names [ "Wegenetz (Status)" ]
 }
-map.layers+ {
-    type "wmts"
-    display "client"
-    title "OpenStreetMap"
-    provider.url "https://geoservices.gbd-consult.de/wmts?key=gwsdemo"
-    sourceLayers.names [ "std" ]
-    withCache false
-    metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-}
+
+{demo_osm_background_32}
 
 actions+ {
     type "qfieldcloud"

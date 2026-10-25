@@ -29,4 +29,4 @@ map.layers+ {
     provider.path "/demos/districts.geojson"
 }
 
-{demo_osm_background}
+{demo_osm_background_32}
