@@ -902,7 +902,7 @@
                 <Option name="color" type="QString" value="92,47,217,255"/>
                 <Option name="fixedAspectRatio" type="QString" value="0"/>
                 <Option name="horizontal_anchor_point" type="QString" value="1"/>
-                <Option name="name" type="QString" value="./poi/icons/baeckerei.svg"/>
+                <Option name="name" type="QString" value="../poi/icons/baeckerei.svg"/>
                 <Option name="offset" type="QString" value="0,0"/>
                 <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0"/>
                 <Option name="offset_unit" type="QString" value="MM"/>
@@ -940,7 +940,7 @@
                 <Option name="color" type="QString" value="202,60,60,255"/>
                 <Option name="fixedAspectRatio" type="QString" value="0"/>
                 <Option name="horizontal_anchor_point" type="QString" value="1"/>
-                <Option name="name" type="QString" value="./poi/icons/bank.svg"/>
+                <Option name="name" type="QString" value="../poi/icons/bank.svg"/>
                 <Option name="offset" type="QString" value="0,0"/>
                 <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0"/>
                 <Option name="offset_unit" type="QString" value="MM"/>
@@ -978,7 +978,7 @@
                 <Option name="color" type="QString" value="45,70,209,255"/>
                 <Option name="fixedAspectRatio" type="QString" value="0"/>
                 <Option name="horizontal_anchor_point" type="QString" value="1"/>
-                <Option name="name" type="QString" value="./poi/icons/postfiliale.svg"/>
+                <Option name="name" type="QString" value="../poi/icons/postfiliale.svg"/>
                 <Option name="offset" type="QString" value="0,0"/>
                 <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0"/>
                 <Option name="offset_unit" type="QString" value="MM"/>
@@ -1016,7 +1016,7 @@
                 <Option name="color" type="QString" value="101,176,230,255"/>
                 <Option name="fixedAspectRatio" type="QString" value="0"/>
                 <Option name="horizontal_anchor_point" type="QString" value="1"/>
-                <Option name="name" type="QString" value="./poi/icons/restaurant.svg"/>
+                <Option name="name" type="QString" value="../poi/icons/restaurant.svg"/>
                 <Option name="offset" type="QString" value="0,0"/>
                 <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0"/>
                 <Option name="offset_unit" type="QString" value="MM"/>
@@ -1054,7 +1054,7 @@
                 <Option name="color" type="QString" value="235,182,141,255"/>
                 <Option name="fixedAspectRatio" type="QString" value="0"/>
                 <Option name="horizontal_anchor_point" type="QString" value="1"/>
-                <Option name="name" type="QString" value="./poi/icons/supermarkt.svg"/>
+                <Option name="name" type="QString" value="../poi/icons/supermarkt.svg"/>
                 <Option name="offset" type="QString" value="0,0"/>
                 <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0"/>
                 <Option name="offset_unit" type="QString" value="MM"/>
@@ -1131,7 +1131,7 @@
                 <Option name="color" type="QString" value="235,43,209,255"/>
                 <Option name="fixedAspectRatio" type="QString" value="0"/>
                 <Option name="horizontal_anchor_point" type="QString" value="1"/>
-                <Option name="name" type="QString" value="./poi/icons/bar.svg"/>
+                <Option name="name" type="QString" value="../poi/icons/bar.svg"/>
                 <Option name="offset" type="QString" value="0,0"/>
                 <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0"/>
                 <Option name="offset_unit" type="QString" value="MM"/>
@@ -1169,7 +1169,7 @@
                 <Option name="color" type="QString" value="75,220,220,255"/>
                 <Option name="fixedAspectRatio" type="QString" value="0"/>
                 <Option name="horizontal_anchor_point" type="QString" value="1"/>
-                <Option name="name" type="QString" value="./poi/icons/biergarten.svg"/>
+                <Option name="name" type="QString" value="../poi/icons/biergarten.svg"/>
                 <Option name="offset" type="QString" value="0,0"/>
                 <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0"/>
                 <Option name="offset_unit" type="QString" value="MM"/>
@@ -1207,7 +1207,7 @@
                 <Option name="color" type="QString" value="154,32,207,255"/>
                 <Option name="fixedAspectRatio" type="QString" value="0"/>
                 <Option name="horizontal_anchor_point" type="QString" value="1"/>
-                <Option name="name" type="QString" value="./poi/icons/buchladen.svg"/>
+                <Option name="name" type="QString" value="../poi/icons/buchladen.svg"/>
                 <Option name="offset" type="QString" value="0,0"/>
                 <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0"/>
                 <Option name="offset_unit" type="QString" value="MM"/>
@@ -1245,7 +1245,7 @@
                 <Option name="color" type="QString" value="90,233,171,255"/>
                 <Option name="fixedAspectRatio" type="QString" value="0"/>
                 <Option name="horizontal_anchor_point" type="QString" value="1"/>
-                <Option name="name" type="QString" value="./poi/icons/cafe.svg"/>
+                <Option name="name" type="QString" value="../poi/icons/cafe.svg"/>
                 <Option name="offset" type="QString" value="0,0"/>
                 <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0"/>
                 <Option name="offset_unit" type="QString" value="MM"/>
@@ -1283,7 +1283,7 @@
                 <Option name="color" type="QString" value="218,192,46,255"/>
                 <Option name="fixedAspectRatio" type="QString" value="0"/>
                 <Option name="horizontal_anchor_point" type="QString" value="1"/>
-                <Option name="name" type="QString" value="./poi/icons/hotel.svg"/>
+                <Option name="name" type="QString" value="../poi/icons/hotel.svg"/>
                 <Option name="offset" type="QString" value="0,0"/>
                 <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0"/>
                 <Option name="offset_unit" type="QString" value="MM"/>
@@ -1321,7 +1321,7 @@
                 <Option name="color" type="QString" value="159,214,20,255"/>
                 <Option name="fixedAspectRatio" type="QString" value="0"/>
                 <Option name="horizontal_anchor_point" type="QString" value="1"/>
-                <Option name="name" type="QString" value="./poi/icons/kiosk.svg"/>
+                <Option name="name" type="QString" value="../poi/icons/kiosk.svg"/>
                 <Option name="offset" type="QString" value="0,0"/>
                 <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0"/>
                 <Option name="offset_unit" type="QString" value="MM"/>
@@ -1359,7 +1359,7 @@
                 <Option name="color" type="QString" value="14,200,39,255"/>
                 <Option name="fixedAspectRatio" type="QString" value="0"/>
                 <Option name="horizontal_anchor_point" type="QString" value="1"/>
-                <Option name="name" type="QString" value="./poi/icons/kneipe.svg"/>
+                <Option name="name" type="QString" value="../poi/icons/kneipe.svg"/>
                 <Option name="offset" type="QString" value="0,0"/>
                 <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0"/>
                 <Option name="offset_unit" type="QString" value="MM"/>
@@ -1397,7 +1397,7 @@
                 <Option name="color" type="QString" value="228,63,138,255"/>
                 <Option name="fixedAspectRatio" type="QString" value="0"/>
                 <Option name="horizontal_anchor_point" type="QString" value="1"/>
-                <Option name="name" type="QString" value="./poi/icons/museum.svg"/>
+                <Option name="name" type="QString" value="../poi/icons/museum.svg"/>
                 <Option name="offset" type="QString" value="0,0"/>
                 <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0"/>
                 <Option name="offset_unit" type="QString" value="MM"/>

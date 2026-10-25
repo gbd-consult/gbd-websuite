@@ -22,7 +22,7 @@ map.layers+ {
     uid "qqq"
     title "Düsseldorf"
     type "qgis"
-    provider.path "/demos/poi_local.qgs"
+    provider.path "/demos/qgis/poi_local.qgs"
     provider.extentBuffer 5000
 }
 

@@ -15,7 +15,7 @@ Die freien Felder werden im Block `models` des Druckers definiert, mit `type "te
 printers+ {
     template {
         type "qgis"
-        provider.path "/demos/print_model.qgs"
+        provider.path "/demos/qgis/print_model.qgs"
         index 0
     }
     qualityLevels [

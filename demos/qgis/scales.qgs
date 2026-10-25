@@ -35,7 +35,7 @@
     <customproperties>
       <Option/>
     </customproperties>
-    <layer-tree-layer name="scales" expanded="0" source="./scales.json|layername=scales" checked="Qt::Checked" patch_size="-1,-1" id="a_94e9759f_d3b9_4621_8407_3db1829e1a96" providerKey="ogr" legend_exp="" legend_split_behavior="0">
+    <layer-tree-layer name="scales" expanded="0" source="../scales.json|layername=scales" checked="Qt::Checked" patch_size="-1,-1" id="a_94e9759f_d3b9_4621_8407_3db1829e1a96" providerKey="ogr" legend_exp="" legend_split_behavior="0">
       <customproperties>
         <Option/>
       </customproperties>
@@ -160,7 +160,7 @@
         <ymax>50.99000000000000199</ymax>
       </wgs84extent>
       <id>a_94e9759f_d3b9_4621_8407_3db1829e1a96</id>
-      <datasource>./scales.json|layername=scales</datasource>
+      <datasource>../scales.json|layername=scales</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -2962,7 +2962,7 @@ def my_form_open(dialog, layer, feature):
       </spatialrefsys>
     </CoordinateCustomCrs>
   </ProjectDisplaySettings>
-  <ProjectGpsSettings destinationLayer="a_94e9759f_d3b9_4621_8407_3db1829e1a96" autoAddTrackVertices="0" autoCommitFeatures="0" destinationLayerProvider="ogr" destinationFollowsActiveLayer="1" destinationLayerName="scales" destinationLayerSource="/opt/w/gp/gbd-websuite/demos/scales.json|layername=scales">
+  <ProjectGpsSettings destinationLayer="a_94e9759f_d3b9_4621_8407_3db1829e1a96" autoAddTrackVertices="0" autoCommitFeatures="0" destinationLayerProvider="ogr" destinationFollowsActiveLayer="1" destinationLayerName="scales" destinationLayerSource="../scales.json|layername=scales">
     <timeStampFields/>
   </ProjectGpsSettings>
 </qgis>

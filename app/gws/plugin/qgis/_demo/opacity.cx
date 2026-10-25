@@ -21,13 +21,13 @@ map {
 map.layers+ {
     title "Über QGIS"
     type "qgis"
-    provider.path "/demos/opacity.qgs"
+    provider.path "/demos/qgis/opacity.qgs"
 }
 
 map.layers+ {
     title "WMTS direkt"
     type "qgis"
-    provider.path "/demos/opacity.qgs"
+    provider.path "/demos/qgis/opacity.qgs"
     provider.directRender [ "wmts" ]
     clientOptions.hidden true
 }
@@ -35,7 +35,7 @@ map.layers+ {
 map.layers+ {
     title "Districts flach"
     type "qgisflat"
-    provider.path "/demos/opacity.qgs"
+    provider.path "/demos/qgis/opacity.qgs"
     sourceLayers.names [ "Districts" ]
     clientOptions.hidden true
 }

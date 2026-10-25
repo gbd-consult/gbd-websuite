@@ -106,7 +106,7 @@ map.layers+ {
     uid "duesseldorf"
     title "Düsseldorf"
     type "qgis"
-    provider.path "/demos/search_multi.qgs"
+    provider.path "/demos/qgis/search_multi.qgs"
     autoLayers+ { config.display "box" }
     clientOptions.unfolded true
 }

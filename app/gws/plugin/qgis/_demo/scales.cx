@@ -27,7 +27,7 @@ map {
 map.layers+ {
     title "Scales"
     type "qgisflat"
-    provider.path "/demos/scales.qgs"
+    provider.path "/demos/qgis/scales.qgs"
     sourceLayers.names [ "scales" ]
     withCache false
 }

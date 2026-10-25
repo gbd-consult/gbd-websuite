@@ -17,7 +17,7 @@ actions+ {
     access "allow all"
     projects+ {
         uid "qfield_simple"
-        provider.path "/demos/qfield.qgs"
+        provider.path "/demos/qgis/qfield.qgs"
     }
 }
 
@@ -30,7 +30,7 @@ map {
 map.layers+ {
     title "QGIS Project"
     type "qgis"
-    provider.path "/demos/qfield.qgs"
+    provider.path "/demos/qgis/qfield.qgs"
 }
 
 {demo_osm_background}

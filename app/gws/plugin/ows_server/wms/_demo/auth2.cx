@@ -33,7 +33,7 @@ map.zoom { minScale 500 maxScale 400000 }
 map.layers+ {
     title "Points of interest"
     type "qgisflat"
-    provider.path "/demos/poi_districts_postgres.qgs"
+    provider.path "/demos/qgis/poi_districts_postgres.qgs"
     sourceLayers.names [ "Points of interest" ]
     finders+ { type "postgres" tableName "edit.poi" }
 
@@ -43,7 +43,7 @@ map.layers+ {
 map.layers+ {
     title "Districts"
     type "qgisflat"
-    provider.path "/demos/poi_districts_postgres.qgs"
+    provider.path "/demos/qgis/poi_districts_postgres.qgs"
     sourceLayers.names [ "Districts" ]
     finders+ { type "postgres" tableName "edit.district" }
 }

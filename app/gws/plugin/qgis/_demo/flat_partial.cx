@@ -21,7 +21,7 @@ map {
 map.layers+ {
     title "Bars und Kneipen in Düsseldorf"
     type "qgisflat"
-    provider.path "/demos/poi_geojson.qgs"
+    provider.path "/demos/qgis/poi_geojson.qgs"
     sourceLayers.names [
         "Bar"
         "Kneipe"
