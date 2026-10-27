@@ -279,7 +279,7 @@ def test_to_geojson_wgs84():
 
 
 def test_transform_extent_wgs84_to_webmercator():
-    got = crs.WGS84.transform_extent((0.0, 1.0, 1.0, 0.0), crs_to=crs.WEBMERCATOR)
+    got = crs.WGS84.transform_extent((0.0, 0.0, 1.0, 1.0), crs_to=crs.WEBMERCATOR)
     exp = (0.0, 0.0, 111319.49079327357, 111325.1428663851)
     u.check.close(got, exp, abs_tol=1e-4)
 
@@ -297,11 +297,19 @@ def test_transform_extent_same_crs():
     assert got == ext
 
 
-def test_transform_extent_normalizes():
-    # Swapped min/max should be normalized
-    got = crs.WGS84.transform_extent((1.0, 1.0, 0.0, 0.0), crs_to=crs.WEBMERCATOR)
-    exp = (0.0, 0.0, 111319.49079327357, 111325.1428663851)
-    u.check.close(got, exp, abs_tol=1e-4)
+def test_transform_extent_antimeridian_to_wgs84():
+    c = crs.get('EPSG:32701')
+    got = c.transform_extent((99960, 8090200, 209760, 8200000), crs_to=crs.WGS84)
+    assert got[0] == -180
+    assert got[2] == 180
+    assert -17.3 < got[1] < got[3] < -16.2
+
+
+def test_transform_extent_antimeridian_to_webmercator():
+    c = crs.get('EPSG:32701')
+    got = c.transform_extent((99960, 8090200, 209760, 8200000), crs_to=crs.WEBMERCATOR)
+    u.check.close(got[0], -20037508.342789244, abs_tol=1e-3)
+    u.check.close(got[2], 20037508.342789244, abs_tol=1e-3)
 
 
 def test_transform_extent_wgs84_to_utm():
@@ -693,19 +701,15 @@ def test_point_offset_geographic():
     u.check.close(y, 0.0, abs_tol=0.01)
 
 
-# --- _normalize_extent ---
+# --- _unwrap_wgs_extent ---
 
 
-def test_normalize_extent_already_normal():
-    assert crs._normalize_extent((0, 0, 10, 10)) == (0, 0, 10, 10)
+def test_unwrap_wgs_extent_normal():
+    assert crs._unwrap_wgs_extent((0, 0, 10, 10)) == (0, 0, 10, 10)
 
 
-def test_normalize_extent_swapped():
-    assert crs._normalize_extent((10, 10, 0, 0)) == (0, 0, 10, 10)
-
-
-def test_normalize_extent_mixed():
-    assert crs._normalize_extent((10, 0, 0, 10)) == (0, 0, 10, 10)
+def test_unwrap_wgs_extent_antimeridian():
+    assert crs._unwrap_wgs_extent((170, 0, -170, 10)) == (-180, 0, 180, 10)
 
 
 # --- dynamic CRS properties ---

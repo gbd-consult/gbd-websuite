@@ -496,16 +496,16 @@ def _pyproj_transformer(srid_from, srid_to) -> pyproj.transformer.Transformer:
 
 
 def _transform_extent_check(ext, srid_from, srid_to):
-    ext_nor = _normalize_extent(ext)
-
     if srid_from == WGS84.srid:
-        ext_wgs = ext_nor
+        ext_wgs = ext
     else:
         tr_to_wgs = _pyproj_transformer(srid_from, WGS84.srid)
-        ext_wgs = tr_to_wgs.transform_bounds(ext_nor[0], ext_nor[1], ext_nor[2], ext_nor[3])
+        ext_wgs = tr_to_wgs.transform_bounds(ext[0], ext[1], ext[2], ext[3])
+
+    ext_wgs = _unwrap_wgs_extent(ext_wgs)
 
     if srid_to == WGS84.srid:
-        return _normalize_extent(ext_wgs)
+        return ext_wgs
 
     pp = _pyproj_crs_object(srid_to)
     if not pp:
@@ -515,19 +515,17 @@ def _transform_extent_check(ext, srid_from, srid_to):
     au = pp.area_of_use
 
     if au:
-        ext_au = au.bounds
+        ext_au = _unwrap_wgs_extent(au.bounds)
         if _is_big_extent(ext_wgs) and not _is_big_extent(ext_au):
             ext_to = _transform_extent_sampled(ext_wgs, tr_from_wgs, au)
             if ext_to:
                 gws.log.debug(f'transform_extent: {ext=} {srid_from!r}->{srid_to!r}: big extent {ext_to=} ')
-                return _normalize_extent(ext_to)
+                return ext_to
 
         if ext_wgs[2] < ext_au[0] or ext_wgs[0] > ext_au[2] or ext_wgs[3] < ext_au[1] or ext_wgs[1] > ext_au[3]:
             gws.log.debug(f'transform_extent: {ext=} {srid_from!r}->{srid_to!r}: outside of AoU ')
 
-    ext_to = tr_from_wgs.transform_bounds(ext_wgs[0], ext_wgs[1], ext_wgs[2], ext_wgs[3])
-
-    return _normalize_extent(ext_to)
+    return tr_from_wgs.transform_bounds(ext_wgs[0], ext_wgs[1], ext_wgs[2], ext_wgs[3])
 
 
 def _transform_extent_sampled(ext_wgs, tr, au, samples=50):
@@ -585,25 +583,21 @@ def _is_big_extent(ext_wgs):
 def _transform_extent_direct(ext, srid_from, srid_to):
     tr = _pyproj_transformer(srid_from, srid_to)
 
-    ext_nor = _normalize_extent(ext)
-
-    res = tr.transform_bounds(
-        left=ext_nor[0],
-        bottom=ext_nor[1],
-        right=ext_nor[2],
-        top=ext_nor[3],
+    return tr.transform_bounds(
+        left=ext[0],
+        bottom=ext[1],
+        right=ext[2],
+        top=ext[3],
         errcheck=True,
     )
-    return _normalize_extent(res)
 
 
-def _normalize_extent(ext):
-    return (
-        min(ext[0], ext[2]),
-        min(ext[1], ext[3]),
-        max(ext[0], ext[2]),
-        max(ext[1], ext[3]),
-    )
+def _unwrap_wgs_extent(ext_wgs):
+    """Widen a WGS extent that crosses the antimeridian (west > east) to the full longitude range."""
+
+    if ext_wgs[0] > ext_wgs[2]:
+        return -180, ext_wgs[1], 180, ext_wgs[3]
+    return ext_wgs
 
 
 def _make_crs(srid, pp, axis, uom):
@@ -670,12 +664,12 @@ def _make_crs(srid, pp, axis, uom):
     if not b:
         return None, f'CRS: no bbox for {crs.srid!r}'
 
-    crs.wgsExtent = (
+    crs.wgsExtent = _unwrap_wgs_extent((
         b['west_longitude'],
         b['south_latitude'],
         b['east_longitude'],
         b['north_latitude'],
-    )
+    ))
     crs.extent = _transform_extent_check(crs.wgsExtent, WGS84.srid, srid)
     crs.bounds = gws.Bounds(extent=crs.extent, crs=crs)
 
@@ -690,7 +684,7 @@ def _wgs_max_extent(pp, wgs_extent):
     geo = pp.geodetic_crs
     au = geo.area_of_use if geo else None
     if au and not _is_big_extent(au.bounds):
-        return _normalize_extent(au.bounds)
+        return _unwrap_wgs_extent(au.bounds)
 
     x0, y0, x1, y1 = wgs_extent
     w = x1 - x0
