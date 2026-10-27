@@ -401,6 +401,7 @@ class Object(gws.OwsService):
             ifo = gws.lib.image.format.find_by_mime_type(mime, self.imageFormats)
         if not ifo:
             raise error.InvalidFormat()
+        mime = mime or ifo.mimeTypes[0]
         if img:
             gws.log.debug(f'image_response: {img.mode()=} {img.size()=} {mime=} {ifo.options}')
             return gws.ContentResponse(mimeType=mime, content=img.to_bytes(mime, ifo.options))
