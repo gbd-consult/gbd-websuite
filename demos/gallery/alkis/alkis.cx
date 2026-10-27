@@ -13,7 +13,7 @@ Zum Ausprobieren im Reiter "Flurstücksuche" nach Gemarkung, Straße und Hausnum
 
 Die Aktion `alkis` liest die ALKIS-Daten aus einer PostgreSQL-Datenbank. Unter `ui` sind `useSelect`, `usePick`, `useExport`, `searchSpatial` und `useHistory` freigeschaltet, `limit 200` begrenzt die Trefferzahl. Buchungs- und Eigentümerdaten sind mit `access "deny all"` gesperrt.
 
-Die Karte zeigt die ALKIS-Daten als `qgis`-Layer aus einem QGIS-Projekt, das mit `withCompositeRender true` als ein einziges Bild gerendert wird. Darunter liegt die Standardkarte der GBD Geoservices als `wmts`-Layer.
+Die Karte zeigt die ALKIS-Daten als `qgis`-Layer aus einem QGIS-Projekt, das mit `withCompositeRender true` als ein einziges Bild gerendert wird. Darunter liegt die helle Karte („light“) der GBD Geoservices als `wmts`-Layer.
 """
 
 client {

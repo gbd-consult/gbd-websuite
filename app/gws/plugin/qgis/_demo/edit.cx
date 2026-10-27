@@ -35,7 +35,7 @@ map.layers+ {
         type "postgres"
         uid "model_poi_qgis_simple"
         dbUid "DEVDEMOS"
-        tableName "edit.poi_small"
+        tableName "edit.poi"
         isEditable true
         permissions.edit "allow all"
 

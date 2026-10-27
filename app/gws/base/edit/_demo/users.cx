@@ -70,7 +70,7 @@ models+ {
     }
 
     fields+ {
-        name "comment"
+        name "kommentar"
         type "text"
         title "Anmerkungen"
         widget { type "textarea" height 150 }

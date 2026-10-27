@@ -40,7 +40,7 @@ map.layers+ {
     layers+ {
         title "Satellite"
         type "tile"
-        provider.url "http://mt1.google.com/vt/lyrs=s&hl=pl&&x={{x}}&y={{y}}&z={{z}}"
+        provider.url "http://mt1.google.com/vt/lyrs=s&x={{x}}&y={{y}}&z={{z}}"
         display "client"
         clientOptions.hidden true
     }

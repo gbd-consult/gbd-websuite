@@ -12,9 +12,12 @@ Eine `GetFeature`-Anfrage liefert mit `COUNT` eine bestimmte Anzahl von Features
 Der Layer ist ein PostgreSQL-Layer mit `ows.xmlns "demo"`, der Dienst ein `owsServices`-Eintrag vom Typ `wfs` mit eigenen `metadata`.
 
 [Service URL](/_/owsService/serviceUid/service_wfs_paging?request=GetCapabilities)
-
-[Demo QGIS Project](/ows_services.qgs)
 """
+
+map {
+    center [60 50]
+    zoom.initScale 2000
+}
 
 owsServices+ {
     type "wfs"

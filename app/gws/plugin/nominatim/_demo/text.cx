@@ -9,7 +9,7 @@ Volltextsuche nach Orten und Adressen mit dem OpenStreetMap-Dienst [Nominatim](h
 
 Im Seitenleisten-Reiter „Suche“ einen Ort, eine Straße oder eine Adresse eingeben. Die Treffer werden aufgelistet und können auf der Karte angezeigt werden.
 
-Konfiguriert wird ein Finder vom Typ `nominatim`. Mit `spatialContext "map"` wird die Suche auf die Kartenausdehnung beschränkt, die hier über `map.extent` auf NRW und Umgebung gesetzt ist. Mit den Optionen `country` und `language` lassen sich die Ergebnisse zusätzlich auf ein Land bzw. eine Sprache einschränken.
+Konfiguriert wird ein Finder vom Typ `nominatim`. Mit `spatialContext "map"` wird die Suche auf die Kartenausdehnung beschränkt, die hier über `map.extent` auf NRW und Umgebung gesetzt ist. Mit `country` lassen sich die Ergebnisse zusätzlich auf bestimmte Länder einschränken, `language` legt die bevorzugte Sprache der Ergebnisse fest.
 """
 
 client.addElements+ { tag "Sidebar.Search" }

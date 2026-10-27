@@ -1129,7 +1129,7 @@
             "properties": {
                 "id": 1130,
                 "category": "Hotel",
-                "name": null
+                "name": ""
             }
         },
         {
@@ -2209,7 +2209,7 @@
             "properties": {
                 "id": 2070,
                 "category": "Hotel",
-                "name": null
+                "name": ""
             }
         },
         {
@@ -2254,7 +2254,7 @@
             "properties": {
                 "id": 2076,
                 "category": "Hotel",
-                "name": null
+                "name": ""
             }
         },
         {
@@ -2434,7 +2434,7 @@
             "properties": {
                 "id": 2386,
                 "category": "Hotel",
-                "name": null
+                "name": ""
             }
         },
         {
@@ -2809,7 +2809,7 @@
             "properties": {
                 "id": 2590,
                 "category": "Hotel",
-                "name": null
+                "name": ""
             }
         },
         {

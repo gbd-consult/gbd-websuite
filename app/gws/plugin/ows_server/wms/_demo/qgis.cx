@@ -13,8 +13,13 @@ Die Projektkarte enthält einen Layer vom Typ `qgis`, der den Layerbaum des QGIS
 
 [Service URL](/_/owsService/serviceUid/service_wms_qgis?request=GetCapabilities)
 
-[Demo QGIS Project](/ows_services.qgs)
+[Demo QGIS Project](/demos/ows_services.qgs)
 """
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+}
 
 owsServices+ {
     type "wms"

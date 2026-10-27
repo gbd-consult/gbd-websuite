@@ -12,9 +12,12 @@ Ohne Anmeldung wird die Anfrage abgelehnt. Externe Anwendungen wie QGIS melden s
 Der Dienst ist als `owsServices` vom Typ `wfs` mit `permissions.read "allow user,deny all"` konfiguriert. Die Layer erhalten mit `ows.xmlns "demo"` ein Namensraum-Präfix; ohne Namensraum werden Layer nicht im WFS veröffentlicht.
 
 [Service URL](/_/owsService/serviceUid/service_wfs_auth?request=GetCapabilities)
-
-[Demo QGIS Project](/ows_services.qgs)
 """
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+}
 
 owsServices+ {
     type "wfs"

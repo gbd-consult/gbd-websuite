@@ -17,7 +17,7 @@ Die Aktion `alkis` schaltet mit `ui.useExport` den Export frei und definiert unt
 - „flexible Ausgabe (CSV)“: `type "csv"` mit mehreren `models` (Basisdaten, Lage, Gebäude, Buchungsblatt, Eigentümer, Nutzung)
 - „Adressen (JSON)“: ein `model` mit berechneten Feldern
 
-Die Felder sind gewöhnliche Modellfelder, deren `name` auf einen flachen Schlüssel verweist. Mit `values` vom Typ `format` oder `expression` werden Werte aus mehreren Schlüsseln berechnet; Hilfsfelder mit `isHidden true` werden nicht ausgegeben. Modelle mit Eigentümerdaten stehen nur berechtigten Nutzern zur Verfügung.
+Die Felder sind gewöhnliche Modellfelder, deren `name` auf einen flachen Schlüssel verweist. Mit `values` vom Typ `format` oder `expression` werden Werte aus mehreren Schlüsseln berechnet; Hilfsfelder mit `isHidden true` werden nicht ausgegeben. Modelle mit Buchungs- und Eigentümerdaten stehen nur berechtigten Nutzern zur Verfügung; hier geben `buchung.access` und `eigentuemer.access` sie für angemeldete Nutzer frei (z. B. Login **demo1**, Passwort **demo**).
 """
 
 actions+ {
@@ -26,6 +26,13 @@ actions+ {
     dataSchema "alkis"
     indexSchema "gws"
     crs 25832
+
+    buchung {
+        access "allow user, deny all"
+    }
+    eigentuemer {
+        access "allow user, deny all"
+    }
 
     ui {
         useExport true
@@ -170,7 +177,7 @@ client.options.sidebarWidth 400
 map {
     center {demo_point_kamen_25832}
     crs 25832
-    zoom.initScale 70000
+    zoom.initScale 4000
     zoom.maxScale  100000
 }
 

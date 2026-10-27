@@ -5,17 +5,15 @@ title "WMS Testumgebung, mehrere Dienste"
 metadata.keywords [ "wms" "karte" ]
 
 metadata.abstract """
-Testprojekt mit WMS-Diensten verschiedener Anbieter als Layerbäume: ALKIS NRW, Karten der Hessischen Verwaltung für Bodenmanagement und Geoinformation und Verwaltungsgebiete 1:5.000.000 des BKG.
+Testprojekt mit WMS-Diensten verschiedener Anbieter als Layerbäume: ALKIS NRW, Karten der Hessischen Verwaltung für Bodenmanagement und Geoinformation, Waldfunktionen des Staatsbetriebs Sachsenforst und Verwaltungsgebiete 1:5.000.000 des BKG.
 
-Beim Start ist nur der BKG-Dienst sichtbar. Die beiden anderen Dienste sind mit `clientOptions.hidden true` ausgeblendet und können im Layer-Panel eingeschaltet werden; der ALKIS-Dienst zeigt seine Daten erst in großen Maßstäben.
+Beim Start ist nur der BKG-Dienst sichtbar. Bei den anderen Diensten sind die Unterlayer mit `autoLayers+ { config.clientOptions.hidden true }` ausgeblendet und können im Layer-Panel eingeschaltet werden; `clientOptions.unfolded true` klappt den Layerbaum dieser Dienste auf. Der ALKIS-Dienst zeigt seine Daten erst in großen Maßstäben.
 
 Alle Dienste sind als Layer vom Typ `wms` eingebunden. Beim BKG-Dienst schließt `excludeLayers.titles` die Quelllayer „Verwaltungsgemeinschaft“ und „Gemeinde“ anhand ihrer Titel aus dem Layerbaum aus. `map.extent` begrenzt die Karte auf die Ausdehnung Deutschlands.
 """
 
 map {
-    center {demo_point_duesseldorf_3857}
-    zoom.initScale 4_000_000
-    @# SELECT ST_EXTENT(ST_TRANSFORM(geom, 3857)) FROM ne_10m_admin_0_countries WHERE name='Germany'
+    zoom.initScale 1_000_000
     extent [ 651496 5986440 1672247 7374556 ]
 }
 
@@ -24,7 +22,10 @@ map.layers+ {
     title "NRW ALKIS"
     provider.url "https://www.wms.nrw.de/geobasis/wms_nw_alkis"
     metadata.attribution "© Geobasis NRW"
-    clientOptions.hidden true
+    clientOptions.unfolded true
+    autoLayers+ {
+        config.clientOptions.hidden true
+    }
 }
 
 map.layers+ {
@@ -32,7 +33,21 @@ map.layers+ {
     title "WMS HE Karten"
     provider.url "https://www.gds-srv.hessen.de/cgi-bin/lika-services/ogc-free-maps.ows"
     metadata.attribution "© Hessische Verwaltung für Bodenmanagement und Geoinformation"
-    clientOptions.hidden true
+    clientOptions.unfolded true
+    autoLayers+ {
+        config.clientOptions.hidden true
+    }
+}
+
+map.layers+ {
+    type "wms"
+    title "Sachsenforst Waldfunktionen"
+    provider.url "https://www.forsten.sachsen.de/kartendienste/waldfunktionen/MapServer/WMSServer"
+    metadata.attribution "© Staatsbetrieb Sachsenforst"
+    clientOptions.unfolded true
+    autoLayers+ {
+        config.clientOptions.hidden true
+    }
 }
 
 map.layers+ {
@@ -41,6 +56,7 @@ map.layers+ {
     provider.url "https://sgx.geodatenzentrum.de/wms_vg5000_0101"
     metadata.attribution "© GeoBasis-DE / BKG (2024)"
     excludeLayers.titles [ "Verwaltungsgemeinschaft"  "Gemeinde" ]
+    rootLayers.names [ "VG5000" ]
 }
 
 {demo_osm_background}

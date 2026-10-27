@@ -9,22 +9,29 @@ Eine Karte der ganzen Welt im KBS EPSG:3857 (Web Mercator).
 
 Die Karte ist mit `crs 3857`, `center [0 0]` und einem kleinen Anfangsmaßstab (`zoom.initScale`) konfiguriert. Mit `wrapX true` wird die Welt in Ost-West-Richtung wiederholt, so dass die Karte über die Datumsgrenze hinaus verschoben werden kann.
 
-Die Ländergrenzen (Natural Earth) kommen aus einer PostgreSQL Tabelle und werden mit `cssSelector` gestaltet. Dieselbe Karte in EPSG:4326 zeigt die Demo [Weltkarte in EPSG:4326](/project/map_world_4326).
+Die Ländergrenzen (Natural Earth) kommen aus einer PostgreSQL Tabelle und werden mit `cssSelector` gestaltet. Die OSM-Hintergrundkarte ist ein `tile` Layer mit `display "client"`, die Kacheln werden direkt von `tile.openstreetmap.org` geladen. Dieselbe Karte in EPSG:4326 zeigt die Demo [Weltkarte in EPSG:4326](/project/map_world_4326).
 """
 
 map {
     crs 3857
     center [0 0]
-    zoom.initScale 70000000
+    zoom.initScale 30_000_000
+    zoom.maxScale 30_000_000
     wrapX true
 }
 
 map.layers+ {
     title "Countries (Natural Earth)"
     type "postgres"
-    tableName "public.ne_10m_admin_0_countries_3857"
+    tableName "natural_earth.ne_10m_admin_0_countries_3857"
     metadata.attribution "Made with Natural Earth"
     cssSelector ".ne_countries"
 }
 
-{demo_osm_background}
+map.layers+ {
+    title "OpenStreetMap"
+    type "tile"
+    display "client"
+    provider.url "https://tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png"
+    metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+}

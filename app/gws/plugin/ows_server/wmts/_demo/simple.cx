@@ -13,7 +13,7 @@ Konfiguriert ist ein `owsServices`-Eintrag vom Typ `wmts` mit `supportedCrs [ 38
 
 [Service URL](/_/owsService/serviceUid/service_wmts_simple?request=GetCapabilities)
 
-[Demo QGIS Project](/ows_services.qgs)
+[Demo QGIS Project](/demos/ows_services.qgs)
 """
 
 owsServices+ {

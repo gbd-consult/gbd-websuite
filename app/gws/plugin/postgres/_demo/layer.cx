@@ -9,7 +9,7 @@ Vektorlayer aus PostGIS-Tabellen: Points of Interest und Stadtbezirke in Düssel
 
 Beide Layer erscheinen im Layerbaum und können dort ein- und ausgeblendet werden.
 
-Jeder Layer hat `type "postgres"`, die Tabelle wird mit `tableName` im Format `schema.tabelle` angegeben. Geometrietyp, KBS und Attribute werden aus der Tabelle ermittelt. Die Vorlage mit `subject "feature.label"` beschriftet jedes Feature mit dem Wert des Feldes `name`.
+Jeder Layer hat `type "postgres"`, die Tabelle wird mit `tableName` im Format `schema.tabelle` angegeben. Geometrietyp, KBS und Attribute werden aus der Tabelle ermittelt. Die Vorlage mit `subject "feature.label"` beschriftet jedes Feature mit dem Wert des Feldes `name`. Angezeigt wird die Beschriftung nur, wenn der Stil sie mit `--with-label: all` einschaltet; die Stile kommen aus `cssSelector ".custom_poi"` und `cssSelector ".custom_district"`. Mit `--label-max-scale` erscheinen die Namen der POIs erst ab 1:10.000, die der Stadtbezirke ab 1:70.000.
 """
 
 map {
@@ -22,6 +22,7 @@ map.layers+ {
     title "POIs"
     type "postgres"
     tableName "edit.poi"
+    cssSelector ".custom_poi"
     templates+ { subject "feature.label" type "html" text "{{name}}" }
 }
 
@@ -29,6 +30,7 @@ map.layers+ {
     title "Districts"
     type "postgres"
     tableName "edit.district"
+    cssSelector ".custom_district"
     templates+ { subject "feature.label" type "html" text "{{name}}" }
 }
 

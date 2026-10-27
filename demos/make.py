@@ -55,10 +55,11 @@ def main(args):
         if not only or re.search(only, path):
             # project configuration
             cfg = read_config_file(path)
+            au = os.path.relpath(path, os.path.dirname(APP_DIR))
             projects_cfg.append(f"""
                 projects+ {{ 
                     {cfg}
-                    metadata.authorityIdentifier "app{path.replace(APP_DIR, '')}"
+                    metadata.authorityIdentifier "{au}"
                 }}
             """)
 

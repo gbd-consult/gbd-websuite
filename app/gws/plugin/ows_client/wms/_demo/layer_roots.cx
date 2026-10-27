@@ -7,7 +7,7 @@ metadata.keywords [ "wms" "karte" ]
 metadata.abstract """
 Ein angepasster Layerbaum eines externen WMS-Dienstes: aus dem ALKIS-WMS NRW werden nur ausgewählte Layer in einer festgelegten Reihenfolge übernommen.
 
-Im Layer-Panel erscheinen unter „NRW ALKIS“ nur die Layer „Weiteres“, „Gebäude“ und „Flurstücke“ mit ihren Unterlayern. Die ALKIS-Layer des Dienstes werden erst ab einem Maßstab von 1:4.000 dargestellt.
+Im Layer-Panel erscheinen unter „NRW ALKIS“ nur die Layer „Weiteres“, „Gebäude“ und „Flurstücke“ mit ihren Unterlayern. Die ALKIS-Layer des Dienstes werden erst ab einem Maßstab von 1:5.500 dargestellt, die Karte startet bei 1:4.000.
 
 Konfiguriert ist ein Layer vom Typ `wms` mit `rootLayers.names`. Die genannten Quelllayer bilden die Wurzeln des Baums; ihre Reihenfolge in der Liste bestimmt die Reihenfolge im Layerbaum (von oben nach unten). Statt über `names` können Wurzellayer auch über `titles`, `pattern` oder `level` ausgewählt werden.
 """
