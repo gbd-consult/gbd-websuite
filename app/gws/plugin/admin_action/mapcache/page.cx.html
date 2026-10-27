@@ -1,54 +1,120 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<title>GWS cache viewer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GWS Cache Inspector</title>
 <link rel="stylesheet" href="{url}ol.css">
 <link rel="stylesheet" href="{url}page.css">
 </head>
 <body>
-<div id="sidebar">
-    <div id="search">
-        <input id="search-input" type="text" placeholder="filter" autocomplete="off">
-        <button id="search-clear" type="button" title="clear">&times;</button>
+<a class="skip-link" href="#map">Skip to map</a>
+<header id="app-header">
+    <button id="sidebar-toggle" type="button" aria-controls="sidebar" aria-expanded="true" title="Collapse cache list">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 18-6-6 6-6"/></svg>
+        <span class="sr-only">Collapse cache list</span>
+    </button>
+    <div class="brand-mark" aria-hidden="true">
+        <img src="{url}GBD-Websuite.svg" alt="">
     </div>
-    <div id="caches">
-    @for c in caches
-        <div class="cache {'selected' if c.name == name else ''}" data-name="{c.name}">
-            <div class="name">{c.name}</div>
-            <div class="info">
-                {c.layerType} 
-                "{c.layerTitle[:20] | html}" 
-                @if len(c.layers) > 1
-                    (+{len(c.layers) - 1})
-                @end
+    <div class="brand-copy"><strong>Cache Inspector</strong><span>Inspect tile coverage and cache health</span></div>
+    <div class="header-summary"><strong>{len(caches)}</strong> map caches</div>
+</header>
+
+<main id="workspace">
+    <aside id="sidebar" aria-label="Map caches">
+        <div class="sidebar-head">
+            <div class="sidebar-title">
+                <div><span class="eyebrow">Inventory</span><h1>Map caches</h1></div>
+                <span id="result-count" aria-live="polite">{len(caches)} results</span>
             </div>
-            <div class="levels">
-                @for lv in c.levels
-                    @let sel = 'selected' if c.name == name and lv.z == z else ''
-                    @let p = 'p0' if lv.percentCached == 0 else 'p100' if lv.percentCached == 100 else 'pn'
-                    <a 
-                        class="level {p} {sel}" 
-                        href="{url}{c.name}/{lv.z}" 
-                        data-name="{c.name}" 
-                        data-z="{lv.z}" 
-                        title="level {lv.z}: {lv.cachedTiles}/{lv.totalTiles}"
-                        >{lv.z}:{lv.percentCached}</a>
-                @end
+            <label id="search">
+                <span class="sr-only">Search caches or layers</span>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+                <input id="search-input" type="search" placeholder="Search caches or layers…" autocomplete="off">
+                <button id="search-clear" type="button" title="Clear search" aria-label="Clear search">&times;</button>
+            </label>
+            <div id="cache-filters" role="group" aria-label="Filter caches by status">
+                <button type="button" data-filter="all" aria-pressed="true">All</button>
+                <button type="button" data-filter="cached" aria-pressed="false">Has tiles</button>
+                <button type="button" data-filter="complete" aria-pressed="false">100% level</button>
+                <button type="button" data-filter="empty" aria-pressed="false">Empty</button>
             </div>
         </div>
-    @end
-    </div>
-</div>
-<div id="map">
-    <div id="zoom"></div>
-    <div id="toolbar">
-        <button class="toggle" type="button" data-layer="cache" title="toggle cache tiles">cache</button>
-        <button class="toggle" type="button" data-layer="grid" title="toggle grid">grid</button>
-        <button class="toggle" type="button" data-layer="map" title="toggle background map">map</button>
-    </div>
-</div>
-<div id="status"></div>
+        <div class="cache-legend" aria-label="Cache status legend">
+            <span><i class="legend-dot complete"></i>Complete</span>
+            <span><i class="legend-dot partial"></i>Partial</span>
+            <span><i class="legend-dot empty"></i>Empty</span>
+        </div>
+        <div id="caches">
+        @for c in caches
+            <article class="cache {'selected open' if c.name == name else ''}" data-name="{c.name}" data-title="{c.layerTitle | html}">
+                <button class="cache-toggle" type="button" aria-expanded="{'true' if c.name == name else 'false'}">
+                    <span class="cache-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 3 8 4-8 4-8-4 8-4Z"/><path d="m4 12 8 4 8-4M4 17l8 4 8-4"/></svg></span>
+                    <span class="cache-copy">
+                        <span class="cache-title-row"><strong class="cache-title" title="{c.layerTitle | html}">{c.layerTitle | html}</strong><span class="cache-state"></span></span>
+                        <span class="cache-summary-row">
+                            <span class="cache-id" title="{c.name}">{c.name}</span>
+                            <span class="cache-meta">{c.layerType}{' · +' + str(len(c.layers) - 1) + ' layers' if len(c.layers) > 1 else ''}</span>
+                        </span>
+                    </span>
+                    <svg class="chevron" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 10 4 4 4-4"/></svg>
+                </button>
+                <div class="cache-levels">
+                    <div class="cache-levels-inner">
+                        <div class="levels-head"><strong>Zoom levels</strong><span>Select a level to inspect</span></div>
+                        <div class="levels">
+                        @for lv in c.levels
+                            @let sel = 'selected' if c.name == name and lv.z == z else ''
+                            @let p = 'p0' if lv.percentCached == 0 else 'p100' if lv.percentCached == 100 else 'pn'
+                            <a class="level {p} {sel}" href="{url}{c.name}/{lv.z}" data-name="{c.name}" data-z="{lv.z}" data-total="{lv.totalTiles}" data-cached="{lv.cachedTiles}" data-percent="{lv.percentCached}" data-resolution="{lv.resolution}" aria-label="Zoom level {lv.z}: {lv.cachedTiles} of {lv.totalTiles} tiles cached, {lv.percentCached} percent">
+                                <span class="level-head"><span class="level-z"><small>z</small>{lv.z}</span><span class="level-status">{'Empty' if lv.percentCached == 0 else str(lv.percentCached) + '%'}</span></span>
+                                <span class="coverage-copy">{lv.cachedTiles} / {lv.totalTiles} tiles</span>
+                                <span class="progress-track"><span class="progress" style="width:{lv.percentCached}%;"></span></span>
+                            </a>
+                        @end
+                        </div>
+                    </div>
+                </div>
+            </article>
+        @end
+        </div>
+        <div id="empty-state" hidden>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M8 11h6"/></svg>
+            <strong>No matching caches</strong><span>Try a different name, layer, or status.</span>
+        </div>
+        <button id="load-more" type="button" hidden>Show 100 more</button>
+    </aside>
+
+    <section id="map" tabindex="-1" aria-label="Interactive cache map">
+        <div id="zoom" aria-label="Current map zoom"><span>Map zoom</span><strong id="zoom-value">—</strong><small id="zoom-resolution"></small></div>
+        <section id="status" aria-live="polite">
+            <div class="status-empty">Select a cache level to inspect its tile coverage.</div>
+            <div class="status-content" hidden>
+                <div class="status-head"><div><span class="eyebrow">Selected cache</span><strong id="status-cache-name"></strong></div><span id="status-level"></span></div>
+                <div class="status-metrics">
+                    <div><span>Cached tiles</span><strong id="status-cached">—</strong></div>
+                    <div><span>Tiles in extent</span><strong id="status-total">—</strong></div>
+                    <div><span>Coverage</span><strong id="status-percent">—</strong></div>
+                    <div><span>Resolution</span><strong id="status-resolution">—</strong></div>
+                </div>
+            </div>
+        </section>
+        <div id="map-right-controls">
+            <aside id="performance-warning" role="status" aria-atomic="true" hidden>
+                <span class="warning-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l18 18M10.6 10.7a2 2 0 0 0 2.7 2.7M9.9 4.2A10.4 10.4 0 0 1 12 4c7 0 10 8 10 8a15.8 15.8 0 0 1-2.1 3.2M6.6 6.6C3.5 8.6 2 12 2 12s3 8 10 8c1 0 2-.2 2.8-.5"/></svg></span>
+                <span class="warning-copy"><strong>Cache preview paused</strong><span id="performance-warning-hint"></span></span>
+                <button id="zoom-to-level" type="button"></button>
+            </aside>
+            <aside id="toolbar" aria-label="Map layers">
+                <strong>Map layers</strong>
+                <button class="toggle" type="button" data-layer="cache" title="Toggle cache tiles" aria-pressed="true"><span class="toggle-copy"><b>Cache tiles</b><small>Selected cache imagery</small></span></button>
+                <button class="toggle" type="button" data-layer="grid" title="Toggle tile grid" aria-pressed="true"><span class="toggle-copy"><b>Tile grid</b><small>Coordinates and level</small></span></button>
+                <button class="toggle" type="button" data-layer="map" title="Toggle background map" aria-pressed="true"><span class="toggle-copy"><b>Basemap</b><small>Geographic context</small></span></button>
+            </aside>
+        </div>
+    </section>
+</main>
 <script id="config" type="application/json">{config | json}</script>
 <script src="{url}proj4.js"></script>
 <script src="{url}ol.js"></script>

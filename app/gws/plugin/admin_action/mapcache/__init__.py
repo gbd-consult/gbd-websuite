@@ -37,6 +37,7 @@ _ASSETS = {
     'proj4.js': (f'{_VENDOR_DIR}/proj4/proj4.js', gws.lib.mime.JS),
     'page.js': (f'{_DIR}/page.js', gws.lib.mime.JS),
     'page.css': (f'{_DIR}/page.css', gws.lib.mime.CSS),
+    'GBD-Websuite.svg': (f'{_DIR}/GBD-Websuite.svg', gws.lib.mime.SVG),
 }
 _URL = f'{gws.c.SERVER_ENDPOINT}/adminMapCache?path='
 _DECOR_COLOR = (200, 0, 0, 255)
