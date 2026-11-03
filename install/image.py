@@ -53,8 +53,11 @@ Options:
     -push
         push the image to dockerhub ($GWS_DOCKERHUB_USERNAME and $GWS_DOCKERHUB_TOKEN must be set)
         
-    -out <path>
-        write scan reports to a file
+    -save-json <path>
+        write the scan/sbom report as json to a file
+
+    -save-text <path>
+        write the scan report as text to a file
 
 Examples:
 
@@ -289,7 +292,7 @@ class Scanner(Base):
     def __init__(self, cmd, args):
         super().__init__(cmd, args)
 
-        self.trivy_dir = args.get('trivydir') or os.getenv('GWS_TRIVY_DIR')
+        self.trivy_dir = args.get('trivydir') or os.getenv('GWS_TRIVY_DIR') or ''
         if not self.trivy_dir:
             raise ValueError('trivydir not set')
 
@@ -304,23 +307,38 @@ class Scanner(Base):
 
     def do_scan(self):
         text = self.run_trivy(self.app_image_name, 'json')
+        json_path = self.args.get('save-json')
+        if json_path:
+            cli.write_file(json_path, text)
+
         js = json.loads(text)
+        seen = set()
         rows = []
 
         for res in js.get('Results', []):
             typ = res.get('Type')
+            src_names = {}
+            for p in res.get('Packages', []):
+                src_names[p.get('Name')] = p.get('SrcName') or p.get('Name')
+
             for v in res.get('Vulnerabilities', []):
+                vid = v.get('VulnerabilityID', '-')
+                pkg = v.get('PkgName', '-')
+                key = typ, src_names.get(pkg, pkg), vid
+                if key in seen:
+                    continue
+                seen.add(key)
+
                 sev = v.get('Severity', 'UNKNOWN')
                 ver = v.get('InstalledVersion', '')
                 fix = v.get('FixedVersion', '')
                 if fix:
                     ver += f' -> {fix}'
-
                 rows.append([
                     self.SEVERITY.index(sev),
                     sev + (' (fixed)' if fix else ''),
-                    f"{v.get('PkgName', '-')} ({typ})",
-                    v.get('VulnerabilityID', '-'),
+                    f"{pkg} ({typ})",
+                    vid,
                     f"{v.get('Title', '-')} ({ver})"
                 ])
 
@@ -328,9 +346,11 @@ class Scanner(Base):
 
         text = cli.text_table([r[1:] for r in rows]) + '\n'
 
-        path = self.args.get('out')
-        if path:
-            cli.write_file(path, text)
+        text_path = self.args.get('save-text')
+        if text_path:
+            cli.write_file(text_path, text)
+
+        if json_path or text_path:
             return 0
 
         cli.info('')
@@ -338,19 +358,19 @@ class Scanner(Base):
         cli.info('')
 
         for ln in text.split('\n'):
-            if ln.startswith('MEDIUM'):
-                cli.warning(ln)
-            elif ln.startswith('HIGH'):
+            if ln.startswith('CRITICAL'):
                 cli.error(ln)
+            elif ln.startswith('HIGH'):
+                cli.warning(ln)
             else:
                 cli.info(ln)
 
-        return
+        return 0
 
     def do_sbom(self):
         text = self.run_trivy(self.app_image_name, 'spdx-json')
 
-        path = self.args.get('out')
+        path = self.args.get('save-json')
         if path:
             cli.write_file(path, text)
             return 0
@@ -362,6 +382,16 @@ class Scanner(Base):
 
         if not os.path.isdir(self.trivy_dir):
             os.makedirs(self.trivy_dir, exist_ok=True)
+
+        # ignore linux-libc-dev: kernel CVEs, containers run on the host's kernel
+        _rego_policy = """
+            package trivy
+            default ignore = false
+            ignore {
+                input.PkgName == "linux-libc-dev"
+            }
+        """
+        cli.write_file(f'{self.trivy_dir}/rego_policy.rego', _rego_policy)
 
         out = '__out.json'
         try:
@@ -378,6 +408,7 @@ class Scanner(Base):
             --format {report_format}
             --scanners vuln
             --output /root/.cache/{out}      
+            --ignore-policy /root/.cache/rego_policy.rego
             {image_name}
         '''
 
