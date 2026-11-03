@@ -1,3 +1,7 @@
+## Version 8.4.19
+
+- CQL temporal support improvements
+
 ## Version 8.4.17
 
 - pin SQLAlchemy to version 2.0.*
