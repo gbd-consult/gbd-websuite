@@ -1,6 +1,5 @@
 """Tests for the cql parser module."""
 
-import datetime
 
 import pytest
 
@@ -84,7 +83,7 @@ def test_float_number():
 
 def test_date_literal():
     result = cql.parse('birthdate = 2000-01-15')
-    assert result == ['=', [cql.Node.NAME, 'birthdate'], [cql.Node.DATE, datetime.date(2000, 1, 15)]]
+    assert result == ['=', [cql.Node.NAME, 'birthdate'], [cql.Node.FUNCTION, 'date', [cql.Node.STRING, '2000-01-15']]]
 
 
 def test_invalid_syntax():
@@ -184,17 +183,17 @@ def test_quoted_name_with_non_ascii():
 
 def test_date_literal_basic():
     result = cql.parse('created_at = 2025-12-09')
-    assert result == ['=', [cql.Node.NAME, 'created_at'], [cql.Node.DATE, datetime.date(2025, 12, 9)]]
+    assert result == ['=', [cql.Node.NAME, 'created_at'], [cql.Node.FUNCTION, 'date', [cql.Node.STRING, '2025-12-09']]]
 
 
 def test_date_literal_year_boundary():
     result = cql.parse('new_year = 2024-01-01')
-    assert result == ['=', [cql.Node.NAME, 'new_year'], [cql.Node.DATE, datetime.date(2024, 1, 1)]]
+    assert result == ['=', [cql.Node.NAME, 'new_year'], [cql.Node.FUNCTION, 'date', [cql.Node.STRING, '2024-01-01']]]
 
 
 def test_date_literal_leap_year():
     result = cql.parse('leap_day = 2024-02-29')
-    assert result == ['=', [cql.Node.NAME, 'leap_day'], [cql.Node.DATE, datetime.date(2024, 2, 29)]]
+    assert result == ['=', [cql.Node.NAME, 'leap_day'], [cql.Node.FUNCTION, 'date', [cql.Node.STRING, '2024-02-29']]]
 
 
 def test_boolean_true():
@@ -219,7 +218,7 @@ def test_mixed_literals_in_list():
 
 def test_date_in_comparison():
     result = cql.parse('event_date > 2025-01-01')
-    assert result == ['>', [cql.Node.NAME, 'event_date'], [cql.Node.DATE, datetime.date(2025, 1, 1)]]
+    assert result == ['>', [cql.Node.NAME, 'event_date'], [cql.Node.FUNCTION, 'date', [cql.Node.STRING, '2025-01-01']]]
 
 
 def test_multiple_numeric_types():
@@ -292,6 +291,11 @@ def test_unary_plus():
     assert result == ['=', [cql.Node.NAME, 'value'], [cql.Node.INT, 5]]
 
 
+def test_unary_minus():
+    result = cql.parse('value = -a')
+    assert result == ['=', [cql.Node.NAME, 'value'], [cql.Node.NEG, [cql.Node.NAME, 'a']]]
+
+
 def test_nested_arithmetic():
     result = cql.parse('result = (a + b) * c')
     assert result == ['=', [cql.Node.NAME, 'result'], ['*', ['+', [cql.Node.NAME, 'a'], [cql.Node.NAME, 'b']], [cql.Node.NAME, 'c']]]
@@ -358,20 +362,31 @@ def test_quoted_and_unquoted_in_name():
 
 def test_timestamp_with_z():
     result = cql.parse('created = 2025-12-09T10:30:00Z')
-    expected_dt = datetime.datetime.fromisoformat('2025-12-09T10:30:00+00:00')
-    assert result == ['=', [cql.Node.NAME, 'created'], [cql.Node.TIMESTAMP, expected_dt]]
+    assert result == ['=', [cql.Node.NAME, 'created'], [cql.Node.FUNCTION, 'timestamp', [cql.Node.STRING, '2025-12-09T10:30:00Z']]]
 
 
 def test_timestamp_without_z():
     result = cql.parse('modified = 2025-12-09T14:45:30')
-    expected_dt = datetime.datetime.fromisoformat('2025-12-09T14:45:30')
-    assert result == ['=', [cql.Node.NAME, 'modified'], [cql.Node.TIMESTAMP, expected_dt]]
+    assert result == ['=', [cql.Node.NAME, 'modified'], [cql.Node.FUNCTION, 'timestamp', [cql.Node.STRING, '2025-12-09T14:45:30']]]
+
+
+def test_timestamp_with_offset():
+    result = cql.parse('modified = 2025-12-09T14:45:30+02:00')
+    assert result == ['=', [cql.Node.NAME, 'modified'], [cql.Node.FUNCTION, 'timestamp', [cql.Node.STRING, '2025-12-09T14:45:30+02:00']]]
 
 
 def test_timestamp_with_milliseconds():
     result = cql.parse('event_time = 2025-12-09T10:30:00.123Z')
-    expected_dt = datetime.datetime.fromisoformat('2025-12-09T10:30:00.123+00:00')
-    assert result == ['=', [cql.Node.NAME, 'event_time'], [cql.Node.TIMESTAMP, expected_dt]]
+    assert result == ['=', [cql.Node.NAME, 'event_time'], [cql.Node.FUNCTION, 'timestamp', [cql.Node.STRING, '2025-12-09T10:30:00.123Z']]]
+
+
+def test_date_and_timestamp_functions():
+    result = cql.parse("a = DATE('2025-12-09') AND b = TIMESTAMP('2025-12-09T10:30:00Z')")
+    assert result == [
+        cql.Node.AND,
+        ['=', [cql.Node.NAME, 'a'], [cql.Node.FUNCTION, 'date', [cql.Node.STRING, '2025-12-09']]],
+        ['=', [cql.Node.NAME, 'b'], [cql.Node.FUNCTION, 'timestamp', [cql.Node.STRING, '2025-12-09T10:30:00Z']]],
+    ]
 
 
 def test_invalid_timestamp():

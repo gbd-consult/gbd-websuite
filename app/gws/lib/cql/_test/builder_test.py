@@ -88,8 +88,8 @@ class _BuilderTo3857(cql.SqlBuilder):
         return sa.func.ST_Transform(super().build_bbox(args), 3857)
 
 
-def _ids(tbl, src, cls=cql.SqlBuilder):
-    cond = cls(tbl).build(cql.parse(src))
+def _ids(tbl, src, cls=cql.SqlBuilder, default_time_zone='UTC'):
+    cond = cls(tbl, default_time_zone=default_time_zone).build(cql.parse(src))
     sel = sa.select(tbl.c.id).where(cond).order_by(tbl.c.id)
     with u.pg.connect() as conn:
         return [r[0] for r in conn.execute(sel)]
@@ -130,6 +130,8 @@ def test_comparison(table, src, expected):
         ('a_int ^ 2 = 400', [2]),
         ('a_int + a_float = 11.5', [1]),
         ('a_int * 2 > 40', [3]),
+        ('-a_int = -20', [2]),
+        ('a_int > -a_int', [1, 2, 3]),
     ],
 )
 def test_arithmetic(table, src, expected):
@@ -234,6 +236,102 @@ def test_timestamp(table, src, expected):
 @pytest.mark.parametrize(
     'src,expected',
     [
+        ("a_time = DATE('2021-06-15')", [2]),
+        ("a_time <> DATE('2021-06-15')", [1, 3]),
+        ("a_time > DATE('2021-06-15')", [3]),
+        ("a_time >= DATE('2021-06-15')", [2, 3]),
+        ("a_time < DATE('2021-06-15')", [1]),
+        ("a_time <= DATE('2021-06-15')", [1, 2]),
+        ("a_time > DATE('2022-12-31')", []),
+        ("DATE('2021-06-15') < a_time", [3]),
+        ("DATE('2021-06-15') >= a_time", [1, 2]),
+        ("a_time BETWEEN DATE('2020-01-01') AND DATE('2021-06-15')", [1, 2]),
+        ("a_time NOT BETWEEN DATE('2020-01-01') AND DATE('2021-06-15')", [3]),
+        ("a_time IN (DATE('2020-01-01'), DATE('2022-12-31'))", [1, 3]),
+        ("a_time NOT IN (DATE('2020-01-01'))", [2, 3]),
+        ("a_date = TIMESTAMP('2021-06-15T23:00:00Z')", [2]),
+        ("a_date > TIMESTAMP('2021-06-15T23:00:00Z')", [3]),
+        ("TIMESTAMP('2021-06-15T23:00:00Z') < a_date", [3]),
+        ('a_date = a_time', [1, 2, 3]),
+        ('a_time > a_date', []),
+        ('a_time >= a_date', [1, 2, 3]),
+        ('a_time_end > a_date', [3]),
+    ],
+)
+def test_date_vs_timestamp(table, src, expected):
+    assert _ids(table, src) == expected
+
+
+@pytest.mark.parametrize(
+    'src,expected',
+    [
+        ("a_time > '2021-06-15'", [3]),
+        ("a_time = '2021-06-15'", [2]),
+        ("a_time = '2021-06-15T12:30:00Z'", [2]),
+        ("a_time = '2021-06-15T14:30:00+02:00'", [2]),
+        ("a_time = '2021-06-15T12:30:00'", [2]),
+        ("'2021-06-15T12:30:00Z' = a_time", [2]),
+        ("a_date = '2021-06-15'", [2]),
+        ("a_date = '2021-06-15T23:00:00Z'", [2]),
+        ("a_time BETWEEN '2020-01-01' AND '2021-06-15'", [1, 2]),
+        ("a_time IN ('2020-01-01', '2021-06-15T12:30:00Z')", [1, 2]),
+        ("a_text = '2021-06-15'", []),
+    ],
+)
+def test_temporal_strings(table, src, expected):
+    assert _ids(table, src) == expected
+
+
+@pytest.mark.parametrize(
+    'src,expected',
+    [
+        ("a_time = '2021-06-15T14:30:00'", [2]),
+        ("a_time = TIMESTAMP('2021-06-15T14:30:00')", [2]),
+        ("a_time = TIMESTAMP('2021-06-15T12:30:00Z')", [2]),
+        ("a_time = DATE('2023-01-01')", [3]),
+        ("a_time = DATE('2022-12-31')", []),
+        ("a_date = TIMESTAMP('2021-06-15T23:00:00Z')", []),
+        ("T_INTERSECTS(a_time, DATE('2023-01-01'))", [3]),
+    ],
+)
+def test_default_time_zone(table, src, expected):
+    assert _ids(table, src, default_time_zone='Europe/Berlin') == expected
+
+
+@pytest.mark.parametrize(
+    'value,expected',
+    [
+        ('2021-06-15T12:30:00Z', [2]),
+        ('2021-06-15', [2]),
+        ('2021-06-15/2022-12-31', [2, 3]),
+        ('2020-01-01/2020-01-01', [1]),
+        ('2021-06-16/..', [3]),
+        ('../2021-06-15', [1, 2]),
+        ('2021-06-15T13:00:00Z/2022-12-31', [3]),
+    ],
+)
+def test_datetime_param(table, value, expected):
+    assert _ids(table, cql.from_datetime_param(value, 'a_time')) == expected
+
+
+@pytest.mark.parametrize(
+    'src',
+    [
+        "a_time > 'nonesuch'",
+        "a_date = '2021-13-45'",
+        "a_time > DATE('2021-06-15T10:00:00Z')",
+        "a_time > TIMESTAMP('nonesuch')",
+        'a_date > DATE(5)',
+    ],
+)
+def test_invalid_temporal_values(table, src):
+    with pytest.raises(cql.BuildError):
+        _ids(table, src)
+
+
+@pytest.mark.parametrize(
+    'src,expected',
+    [
         ('S_INTERSECTS(a_geom, POINT(5 5))', [2]),
         ('S_INTERSECTS(a_geom, POINT(7 7))', []),
         ('S_INTERSECTS(a_geom, POLYGON((0 0, 6 0, 6 6, 0 6, 0 0)))', [1, 2]),
@@ -321,6 +419,15 @@ def test_array(table, src, expected):
         ("T_BEFORE(a_time, TIMESTAMP('2021-01-01T00:00:00Z'))", [1]),
         ("T_AFTER(a_date, DATE('2021-01-01'))", [2, 3]),
         ("T_BEFORE(a_date, DATE('2021-01-01'))", [1]),
+        ("T_EQUALS(a_date, DATE('2021-06-15'))", [2]),
+        ("T_AFTER(a_time, DATE('2021-06-15'))", [3]),
+        ("T_AFTER(a_time, DATE('2022-12-31'))", []),
+        ("T_BEFORE(a_time, DATE('2021-06-15'))", [1]),
+        ("T_DURING(a_time, DATE('2021-06-15'))", [2]),
+        ("T_INTERSECTS(a_time, DATE('2021-06-15'))", [2]),
+        ("T_INTERSECTS(a_date, TIMESTAMP('2021-06-15T23:00:00Z'))", [2]),
+        ("T_MEETS(a_date, DATE('2021-06-16'))", [2]),
+        ("T_INTERSECTS(a_time, '2021-06-15')", [2]),
     ],
 )
 def test_temporal_instants(table, src, expected):
@@ -348,6 +455,19 @@ def test_temporal_instants(table, src, expected):
     ],
 )
 def test_temporal_intervals(table, src, expected):
+    assert _ids(table, src) == expected
+
+
+@pytest.mark.parametrize(
+    'src,expected',
+    [
+        ("T_INTERSECTS(a_time, INTERVAL('2020-01-01', '2021-06-15'))", [1, 2]),
+        ("T_DURING(a_time, INTERVAL('2020-01-01', '2022-12-31'))", [1, 2, 3]),
+        ("T_INTERSECTS(a_date, INTERVAL('2021-06-15T00:00:00Z', '..'))", [2, 3]),
+        ("T_INTERSECTS(INTERVAL(a_date, a_date), TIMESTAMP('2021-06-15T23:00:00Z'))", [2]),
+    ],
+)
+def test_temporal_intervals_with_dates(table, src, expected):
     assert _ids(table, src) == expected
 
 

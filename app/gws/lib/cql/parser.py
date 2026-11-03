@@ -1,11 +1,8 @@
-"""CQL2-Text parser. See the package documentation for the parse tree format.
-
-Reference:
-    - https://docs.ogc.org/is/21-065r2/21-065r2.html#cql2-bnf
-"""
+"""CQL2-Text parser."""
 
 import re
-import datetime
+
+import gws.lib.datetimex as dtx
 
 
 def parse(s: str):
@@ -15,10 +12,10 @@ def parse(s: str):
         s: CQL2-Text expression.
 
     Returns:
-        A parse tree.
+        A parse tree of nested lists, see the package documentation.
 
     Raises:
-        `ParseError` if the expression is invalid.
+        ParseError: If the expression is invalid.
     """
 
     parser = _Parser()
@@ -26,15 +23,80 @@ def parse(s: str):
 
 
 class ParseError(Exception):
-    pass
+    """A CQL2-Text expression or a date/timestamp string is invalid. The message contains the error position, if any."""
+
+
+RE_DATE = r'^\d{4}-\d{2}-\d{2}$'
+
+
+def parse_datetime(s: str, tz: str = '') -> dtx.dt.date:
+    """Parse a date or a timestamp string.
+
+    Args:
+        s: A date (``2021-06-15``) or an ISO timestamp, the zone is optional.
+        tz: Time zone for a timestamp without a zone, as in ``dtx.time_zone``.
+
+    Returns:
+        A ``date`` if the string has no time part, an aware ``datetime`` otherwise.
+
+    Raises:
+        ParseError: If the string is invalid.
+    """
+
+    if re.match(RE_DATE, s.strip()):
+        return parse_date(s)
+    return parse_timestamp(s, tz)
+
+
+def parse_date(s: str) -> dtx.dt.date:
+    """Parse a date string.
+
+    Args:
+        s: A date in the form ``2021-06-15``.
+
+    Returns:
+        A ``date``.
+
+    Raises:
+        ParseError: If the string is not a valid date.
+    """
+
+    s = s.strip()
+    if not re.match(RE_DATE, s):
+        raise ParseError(f'invalid date {s!r}')
+    try:
+        return dtx.from_iso_string(s).date()
+    except dtx.Error:
+        raise ParseError(f'invalid date {s!r}')
+
+
+def parse_timestamp(s: str, tz: str = '') -> dtx.dt.datetime:
+    """Parse an ISO timestamp string.
+
+    Args:
+        s: A timestamp, the zone is optional.
+        tz: Time zone for a timestamp without a zone, as in ``dtx.time_zone``.
+
+    Returns:
+        An aware ``datetime``.
+
+    Raises:
+        ParseError: If the string is invalid.
+    """
+
+    try:
+        return dtx.from_iso_string(s, tz)
+    except dtx.Error:
+        raise ParseError(f'invalid timestamp {s!r}')
 
 
 class Node:
+    """Node types of the parse tree."""
+
     AND = 'AND'
     ARRAY = 'ARRAY'
     BETWEEN = 'BETWEEN'
     BOOL = 'BOOL'
-    DATE = 'DATE'
     FLOAT = 'FLOAT'
     FUNCTION = 'FUNCTION'
     IN = 'IN'
@@ -42,6 +104,7 @@ class Node:
     IS_NULL = 'IS_NULL'
     LIKE = 'LIKE'
     NAME = 'NAME'
+    NEG = 'NEG'
     NOT = 'NOT'
     NOT_BETWEEN = 'NOT_BETWEEN'
     NOT_IN = 'NOT_IN'
@@ -49,30 +112,36 @@ class Node:
     NOT_NULL = 'NOT_NULL'
     OR = 'OR'
     STRING = 'STRING'
-    TIMESTAMP = 'TIMESTAMP'
     USER_FUNCTION = 'USER_FUNCTION'
     WKT = 'WKT'
 
 
 class C:
+    """Operator, keyword and function sets of the parser."""
+
     LITERALS = {
         Node.ARRAY,
         Node.BOOL,
-        Node.DATE,
         Node.FLOAT,
         Node.INT,
         Node.STRING,
-        Node.TIMESTAMP,
         Node.WKT,
     }
+    """Literal node types."""
 
     COMPARISON_OPERATORS = {'=', '<>', '!=', '<', '<=', '>', '>='}
+    """Comparison operators."""
     NOT_EQUAL_OPERATORS = {'<>', '!='}
+    """Not-equal operators, emitted as ``<>``."""
     ADDITIVE_OPERATORS = {'+', '-'}
+    """Additive operators, also used as unary signs."""
     MULTIPLICATIVE_OPERATORS = {'*', '/', '%'}
+    """Multiplicative operators."""
     POWER_OPERATORS = {'^'}
+    """Power operators."""
 
     OPERATORS = COMPARISON_OPERATORS | ADDITIVE_OPERATORS | MULTIPLICATIVE_OPERATORS | POWER_OPERATORS
+    """All operators."""
 
     KEYWORDS = {
         'and',
@@ -83,6 +152,7 @@ class C:
         'between',
         'in',
     }
+    """Reserved keywords."""
 
     PREDICATE_KEYWORDS = {
         'not',
@@ -91,6 +161,7 @@ class C:
         'between',
         'in',
     }
+    """Keywords that can follow an operand in a predicate."""
 
     WKT_KEYWORDS = {
         'point',
@@ -101,6 +172,7 @@ class C:
         'multipolygon',
         'geometrycollection',
     }
+    """Geometry types that start a WKT literal."""
 
     FUNCTIONS = {
         's_intersects': 2,
@@ -137,6 +209,7 @@ class C:
         'casei': 1,
         'accenti': 1,
     }
+    """Standard functions and their number of arguments."""
 
     ARRAY_FUNCTIONS = {
         'a_contains',
@@ -144,16 +217,20 @@ class C:
         'a_equals',
         'a_overlaps',
     }
+    """Functions whose parenthesized arguments are array literals."""
 
     PATTERN_FUNCTIONS = {
         'casei',
         'accenti',
     }
+    """Functions allowed as a ``LIKE`` pattern."""
 
 ##
 
 
 class _Token:
+    """A token with its type, value and position in the input."""
+
     def __init__(self, type: str, value, pos: int):
         self.type = type
         self.value = value
@@ -165,7 +242,7 @@ class _Token:
 
 _TOKENS = [
     ('WHITESPACE', r'\s+'),
-    ('TIMESTAMP', r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?'),
+    ('TIMESTAMP', r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?'),
     ('DATE', r'\d{4}-\d{2}-\d{2}'),
     ('NUMBER', r'-?\d+\.?\d*(?:[eE][+-]?\d+)?'),
     ('STRING', r"'(?:[^'\\]|\\.|'')*'"),
@@ -176,11 +253,15 @@ _TOKENS = [
 
 
 class _Parser:
+    """Recursive descent parser for CQL2-Text."""
+
     def __init__(self):
         self.tokens = []
         self.index = 0
 
     def parse(self, s: str):
+        """Parse an expression and check that all input is consumed."""
+
         self.tokens = list(self.tokenize(s))
         self.tokens.append(_Token('EOF', None, len(s)))
         self.index = 0
@@ -196,6 +277,8 @@ class _Parser:
         return ParseError(f'Parse error: {message} ({pos})')
 
     def tokenize(self, s):
+        """Yield the tokens of the input, without whitespace."""
+
         pos = 0
         while pos < len(s):
             tok = None
@@ -292,6 +375,8 @@ class _Parser:
         return self.parse_predicate()
 
     def is_operand_follower(self):
+        """Check if the current token can follow an operand, i.e. is an operator or a predicate keyword."""
+
         tok = self.tok()
         if tok.type in C.OPERATORS:
             return True
@@ -404,7 +489,7 @@ class _Parser:
             op = self.pop().value
             e = self.parse_unary_expression()
             if op == '-':
-                return ['-', e]
+                return [Node.NEG, e]
             return e
         return self.parse_postfix_expression()
 
@@ -502,23 +587,28 @@ class _Parser:
         return [Node.STRING, self.unquote(val)]
 
     def parse_timestamp_literal(self):
+        """Parse a bare timestamp, a shortcut for ``TIMESTAMP('...')``."""
+
         val = self.pop().value
-        if val.endswith('Z'):
-            val = val[:-1] + '+00:00'
         try:
-            return [Node.TIMESTAMP, datetime.datetime.fromisoformat(val)]
-        except ValueError:
+            parse_timestamp(val)
+        except ParseError:
             raise self.error(f'invalid timestamp')
+        return [Node.FUNCTION, 'timestamp', [Node.STRING, val]]
 
     def parse_date_literal(self):
+        """Parse a bare date, a shortcut for ``DATE('...')``."""
+
         val = self.pop().value
         try:
-            year, month, day = val.split('-')
-            return [Node.DATE, datetime.date(int(year), int(month), int(day))]
-        except ValueError:
+            parse_date(val)
+        except ParseError:
             raise self.error(f'invalid date')
+        return [Node.FUNCTION, 'date', [Node.STRING, val]]
 
     def parse_geometry_literal(self):
+        """Collect the tokens of a WKT literal into a normalized WKT string."""
+
         parts = []
         parens = 0
         has_word = False
@@ -566,6 +656,8 @@ class _Parser:
         return elements
 
     def parse_array_argument(self):
+        """Parse an argument of an array function, a parenthesized list being an array."""
+
         if self.is_a('('):
             self.pop()
             return [Node.ARRAY, *self.parse_list(')')]
@@ -582,5 +674,7 @@ class _Parser:
         return elements
 
     def unquote(self, s: str):
+        """Remove the quotes of a quoted string and unescape doubled and backslash-escaped quotes."""
+
         quote = s[0]
         return s[1:-1].replace('\\' + quote, quote).replace(quote + quote, quote)
