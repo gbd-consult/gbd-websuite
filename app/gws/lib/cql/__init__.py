@@ -8,10 +8,12 @@ Reference:
 
 Submodules:
 
-- ``parser``: the CQL2-Text parser (``parse``, ``ParseError``) and the
+- ``parser``: the CQL2-Text parser (``parse``, ``ParseError``), the date and
+  timestamp parsers (``parse_date``, ``parse_timestamp``, ``parse_datetime``) and the
   constants for node types (``Node``) and keyword sets (``C``).
 - ``builder``: the generic tree walker ``Builder``, the SQLAlchemy
   generator ``SqlBuilder`` and ``BuildError``.
+- ``params``: translation of OGC API query parameters to CQL2-Text (``from_datetime_param``).
 
 The parser does not know about databases, and the builders do not parse
 text: the parse tree described below is the interface between them.
@@ -32,7 +34,8 @@ and the rest are arguments::
     a IN (1, 2)         ['IN', ['NAME', 'a'], ['INT', 1], ['INT', 2]]
 
 Node types are listed in ``Node``, operators and other keyword sets in ``C``.
-Literal nodes carry a python value: ``['INT', 10]``, ``['DATE', datetime.date(...)]``.
+Literal nodes carry a python value: ``['INT', 10]``, ``['STRING', 'abc']``. Dates and
+timestamps are function calls: ``['FUNCTION', 'date', ['STRING', '2021-06-15']]``.
 A ``NAME`` node carries the dot-separated parts of a property name: ``a.b`` is
 ``['NAME', 'a', 'b']``. The operators ``<>`` and ``!=`` are both emitted as ``<>``.
 Unary minus is emitted as ``NEG``: ``-a`` is ``['NEG', ['NAME', 'a']]``.
@@ -70,24 +73,45 @@ Notes
   function (``CREATE EXTENSION unaccent``).
 - ``SqlBuilder`` resolves a ``NAME`` by its first part only, as a column of the table.
 - Geometry literals and ``BBOX`` are in WGS84 (EPSG:4326).
-- Temporal predicates compare ``tstzrange`` values, an instant being a degenerate
-  range. Bounds are inclusive, so intervals that only touch do intersect.
-  Timestamps without a zone are read as UTC.
+- Temporal predicates compare ``tstzrange`` values. A timestamp is a degenerate
+  range, a date the half-open range of its day. Other bounds are inclusive,
+  so intervals that only touch do intersect.
+- Timestamps without a zone are read in the builder's ``default_time_zone``
+  (the local time zone by default), which also defines the day boundaries.
+- A date compared with a timestamp is compared with the date of the timestamp,
+  e.g. ``a_time > DATE('2021-06-15')`` matches from the next day on.
 - Array literals are accepted both in the standard form ``('a', 'b')`` and as
   ``['a', 'b']``. Arrays are compared as sets, in particular ``A_EQUALS`` ignores
   order and duplicates.
 - ``BBOX`` is limited to the 2d form with four arguments.
+
+Extensions
+----------
+
+- Bare dates and timestamps (``a > 2021-06-15``, ``a > 2021-06-15T10:00:00Z``)
+  are shortcuts for ``DATE('...')`` and ``TIMESTAMP('...')``.
+- Timestamps may have a zone offset or no zone at all.
+- A string compared with a date or a timestamp column is read as a date,
+  if it has no time part, or a timestamp: ``a_time > '2021-06-15'``.
+
+OGC API parameters
+------------------
+
+``from_datetime_param`` translates the ``datetime`` parameter of OGC API Features
+to a CQL2-Text filter, which can be combined with the ``filter`` parameter.
 """
 
-from .parser import parse, ParseError, Node, C
-from .builder import Builder, SqlBuilder, BuildError
+from .builder import Builder, BuildError, SqlBuilder
+from .params import from_datetime_param
+from .parser import C, Node, ParseError, parse
 
 __all__ = [
-    'parse',
-    'ParseError',
-    'Node',
-    'C',
-    'Builder',
-    'SqlBuilder',
     'BuildError',
+    'Builder',
+    'C',
+    'Node',
+    'ParseError',
+    'SqlBuilder',
+    'from_datetime_param',
+    'parse',
 ]
