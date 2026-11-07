@@ -28,6 +28,7 @@ GWS Maker
 
 Commands:
 
+    audit               - audit an image for security problems
     clean               - remove all build artifacts
     client              - build the production Client
     client-dev          - build the development Client
@@ -110,7 +111,7 @@ fi
 
 if [ "$RUN_IN_DOCKER" == "1" ]; then
   case $COMMAND in
-    clean | client | client-dev | client-dev-server | freeze | image | test)
+    audit | clean | client | client-dev | client-dev-server | freeze | image | test)
       echo "command '$COMMAND' cannot run in Docker"
       exit 1
       ;;
@@ -176,6 +177,9 @@ case $COMMAND in
 
   image)
     codegen && $PYTHON $BASE_DIR/install/image.py $@
+    ;;
+  audit)
+    codegen && $PYTHON $BASE_DIR/install/audit.py $@
     ;;
   package)
     codegen && $PYTHON $BASE_DIR/install/package.py $MANIFEST_OPT $@

@@ -4,7 +4,6 @@ import os
 import sys
 import re
 import time
-import json
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/../app'))
 
@@ -14,15 +13,13 @@ USAGE = """
 GWS Image Builder
 ~~~~~~~~~~~~~~~~~
   
-    python3 image.py <command> <options>
+    python3 image.py [<command>] <options>
 
 Command:
 
     prepare - prepare the build, but do not run it
-    build   - build an image
-    scan    - scan an image for security problems
-    sbom    - generate an SPDX json report for an image 
-    
+    build   - build an image (default)
+
 
 Options:
 
@@ -34,9 +31,6 @@ Options:
 
     -builddir <dir>
         directory to store Dockerfile and assets, defaults to $GWS_BUILD_DIR
-
-    -trivydir <dir>
-        directory to store Trivy cache, defaults to $GWS_TRIVY_DIR
 
     -datadir <dir>
         data directory to copy to "/data" in the image, defaults to "gbd-websuite/data"
@@ -55,14 +49,10 @@ Options:
 
     -push
         push the image to dockerhub ($GWS_DOCKERHUB_USERNAME and $GWS_DOCKERHUB_TOKEN must be set)
-        
-    -out <path>
-        write scan reports to a file
 
 Examples:
 
     python3 image.py build -arch arm64 -name my-test-image -datadir my_project/data
-    python3 image.py scan  -name my-test-image
 """
 
 UBUNTU_NAME = 'resolute'
@@ -300,123 +290,13 @@ class Builder(Base):
         self.dockerhub_logout()
 
 
-class Scanner(Base):
-    TRIVY_IMAGE = 'aquasec/trivy'
-    SEVERITY = 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'UNKNOWN'
-
-    def __init__(self, cmd, args):
-        super().__init__(cmd, args)
-
-        self.trivy_dir = args.get('trivydir') or os.getenv('GWS_TRIVY_DIR') or ''
-        if not self.trivy_dir:
-            raise ValueError('trivydir not set')
-
-    def main(self):
-        if self.cmd == 'scan':
-            cli.info(f'SCANNING {self.app_image_name}')
-            return self.do_scan()
-
-        if self.cmd == 'sbom':
-            cli.info(f'GENERATING SBOM FOR {self.app_image_name}')
-            return self.do_sbom()
-
-    def do_scan(self):
-        text = self.run_trivy(self.app_image_name, 'json')
-        js = json.loads(text)
-        rows = []
-
-        for res in js.get('Results', []):
-            typ = res.get('Type')
-            for v in res.get('Vulnerabilities', []):
-                sev = v.get('Severity', 'UNKNOWN')
-                ver = v.get('InstalledVersion', '')
-                fix = v.get('FixedVersion', '')
-                if fix:
-                    ver += f' -> {fix}'
-
-                rows.append(
-                    [
-                        self.SEVERITY.index(sev),
-                        sev + (' (fixed)' if fix else ''),
-                        f'{v.get("PkgName", "-")} ({typ})',
-                        v.get('VulnerabilityID', '-'),
-                        f'{v.get("Title", "-")} ({ver})',
-                    ]
-                )
-
-        rows.sort()
-
-        text = cli.text_table([r[1:] for r in rows]) + '\n'
-
-        path = self.args.get('out')
-        if path:
-            cli.write_file(path, text)
-            return 0
-
-        cli.info('')
-        cli.info(f'CVE REPORT FOR {self.app_image_name}')
-        cli.info('')
-
-        for ln in text.split('\n'):
-            if ln.startswith('MEDIUM'):
-                cli.warning(ln)
-            elif ln.startswith('HIGH'):
-                cli.error(ln)
-            else:
-                cli.info(ln)
-
-        return
-
-    def do_sbom(self):
-        text = self.run_trivy(self.app_image_name, 'spdx-json')
-
-        path = self.args.get('out')
-        if path:
-            cli.write_file(path, text)
-            return 0
-
-        print(text)
-        return 0
-
-    def run_trivy(self, image_name, report_format):
-
-        if not os.path.isdir(self.trivy_dir):
-            os.makedirs(self.trivy_dir, exist_ok=True)
-
-        out = '__out.json'
-        try:
-            os.unlink(f'{self.trivy_dir}/{out}')
-        except OSError:
-            pass
-
-        cmd = f"""
-            docker run
-            --mount type=bind,src={self.trivy_dir},dst=/root/.cache/
-            --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
-            {self.TRIVY_IMAGE}
-            image
-            --format {report_format}
-            --scanners vuln
-            --output /root/.cache/{out}      
-            {image_name}
-        """
-
-        cli.run(cmd)
-
-        return cli.read_file(f'{self.trivy_dir}/{out}')
-
-
 ###
 
 
 def main(args):
-    cmd = args.get(1)
-    if not cmd:
-        cli.fatal(f'command required')
+    cmd = args.get(1) or 'build'
     if cmd in {'prepare', 'build'}:
         return Builder(cmd, args).main()
-    if cmd in {'scan', 'sbom'}:
-        return Scanner(cmd, args).main()
     cli.fatal(f'invalid command {cmd!r}')
 
 
