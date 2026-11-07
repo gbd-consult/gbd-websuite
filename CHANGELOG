@@ -1,3 +1,20 @@
+## Version 8.5.9
+
+- security update
+
+## Version 8.5.8
+
+- extent transformation: an extent that crosses the antimeridian is widened to the full longitude range instead of being flipped
+- OWS services: image responses without a requested `FORMAT` (e.g. `GetLegendGraphic`) use the first MIME type of the image format and send a proper `Content-Type`
+- ALKIS export: models with owner fields (`namensnummer...`) are recognized as owner data and require `eigentuemer` access
+- demos: fixed and updated (broken links and layers, map centers and scales, editable models, descriptions)
+
+## Version 8.5.7
+
+- WMTS layers: tiles are requested in the source format (`Format` or `ResourceURL`) that best matches the layer's `imageFormat`
+- new gallery demos (ALKIS, Baumerfassung, Locations, Laternen)
+- UTM32 demos use a matching background map
+
 ## Version 8.5.6
 
 - `qgis` and `qgisflat` layers have `withCache` off by default; cache settings of a `qgis` layer are passed on to its leaf layers

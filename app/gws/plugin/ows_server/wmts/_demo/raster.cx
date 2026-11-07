@@ -9,11 +9,9 @@ Ein von der WebSuite bereitgestellter WMTS-Dienst, der Kacheln aus einem GeoTIFF
 
 Beim Laden des Dienstes in einer externen Anwendung wie QGIS stehen Kachelmatrix-Sätze für EPSG:3857, EPSG:25832 und EPSG:25833 zur Auswahl.
 
-Den Karteninhalt liefert ein Layer vom Typ `raster` mit `provider.paths`. Der `owsServices`-Eintrag vom Typ `wmts` erzeugt mit `supportedCrs [ 3857 25832 25833 ]` je einen `TileMatrixSet` pro KBS; `map.extent` begrenzt die Kachelmatrix auf die Umgebung von Düsseldorf.
+Den Karteninhalt liefert ein Layer vom Typ `raster` mit `provider.paths`. Der `owsServices`-Eintrag vom Typ `wmts` erzeugt mit `supportedCrs [ 3857 25832 25833 ]` je einen `TileMatrixSet` pro KBS, der auf dem globalen Kachelraster des KBS beruht.
 
 [Service URL](/_/owsService/serviceUid/service_wmts_raster?request=GetCapabilities)
-
-[Demo QGIS Project](/ows_services.qgs)
 """
 
 owsServices+ {

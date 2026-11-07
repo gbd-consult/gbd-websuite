@@ -127,7 +127,7 @@ class Object(gws.Node):
                     permissions=_READ_WRITE_PERMISSIONS,
                 ),
             )
-            mod.withEigentuemer = any('eigentuemer' in fld.name for fld in mod.fields)
+            mod.withEigentuemer = any('eigentuemer' in fld.name or 'namensnummer' in fld.name for fld in mod.fields)
             mod.withBuchung = any('buchung' in fld.name for fld in mod.fields)
             self.models.append(mod)
 

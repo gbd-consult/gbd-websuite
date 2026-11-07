@@ -20,6 +20,22 @@
     }
 @end
 
+@let demo_osm_layer_32
+    type "wmts"
+    display "client"
+    title "OpenStreetMap"
+    provider.url "https://geoservices.gbd-consult.de/wmts?key=gwsdemo"
+    sourceLayers.names [ "light" ]
+    withCache false
+    metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+@end
+
+@let demo_osm_background_32
+    map.layers+ {
+        {demo_osm_layer_32}
+    }
+@end
+
 @let demo_metadata
     attribution "(c) Geoinformatikbüro Dassau GmbH" 
     attributionUrl "https://gbd-websuite.de"

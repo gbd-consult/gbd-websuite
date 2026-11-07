@@ -17,7 +17,7 @@ Als zweiter Layer ist ein `wmts`-Layer mit Luftbildern (DOP) mit `withCache true
 printers+ {
     template {
         type "qgis"
-        provider.path "/demos/poi_geojson_dynamic_legend.qgs"
+        provider.path "/demos/qgis/poi_geojson_dynamic_legend.qgs"
     }
 }
 
@@ -30,7 +30,7 @@ map {
 map.layers+ {
     title "Düsseldorf"
     type "qgisflat"
-    provider.path "/demos/poi_geojson_dynamic_legend.qgs"
+    provider.path "/demos/qgis/poi_geojson_dynamic_legend.qgs"
 }
 
 map.layers+ {

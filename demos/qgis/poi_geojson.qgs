@@ -39,17 +39,17 @@
       <customproperties>
         <Option/>
       </customproperties>
-      <layer-tree-layer name="Bäckerei" legend_split_behavior="0" checked="Qt::Unchecked" expanded="1" legend_exp="" source="./poi/poi.baeckerei.geojson" patch_size="0,0" providerKey="ogr" id="poi_baeckerei_57a1127f_18de_451f_9a20_88d144375704">
+      <layer-tree-layer name="Bäckerei" legend_split_behavior="0" checked="Qt::Unchecked" expanded="1" legend_exp="" source="../poi/poi.baeckerei.geojson" patch_size="0,0" providerKey="ogr" id="poi_baeckerei_57a1127f_18de_451f_9a20_88d144375704">
         <customproperties>
           <Option/>
         </customproperties>
       </layer-tree-layer>
-      <layer-tree-layer name="Kiosk" legend_split_behavior="0" checked="Qt::Unchecked" expanded="1" legend_exp="" source="./poi/poi.kiosk.geojson" patch_size="0,0" providerKey="ogr" id="poi_kiosk_0a4700d5_7c00_48ba_8bc7_307b904dd745">
+      <layer-tree-layer name="Kiosk" legend_split_behavior="0" checked="Qt::Unchecked" expanded="1" legend_exp="" source="../poi/poi.kiosk.geojson" patch_size="0,0" providerKey="ogr" id="poi_kiosk_0a4700d5_7c00_48ba_8bc7_307b904dd745">
         <customproperties>
           <Option/>
         </customproperties>
       </layer-tree-layer>
-      <layer-tree-layer name="Supermarkt" legend_split_behavior="0" checked="Qt::Unchecked" expanded="1" legend_exp="" source="./poi/poi.supermarkt.geojson" patch_size="0,0" providerKey="ogr" id="poi_supermarkt_159ca63b_9f95_4c97_b760_4f1e390b3cb0">
+      <layer-tree-layer name="Supermarkt" legend_split_behavior="0" checked="Qt::Unchecked" expanded="1" legend_exp="" source="../poi/poi.supermarkt.geojson" patch_size="0,0" providerKey="ogr" id="poi_supermarkt_159ca63b_9f95_4c97_b760_4f1e390b3cb0">
         <customproperties>
           <Option/>
         </customproperties>
@@ -59,27 +59,27 @@
       <customproperties>
         <Option/>
       </customproperties>
-      <layer-tree-layer name="Bar" legend_split_behavior="0" checked="Qt::Checked" expanded="1" legend_exp="" source="./poi/poi.bar.geojson" patch_size="0,0" providerKey="ogr" id="poi_bar_1948a4af_1df7_482f_954c_224b02943435">
+      <layer-tree-layer name="Bar" legend_split_behavior="0" checked="Qt::Checked" expanded="1" legend_exp="" source="../poi/poi.bar.geojson" patch_size="0,0" providerKey="ogr" id="poi_bar_1948a4af_1df7_482f_954c_224b02943435">
         <customproperties>
           <Option/>
         </customproperties>
       </layer-tree-layer>
-      <layer-tree-layer name="Biergarten" legend_split_behavior="0" checked="Qt::Checked" expanded="1" legend_exp="" source="./poi/poi.biergarten.geojson" patch_size="0,0" providerKey="ogr" id="poi_biergarten_8ccf1a0f_23f4_4a4d_af20_73b03e1d4596">
+      <layer-tree-layer name="Biergarten" legend_split_behavior="0" checked="Qt::Checked" expanded="1" legend_exp="" source="../poi/poi.biergarten.geojson" patch_size="0,0" providerKey="ogr" id="poi_biergarten_8ccf1a0f_23f4_4a4d_af20_73b03e1d4596">
         <customproperties>
           <Option/>
         </customproperties>
       </layer-tree-layer>
-      <layer-tree-layer name="Cafe" legend_split_behavior="0" checked="Qt::Checked" expanded="1" legend_exp="" source="./poi/poi.cafe.geojson" patch_size="0,0" providerKey="ogr" id="poi_cafe_6a125fa3_35d3_4466_8de5_b02e090ecfd5">
+      <layer-tree-layer name="Cafe" legend_split_behavior="0" checked="Qt::Checked" expanded="1" legend_exp="" source="../poi/poi.cafe.geojson" patch_size="0,0" providerKey="ogr" id="poi_cafe_6a125fa3_35d3_4466_8de5_b02e090ecfd5">
         <customproperties>
           <Option/>
         </customproperties>
       </layer-tree-layer>
-      <layer-tree-layer name="Kneipe" legend_split_behavior="0" checked="Qt::Checked" expanded="1" legend_exp="" source="./poi/poi.kneipe.geojson" patch_size="0,0" providerKey="ogr" id="poi_kneipe_d636fd7d_1095_49fe_b6b6_8989cec4d419">
+      <layer-tree-layer name="Kneipe" legend_split_behavior="0" checked="Qt::Checked" expanded="1" legend_exp="" source="../poi/poi.kneipe.geojson" patch_size="0,0" providerKey="ogr" id="poi_kneipe_d636fd7d_1095_49fe_b6b6_8989cec4d419">
         <customproperties>
           <Option/>
         </customproperties>
       </layer-tree-layer>
-      <layer-tree-layer name="Restaurant" legend_split_behavior="0" checked="Qt::Checked" expanded="1" legend_exp="" source="./poi/poi.restaurant.geojson" patch_size="0,0" providerKey="ogr" id="poi_restaurant_be910756_8e03_4498_b4a2_149ef01f1297">
+      <layer-tree-layer name="Restaurant" legend_split_behavior="0" checked="Qt::Checked" expanded="1" legend_exp="" source="../poi/poi.restaurant.geojson" patch_size="0,0" providerKey="ogr" id="poi_restaurant_be910756_8e03_4498_b4a2_149ef01f1297">
         <customproperties>
           <Option/>
         </customproperties>
@@ -89,12 +89,12 @@
       <customproperties>
         <Option/>
       </customproperties>
-      <layer-tree-layer name="Buchladen" legend_split_behavior="0" checked="Qt::Unchecked" expanded="1" legend_exp="" source="./poi/poi.buchladen.geojson" patch_size="0,0" providerKey="ogr" id="poi_buchladen_52a9edd9_8964_439b_97d4_18f9f0471672">
+      <layer-tree-layer name="Buchladen" legend_split_behavior="0" checked="Qt::Unchecked" expanded="1" legend_exp="" source="../poi/poi.buchladen.geojson" patch_size="0,0" providerKey="ogr" id="poi_buchladen_52a9edd9_8964_439b_97d4_18f9f0471672">
         <customproperties>
           <Option/>
         </customproperties>
       </layer-tree-layer>
-      <layer-tree-layer name="Museum" legend_split_behavior="0" checked="Qt::Unchecked" expanded="1" legend_exp="" source="./poi/poi.museum.geojson" patch_size="0,0" providerKey="ogr" id="poi_museum_98b1c56a_179b_4017_91eb_7ac14852fe57">
+      <layer-tree-layer name="Museum" legend_split_behavior="0" checked="Qt::Unchecked" expanded="1" legend_exp="" source="../poi/poi.museum.geojson" patch_size="0,0" providerKey="ogr" id="poi_museum_98b1c56a_179b_4017_91eb_7ac14852fe57">
         <customproperties>
           <Option/>
         </customproperties>
@@ -104,23 +104,23 @@
       <customproperties>
         <Option/>
       </customproperties>
-      <layer-tree-layer name="Bank" legend_split_behavior="0" checked="Qt::Unchecked" expanded="1" legend_exp="" source="./poi/poi.bank.geojson" patch_size="0,0" providerKey="ogr" id="poi_bank_76072d8e_2e19_4178_9de9_923d3c3d4aaa">
+      <layer-tree-layer name="Bank" legend_split_behavior="0" checked="Qt::Unchecked" expanded="1" legend_exp="" source="../poi/poi.bank.geojson" patch_size="0,0" providerKey="ogr" id="poi_bank_76072d8e_2e19_4178_9de9_923d3c3d4aaa">
         <customproperties>
           <Option/>
         </customproperties>
       </layer-tree-layer>
-      <layer-tree-layer name="Hotel" legend_split_behavior="0" checked="Qt::Unchecked" expanded="1" legend_exp="" source="./poi/poi.hotel.geojson" patch_size="0,0" providerKey="ogr" id="poi_hotel_2c013db8_7575_4f06_8b6d_80f42c450213">
+      <layer-tree-layer name="Hotel" legend_split_behavior="0" checked="Qt::Unchecked" expanded="1" legend_exp="" source="../poi/poi.hotel.geojson" patch_size="0,0" providerKey="ogr" id="poi_hotel_2c013db8_7575_4f06_8b6d_80f42c450213">
         <customproperties>
           <Option/>
         </customproperties>
       </layer-tree-layer>
-      <layer-tree-layer name="Postfiliale" legend_split_behavior="0" checked="Qt::Unchecked" expanded="1" legend_exp="" source="./poi/poi.postfiliale.geojson" patch_size="0,0" providerKey="ogr" id="poi_postfiliale_81fcf7ed_36cd_4e28_80b6_21f0cf93836e">
+      <layer-tree-layer name="Postfiliale" legend_split_behavior="0" checked="Qt::Unchecked" expanded="1" legend_exp="" source="../poi/poi.postfiliale.geojson" patch_size="0,0" providerKey="ogr" id="poi_postfiliale_81fcf7ed_36cd_4e28_80b6_21f0cf93836e">
         <customproperties>
           <Option/>
         </customproperties>
       </layer-tree-layer>
     </layer-tree-group>
-    <layer-tree-layer name="Districts" legend_split_behavior="0" checked="Qt::Checked" expanded="1" legend_exp="" source="./districts.geojson" patch_size="-1,-1" providerKey="ogr" id="city_parts_56a1508b_350b_45cc_bd91_d9bdce7c22dd">
+    <layer-tree-layer name="Districts" legend_split_behavior="0" checked="Qt::Checked" expanded="1" legend_exp="" source="../districts.geojson" patch_size="-1,-1" providerKey="ogr" id="city_parts_56a1508b_350b_45cc_bd91_d9bdce7c22dd">
       <customproperties>
         <Option/>
       </customproperties>
@@ -344,7 +344,7 @@
         <ymax>51.35252369810967821</ymax>
       </wgs84extent>
       <id>city_parts_56a1508b_350b_45cc_bd91_d9bdce7c22dd</id>
-      <datasource>./districts.geojson</datasource>
+      <datasource>../districts.geojson</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -958,7 +958,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer autoRefreshTime="0" autoRefreshMode="Disabled" type="vector" maxScale="0" labelsEnabled="0" styleCategories="AllStyleCategories" symbologyReferenceScale="-1" minScale="100000000" legendPlaceholderImage="" simplifyMaxScale="1" geometry="Point" hasScaleBasedVisibilityFlag="0" simplifyDrawingTol="1" wkbType="Point" refreshOnNotifyMessage="" readOnly="0" simplifyDrawingHints="0" simplifyAlgorithm="0" refreshOnNotifyEnabled="0" simplifyLocal="1">
       <id>poi_baeckerei_57a1127f_18de_451f_9a20_88d144375704</id>
-      <datasource>./poi/poi.baeckerei.geojson</datasource>
+      <datasource>../poi/poi.baeckerei.geojson</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -1189,7 +1189,7 @@ def my_form_open(dialog, layer, feature):
                 <Option name="color" value="190,178,151,255,rgb:0.74509803921568629,0.69803921568627447,0.59215686274509804,1" type="QString"/>
                 <Option name="fixedAspectRatio" value="0" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
-                <Option name="name" value="./poi/icons/baeckerei.svg" type="QString"/>
+                <Option name="name" value="../poi/icons/baeckerei.svg" type="QString"/>
                 <Option name="offset" value="0,0" type="QString"/>
                 <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="offset_unit" value="MM" type="QString"/>
@@ -1421,7 +1421,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer autoRefreshTime="0" autoRefreshMode="Disabled" type="vector" maxScale="0" labelsEnabled="0" styleCategories="AllStyleCategories" symbologyReferenceScale="-1" minScale="100000000" legendPlaceholderImage="" simplifyMaxScale="1" geometry="Point" hasScaleBasedVisibilityFlag="0" simplifyDrawingTol="1" wkbType="Point" refreshOnNotifyMessage="" readOnly="0" simplifyDrawingHints="0" simplifyAlgorithm="0" refreshOnNotifyEnabled="0" simplifyLocal="1">
       <id>poi_bank_76072d8e_2e19_4178_9de9_923d3c3d4aaa</id>
-      <datasource>./poi/poi.bank.geojson</datasource>
+      <datasource>../poi/poi.bank.geojson</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -1652,7 +1652,7 @@ def my_form_open(dialog, layer, feature):
                 <Option name="color" value="145,82,45,255,rgb:0.56862745098039214,0.32156862745098042,0.17647058823529413,1" type="QString"/>
                 <Option name="fixedAspectRatio" value="0" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
-                <Option name="name" value="./poi/icons/bank.svg" type="QString"/>
+                <Option name="name" value="../poi/icons/bank.svg" type="QString"/>
                 <Option name="offset" value="0,0" type="QString"/>
                 <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="offset_unit" value="MM" type="QString"/>
@@ -1884,7 +1884,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer autoRefreshTime="0" autoRefreshMode="Disabled" type="vector" maxScale="0" labelsEnabled="0" styleCategories="AllStyleCategories" symbologyReferenceScale="-1" minScale="100000000" legendPlaceholderImage="" simplifyMaxScale="1" geometry="Point" hasScaleBasedVisibilityFlag="0" simplifyDrawingTol="1" wkbType="Point" refreshOnNotifyMessage="" readOnly="0" simplifyDrawingHints="0" simplifyAlgorithm="0" refreshOnNotifyEnabled="0" simplifyLocal="1">
       <id>poi_bar_1948a4af_1df7_482f_954c_224b02943435</id>
-      <datasource>./poi/poi.bar.geojson</datasource>
+      <datasource>../poi/poi.bar.geojson</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -2115,7 +2115,7 @@ def my_form_open(dialog, layer, feature):
                 <Option name="color" value="125,139,143,255,rgb:0.49019607843137253,0.54509803921568623,0.5607843137254902,1" type="QString"/>
                 <Option name="fixedAspectRatio" value="0" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
-                <Option name="name" value="./poi/icons/bar.svg" type="QString"/>
+                <Option name="name" value="../poi/icons/bar.svg" type="QString"/>
                 <Option name="offset" value="0,0" type="QString"/>
                 <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="offset_unit" value="MM" type="QString"/>
@@ -2347,7 +2347,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer autoRefreshTime="0" autoRefreshMode="Disabled" type="vector" maxScale="0" labelsEnabled="0" styleCategories="AllStyleCategories" symbologyReferenceScale="-1" minScale="100000000" legendPlaceholderImage="" simplifyMaxScale="1" geometry="Point" hasScaleBasedVisibilityFlag="0" simplifyDrawingTol="1" wkbType="Point" refreshOnNotifyMessage="" readOnly="0" simplifyDrawingHints="0" simplifyAlgorithm="0" refreshOnNotifyEnabled="0" simplifyLocal="1">
       <id>poi_biergarten_8ccf1a0f_23f4_4a4d_af20_73b03e1d4596</id>
-      <datasource>./poi/poi.biergarten.geojson</datasource>
+      <datasource>../poi/poi.biergarten.geojson</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -2578,7 +2578,7 @@ def my_form_open(dialog, layer, feature):
                 <Option name="color" value="133,182,111,255,rgb:0.52156862745098043,0.71372549019607845,0.43529411764705883,1" type="QString"/>
                 <Option name="fixedAspectRatio" value="0" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
-                <Option name="name" value="./poi/icons/biergarten.svg" type="QString"/>
+                <Option name="name" value="../poi/icons/biergarten.svg" type="QString"/>
                 <Option name="offset" value="0,0" type="QString"/>
                 <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="offset_unit" value="MM" type="QString"/>
@@ -2810,7 +2810,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer autoRefreshTime="0" autoRefreshMode="Disabled" type="vector" maxScale="0" labelsEnabled="0" styleCategories="AllStyleCategories" symbologyReferenceScale="-1" minScale="100000000" legendPlaceholderImage="" simplifyMaxScale="1" geometry="Point" hasScaleBasedVisibilityFlag="0" simplifyDrawingTol="1" wkbType="Point" refreshOnNotifyMessage="" readOnly="0" simplifyDrawingHints="0" simplifyAlgorithm="0" refreshOnNotifyEnabled="0" simplifyLocal="1">
       <id>poi_buchladen_52a9edd9_8964_439b_97d4_18f9f0471672</id>
-      <datasource>./poi/poi.buchladen.geojson</datasource>
+      <datasource>../poi/poi.buchladen.geojson</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -3041,7 +3041,7 @@ def my_form_open(dialog, layer, feature):
                 <Option name="color" value="164,113,88,255,rgb:0.64313725490196083,0.44313725490196076,0.34509803921568627,1" type="QString"/>
                 <Option name="fixedAspectRatio" value="0" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
-                <Option name="name" value="./poi/icons/buchladen.svg" type="QString"/>
+                <Option name="name" value="../poi/icons/buchladen.svg" type="QString"/>
                 <Option name="offset" value="0,0" type="QString"/>
                 <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="offset_unit" value="MM" type="QString"/>
@@ -3273,7 +3273,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer autoRefreshTime="0" autoRefreshMode="Disabled" type="vector" maxScale="0" labelsEnabled="0" styleCategories="AllStyleCategories" symbologyReferenceScale="-1" minScale="100000000" legendPlaceholderImage="" simplifyMaxScale="1" geometry="Point" hasScaleBasedVisibilityFlag="0" simplifyDrawingTol="1" wkbType="Point" refreshOnNotifyMessage="" readOnly="0" simplifyDrawingHints="0" simplifyAlgorithm="0" refreshOnNotifyEnabled="0" simplifyLocal="1">
       <id>poi_cafe_6a125fa3_35d3_4466_8de5_b02e090ecfd5</id>
-      <datasource>./poi/poi.cafe.geojson</datasource>
+      <datasource>../poi/poi.cafe.geojson</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -3504,7 +3504,7 @@ def my_form_open(dialog, layer, feature):
                 <Option name="color" value="213,180,60,255,rgb:0.83529411764705885,0.70588235294117652,0.23529411764705882,1" type="QString"/>
                 <Option name="fixedAspectRatio" value="0" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
-                <Option name="name" value="./poi/icons/cafe.svg" type="QString"/>
+                <Option name="name" value="../poi/icons/cafe.svg" type="QString"/>
                 <Option name="offset" value="0,0" type="QString"/>
                 <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="offset_unit" value="MM" type="QString"/>
@@ -3736,7 +3736,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer autoRefreshTime="0" autoRefreshMode="Disabled" type="vector" maxScale="0" labelsEnabled="0" styleCategories="AllStyleCategories" symbologyReferenceScale="-1" minScale="100000000" legendPlaceholderImage="" simplifyMaxScale="1" geometry="Point" hasScaleBasedVisibilityFlag="0" simplifyDrawingTol="1" wkbType="Point" refreshOnNotifyMessage="" readOnly="0" simplifyDrawingHints="0" simplifyAlgorithm="0" refreshOnNotifyEnabled="0" simplifyLocal="1">
       <id>poi_hotel_2c013db8_7575_4f06_8b6d_80f42c450213</id>
-      <datasource>./poi/poi.hotel.geojson</datasource>
+      <datasource>../poi/poi.hotel.geojson</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -3967,7 +3967,7 @@ def my_form_open(dialog, layer, feature):
                 <Option name="color" value="114,155,111,255,rgb:0.44705882352941179,0.60784313725490191,0.43529411764705883,1" type="QString"/>
                 <Option name="fixedAspectRatio" value="0" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
-                <Option name="name" value="./poi/icons/hotel.svg" type="QString"/>
+                <Option name="name" value="../poi/icons/hotel.svg" type="QString"/>
                 <Option name="offset" value="0,0" type="QString"/>
                 <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="offset_unit" value="MM" type="QString"/>
@@ -4199,7 +4199,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer autoRefreshTime="0" autoRefreshMode="Disabled" type="vector" maxScale="0" labelsEnabled="0" styleCategories="AllStyleCategories" symbologyReferenceScale="-1" minScale="100000000" legendPlaceholderImage="" simplifyMaxScale="1" geometry="Point" hasScaleBasedVisibilityFlag="0" simplifyDrawingTol="1" wkbType="Point" refreshOnNotifyMessage="" readOnly="0" simplifyDrawingHints="0" simplifyAlgorithm="0" refreshOnNotifyEnabled="0" simplifyLocal="1">
       <id>poi_kiosk_0a4700d5_7c00_48ba_8bc7_307b904dd745</id>
-      <datasource>./poi/poi.kiosk.geojson</datasource>
+      <datasource>../poi/poi.kiosk.geojson</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -4430,7 +4430,7 @@ def my_form_open(dialog, layer, feature):
                 <Option name="color" value="243,166,178,255,rgb:0.95294117647058818,0.65098039215686276,0.69803921568627447,1" type="QString"/>
                 <Option name="fixedAspectRatio" value="0" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
-                <Option name="name" value="./poi/icons/kiosk.svg" type="QString"/>
+                <Option name="name" value="../poi/icons/kiosk.svg" type="QString"/>
                 <Option name="offset" value="0,0" type="QString"/>
                 <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="offset_unit" value="MM" type="QString"/>
@@ -4662,7 +4662,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer autoRefreshTime="0" autoRefreshMode="Disabled" type="vector" maxScale="0" labelsEnabled="0" styleCategories="AllStyleCategories" symbologyReferenceScale="-1" minScale="100000000" legendPlaceholderImage="" simplifyMaxScale="1" geometry="Point" hasScaleBasedVisibilityFlag="0" simplifyDrawingTol="1" wkbType="Point" refreshOnNotifyMessage="" readOnly="0" simplifyDrawingHints="0" simplifyAlgorithm="0" refreshOnNotifyEnabled="0" simplifyLocal="1">
       <id>poi_kneipe_d636fd7d_1095_49fe_b6b6_8989cec4d419</id>
-      <datasource>./poi/poi.kneipe.geojson</datasource>
+      <datasource>../poi/poi.kneipe.geojson</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -4893,7 +4893,7 @@ def my_form_open(dialog, layer, feature):
                 <Option name="color" value="141,90,153,255,rgb:0.55294117647058827,0.35294117647058826,0.59999999999999998,1" type="QString"/>
                 <Option name="fixedAspectRatio" value="0" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
-                <Option name="name" value="./poi/icons/kneipe.svg" type="QString"/>
+                <Option name="name" value="../poi/icons/kneipe.svg" type="QString"/>
                 <Option name="offset" value="0,0" type="QString"/>
                 <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="offset_unit" value="MM" type="QString"/>
@@ -5125,7 +5125,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer autoRefreshTime="0" autoRefreshMode="Disabled" type="vector" maxScale="0" labelsEnabled="0" styleCategories="AllStyleCategories" symbologyReferenceScale="-1" minScale="100000000" legendPlaceholderImage="" simplifyMaxScale="1" geometry="Point" hasScaleBasedVisibilityFlag="0" simplifyDrawingTol="1" wkbType="Point" refreshOnNotifyMessage="" readOnly="0" simplifyDrawingHints="0" simplifyAlgorithm="0" refreshOnNotifyEnabled="0" simplifyLocal="1">
       <id>poi_museum_98b1c56a_179b_4017_91eb_7ac14852fe57</id>
-      <datasource>./poi/poi.museum.geojson</datasource>
+      <datasource>../poi/poi.museum.geojson</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -5356,7 +5356,7 @@ def my_form_open(dialog, layer, feature):
                 <Option name="color" value="232,113,141,255,rgb:0.90980392156862744,0.44313725490196076,0.55294117647058827,1" type="QString"/>
                 <Option name="fixedAspectRatio" value="0" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
-                <Option name="name" value="./poi/icons/museum.svg" type="QString"/>
+                <Option name="name" value="../poi/icons/museum.svg" type="QString"/>
                 <Option name="offset" value="0,0" type="QString"/>
                 <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="offset_unit" value="MM" type="QString"/>
@@ -5588,7 +5588,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer autoRefreshTime="0" autoRefreshMode="Disabled" type="vector" maxScale="0" labelsEnabled="0" styleCategories="AllStyleCategories" symbologyReferenceScale="-1" minScale="100000000" legendPlaceholderImage="" simplifyMaxScale="1" geometry="Point" hasScaleBasedVisibilityFlag="0" simplifyDrawingTol="1" wkbType="Point" refreshOnNotifyMessage="" readOnly="0" simplifyDrawingHints="0" simplifyAlgorithm="0" refreshOnNotifyEnabled="0" simplifyLocal="1">
       <id>poi_postfiliale_81fcf7ed_36cd_4e28_80b6_21f0cf93836e</id>
-      <datasource>./poi/poi.postfiliale.geojson</datasource>
+      <datasource>../poi/poi.postfiliale.geojson</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -5819,7 +5819,7 @@ def my_form_open(dialog, layer, feature):
                 <Option name="color" value="255,158,23,255,rgb:1,0.61960784313725492,0.09019607843137255,1" type="QString"/>
                 <Option name="fixedAspectRatio" value="0" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
-                <Option name="name" value="./poi/icons/postfiliale.svg" type="QString"/>
+                <Option name="name" value="../poi/icons/postfiliale.svg" type="QString"/>
                 <Option name="offset" value="0,0" type="QString"/>
                 <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="offset_unit" value="MM" type="QString"/>
@@ -6051,7 +6051,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer autoRefreshTime="0" autoRefreshMode="Disabled" type="vector" maxScale="0" labelsEnabled="0" styleCategories="AllStyleCategories" symbologyReferenceScale="-1" minScale="100000000" legendPlaceholderImage="" simplifyMaxScale="1" geometry="Point" hasScaleBasedVisibilityFlag="0" simplifyDrawingTol="1" wkbType="Point" refreshOnNotifyMessage="" readOnly="0" simplifyDrawingHints="0" simplifyAlgorithm="0" refreshOnNotifyEnabled="0" simplifyLocal="1">
       <id>poi_restaurant_be910756_8e03_4498_b4a2_149ef01f1297</id>
-      <datasource>./poi/poi.restaurant.geojson</datasource>
+      <datasource>../poi/poi.restaurant.geojson</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -6282,7 +6282,7 @@ def my_form_open(dialog, layer, feature):
                 <Option name="color" value="183,72,75,255,rgb:0.71764705882352942,0.28235294117647058,0.29411764705882354,1" type="QString"/>
                 <Option name="fixedAspectRatio" value="0" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
-                <Option name="name" value="./poi/icons/restaurant.svg" type="QString"/>
+                <Option name="name" value="../poi/icons/restaurant.svg" type="QString"/>
                 <Option name="offset" value="0,0" type="QString"/>
                 <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="offset_unit" value="MM" type="QString"/>
@@ -6514,7 +6514,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer autoRefreshTime="0" autoRefreshMode="Disabled" type="vector" maxScale="0" labelsEnabled="0" styleCategories="AllStyleCategories" symbologyReferenceScale="-1" minScale="100000000" legendPlaceholderImage="" simplifyMaxScale="1" geometry="Point" hasScaleBasedVisibilityFlag="0" simplifyDrawingTol="1" wkbType="Point" refreshOnNotifyMessage="" readOnly="0" simplifyDrawingHints="0" simplifyAlgorithm="0" refreshOnNotifyEnabled="0" simplifyLocal="1">
       <id>poi_supermarkt_159ca63b_9f95_4c97_b760_4f1e390b3cb0</id>
-      <datasource>./poi/poi.supermarkt.geojson</datasource>
+      <datasource>../poi/poi.supermarkt.geojson</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -6745,7 +6745,7 @@ def my_form_open(dialog, layer, feature):
                 <Option name="color" value="231,113,72,255,rgb:0.90588235294117647,0.44313725490196076,0.28235294117647058,1" type="QString"/>
                 <Option name="fixedAspectRatio" value="0" type="QString"/>
                 <Option name="horizontal_anchor_point" value="1" type="QString"/>
-                <Option name="name" value="./poi/icons/supermarkt.svg" type="QString"/>
+                <Option name="name" value="../poi/icons/supermarkt.svg" type="QString"/>
                 <Option name="offset" value="0,0" type="QString"/>
                 <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
                 <Option name="offset_unit" value="MM" type="QString"/>
@@ -7233,7 +7233,7 @@ def my_form_open(dialog, layer, feature):
       </spatialrefsys>
     </CoordinateCustomCrs>
   </ProjectDisplaySettings>
-  <ProjectGpsSettings destinationLayerName="Districts" destinationFollowsActiveLayer="1" destinationLayerSource="/opt/w/gp/gbd-websuite/demos/districts.geojson" autoCommitFeatures="0" destinationLayerProvider="ogr" autoAddTrackVertices="0" destinationLayer="city_parts_56a1508b_350b_45cc_bd91_d9bdce7c22dd">
+  <ProjectGpsSettings destinationLayerName="Districts" destinationFollowsActiveLayer="1" destinationLayerSource="../districts.geojson" autoCommitFeatures="0" destinationLayerProvider="ogr" autoAddTrackVertices="0" destinationLayer="city_parts_56a1508b_350b_45cc_bd91_d9bdce7c22dd">
     <timeStampFields/>
   </ProjectGpsSettings>
 </qgis>

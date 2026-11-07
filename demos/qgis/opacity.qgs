@@ -35,7 +35,7 @@
     <customproperties>
       <Option/>
     </customproperties>
-    <layer-tree-layer legend_exp="" checked="Qt::Checked" source="./districts.geojson" legend_split_behavior="0" patch_size="-1,-1" name="Districts" expanded="1" id="Districts_7b236e92_768a_4227_84eb_f98621fc9bcf" providerKey="ogr">
+    <layer-tree-layer legend_exp="" checked="Qt::Checked" source="../districts.geojson" legend_split_behavior="0" patch_size="-1,-1" name="Districts" expanded="1" id="Districts_7b236e92_768a_4227_84eb_f98621fc9bcf" providerKey="ogr">
       <customproperties>
         <Option/>
       </customproperties>
@@ -329,7 +329,7 @@
         <ymax>51.35252369810972795</ymax>
       </wgs84extent>
       <id>Districts_7b236e92_768a_4227_84eb_f98621fc9bcf</id>
-      <datasource>./districts.geojson</datasource>
+      <datasource>../districts.geojson</datasource>
       <layername>Districts</layername>
       <srs>
         <spatialrefsys nativeFormat="Wkt">

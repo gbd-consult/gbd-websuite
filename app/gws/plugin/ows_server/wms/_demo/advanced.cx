@@ -22,7 +22,7 @@ Konfiguriert sind am Dienst:
 
 [Service URL](/_/owsService/serviceUid/service_wms_advanced?request=GetCapabilities)
 
-[Demo QGIS Project](/ows_services.qgs)
+[Demo QGIS Project](/demos/ows_services.qgs)
 """
 
 owsServices+ {
@@ -51,7 +51,7 @@ owsServices+ {
     imageFormats+ {
         name "jpeg"
         mimeTypes [ "image/jpeg" "image/jpeg; quality=high" ]
-        quality 50
+        quality 90
         background "cyan"
     }
     imageFormats+ {
@@ -81,7 +81,7 @@ map.zoom { minScale 500 maxScale 400000 }
 map.layers+ {
     title "Points of interest"
     type "qgisflat"
-    provider.path "/demos/poi_districts_postgres.qgs"
+    provider.path "/demos/qgis/poi_districts_postgres.qgs"
     sourceLayers.names [ "Points of interest" ]
     zoom { maxScale 50000 }
     finders+ { type "postgres" tableName "edit.poi" }
@@ -102,7 +102,7 @@ map.layers+ {
 map.layers+ {
     title "Districts"
     type "qgisflat"
-    provider.path "/demos/poi_districts_postgres.qgs"
+    provider.path "/demos/qgis/poi_districts_postgres.qgs"
     sourceLayers.names [ "Districts" ]
     zoom { minScale 50000 }
     finders+ { type "postgres" tableName "edit.district" }

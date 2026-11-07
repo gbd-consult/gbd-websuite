@@ -9,7 +9,7 @@ Eine Übersichtskarte mit eigenen Layern, angezeigt in der Seitenleiste und in d
 
 Der Reiter "Übersicht" der Seitenleiste (`Sidebar.Overview`) zeigt die Übersichtskarte mit einem Rahmen um den aktuellen Kartenausschnitt; Klicken oder Ziehen in der Übersichtskarte verschiebt die Hauptkarte. Darunter können Mittelpunkt, Maßstab und Drehung der Hauptkarte eingegeben werden.
 
-In der Druckvorschau ("Drucken" in der Werkzeugleiste) erscheint die Übersichtskarte mit einem Rahmen in der Größe des Kartenausschnitts der gewählten Vorlage. Die vier Vorlagen (A4 und A2, jeweils hoch und quer) zeigen das für verschiedene `mapSize`.
+In der Druckvorschau ("Drucken" in der Werkzeugleiste) erscheint die Übersichtskarte mit einem Rahmen in der Größe des Kartenausschnitts der gewählten Vorlage. Die vier Vorlagen (A4 quer und A2 hoch, jeweils mit hohem und breitem Kartenausschnitt) zeigen das für verschiedene `mapSize`.
 
 Die Übersichtskarte wird unter `overviewMap` konfiguriert und kann beliebige Layer enthalten, hier die Stadtteile aus PostgreSQL und die OSM-Hintergrundkarte. `extent` ist Pflicht; im Beispiel wird die Ausdehnung mit arithmetischen Ausdrücken relativ zum Kartenmittelpunkt berechnet.
 """
@@ -36,7 +36,7 @@ overviewMap {
 
 printers+ {
     template {
-        title "A4 Vertical"
+        title "A4, Kartenausschnitt hoch"
         type "html"
         path "a4.cx.html"
         mapSize [ "100mm" "200mm" ]
@@ -45,7 +45,7 @@ printers+ {
 
 printers+ {
     template {
-        title "A4 Horizontal"
+        title "A4, Kartenausschnitt quer"
         type "html"
         path "a4.cx.html"
         mapSize [ "200mm" "100mm" ]
@@ -54,7 +54,7 @@ printers+ {
 
 printers+ {
     template {
-        title "A2 Vertical"
+        title "A2, Kartenausschnitt hoch"
         type "html"
         path "a2.cx.html"
         mapSize [ "200mm" "400mm" ]
@@ -63,7 +63,7 @@ printers+ {
 
 printers+ {
     template {
-        title "A2 Horizontal"
+        title "A2, Kartenausschnitt quer"
         type "html"
         path "a2.cx.html"
         mapSize [ "400mm" "200mm" ]

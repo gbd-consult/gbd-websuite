@@ -8,7 +8,7 @@ let state = {
 }
 
 function splitWords(str) {
-    return str.toLowerCase().match(/\w+/g) || [];
+    return str.toLowerCase().match(/[\p{L}\p{N}_]+/gu) || [];
 }
 
 function entryMatches(pe, words) {

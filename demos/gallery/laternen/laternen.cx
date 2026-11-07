@@ -188,7 +188,7 @@ models+ {
     fields+ {
         name "suburb"
         type "text"
-        title "Stadteil"
+        title "Stadtteil"
         widget {
             type "select"
             items [

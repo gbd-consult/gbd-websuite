@@ -11,13 +11,13 @@ Beim Verschieben der Karte werden nur die fehlenden Kacheln nachgeladen. Die Kac
 
 Konfiguriert ist ein Layer vom Typ `wmsflat` mit `sourceLayers.names [ "adv_alkis_flurstuecke" ]` und `display "tile"`. Der Standard für `wmsflat` ist `display "box"`, bei dem für jeden Kartenausschnitt ein einzelnes Bild angefordert wird.
 
-Die Karte ist mit `zoom.maxScale 15000` auf große Maßstäbe begrenzt, in denen der Dienst die Flurstücke darstellt.
+Die Karte ist mit `zoom.maxScale 5000` auf große Maßstäbe begrenzt, in denen der Dienst die Flurstücke darstellt.
 """
 
 map {
     center {demo_point_duesseldorf_3857}
     zoom.initScale 4000
-    zoom.maxScale 15000
+    zoom.maxScale 5000
 }
 
 map.layers+ {

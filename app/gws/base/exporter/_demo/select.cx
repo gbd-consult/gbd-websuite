@@ -85,7 +85,7 @@ map {
 map.layers+ {
     title "Interessante Orte"
     type "qgisflat"
-    provider.path "/demos/search_multi.qgs"
+    provider.path "/demos/qgis/search_multi.qgs"
     sourceLayers.names [ "Interessante Orte" ]
     finders+ {
         type "postgres"
@@ -101,7 +101,7 @@ map.layers+ {
 map.layers+ {
     title "Parks"
     type "qgisflat"
-    provider.path "/demos/search_multi.qgs"
+    provider.path "/demos/qgis/search_multi.qgs"
     sourceLayers.names [ "Parks" ]
     finders+ {
         type "postgres"
@@ -117,7 +117,7 @@ map.layers+ {
 map.layers+ {
     title "Wasserflächen"
     type "qgisflat"
-    provider.path "/demos/search_multi.qgs"
+    provider.path "/demos/qgis/search_multi.qgs"
     sourceLayers.names [ "Wasserflächen" ]
     finders+ {
         type "postgres"

@@ -28,14 +28,14 @@ map {
 map.layers+ {
     title "Points of interest"
     type "qgisflat"
-    provider.path "/demos/poi_districts_postgres.qgs"
+    provider.path "/demos/qgis/poi_districts_postgres.qgs"
     sourceLayers.names [ "Points of interest" ]
 
     models+ {
         type "postgres"
         uid "model_poi_qgis_simple"
         dbUid "DEVDEMOS"
-        tableName "edit.poi_small"
+        tableName "edit.poi"
         isEditable true
         permissions.edit "allow all"
 
@@ -79,7 +79,7 @@ map.layers+ {
 map.layers+ {
     title "Districts"
     type "qgisflat"
-    provider.path "/demos/poi_districts_postgres.qgs"
+    provider.path "/demos/qgis/poi_districts_postgres.qgs"
     sourceLayers.names [ "Districts" ]
     opacity 0.5
 

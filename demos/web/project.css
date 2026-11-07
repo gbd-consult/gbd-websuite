@@ -260,6 +260,9 @@ h6 {
     fill: rgba(95, 126, 227, 0.44);
     stroke: rgb(26, 82, 141);
     stroke-width: 4px;
+    --with-label: all;
+    --label-fill: rgb(26, 82, 141);
+    --label-font-size: 12px;
 }
 
 

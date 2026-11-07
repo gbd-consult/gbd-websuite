@@ -9,7 +9,7 @@ Ein ganzes QGIS-Projekt als ein einzelner WebSuite-Layer.
 
 Im Layer-Panel erscheint nur der Layer "Essen und Trinken in Düsseldorf", ohne die Gruppen und Layer des QGIS-Projekts; er lässt sich nur als Ganzes ein- und ausschalten.
 
-Der Layer `type "qgisflat"` rendert alle Layer des über `provider.path` angegebenen Projekts gemeinsam als ein Bild. Darstellung, Beschriftungen und Maßstabsgrenzen kommen unverändert aus QGIS. Eine Auswahl einzelner Quelllayer zeigt die Demo "QGIS Layer, flach mit Layerauswahl", die Baumstruktur die Demo "QGIS Layer als Baumstruktur".
+Der Layer `type "qgisflat"` rendert alle im über `provider.path` angegebenen Projekt sichtbaren Layer gemeinsam als ein Bild; die im QGIS-Projekt ausgeschalteten Gruppen bleiben weg. Darstellung, Beschriftungen und Maßstabsgrenzen kommen unverändert aus QGIS. Eine Auswahl einzelner Quelllayer zeigt die Demo "QGIS Layer, flach mit Layerauswahl", die Baumstruktur die Demo "QGIS Layer als Baumstruktur".
 """
 
 map {
@@ -21,7 +21,7 @@ map {
 map.layers+ {
     title "Essen und Trinken in Düsseldorf"
     type "qgisflat"
-    provider.path "/demos/poi_geojson.qgs"
+    provider.path "/demos/qgis/poi_geojson.qgs"
 }
 
 {demo_osm_background}

@@ -13,8 +13,13 @@ Konfiguriert ist ein `owsServices`-Eintrag vom Typ `wfs` mit Angaben für das Ca
 
 [Service URL](/_/owsService/serviceUid/service_wfs_simple?request=GetCapabilities)
 
-[Demo QGIS Project](/ows_services.qgs)
+[Demo QGIS Project](/demos/ows_services.qgs)
 """
+
+map {
+    center {demo_point_duesseldorf_3857}
+    zoom.initScale 150000
+}
 
 owsServices+ {
     type "wfs"

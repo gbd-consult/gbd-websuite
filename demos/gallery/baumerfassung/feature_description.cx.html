@@ -1,0 +1,213 @@
+@# Feature description for trees (Baum).
+@#
+@# Data comes from the view erfassung.v_baum_info (DB_QFIELD), through the postgres
+@# finder of the "Baum" layer in baumerfassung.cx. One row per erfassung.baum record.
+@#
+@# Flat columns:
+@#   baum columns (id, geom, uuid, datum, kontrolle, erfasser, stammduchmesser, ...)
+@#   lookups: baumart_deu_name, baumart_wissen_name, baumart_typ (baumart),
+@#            kronendurchmesser (kronendurchmesser), schaedling (schaedlinge)
+@#   file flags: has_foto_content, has_anhang_content (bytea content is not included)
+@#
+@# JSON array columns, '[]' when empty:
+@#   schaeden       baumschaden rows whose ids are listed in baum.schaden ('{7,10}')
+@#   flurstuecke    flurstck rows whose nationalCadastralReference is in baum.flurstk
+@#   protokolle     protokoll rows with baum_uuid = baum.uuid, massnahme resolved, has_foto_content
+@#   zeiterfassung  zeiterfassung rows with baum_uuid = baum.uuid
+@#
+@# Files are served by the webFile command through the models model_qfield_baum
+@# and model_qfield_baum_protokoll of the qfieldcloud action.
+
+@import json
+@import datetime
+@import gws
+
+@def json_load(v)
+    @if isinstance(v, str)
+        @return json.loads(v)
+    @end
+    @return v or []
+@end
+
+@def val(v)
+    @if v == None or v == "" or v == "NULL"
+        @return "-"
+    @end
+    @if isinstance(v, bool)
+        @return "ja" if v else "nein"
+    @end
+    @if isinstance(v, datetime.date)
+        @return date.short(v)
+    @end
+    @return str(v) | html | nl2br
+@end
+
+@def val_date(v)
+    @if isinstance(v, str) and v
+        @return date.short(datetime.date.fromisoformat(v))
+    @end
+    @return val(v)
+@end
+
+@def file_url(model_uid, field_name, feature_uid, name, preview=None)
+    @let path = gws.u.action_url_path('webFile', preview=preview, projectUid=project.uid, modelUid=model_uid, fieldName=field_name, featureUid=feature_uid)
+    @return path + '/' + name.split('/')[-1]
+@end
+
+@def file_link(model_uid, field_name, feature_uid, name, has_content)
+    @if not name or not has_content
+        @return "-"
+    @end
+    @let base = name.split('/')[-1]
+    @let url = file_url(model_uid, field_name, feature_uid, name)
+    <a href="{url | htmlq}" target="_blank">{base | html}</a>
+@end
+
+@def image_link(model_uid, field_name, feature_uid, name, has_content)
+    @if not name or not has_content
+        @return "-"
+    @end
+    @let base = name.split('/')[-1]
+    @let url = file_url(model_uid, field_name, feature_uid, name)
+    @let preview_url = file_url(model_uid, field_name, feature_uid, name, preview=1)
+    <a href="{url | htmlq}" target="_blank"><img src="{preview_url | htmlq}" alt="{base | htmlq}"></a>
+@end
+
+<div class="cmpDescription">
+    <p class="head">Baum {feature.attributes.get('baumart_deu_name')}</p>
+    <table>
+        <tbody>
+        <tr>
+            <th>Wiss. Name</th>
+            <td>{val(feature.attributes.get('baumart_wissen_name'))}</td>
+        </tr>
+        <tr>
+            <th>Typ</th>
+            <td>{val(feature.attributes.get('baumart_typ'))}</td>
+        </tr>
+        <tr>
+            <th>Kronendurchmesser (m)</th>
+            <td>{val(feature.attributes.get('kronendurchmesser'))}</td>
+        </tr>
+        <tr>
+            <th>Stammdurchmesser (cm)</th>
+            <td>{val(feature.attributes.get('stammduchmesser'))}</td>
+        </tr>
+        <tr>
+            <th>Schäden</th>
+            <td>{val(feature.attributes.get('schaden_ja_nein'))}</td>
+        </tr>
+        <tr>
+            <th>Schädling</th>
+            <td>{val(feature.attributes.get('schaedling'))}</td>
+        </tr>
+        <tr>
+            <th>Ersterfassung</th>
+            <td>{val(feature.attributes.get('datum'))}</td>
+        </tr>
+        <tr>
+            <th>Kontrolle</th>
+            <td>{val(feature.attributes.get('kontrolle'))}</td>
+        </tr>
+        <tr>
+            <th>Erfasser</th>
+            <td>{val(feature.attributes.get('erfasser'))}</td>
+        </tr>
+        <tr>
+            <th>Foto</th>
+            <td>{image_link('model_qfield_baum', 'file_foto', feature.attributes.get('id'), feature.attributes.get('foto'), feature.attributes.get('has_foto_content'))}</td>
+        </tr>
+        <tr>
+            <th>Dokument</th>
+            <td>{file_link('model_qfield_baum', 'file_anhang', feature.attributes.get('id'), feature.attributes.get('anhang'), feature.attributes.get('has_anhang_content'))}</td>
+        </tr>
+        </tbody>
+    </table>
+
+    @with json_load(feature.attributes.get('schaeden')) as schaeden
+        <p class="head2">Schadensfälle</p>
+        <table>
+            <tbody>
+            @for s in schaeden
+                <tr>
+                    <td>{val(s.get('schadensfall'))}</td>
+                </tr>
+            @end
+            </tbody>
+        </table>
+    @end
+
+    @with json_load(feature.attributes.get('flurstuecke')) as flurstuecke
+        <p class="head2">Flurstücke</p>
+        <table>
+            <thead>
+            <tr>
+                <th>Kennzeichen</th>
+                <th>Nummer</th>
+                <th>Fläche (m²)</th>
+            </tr>
+            </thead>
+            <tbody>
+            @for f in flurstuecke
+                <tr>
+                    <td>{val(f.get('national_cadastral_reference'))}</td>
+                    <td>{val(f.get('label'))}</td>
+                    <td>{val(f.get('area_value'))}</td>
+                </tr>
+            @end
+            </tbody>
+        </table>
+    @end
+
+    @with json_load(feature.attributes.get('protokolle')) as protokolle
+        <p class="head2">Protokolle</p>
+        <table>
+            <thead>
+            <tr>
+                <th>Datum</th>
+                <th>Nächste Kontrolle</th>
+                <th>Maßnahme</th>
+                <th>Information</th>
+                <th>Erfasser</th>
+                <th>Foto</th>
+            </tr>
+            </thead>
+            <tbody>
+            @for p in protokolle
+                <tr>
+                    <td>{val_date(p.get('datum'))}</td>
+                    <td>{val_date(p.get('kontrolldatum'))}</td>
+                    <td>{val(p.get('massnahmen'))}</td>
+                    <td>{val(p.get('information'))}</td>
+                    <td>{val(p.get('erfasser'))}</td>
+                    <td>{image_link('model_qfield_baum_protokoll', 'file_foto_protokoll', p.get('id'), p.get('foto'), p.get('has_foto_content'))}</td>
+                </tr>
+            @end
+            </tbody>
+        </table>
+    @end
+
+    @with json_load(feature.attributes.get('zeiterfassung')) as zeiten
+        <p class="head2">Zeiterfassung</p>
+        <table>
+            <thead>
+            <tr>
+                <th>Datum</th>
+                <th>Arbeitszeit (min)</th>
+                <th>Art der Arbeit</th>
+                <th>Erfasser</th>
+            </tr>
+            </thead>
+            <tbody>
+            @for z in zeiten
+                <tr>
+                    <td>{val_date(z.get('datum'))}</td>
+                    <td>{val(z.get('arbeitszeit'))}</td>
+                    <td>{val(z.get('arbeit_typ'))}</td>
+                    <td>{val(z.get('erfasser'))}</td>
+                </tr>
+            @end
+            </tbody>
+        </table>
+    @end
+</div>

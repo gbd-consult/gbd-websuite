@@ -21,7 +21,7 @@ map {
 map.layers+ {
     title "Düsseldorf"
     type "qgis"
-    provider.path "/demos/poi_districts_postgres_services.qgs"
+    provider.path "/demos/qgis/poi_districts_postgres_services.qgs"
     provider.directRender [ "wms" "wmts" "xyz" ]
 }
 

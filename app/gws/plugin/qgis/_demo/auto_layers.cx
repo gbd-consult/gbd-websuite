@@ -28,7 +28,7 @@ map {
 map.layers+ {
     title "Düsseldorf"
     type "qgis"
-    provider.path "/demos/poi_geojson.qgs"
+    provider.path "/demos/qgis/poi_geojson.qgs"
 
     @# since there's no "applyTo", applies to all layers
     autoLayers+ {

@@ -15,7 +15,7 @@ Die beiden `printers` verwenden Vorlagen `type "qgis"` aus demselben QGIS-Projek
 printers+ {
     template {
         type "qgis"
-        provider.path "/demos/print_html.qgs"
+        provider.path "/demos/qgis/print_html.qgs"
         index 0
     }
     qualityLevels [ 
@@ -27,7 +27,7 @@ printers+ {
 printers+ {
     template {
         type "qgis"
-        provider.path "/demos/print_html.qgs"
+        provider.path "/demos/qgis/print_html.qgs"
         index 1
     }
     qualityLevels [ 

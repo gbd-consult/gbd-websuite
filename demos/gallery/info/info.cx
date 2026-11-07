@@ -93,7 +93,7 @@ map.layers+ {
                 LAYERFONTCOLOR "#ffffff"
                 LAYERFONTSIZE 1
             }
-            provider.path "/demos/gallery/info/background.qgs"
+            provider.path "/demos/gallery/info/poi.qgs"
         }
 
     templates+  {

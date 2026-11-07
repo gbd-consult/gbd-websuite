@@ -103,4 +103,4 @@ map.layers+ { type "postgres" title "kanalarbeiten"  tableName "baustellen.kanal
 map.layers+ { type "postgres" title "sperrung"       tableName "baustellen.sperrung" }
 map.layers+ { type "postgres" title "umleitung"      tableName "baustellen.umleitung" }
 
-{demo_osm_background}
+{demo_osm_background_32}

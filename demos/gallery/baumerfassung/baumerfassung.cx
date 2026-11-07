@@ -2,7 +2,7 @@ uid "baumerfassung"
 
 title "Baumerfassung mit QField"
 
-access "allow all"
+permissions.read "allow all"
 
 metadata.keywords [ "qfield" "qgis" "edit" "datenbank" ]
 
@@ -29,6 +29,31 @@ map.layers+ {
     type "qgisflat"
     provider { dbUid "DB_QFIELD" schema "erfassung" projectName "baumerfassung" }
     sourceLayers.names [ "Baum" ]
+
+    finders+ {
+        type "postgres"
+        dbUid "DB_QFIELD"
+        tableName "erfassung.v_baum_info"
+        models+ {
+            type "postgres"
+            withAutoFields true
+            fields+ {
+                name "id"
+                type "integer"
+                isPrimaryKey true
+            }
+            fields+ {
+                name "baumart_deu_name"
+                type "text"
+                textSearch { type "any" minLength 2 }
+            }
+        }
+        templates+ {
+            subject "feature.description"
+            type "html"
+            path "/demos/gallery/baumerfassung/feature_description.cx.html"
+        }
+    }
 }
 map.layers+ {
     title "Wegenetz (Status)"
@@ -36,34 +61,29 @@ map.layers+ {
     provider { dbUid "DB_QFIELD" schema "erfassung" projectName "baumerfassung" }
     sourceLayers.names [ "Wegenetz (Status)" ]
 }
-map.layers+ {
-    type "wmts"
-    display "client"
-    title "OpenStreetMap"
-    provider.url "https://geoservices.gbd-consult.de/wmts?key=gwsdemo"
-    sourceLayers.names [ "std" ]
-    withCache false
-    metadata.attribution "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-}
+
+{demo_osm_background_32}
 
 actions+ {
     type "qfieldcloud"
-    access "allow all"
+    permissions.read "allow all"
     projects+ {
         uid "baumerfassung"
         title "Baumerfassung"
         provider { dbUid "DB_QFIELD" schema "erfassung" projectName "baumerfassung" }
         mapCacheLifeTime "7d"
-        access "allow user, deny all"
+        permissions.read "allow user, deny all"
         syncFiles+ { field "file_foto" useBlob true }
         syncFiles+ { field "file_foto_protokoll" useBlob true }
         models+ {
+            uid "model_qfield_baum"
             title "Baum"
             type "postgres"
             dbUid "DB_QFIELD"
             tableName "erfassung.baum"
             withAutoFields true
             isEditable true
+            permissions.read "allow all"
             permissions.edit "allow user, deny all"
             fields+ {
                 name "file_anhang"
@@ -81,12 +101,14 @@ actions+ {
             }
         }
         models+ {
+            uid "model_qfield_baum_protokoll"
             title "Protokoll"
             type "postgres"
             dbUid "DB_QFIELD"
             tableName "erfassung.protokoll"
             withAutoFields true
             isEditable true
+            permissions.read "allow all"
             permissions.edit "allow user, deny all"
             fields+ {
                 name "file_foto_protokoll"

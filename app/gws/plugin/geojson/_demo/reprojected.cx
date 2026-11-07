@@ -8,8 +8,6 @@ metadata.abstract """
 Dieselben GeoJSON-Layer wie im Demo "GeoJSON Layer aus Dateien", aber in einer Karte mit dem KBS ETRS89 / UTM Zone 32N.
 
 Die Karte ist mit `crs 25832` konfiguriert. Weicht das KBS der GeoJSON-Datei vom `crs` der Karte ab, projiziert die WebSuite die Geometrien automatisch um; dafür ist am Layer keine zusätzliche Konfiguration nötig.
-
-Der OSM-Hintergrund wird ebenfalls in das KBS der Karte umprojiziert.
 """
 
 map {
@@ -29,4 +27,4 @@ map.layers+ {
     provider.path "/demos/districts.geojson"
 }
 
-{demo_osm_background}
+{demo_osm_background_32}
