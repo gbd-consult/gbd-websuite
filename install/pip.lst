@@ -6,11 +6,11 @@ Babel==2.14.*
 GeoAlchemy2==0.20.*
 jq==1.12.*
 pendulum==3.3.*
-Pillow==12.3.*
+Pillow==13.0.*
 psutil==7.2.*
 psycopg[binary]==3.3.*
 pycountry==26.2.*
-pypdf==6.20.*
+pypdf==6.21.*
 pyproj==3.8.*
 python-ldap==3.4.*
 PyYAML==6.0.*
@@ -43,5 +43,5 @@ Pygments==2.21.*
 mistune==2.1.*
 
 pyodbc==5.3.*
-Authlib==1.8.*
+Authlib==1.9.*
 matplotlib==3.11.*
