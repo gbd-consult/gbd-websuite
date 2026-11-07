@@ -1,3 +1,7 @@
+## Version 8.5.9
+
+- security update
+
 ## Version 8.5.8
 
 - extent transformation: an extent that crosses the antimeridian is widened to the full longitude range instead of being flipped
